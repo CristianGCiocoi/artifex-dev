@@ -20,10 +20,12 @@ from artifex.integrations import (
     ResearchClaim,
     ResearchRequest,
     ResearchSource,
+    SelectionPolicy,
     SelectionRequest,
     run_doctor,
     select_integration,
 )
+from artifex.integrations.hermes import HermesDetection, HermesIntegration
 from artifex.workflow import ExecutionBaseline, ExecutionStatus
 
 
@@ -192,3 +194,24 @@ def test_canonical_skill_bundles_are_portable_and_reference_themselves() -> None
         assert f"${skill_name}" in prompt
         assert "ARTIFEX" in instructions
         assert "canonical" in instructions.lower() or "authority" in instructions.lower()
+
+
+@pytest.mark.adversarial
+def test_selection_never_prefers_or_explicitly_returns_an_unhealthy_integration() -> None:
+    manual = ManualIntegration()
+    hermes = HermesIntegration(HermesDetection.unavailable("fixture unavailable"))
+    registry = IntegrationRegistry((hermes, manual))
+    policy = SelectionPolicy(preferred_integrations=("hermes", "manual"))
+
+    decision = select_integration(
+        registry,
+        SelectionRequest(IntegrationRole.IMPLEMENTER),
+        policy,
+    )
+    assert decision.integration.metadata.integration_id == "manual"
+    with pytest.raises(IntegrationError, match="unhealthy"):
+        select_integration(
+            registry,
+            SelectionRequest(IntegrationRole.IMPLEMENTER, integration_id="hermes"),
+            policy,
+        )

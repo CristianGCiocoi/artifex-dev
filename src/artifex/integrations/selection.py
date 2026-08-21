@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from artifex import __version__
-from artifex.integrations.contracts import IntegrationError, IntegrationRole
+from artifex.integrations.contracts import HealthStatus, IntegrationError, IntegrationRole
 from artifex.integrations.registry import Integration, IntegrationRegistry
 
 
@@ -58,18 +58,20 @@ def select_integration(
         if not policy.allowed_integrations
         or item.metadata.integration_id in policy.allowed_integrations
     )
+    healthy = tuple(item for item in allowed if item.health().status is HealthStatus.PASS)
     if request.integration_id is not None:
-        for integration in allowed:
+        for integration in healthy:
             if integration.metadata.integration_id == request.integration_id:
                 return SelectionDecision(integration, "explicit integration requested")
         raise IntegrationError(
-            "requested integration is unavailable, incompatible, disallowed, or lacks capabilities"
+            "requested integration is unavailable, unhealthy, incompatible, disallowed, "
+            "or lacks capabilities"
         )
 
-    by_id = {item.metadata.integration_id: item for item in allowed}
+    by_id = {item.metadata.integration_id: item for item in healthy}
     for identifier in policy.preferred_integrations:
         if identifier in by_id:
             return SelectionDecision(by_id[identifier], "first compatible policy preference")
-    if policy.allow_fallback and allowed:
-        return SelectionDecision(allowed[0], "deterministic compatible fallback")
+    if policy.allow_fallback and healthy:
+        return SelectionDecision(healthy[0], "deterministic compatible fallback")
     raise IntegrationError("no integration satisfies the requested role and capabilities")
