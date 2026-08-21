@@ -6,6 +6,15 @@ from artifex.integrations.conformance import (
     ConformanceSuite,
     IntegrationConformanceSuite,
 )
+from artifex.integrations.continuity import (
+    ALTERNATE_CONTINUITY_ROUTE,
+    PRIMARY_CONTINUITY_ROUTE,
+    ContinuityObservation,
+    ContinuityRouteReport,
+    CrossInterfaceContinuityReport,
+    verify_continuity_route,
+    verify_cross_interface_continuity,
+)
 from artifex.integrations.contracts import (
     Capability,
     CompatibilityRange,
@@ -35,12 +44,17 @@ from artifex.integrations.selection import (
 )
 
 __all__ = [
+    "ALTERNATE_CONTINUITY_ROUTE",
+    "PRIMARY_CONTINUITY_ROUTE",
     "Capability",
     "CompatibilityRange",
     "ConfigurationProvenance",
     "ConformanceCheck",
     "ConformanceReport",
     "ConformanceSuite",
+    "ContinuityObservation",
+    "ContinuityRouteReport",
+    "CrossInterfaceContinuityReport",
     "DoctorCheck",
     "DoctorReport",
     "ExecutionPacket",
@@ -63,4 +77,6 @@ __all__ = [
     "SelectionRequest",
     "run_doctor",
     "select_integration",
+    "verify_continuity_route",
+    "verify_cross_interface_continuity",
 ]
