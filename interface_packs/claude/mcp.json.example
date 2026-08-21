@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "artifex": {
+      "args": [
+        "-m",
+        "artifex.mcp"
+      ],
+      "command": "python",
+      "transport": "stdio"
+    }
+  }
+}
