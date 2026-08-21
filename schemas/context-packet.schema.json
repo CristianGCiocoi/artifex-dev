@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://artifex.local/schemas/context-packet.schema.json",
+  "title": "ARTIFEX Context Packet",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "generated_view",
+    "project",
+    "context",
+    "project_model_fingerprint"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "CONTEXT_PACKET"},
+    "generated_view": {"$ref": "#/$defs/generatedView"},
+    "project": {
+      "type": "object",
+      "minProperties": 1,
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "name": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": true
+    },
+    "context": {"type": "object"},
+    "project_model_fingerprint": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  },
+  "$defs": {
+    "generatedView": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "generated",
+        "canonical",
+        "generator",
+        "project_model_fingerprint",
+        "source_fingerprints"
+      ],
+      "properties": {
+        "generated": {"const": true},
+        "canonical": {"const": false},
+        "generator": {"type": "string", "minLength": 1},
+        "project_model_fingerprint": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "source_fingerprints": {
+          "type": "object",
+          "additionalProperties": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+        }
+      }
+    }
+  }
+}
