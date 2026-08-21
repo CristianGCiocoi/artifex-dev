@@ -219,7 +219,8 @@ class PandoraResearchAdapter:
         return self.transport.export_request(request)
 
     def import_bundle(self, request: ResearchRequest) -> ImportedResearch:
-        return self.transport.import_bundle(request)
+        imported = self.transport.import_bundle(request)
+        return _validate_imported_research(imported, request)
 
     def route(
         self,
@@ -249,6 +250,55 @@ def _validate_identifier(value: str) -> None:
         raise IntegrationError("Pandora request ID must be a portable path segment")
     if value in {".", ".."}:
         raise IntegrationError("Pandora request ID must be a portable path segment")
+
+
+def _validate_imported_research(
+    imported: object, request: ResearchRequest
+) -> ImportedResearch:
+    """Re-establish the evidence-only boundary after every transport call."""
+
+    if not isinstance(imported, ImportedResearch):
+        raise IntegrationError("Pandora transport must return ImportedResearch")
+    if imported.canonical is not False:
+        raise IntegrationError("Pandora transport attempted to claim canonical authority")
+    if imported.authority != "research-evidence-only":
+        raise IntegrationError("Pandora transport attempted to widen research authority")
+    if type(imported.bundle) is not ResearchBundle:
+        raise IntegrationError("Pandora transport supplied an invalid research bundle")
+    if not isinstance(imported.report, str):
+        raise IntegrationError("Pandora transport supplied an invalid research report")
+    if not all(
+        isinstance(value, str) and value.strip()
+        for value in (imported.bundle_path, imported.report_path)
+    ):
+        raise IntegrationError("Pandora transport supplied invalid artifact references")
+    # Round-trip through the frozen contract so a future transport cannot bypass
+    # ResearchBundle validation by returning a forged or partially constructed object.
+    try:
+        bundle = ResearchBundle.from_dict(imported.bundle.to_dict())
+    except (AttributeError, KeyError, TypeError, ValueError) as exc:
+        raise IntegrationError("Pandora transport supplied an invalid research bundle") from exc
+    if bundle.request_id != request.request_id:
+        raise IntegrationError("Pandora bundle request_id does not match requested research")
+    if not imported.report.strip():
+        raise IntegrationError("Pandora research report must not be empty")
+    for name, digest in (
+        ("bundle_sha256", imported.bundle_sha256),
+        ("report_sha256", imported.report_sha256),
+    ):
+        valid = isinstance(digest, str) and len(digest) == 64 and all(
+            character in "0123456789abcdef" for character in digest
+        )
+        if not valid:
+            raise IntegrationError(f"Pandora transport supplied an invalid {name}")
+    return ImportedResearch(
+        bundle,
+        imported.report,
+        imported.bundle_path,
+        imported.report_path,
+        imported.bundle_sha256,
+        imported.report_sha256,
+    )
 
 
 def _ensure_safe_directory(path: Path) -> None:

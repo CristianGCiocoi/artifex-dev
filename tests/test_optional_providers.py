@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -106,6 +107,17 @@ def _bundle(request_id: str = "RSR-M10-001") -> ResearchBundle:
     )
 
 
+def _raw_deepseek_result(packet: ExecutionPacket, **updates: Any) -> dict[str, Any]:
+    value: dict[str, Any] = {
+        "status": "success",
+        "base_commit": packet.base_commit,
+        "execution_contract_fingerprint": packet.contract_fingerprint,
+        "project_model_fingerprint": packet.project_model_fingerprint,
+    }
+    value.update(updates)
+    return value
+
+
 @pytest.mark.unit
 def test_deepseek_detection_is_read_only_capability_based_and_fail_graceful(
     monkeypatch: pytest.MonkeyPatch,
@@ -188,6 +200,32 @@ def test_deepseek_unknown_preview_and_incompatible_boundaries_fail_closed(
             ),
             worktree_root=tmp_path,
         )
+
+
+@pytest.mark.adversarial
+def test_deepseek_failed_help_probe_cannot_advertise_keyword_capabilities(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import artifex.integrations.deepseek as module
+
+    monkeypatch.setattr(module.shutil, "which", lambda _name: "/fixture/deepseek")
+    calls = iter(
+        (
+            subprocess.CompletedProcess((), 0, "DeepSeek 1.3.0", ""),
+            subprocess.CompletedProcess(
+                (), 9, "--interactive --headless --json structured edit test", "failed"
+            ),
+        )
+    )
+    monkeypatch.setattr(module, "_probe", lambda _command, _timeout: next(calls))
+    detection = detect_deepseek()
+    assert detection.installed
+    assert detection.compatibility is DeepSeekCompatibility.UNKNOWN
+    assert not detection.stable_headless and not detection.stable_interface
+    assert Capability.HEADLESS.value not in detection.capabilities
+    assert Capability.STRUCTURED_OUTPUT.value not in detection.capabilities
+    assert Capability.INTERACTIVE.value not in detection.capabilities
+    assert IntegrationRole.INTERFACE not in DeepSeekHarnessAdapter(detection).metadata.roles
 
 
 @pytest.mark.conformance
@@ -288,14 +326,32 @@ def test_deepseek_timeout_launch_failure_and_baseline_tamper(tmp_path: Path) -> 
     adapter = DeepSeekHarnessAdapter(_stable_detection(), runner=os_error)
     result = adapter.execute(adapter.plan_execution(_packet(adapter), worktree_root=tmp_path))
     assert result.status is ExecutionStatus.FAIL
-    with pytest.raises(IntegrationError, match="base_commit"):
-        normalize_deepseek_result({"status": "success", "base_commit": "c" * 40}, packet)
+    forged = normalize_deepseek_result(
+        _raw_deepseek_result(packet, base_commit="c" * 40), packet
+    )
+    assert forged.status is ExecutionStatus.REBASE_REQUIRED
+    assert forged.base_commit == "c" * 40
+    for missing in (
+        "base_commit",
+        "execution_contract_fingerprint",
+        "project_model_fingerprint",
+    ):
+        raw = _raw_deepseek_result(packet)
+        del raw[missing]
+        with pytest.raises(IntegrationError, match=f"explicit {missing}"):
+            normalize_deepseek_result(raw, packet)
     with pytest.raises(IntegrationError, match="artifacts"):
-        normalize_deepseek_result({"status": "success", "artifacts": "bad"}, packet)
+        normalize_deepseek_result(
+            _raw_deepseek_result(packet, artifacts="bad"), packet
+        )
     with pytest.raises(IntegrationError, match="artifact entries"):
-        normalize_deepseek_result({"status": "success", "artifacts": ["bad"]}, packet)
+        normalize_deepseek_result(
+            _raw_deepseek_result(packet, artifacts=["bad"]), packet
+        )
     with pytest.raises(IntegrationError, match="validation"):
-        normalize_deepseek_result({"status": "success", "validation": []}, packet)
+        normalize_deepseek_result(
+            _raw_deepseek_result(packet, validation=[]), packet
+        )
     with pytest.raises(IntegrationError, match="existing directory"):
         adapter.plan_execution(_packet(adapter), worktree_root=tmp_path / "missing")
 
@@ -395,6 +451,67 @@ def test_pandora_deep_policy_authority_and_future_transport_seam() -> None:
     with pytest.raises(IntegrationError, match="cannot transition"):
         adapter.transition_project_model(canonical_model, {"milestone": "ACCEPTED"})
     assert canonical_model == before
+
+
+@pytest.mark.adversarial
+@pytest.mark.parametrize(
+    ("canonical", "authority", "message"),
+    [
+        (True, "research-evidence-only", "canonical authority"),
+        (False, "project-model-authority", "widen research authority"),
+    ],
+)
+def test_pandora_adapter_rejects_authority_widening_by_future_transport(
+    canonical: bool, authority: str, message: str
+) -> None:
+    request = _request()
+    valid = ImportedResearch(
+        _bundle(),
+        "research report",
+        "future:bundle",
+        "future:report",
+        "a" * 64,
+        "b" * 64,
+    )
+
+    class MaliciousTransport:
+        def export_request(self, _request: ResearchRequest) -> Path:
+            return Path("future:/request")
+
+        def import_bundle(self, _request: ResearchRequest) -> ImportedResearch:
+            return replace(valid, canonical=canonical, authority=authority)
+
+    adapter = PandoraResearchAdapter(MaliciousTransport())
+    with pytest.raises(IntegrationError, match=message):
+        adapter.import_bundle(request)
+
+
+@pytest.mark.adversarial
+def test_pandora_adapter_revalidates_future_transport_identity_and_digests() -> None:
+    request = _request()
+
+    class MaliciousTransport:
+        def __init__(self, imported: ImportedResearch) -> None:
+            self.imported = imported
+
+        def export_request(self, _request: ResearchRequest) -> Path:
+            return Path("future:/request")
+
+        def import_bundle(self, _request: ResearchRequest) -> ImportedResearch:
+            return self.imported
+
+    valid = ImportedResearch(
+        _bundle(), "report", "bundle", "report", "a" * 64, "b" * 64
+    )
+    wrong_request = replace(valid, bundle=_bundle("RSR-OTHER"))
+    with pytest.raises(IntegrationError, match="request_id"):
+        PandoraResearchAdapter(MaliciousTransport(wrong_request)).import_bundle(request)
+    bad_digest = replace(valid, bundle_sha256="forged")
+    with pytest.raises(IntegrationError, match="invalid bundle_sha256"):
+        PandoraResearchAdapter(MaliciousTransport(bad_digest)).import_bundle(request)
+    object.__setattr__(valid, "bundle", {"kind": "RESEARCH_BUNDLE"})
+    with pytest.raises(IntegrationError, match="invalid research bundle"):
+        PandoraResearchAdapter(MaliciousTransport(valid)).import_bundle(request)
 
 
 @pytest.mark.architecture

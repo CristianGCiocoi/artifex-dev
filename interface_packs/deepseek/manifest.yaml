@@ -5,6 +5,7 @@ release_status: optional
 core_ga_blocking: false
 enable_when:
   compatibility: STABLE
+  all_discovery_probes_exit_zero: true
   required_capabilities:
     - headless
     - structured_output
@@ -18,6 +19,7 @@ authority:
 transport:
   input: execution-packet-v1-json
   output: execution-result-v1-json
+  result_identity_fields_required: true
 command:
   - deepseek
   - run

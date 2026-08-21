@@ -117,8 +117,11 @@ def detect_deepseek(executable: str = "deepseek", *, timeout: float = 3.0) -> De
     version = match.group(1) if match else None
 
     help_result = _probe((resolved, "run", "--help"), timeout)
-    help_output = "" if isinstance(help_result, str) else (
+    help_succeeded = not isinstance(help_result, str) and help_result.returncode == 0
+    help_output = (
         f"{help_result.stdout}\n{help_result.stderr}".lower()
+        if help_succeeded and not isinstance(help_result, str)
+        else ""
     )
     capabilities = {Capability.REPOSITORY_READ.value}
     headless = "--headless" in help_output or "non-interactive" in help_output
@@ -137,7 +140,12 @@ def detect_deepseek(executable: str = "deepseek", *, timeout: float = 3.0) -> De
     if any(token in help_output for token in ("test", "command", "shell")):
         capabilities.add(Capability.TEST_EXECUTION.value)
 
-    compatibility = _classify_compatibility(version, headless=headless, structured=structured)
+    compatibility = _classify_compatibility(
+        version,
+        probes_succeeded=help_succeeded,
+        headless=headless,
+        structured=structured,
+    )
     detail_parts = [version_output or "version was not reported"]
     if isinstance(help_result, str):
         detail_parts.append(help_result)
@@ -154,7 +162,11 @@ def detect_deepseek(executable: str = "deepseek", *, timeout: float = 3.0) -> De
 
 
 def _classify_compatibility(
-    version: str | None, *, headless: bool, structured: bool
+    version: str | None,
+    *,
+    probes_succeeded: bool,
+    headless: bool,
+    structured: bool,
 ) -> DeepSeekCompatibility:
     if version is None:
         return DeepSeekCompatibility.UNKNOWN
@@ -166,7 +178,7 @@ def _classify_compatibility(
     major = int(version.split(".", 1)[0])
     if major != 1:
         return DeepSeekCompatibility.INCOMPATIBLE
-    if not (headless and structured):
+    if not (probes_succeeded and headless and structured):
         return DeepSeekCompatibility.UNKNOWN
     return DeepSeekCompatibility.STABLE
 
@@ -395,15 +407,16 @@ def normalize_deepseek_result(
         status = _STATUS_ALIASES[raw_status]
     except KeyError as exc:
         raise IntegrationError(f"unknown DeepSeek result status: {raw_status!r}") from exc
-    expected = {
-        "base_commit": packet.base_commit,
-        "execution_contract_fingerprint": packet.contract_fingerprint,
-        "project_model_fingerprint": packet.project_model_fingerprint,
-    }
-    for name, expected_value in expected.items():
-        supplied = value.get(name, expected_value)
-        if supplied != expected_value:
-            raise IntegrationError(f"DeepSeek result {name} does not match execution packet")
+    baseline_fields: dict[str, str] = {}
+    for name in (
+        "base_commit",
+        "execution_contract_fingerprint",
+        "project_model_fingerprint",
+    ):
+        supplied = value.get(name)
+        if not isinstance(supplied, str) or not supplied.strip():
+            raise IntegrationError(f"DeepSeek result requires explicit {name}")
+        baseline_fields[name] = supplied
     artifacts_value = value.get("artifacts", ())
     if not isinstance(artifacts_value, Sequence) or isinstance(
         artifacts_value, (str, bytes, bytearray)
@@ -417,15 +430,16 @@ def normalize_deepseek_result(
     validation = value.get("validation", {})
     if not isinstance(validation, Mapping):
         raise IntegrationError("DeepSeek validation must be an object")
-    return ExecutionResult(
+    result = ExecutionResult(
         status,
-        packet.base_commit,
-        packet.contract_fingerprint,
-        packet.project_model_fingerprint,
+        baseline_fields["base_commit"],
+        baseline_fields["execution_contract_fingerprint"],
+        baseline_fields["project_model_fingerprint"],
         tuple(artifacts),
         dict(validation),
         str(value.get("message", "")),
     )
+    return result.classified(packet.baseline)
 
 
 def _failed_result(packet: ExecutionPacket, message: str) -> ExecutionResult:
