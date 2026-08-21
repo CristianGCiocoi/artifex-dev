@@ -1,0 +1,7 @@
+packet_hash: 560f96bafbf3771609be01dc9dc456f0ae9be9198b6a27ab196a5588f9b20e17
+base_commit: a6cf1c8008cc0454ef502e271516b5dcc34dca7e
+project_model_fingerprint: 2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506
+worker_branch: feat/m04-integration-foundation
+ownership: [src/artifex/integrations, src/artifex/application, src/artifex/cli.py, src/artifex/mcp.py, tests, schemas, skills]
+state: ACTIVE
+

@@ -1,0 +1,25 @@
+schema_version: "1.0"
+contract:
+  id: VAL-M08
+  version: 1
+  milestone: M08
+  state: EXECUTION_STARTED
+  authority_source: docs/implementation/milestones/M08_KNOWLEDGE_EVOLUTION.md
+  execution_base_commit: a6cf1c8008cc0454ef502e271516b5dcc34dca7e
+  project_model_fingerprint: 2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506
+  packet_hash: 31ea0476c81039004546d725abda9e2287f3eccba3ddff04098725cf01547b97
+  criteria:
+    - M08-T01 project lessons model
+    - M08-T02 filesystem-backed instance knowledge store
+    - M08-T03 provenance confidence and sensitivity
+    - M08-T04 revisit triggers and stale knowledge
+    - M08-T05 RUN and PROJECT to INSTANCE promotion policy
+    - M08-T06 Improvement Proposal
+    - M08-T07 Candidate Overlay format
+    - M08-T08 Core and Instance separation tests
+    - M08-T09 divergence and effective configuration inspection
+    - M08-T10 Hermes Codex Claude memory isolation model tests
+    - M08-T11 future update classification schema
+  validators: [schema, property, promotion, privilege-ceiling, two-instance-isolation, integration-memory-isolation, full-suite, independent-review]
+  criteria_changed_from_authority: false
+

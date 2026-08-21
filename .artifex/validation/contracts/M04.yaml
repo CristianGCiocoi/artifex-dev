@@ -1,0 +1,24 @@
+schema_version: "1.0"
+contract:
+  id: VAL-M04
+  version: 1
+  milestone: M04
+  state: EXECUTION_STARTED
+  authority_source: docs/implementation/milestones/M04_INTEGRATION_FOUNDATION.md
+  execution_base_commit: a6cf1c8008cc0454ef502e271516b5dcc34dca7e
+  project_model_fingerprint: 2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506
+  packet_hash: 560f96bafbf3771609be01dc9dc456f0ae9be9198b6a27ab196a5588f9b20e17
+  criteria:
+    - M04-T01 integration contract and capability model
+    - M04-T02 Integration Registry health and compatibility
+    - M04-T03 ManualIntegration portable packet and result ingest
+    - M04-T04 seven canonical Agent Skills
+    - M04-T05 local stdio MCP surface over Application API
+    - M04-T06 CLI surface over Application API
+    - M04-T07 Integration Conformance Suite
+    - M04-T08 artifex doctor foundation
+    - M04-T09 ResearchRequest and ResearchBundle contracts
+    - M04-T10 capability-based manual policy selection foundation
+  validators: [manual-conformance, cli-api-parity, mcp-api-parity, skill-portability, doctor, research-schema, full-suite, independent-review]
+  criteria_changed_from_authority: false
+
