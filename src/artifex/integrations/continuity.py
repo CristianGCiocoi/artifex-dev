@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import json
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Protocol
+
+import yaml  # type: ignore[import-untyped]
 
 from artifex.compilation._util import copy_json, fingerprint_value, model_fingerprint
 from artifex.integrations.contracts import IntegrationError, IntegrationMetadata
@@ -13,6 +16,8 @@ from artifex.project.repository import ProjectRepository
 
 PRIMARY_CONTINUITY_ROUTE = ("hermes", "claude", "codex", "hermes")
 ALTERNATE_CONTINUITY_ROUTE = ("claude", "hermes", "codex", "claude")
+_SEMANTIC_SUFFIXES = frozenset({".json", ".yaml", ".yml"})
+_EPHEMERAL_STATE_DIRECTORIES = frozenset({"cache", "native-memory", "runs", "tmp"})
 
 
 class StatusReader(Protocol):
@@ -120,9 +125,16 @@ def verify_continuity_route(
         state = status.get("state")
         if not isinstance(source, str) or not source or not isinstance(state, Mapping):
             raise IntegrationError(f"{interface_id} returned malformed project status")
-        semantic_fingerprint = fingerprint_value(
-            {"source": source.replace("\\", "/"), "state": copy_json(dict(state))}
-        )
+        normalized_source = source.replace("\\", "/")
+        semantic_surface = _portable_semantic_surface(root)
+        matching_sources = [
+            item for item in semantic_surface if item["path"] == normalized_source
+        ]
+        if len(matching_sources) != 1 or matching_sources[0]["value"] != copy_json(dict(state)):
+            raise IntegrationError(
+                f"{interface_id} status does not match the repository semantic surface"
+            )
+        semantic_fingerprint = fingerprint_value({"semantic_state": semantic_surface})
         if route_fingerprint is None:
             route_fingerprint = semantic_fingerprint
         elif semantic_fingerprint != route_fingerprint:
@@ -136,7 +148,7 @@ def verify_continuity_route(
         observations.append(
             ContinuityObservation(
                 interface_id,
-                source.replace("\\", "/"),
+                normalized_source,
                 semantic_fingerprint,
                 current_model_fingerprint,
             )
@@ -173,6 +185,40 @@ def verify_cross_interface_continuity(
         expected_project_model_fingerprint=expected_project_model_fingerprint,
     )
     return CrossInterfaceContinuityReport(primary, alternate)
+
+
+def _portable_semantic_surface(root: Path) -> list[dict[str, object]]:
+    state_root = root / ".artifex"
+    if not state_root.is_dir():
+        raise FileNotFoundError(f"ARTIFEX project metadata not found at {root}")
+    surface: list[dict[str, object]] = []
+    for path in sorted(item for item in state_root.rglob("*") if item.is_file()):
+        relative = path.relative_to(root)
+        state_parts = {part.casefold() for part in relative.parts[1:-1]}
+        if state_parts & _EPHEMERAL_STATE_DIRECTORIES:
+            continue
+        if path.suffix.casefold() not in _SEMANTIC_SUFFIXES:
+            continue
+        if path.is_symlink():
+            raise IntegrationError(f"semantic state may not be a symlink: {relative.as_posix()}")
+        try:
+            text = path.read_text(encoding="utf-8")
+            value = json.loads(text) if path.suffix.casefold() == ".json" else yaml.safe_load(text)
+            normalized = copy_json(value)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            yaml.YAMLError,
+            ValueError,
+        ) as exc:
+            raise IntegrationError(
+                f"cannot read semantic state {relative.as_posix()}: {exc}"
+            ) from exc
+        surface.append({"path": relative.as_posix(), "value": normalized})
+    if not surface:
+        raise IntegrationError("ARTIFEX project contains no portable semantic state")
+    return surface
 
 
 __all__ = [

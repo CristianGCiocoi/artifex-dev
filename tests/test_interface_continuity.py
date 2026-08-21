@@ -42,6 +42,13 @@ def test_m07_t10_required_and_alternate_routes_preserve_repository_state(
         name="Cross-interface continuity",
     )
     expected_model_fingerprint = model_fingerprint(repository.load().to_dict())
+    canonical = root / ".artifex" / "decisions" / "DEC-001.yaml"
+    canonical.parent.mkdir(parents=True)
+    canonical.write_text("id: DEC-001\nstatus: accepted\n", encoding="utf-8")
+    for relative in ("native-memory/claude.json", "runs/session.yaml"):
+        ephemeral = root / ".artifex" / relative
+        ephemeral.parent.mkdir(parents=True, exist_ok=True)
+        ephemeral.write_text('{"auxiliary": true}\n', encoding="utf-8")
 
     report = verify_cross_interface_continuity(
         root,
@@ -61,6 +68,19 @@ def test_m07_t10_required_and_alternate_routes_preserve_repository_state(
         )
     assert report.to_dict()["criterion"] == "INT-CONTINUITY"
 
+    (root / ".artifex" / "native-memory" / "claude.json").write_text(
+        '{"auxiliary": "changed"}\n', encoding="utf-8"
+    )
+    after_auxiliary_change = verify_cross_interface_continuity(
+        root,
+        _factories(),
+        expected_project_model_fingerprint=expected_model_fingerprint,
+    )
+    assert (
+        after_auxiliary_change.primary.semantic_fingerprint
+        == report.primary.semantic_fingerprint
+    )
+
 
 @pytest.mark.adversarial
 def test_continuity_fails_closed_on_contract_identity_or_semantic_drift(tmp_path: Path) -> None:
@@ -78,7 +98,7 @@ def test_continuity_fails_closed_on_contract_identity_or_semantic_drift(tmp_path
 
     factories = dict(_factories())
     factories["claude"] = lambda: _DriftingReader()
-    with pytest.raises(IntegrationError, match="drifted"):
+    with pytest.raises(IntegrationError, match="semantic surface"):
         verify_continuity_route(
             root,
             ("hermes", "claude"),
