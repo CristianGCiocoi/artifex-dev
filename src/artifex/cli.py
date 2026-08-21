@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -73,10 +74,117 @@ def system_operations() -> None:
 
 
 @app.command("doctor")
-def doctor(project_root: str | None = typer.Option(None, "--project-root")) -> None:
-    """Run non-mutating environment and integration diagnostics."""
+def doctor(
+    project_root: str | None = typer.Option(None, "--project-root"),
+    fix: bool = typer.Option(False, "--fix"),
+    apply: bool = typer.Option(False, "--apply"),
+) -> None:
+    """Diagnose distribution health; fixes are allowlisted and dry-run unless applied."""
 
-    _emit("system.doctor", project_root=project_root)
+    _emit(
+        "distribution.doctor",
+        {"fix": fix, "apply": apply},
+        project_root=project_root,
+    )
+
+
+@app.command("discover")
+def discover(resource_path: str = typer.Option(".", "--resource-path")) -> None:
+    """Discover supported tools and resources using bounded read-only probes."""
+
+    _emit("distribution.discover", {"resource_path": resource_path})
+
+
+@app.command("mode")
+def mode(mode_name: str = typer.Argument("BEGINNER")) -> None:
+    """Show the BEGINNER, GUIDED, or EXPERT presentation policy."""
+
+    _emit("distribution.presentation", {"mode": mode_name.upper()})
+
+
+@app.command("setup")
+def setup_integrations(
+    project_root: str = typer.Option(..., "--project-root"),
+    integration: Annotated[list[str] | None, typer.Option("--integration")] = None,
+    apply: bool = typer.Option(False, "--apply"),
+    confirm: str | None = typer.Option(None, "--confirm"),
+) -> None:
+    """Plan or explicitly apply project-owned integration configuration."""
+
+    operation = "distribution.setup.apply" if apply else "distribution.setup.plan"
+    _emit(
+        operation,
+        {"integration_ids": integration or ("manual",), "confirmation_token": confirm},
+        project_root=project_root,
+    )
+
+
+@app.command("start")
+def beginner_start(
+    intent: str,
+    project_root: str = typer.Option(..., "--project-root"),
+    project_name: str | None = typer.Option(None, "--project-name"),
+) -> None:
+    """Start from a plain-language goal without YAML, PATH, or MCP configuration."""
+
+    _emit(
+        "beginner.start",
+        {"intent": intent, "project_name": project_name},
+        project_root=project_root,
+    )
+
+
+@app.command("install")
+def install_command(
+    install_root: str = typer.Option(..., "--install-root"),
+    source_executable: str = typer.Option(sys.executable, "--source-executable"),
+    apply: bool = typer.Option(False, "--apply"),
+    confirm: str | None = typer.Option(None, "--confirm"),
+) -> None:
+    """Plan or install the current frozen executable with a managed manifest."""
+
+    operation = "distribution.install" if apply else "distribution.install.plan"
+    _emit(
+        operation,
+        {
+            "source_executable": source_executable,
+            "install_root": install_root,
+            "confirmation_token": confirm,
+        },
+    )
+
+
+@app.command("upgrade")
+def upgrade_command(
+    install_root: str = typer.Option(..., "--install-root"),
+    source_executable: str = typer.Option(sys.executable, "--source-executable"),
+    apply: bool = typer.Option(False, "--apply"),
+    confirm: str | None = typer.Option(None, "--confirm"),
+) -> None:
+    """Plan or perform a backed-up, rollback-capable executable upgrade."""
+
+    operation = "distribution.upgrade" if apply else "distribution.upgrade.plan"
+    arguments: dict[str, Any] = {"install_root": install_root}
+    if apply:
+        arguments.update(
+            {"source_executable": source_executable, "confirmation_token": confirm}
+        )
+    _emit(operation, arguments)
+
+
+@app.command("uninstall")
+def uninstall_command(
+    install_root: str = typer.Option(..., "--install-root"),
+    apply: bool = typer.Option(False, "--apply"),
+    confirm: str | None = typer.Option(None, "--confirm"),
+) -> None:
+    """Plan or remove only checksum-verified, manifest-owned files."""
+
+    operation = "distribution.uninstall" if apply else "distribution.uninstall.plan"
+    _emit(
+        operation,
+        {"install_root": install_root, "confirmation_token": confirm},
+    )
 
 
 @app.command("call")

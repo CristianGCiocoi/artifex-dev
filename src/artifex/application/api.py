@@ -7,6 +7,21 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from artifex import __version__
+from artifex.distribution import (
+    ExperienceMode,
+    apply_integration_setup,
+    discover_environment,
+    install,
+    install_plan,
+    plan_integration_setup,
+    presentation_policy,
+    run_distribution_doctor,
+    start_beginner_journey,
+    uninstall,
+    uninstall_plan,
+    upgrade,
+    upgrade_plan,
+)
 from artifex.integrations import (
     ExecutionPacket,
     ExecutionResult,
@@ -86,6 +101,18 @@ class Application:
         self.register("manual.result.submit", self._manual_result_submit)
         self.register("research.request.validate", self._research_request_validate)
         self.register("research.bundle.validate", self._research_bundle_validate)
+        self.register("distribution.discover", self._distribution_discover)
+        self.register("distribution.presentation", self._distribution_presentation)
+        self.register("distribution.setup.plan", self._distribution_setup_plan)
+        self.register("distribution.setup.apply", self._distribution_setup_apply)
+        self.register("distribution.doctor", self._distribution_doctor)
+        self.register("distribution.install.plan", self._distribution_install_plan)
+        self.register("distribution.install", self._distribution_install)
+        self.register("distribution.upgrade", self._distribution_upgrade)
+        self.register("distribution.upgrade.plan", self._distribution_upgrade_plan)
+        self.register("distribution.uninstall.plan", self._distribution_uninstall_plan)
+        self.register("distribution.uninstall", self._distribution_uninstall)
+        self.register("beginner.start", self._beginner_start)
 
     def register(self, name: str, operation: Operation) -> None:
         if not name or name in self._operations:
@@ -247,6 +274,104 @@ class Application:
             },
         )
 
+    @staticmethod
+    def _distribution_discover(request: OperationRequest) -> OperationResult:
+        path = request.arguments.get("resource_path", request.context.project_root or ".")
+        if not isinstance(path, str):
+            raise TypeError("resource_path must be a string")
+        return OperationResult(ok=True, value=discover_environment(resource_path=path).to_dict())
+
+    @staticmethod
+    def _distribution_presentation(request: OperationRequest) -> OperationResult:
+        mode = ExperienceMode(str(request.arguments.get("mode", "BEGINNER")))
+        return OperationResult(ok=True, value=presentation_policy(mode))
+
+    @staticmethod
+    def _distribution_setup_plan(request: OperationRequest) -> OperationResult:
+        root = _project_root(request)
+        identifiers = _string_sequence(request.arguments, "integration_ids")
+        plan = plan_integration_setup(root, identifiers)
+        return OperationResult(ok=True, value=plan.to_dict())
+
+    @staticmethod
+    def _distribution_setup_apply(request: OperationRequest) -> OperationResult:
+        root = _project_root(request)
+        identifiers = _string_sequence(request.arguments, "integration_ids")
+        token = request.arguments.get("confirmation_token")
+        if token is not None and not isinstance(token, str):
+            raise TypeError("confirmation_token must be a string")
+        plan = plan_integration_setup(root, identifiers)
+        return OperationResult(
+            ok=True,
+            value=apply_integration_setup(plan, confirmation_token=token).to_dict(),
+        )
+
+    @staticmethod
+    def _distribution_doctor(request: OperationRequest) -> OperationResult:
+        root = request.arguments.get("project_root", request.context.project_root)
+        if root is not None and not isinstance(root, str):
+            raise TypeError("project_root must be a string")
+        report = run_distribution_doctor(
+            root,
+            fix=_optional_bool(request.arguments, "fix", False),
+            apply=_optional_bool(request.arguments, "apply", False),
+        )
+        return OperationResult(ok=True, value=report.to_dict())
+
+    @staticmethod
+    def _distribution_install_plan(request: OperationRequest) -> OperationResult:
+        decision = install_plan(
+            _required_string(request.arguments, "source_executable"),
+            _required_string(request.arguments, "install_root"),
+        )
+        return OperationResult(ok=True, value=decision.to_dict())
+
+    @staticmethod
+    def _distribution_install(request: OperationRequest) -> OperationResult:
+        result = install(
+            _required_string(request.arguments, "source_executable"),
+            _required_string(request.arguments, "install_root"),
+            confirmation_token=_optional_string(request.arguments, "confirmation_token"),
+        )
+        return OperationResult(ok=True, value=result.to_dict())
+
+    @staticmethod
+    def _distribution_upgrade(request: OperationRequest) -> OperationResult:
+        result = upgrade(
+            _required_string(request.arguments, "source_executable"),
+            _required_string(request.arguments, "install_root"),
+            confirmation_token=_optional_string(request.arguments, "confirmation_token"),
+        )
+        return OperationResult(ok=True, value=result.to_dict())
+
+    @staticmethod
+    def _distribution_upgrade_plan(request: OperationRequest) -> OperationResult:
+        decision = upgrade_plan(_required_string(request.arguments, "install_root"))
+        return OperationResult(ok=True, value=decision.to_dict())
+
+    @staticmethod
+    def _distribution_uninstall_plan(request: OperationRequest) -> OperationResult:
+        decision = uninstall_plan(_required_string(request.arguments, "install_root"))
+        return OperationResult(ok=True, value=decision.to_dict())
+
+    @staticmethod
+    def _distribution_uninstall(request: OperationRequest) -> OperationResult:
+        value = uninstall(
+            _required_string(request.arguments, "install_root"),
+            confirmation_token=_optional_string(request.arguments, "confirmation_token"),
+        )
+        return OperationResult(ok=True, value=value)
+
+    @staticmethod
+    def _beginner_start(request: OperationRequest) -> OperationResult:
+        root = _project_root(request)
+        result = start_beginner_journey(
+            root,
+            _required_string(request.arguments, "intent"),
+            project_name=_optional_string(request.arguments, "project_name"),
+        )
+        return OperationResult(ok=True, value=result.to_dict())
+
 
 def _mapping(value: Any, name: str) -> Mapping[str, Any]:
     if not isinstance(value, Mapping):
@@ -293,3 +418,17 @@ def _optional_bool(arguments: Mapping[str, Any], name: str, default: bool) -> bo
     if not isinstance(value, bool):
         raise TypeError(f"{name} must be a boolean")
     return value
+
+
+def _optional_string(arguments: Mapping[str, Any], name: str) -> str | None:
+    value = arguments.get(name)
+    if value is not None and not isinstance(value, str):
+        raise TypeError(f"{name} must be a string")
+    return value
+
+
+def _project_root(request: OperationRequest) -> str:
+    root = request.arguments.get("project_root", request.context.project_root)
+    if not isinstance(root, str) or not root:
+        raise ValueError("project_root is required")
+    return root
