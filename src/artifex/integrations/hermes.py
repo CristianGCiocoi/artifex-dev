@@ -10,6 +10,8 @@ memory is canonical ARTIFEX state.
 from __future__ import annotations
 
 import hashlib
+import json
+import math
 import re
 import shutil
 import subprocess
@@ -20,6 +22,7 @@ from typing import Any, Protocol
 
 import yaml  # type: ignore[import-untyped]
 
+from artifex.compilation import generation_manifest
 from artifex.integrations.contracts import (
     Capability,
     CompatibilityRange,
@@ -34,8 +37,11 @@ from artifex.integrations.contracts import (
 )
 from artifex.integrations.manual import ManualIntegration
 from artifex.integrations.research import ResearchBundle, ResearchRequest
+from artifex.project.model import ProjectModel
 from artifex.workflow import ExecutionBaseline, ExecutionStatus
 
+DEFAULT_HERMES_PROBE_TIMEOUT_SECONDS = 15.0
+MAX_HERMES_PROBE_TIMEOUT_SECONDS = 60.0
 _VERSION_PATTERN = re.compile(r"(?<![A-Za-z0-9])v?(\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?)")
 _SAFE_EXECUTABLE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
 _STAGE_SKILLS = {
@@ -72,7 +78,13 @@ _NATIVE_STATUS = {
 
 
 class VersionProbe(Protocol):
-    def __call__(self, executable: str) -> tuple[int, str]: ...
+    def __call__(self, executable: str, timeout_seconds: float) -> tuple[int, str]: ...
+
+
+class HermesStageRunner(Protocol):
+    def __call__(
+        self, *, dispatch: HermesDispatch, project_root: Path
+    ) -> Mapping[str, Any]: ...
 
 
 @dataclass(frozen=True, slots=True)
@@ -187,14 +199,45 @@ class InterfacePackInstallation:
         }
 
 
+@dataclass(frozen=True, slots=True)
+class HermesStageExecution:
+    """Verified filesystem delta and normalized result from one runner call."""
+
+    dispatch: HermesDispatch
+    result: ExecutionResult
+    changed_artifacts: tuple[str, ...]
+    project_model_fingerprint_before: str
+    project_model_fingerprint_after: str | None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "kind": "HERMES_STAGE_EXECUTION",
+            "dispatch": self.dispatch.to_dict(),
+            "result": self.result.to_dict(),
+            "changed_artifacts": list(self.changed_artifacts),
+            "project_model_fingerprint_before": self.project_model_fingerprint_before,
+            "project_model_fingerprint_after": self.project_model_fingerprint_after,
+        }
+
+
 def detect_local_hermes(
     executable_names: Sequence[str] = ("hermes", "hermes-agent"),
     *,
     which: Callable[[str], str | None] = shutil.which,
     version_probe: VersionProbe | None = None,
+    timeout_seconds: float = DEFAULT_HERMES_PROBE_TIMEOUT_SECONDS,
 ) -> HermesDetection:
     """Detect a local Hermes CLI without reading configuration or changing state."""
 
+    if (
+        not math.isfinite(timeout_seconds)
+        or timeout_seconds <= 0
+        or timeout_seconds > MAX_HERMES_PROBE_TIMEOUT_SECONDS
+    ):
+        raise IntegrationError(
+            f"Hermes version timeout must be within (0, {MAX_HERMES_PROBE_TIMEOUT_SECONDS}]"
+        )
+    probe_description = f"PATH + --version (read-only, timeout={timeout_seconds:g}s)"
     probe = _read_only_version_probe if version_probe is None else version_probe
     for name in executable_names:
         if not _SAFE_EXECUTABLE.fullmatch(name):
@@ -203,13 +246,14 @@ def detect_local_hermes(
         if executable is None:
             continue
         try:
-            return_code, output = probe(executable)
+            return_code, output = probe(executable, timeout_seconds)
         except (OSError, subprocess.SubprocessError, TimeoutError) as exc:
             return HermesDetection(
                 HealthStatus.DEGRADED,
                 executable,
                 None,
                 f"Hermes version probe failed safely ({type(exc).__name__})",
+                probe_description,
             )
         if return_code != 0:
             return HermesDetection(
@@ -217,6 +261,7 @@ def detect_local_hermes(
                 executable,
                 None,
                 "Hermes executable was found but the read-only version probe failed",
+                probe_description,
             )
         match = _VERSION_PATTERN.search(output[:4096])
         if match is None:
@@ -225,6 +270,7 @@ def detect_local_hermes(
                 executable,
                 None,
                 "Hermes executable was found but returned no parseable version",
+                probe_description,
             )
         version = match.group(1)
         return HermesDetection(
@@ -232,8 +278,15 @@ def detect_local_hermes(
             executable,
             version,
             f"Hermes {version} is available",
+            probe_description,
         )
-    return HermesDetection.unavailable()
+    return HermesDetection(
+        HealthStatus.DEGRADED,
+        None,
+        None,
+        "Hermes executable was not found",
+        probe_description,
+    )
 
 
 class HermesIntegration:
@@ -361,6 +414,98 @@ class HermesIntegration:
         """Map an M04 task packet to the Hermes software-engineer profile."""
 
         return self.prepare_stage_execution("implementation", **packet_fields)
+
+    def execute_stage(
+        self,
+        dispatch: HermesDispatch,
+        *,
+        project_root: str | Path,
+        runner: HermesStageRunner,
+    ) -> HermesStageExecution:
+        """Run one explicit Hermes boundary and verify its claimed owned deltas.
+
+        The runner is the only vendor-specific execution seam.  ARTIFEX reads
+        canonical state before and after it, preserves the runner's supplied
+        result identity, and grants neither acceptance nor evidence authority.
+        """
+
+        if self._detection.status is not HealthStatus.PASS:
+            raise IntegrationError("Hermes stage execution requires an available Hermes runtime")
+        root = Path(project_root).resolve()
+        before_model = canonical_project_model_fingerprint(root)
+        if before_model != dispatch.packet.project_model_fingerprint:
+            raise IntegrationError("execution packet Project Model fingerprint is not current")
+        owned_paths = _owned_artifact_paths(dispatch.packet)
+        before_artifacts = _artifact_snapshot(root, owned_paths)
+
+        native_result = runner(dispatch=dispatch, project_root=root)
+        if not isinstance(native_result, Mapping):
+            raise IntegrationError("Hermes stage runner must return an object")
+        try:
+            after_model = canonical_project_model_fingerprint(root)
+        except IntegrationError:
+            after_model = None
+        after_artifacts = _artifact_snapshot(root, owned_paths)
+        normalized = self.normalize_result(dispatch.packet, native_result)
+
+        if after_model is None or after_model != before_model:
+            normalized = _result_with_status(
+                normalized,
+                ExecutionStatus.REBASE_REQUIRED,
+                "canonical Project Model changed during Hermes execution",
+            )
+            return HermesStageExecution(dispatch, normalized, (), before_model, after_model)
+        if normalized.status is not ExecutionStatus.SUCCESS:
+            return HermesStageExecution(dispatch, normalized, (), before_model, after_model)
+
+        claimed: list[str] = []
+        for artifact in normalized.artifacts:
+            path_value = artifact.get("path")
+            if not isinstance(path_value, str):
+                return HermesStageExecution(
+                    dispatch,
+                    _result_with_status(
+                        normalized, ExecutionStatus.FAIL, "claimed artifact path is required"
+                    ),
+                    (),
+                    before_model,
+                    after_model,
+                )
+            try:
+                relative = _safe_project_relative(path_value)
+            except IntegrationError as exc:
+                return HermesStageExecution(
+                    dispatch,
+                    _result_with_status(normalized, ExecutionStatus.FAIL, str(exc)),
+                    (),
+                    before_model,
+                    after_model,
+                )
+            if (
+                relative not in before_artifacts
+                or relative in claimed
+                or after_artifacts[relative] is None
+                or after_artifacts[relative] == before_artifacts[relative]
+            ):
+                return HermesStageExecution(
+                    dispatch,
+                    _result_with_status(
+                        normalized,
+                        ExecutionStatus.FAIL,
+                        "claimed artifact is unowned, duplicate, missing, or unchanged",
+                    ),
+                    (),
+                    before_model,
+                    after_model,
+                )
+            claimed.append(relative)
+        if not claimed:
+            normalized = _result_with_status(
+                normalized, ExecutionStatus.FAIL, "successful Hermes run produced no artifact delta"
+            )
+        return HermesStageExecution(
+            dispatch, normalized, tuple(claimed), before_model, after_model
+        )
 
     @staticmethod
     def stage_mapping() -> Mapping[str, Mapping[str, str]]:
@@ -527,13 +672,13 @@ class HermesIntegration:
         return self._interface_pack_root / "manifest.yaml"
 
 
-def _read_only_version_probe(executable: str) -> tuple[int, str]:
+def _read_only_version_probe(executable: str, timeout_seconds: float) -> tuple[int, str]:
     completed = subprocess.run(
         [executable, "--version"],
         check=False,
         capture_output=True,
         text=True,
-        timeout=3,
+        timeout=timeout_seconds,
         shell=False,
     )
     return completed.returncode, f"{completed.stdout}\n{completed.stderr}"
@@ -557,3 +702,64 @@ def _required_native_binding(value: Mapping[str, Any], name: str) -> str:
     if not isinstance(binding, str) or not binding.strip() or binding != binding.strip():
         raise IntegrationError(f"Hermes result binding {name} is required and must be normalized")
     return binding
+
+
+def canonical_project_model_fingerprint(project_root: str | Path) -> str:
+    """Reconstruct and semantically fingerprint the canonical Project Model."""
+
+    path = Path(project_root).resolve() / ".artifex" / "project-model.json"
+    try:
+        content = path.read_bytes()
+        value = json.loads(content)
+        if not isinstance(value, Mapping):
+            raise ValueError("Project Model must be an object")
+        model = ProjectModel.from_dict(value)
+    except (OSError, json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
+        raise IntegrationError("canonical Project Model is missing or invalid") from exc
+    return str(generation_manifest(model.to_dict())["project_model_fingerprint"])
+
+
+def _owned_artifact_paths(packet: ExecutionPacket) -> tuple[str, ...]:
+    values = packet.ownership.get("paths")
+    if not isinstance(values, Sequence) or isinstance(values, (str, bytes, bytearray)):
+        raise IntegrationError("execution packet ownership paths must be an array")
+    if not all(isinstance(value, str) for value in values):
+        raise IntegrationError("execution packet ownership paths must contain strings")
+    paths = tuple(_safe_project_relative(value) for value in values)
+    if not paths or len(paths) != len(set(paths)):
+        raise IntegrationError("execution packet requires unique owned artifact paths")
+    return paths
+
+
+def _safe_project_relative(value: str) -> str:
+    path = Path(value)
+    if not value or path.is_absolute() or ".." in path.parts or ":" in value:
+        raise IntegrationError("artifact path must be a safe project-relative path")
+    return path.as_posix()
+
+
+def _artifact_snapshot(root: Path, paths: Sequence[str]) -> dict[str, str | None]:
+    snapshot: dict[str, str | None] = {}
+    for relative in paths:
+        unresolved = root / relative
+        candidate = unresolved.resolve()
+        if root not in candidate.parents or unresolved.is_symlink():
+            raise IntegrationError("owned artifact path escapes the project root")
+        snapshot[relative] = (
+            hashlib.sha256(candidate.read_bytes()).hexdigest() if candidate.is_file() else None
+        )
+    return snapshot
+
+
+def _result_with_status(
+    result: ExecutionResult, status: ExecutionStatus, message: str
+) -> ExecutionResult:
+    return ExecutionResult(
+        status,
+        result.base_commit,
+        result.execution_contract_fingerprint,
+        result.project_model_fingerprint,
+        result.artifacts,
+        result.validation,
+        message,
+    )
