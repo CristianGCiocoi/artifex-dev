@@ -1,0 +1,66 @@
+schema_version: "1.0"
+kind: EXECUTION_PACKET
+execution_contract_fingerprint: 902d9c13fc2c95b71b9e44b292cf11a022a2397582ed095c30d7e27dacdedc15
+task_contract:
+  id: M11-T06
+  milestone: M11
+  changeset: CHG-SELF-001
+  objective: Compile schema-valid canonical Project Models into complete non-canonical understanding views.
+  dependencies: [M11-T01, M11-T02, M11-T03, M11-T04, M11-T05]
+context:
+  authority:
+    canonical_state: .artifex/project-model.json
+    acceptance: ARTIFEX Core only
+    worker_validation: non-canonical executor claim
+  research: docs/implementation/self-host/RSR-SELF-001.md
+  decision: docs/architecture/adr/ADR-COMPILATION-002.md
+  implementation_plan: docs/implementation/self-host/CHG-SELF-001_IMPLEMENTATION_PLAN.md
+  generated_output_root: .artifex/generated/understanding
+base_commit: 1b06b3cb3468396f69db7f7fe0ad345a2bcdce6d
+project_model_fingerprint: 1fe9abc8b859a162759d1d96ab011e39c004da5b4b0e494ec89b191a7480284c
+acceptance_criteria:
+  - Projection is deterministic and does not mutate the input Project Model.
+  - Only ACCEPTED artifact metadata.understanding contributes semantic fields.
+  - Unknown understanding fields and unequal duplicate definitions fail closed.
+  - Typed entities provide stable fallback collections.
+  - Existing rich mapping compiler callers remain compatible.
+  - Generation and comprehension fingerprints remain bound to the raw canonical Project Model.
+  - The ARTIFEX self-model produces all required human and machine understanding sections.
+  - The derived comprehension gate reports source availability for all nine topics.
+  - Generated outputs remain explicitly non-canonical.
+  - Focused compiler and comprehension tests pass.
+  - Ruff, strict mypy, and the full repository test suite pass.
+  - Total repository coverage is at least 85 percent.
+ownership:
+  paths:
+    - src/artifex/compilation/projection.py
+    - src/artifex/compilation/renderers.py
+    - src/artifex/compilation/packets.py
+    - src/artifex/compilation/comprehension.py
+    - src/artifex/compilation/dashboard.py
+    - src/artifex/compilation/__init__.py
+    - tests/test_compilation.py
+    - tests/test_comprehension.py
+  forbidden:
+    - .artifex/project-model.json
+    - .artifex/changesets/CHG-SELF-001.json
+    - .artifex/status.yaml
+    - .artifex/validation
+    - docs/architecture/ARCHITECTURE.md
+    - docs/architecture/INVARIANTS.md
+expected_result:
+  status: [SUCCESS]
+  artifacts: one or more owned files newly created or content changed by this execution
+  validation:
+    focused: PASS
+    full_suite: PASS
+    coverage: ">=85%"
+interfaces:
+  - CodexIntegration.prepare_stage
+  - CodexIntegration.execute_stage
+  - artifex.compilation public API
+invariants:
+  - INV-001 Project Model is the only source of project truth.
+  - INV-006 Acceptance is owned by ARTIFEX Core.
+  - INV-008 Generated views are non-canonical and reproducible.
+  - INV-011 Project Model mutation requires audited transition.

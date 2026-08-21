@@ -1,0 +1,39 @@
+schema_version: "1.0"
+contract:
+  id: VAL-M11
+  milestone: M11
+  changeset: CHG-SELF-001
+  state: FROZEN
+  authority_source: docs/implementation/milestones/M11_SELF_HOST_RELEASE.md
+  execution_base_commit: 1b06b3cb3468396f69db7f7fe0ad345a2bcdce6d
+  project_model_fingerprint: 1fe9abc8b859a162759d1d96ab011e39c004da5b4b0e494ec89b191a7480284c
+  execution_contract_fingerprint: 902d9c13fc2c95b71b9e44b292cf11a022a2397582ed095c30d7e27dacdedc15
+  worker_branch: feat/m11-self-host-compilation
+  criteria:
+    - deterministic canonical projection
+    - accepted metadata authority boundary
+    - conflict and unknown-field fail closed behavior
+    - typed entity fallback projection
+    - rich mapping compatibility
+    - raw Project Model fingerprint binding
+    - complete human and machine self documentation
+    - nine-topic comprehension availability
+    - non-canonical generated outputs
+    - focused and full validation
+    - at least 85 percent total coverage
+    - independent review
+  validators:
+    - packet-integrity
+    - canonical-model-schema
+    - projection-determinism
+    - projection-authority
+    - projection-conflict
+    - rich-mapping-regression
+    - self-model-human-pack
+    - self-model-machine-pack
+    - self-model-comprehension
+    - ruff
+    - mypy
+    - pytest
+    - coverage
+    - independent-review
