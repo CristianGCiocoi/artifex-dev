@@ -1,0 +1,13 @@
+schema_version: "1.0"
+evidence:
+  id: EVD-M07-001
+  gate: G-M07-MILESTONE
+  claim: M07 Claude Standalone and INT-CONTINUITY satisfy the immutable execution contract
+  validator: {id: codex-independent-final-integration-validator, version: "2026-08-21", type: independent_agent}
+  source: {commit: "a223dd477c7271e7b24cd359965224ebb0689858", contract_hash: "56d5b3f377ecd818e6643e30c668c5623dfa4cf618225d43b7a3d7892d947902", project_model_fingerprint: "2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506"}
+  result:
+    status: PASS
+    measured: {task_gates_passed: 10, task_gates_total: 10, full_tests: 212, coverage_percent: 86.38, focused_m07_tests: 6, continuity_routes_passed: 2, ci_jobs_passed: 6, ci_run: 32520529636}
+  evidence_excerpt: Bound runner workflows, artifact delta and Core authority checks, plus exact full-surface primary and alternate continuity PASS
+  scrubbed: true
+  created_at: "2026-08-21T22:51:51+03:00"
