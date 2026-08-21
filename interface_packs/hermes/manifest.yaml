@@ -1,0 +1,12 @@
+schema_version: "1.0"
+kind: HERMES_INTERFACE_PACK
+id: artifex
+version: "1.0.0"
+install_directory: artifex
+authority: interface-view-only
+native_memory: auxiliary-only
+files:
+  - path: README.md
+    sha256: cc32df2bb44bae56b8697c709317962736a2e24415268b026581ba33e39f7650
+  - path: skills/artifex/SKILL.md
+    sha256: 73388cc5f9cf1cf299a43fe2e45daf2ca3254c1953dfc0534a2fa54155c2c8b8
