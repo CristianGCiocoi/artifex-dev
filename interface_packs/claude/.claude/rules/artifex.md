@@ -10,3 +10,5 @@ paths:
 - Stop on baseline drift, ownership ambiguity, destructive work, or an acceptance gate.
 - Do not treat generated output, tests, or Claude's result as canonical acceptance.
 - Return structured SUCCESS, FAIL, BLOCKED, CANCELLED, or REBASE_REQUIRED results.
+- Echo the packet `base_commit`, `execution_contract_fingerprint`, and
+  `project_model_fingerprint`; a result without all three identities is rejected.

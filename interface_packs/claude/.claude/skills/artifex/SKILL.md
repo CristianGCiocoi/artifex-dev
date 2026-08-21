@@ -9,7 +9,9 @@ description: Execute a narrow ARTIFEX stage from portable canonical project stat
 2. Verify the selected Git worktree HEAD equals the packet `base_commit`.
 3. Work only in packet-owned paths and preserve listed interfaces and invariants.
 4. Run the packet acceptance checks without invoking unrelated live or destructive work.
-5. Return a structured executor claim with status, artifacts, validation, and message.
+5. Return a structured executor claim with status, artifacts, validation, message,
+   `base_commit`, `execution_contract_fingerprint`, and `project_model_fingerprint` copied
+   exactly from the packet. Never invent or omit result identity.
 
 Claude never transitions project acceptance. When the worktree or project
 fingerprint has drifted, return `REBASE_REQUIRED`; when authority or required

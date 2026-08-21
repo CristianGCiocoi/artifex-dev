@@ -12,13 +12,15 @@ import json
 import re
 import shutil
 import subprocess
-from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass, replace
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 import yaml  # type: ignore[import-untyped]
 
+from artifex.compilation._util import model_fingerprint
 from artifex.integrations.contracts import (
     Capability,
     CompatibilityRange,
@@ -27,18 +29,63 @@ from artifex.integrations.contracts import (
     ExecutionResult,
     HealthReport,
     HealthStatus,
+    IntegrationError,
     IntegrationMetadata,
     IntegrationRole,
 )
 from artifex.integrations.manual import ManualIntegration
+from artifex.policy import AcceptanceAuthority
 from artifex.project.changeset import ChangeSet, ChangeSetRepository
 from artifex.project.git import GitRepository
 from artifex.project.model import ProjectLifecycle, WorkflowDepth
+from artifex.project.paths import normalize_relative_path, resolve_inside
 from artifex.project.repository import ProjectRepository
-from artifex.workflow import ExecutionBaseline, ExecutionStatus
+from artifex.validation import (
+    EvidenceBinding,
+    EvidenceEntry,
+    EvidenceLedger,
+    EvidenceRequirement,
+    GateDefinition,
+    GateGraph,
+    GateLevel,
+    GateState,
+    MeasuredFact,
+    StructuredInspectionValidator,
+    ValidationContext,
+    ValidatorKind,
+)
+from artifex.workflow import (
+    ExecutionBaseline,
+    ExecutionStatus,
+    StageContract,
+    StageState,
+    WorkflowEngine,
+)
 
 _VERSION_PATTERN = re.compile(r"(?<!\d)(\d+\.\d+\.\d+)(?!\d)")
 _SEMANTIC_SUFFIXES = frozenset({".json", ".yaml", ".yml"})
+_EPHEMERAL_STATE_DIRECTORIES = frozenset(
+    {
+        "cache",
+        "caches",
+        "locks",
+        "logs",
+        "native-memory",
+        "native_memory",
+        "pids",
+        "run",
+        "runs",
+        "runtime",
+        "scratch",
+        "sessions",
+        "telemetry",
+        "temp",
+        "tmp",
+        "worktrees",
+    }
+)
+_CLAUDE_VALIDATOR_ID = "VAL-CLAUDE-STANDARD"
+_CLAUDE_VALIDATOR_VERSION = "1"
 _STATUS_ALIASES = {
     "success": ExecutionStatus.SUCCESS,
     "succeeded": ExecutionStatus.SUCCESS,
@@ -133,6 +180,38 @@ class ClaudeExecutionPlan:
             "command": list(self.command),
             "prompt": self.prompt,
             "mutating": False,
+        }
+
+
+ClaudeHarnessRunner = Callable[[ClaudeExecutionPlan], Mapping[str, Any] | str | None]
+
+
+@dataclass(frozen=True, slots=True)
+class ClaudeWorkflowOutcome:
+    """Core-classified outcome of one adapter-led STANDARD workflow."""
+
+    execution_result: ExecutionResult
+    stage_state: StageState
+    gate_state: GateState
+    evidence: EvidenceEntry
+    evidence_journal: str
+    changeset_status: str | None = None
+
+    @property
+    def accepted(self) -> bool:
+        return self.stage_state is StageState.ACCEPTED and self.gate_state is GateState.PASS
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "execution_result": self.execution_result.to_dict(),
+            "stage_state": self.stage_state.value,
+            "gate_state": self.gate_state.value,
+            "evidence_id": self.evidence.evidence_id,
+            "evidence_outcome": self.evidence.outcome.value,
+            "evidence_journal": self.evidence_journal,
+            "changeset_status": self.changeset_status,
+            "accepted": self.accepted,
+            "canonical_authority": "CORE",
         }
 
 
@@ -292,6 +371,8 @@ class ClaudeIntegration:
             raise ValueError(f"ARTIFEX project metadata not found at {project}")
         if _git_common_dir(project) != _git_common_dir(worktree):
             raise ValueError("execution worktree is not attached to the ARTIFEX project repository")
+        if not (worktree / ".artifex").is_dir():
+            raise ValueError(f"ARTIFEX project metadata not found in worktree {worktree}")
         observed = GitRepository(worktree).inspect()
         if not observed.initialized or observed.current_commit is None:
             raise ValueError(f"execution worktree has no Git commit: {worktree}")
@@ -299,6 +380,15 @@ class ClaudeIntegration:
             raise ValueError(
                 "execution worktree does not match packet base commit: "
                 f"expected {packet.base_commit}, observed {observed.current_commit}"
+            )
+        observed_model_fingerprint = model_fingerprint(
+            ProjectRepository(worktree).load().to_dict()
+        )
+        if observed_model_fingerprint != packet.project_model_fingerprint:
+            raise IntegrationError(
+                "canonical Project Model fingerprint does not match packet: "
+                f"expected {packet.project_model_fingerprint}, "
+                f"observed {observed_model_fingerprint}"
             )
         packet_json = json.dumps(packet.to_dict(), sort_keys=True, ensure_ascii=False)
         prompt = (
@@ -317,6 +407,31 @@ class ClaudeIntegration:
 
     prepare_stage_execution = plan_stage_execution
     prepare_worktree_execution = plan_stage_execution
+
+    def execute_stage(
+        self,
+        plan: ClaudeExecutionPlan,
+        runner: ClaudeHarnessRunner,
+        *,
+        current_baseline: ExecutionBaseline | None = None,
+    ) -> ExecutionResult:
+        """Execute only through an explicit injected runner and ingest its bound result."""
+
+        self.plan_stage_execution(
+            plan.packet,
+            project_root=plan.project_root,
+            worktree_root=plan.worktree_root,
+        )
+        raw_result = runner(plan)
+        self.plan_stage_execution(
+            plan.packet,
+            project_root=plan.project_root,
+            worktree_root=plan.worktree_root,
+        )
+        normalized = self.normalize_result(plan.packet, raw_result)
+        return self.submit_result(
+            plan.packet, normalized, current_baseline=current_baseline
+        )
 
     def mcp_entry(self, *, python_command: str = "python") -> Mapping[str, Any] | None:
         """Return an opt-in Claude MCP entry; never alter desktop configuration."""
@@ -342,9 +457,11 @@ class ClaudeIntegration:
         *,
         current_baseline: ExecutionBaseline | None = None,
     ) -> ExecutionResult:
-        return self._portable.submit_result(
-            packet, result, current_baseline=current_baseline
-        )
+        packet_bound = result.classified(packet.baseline)
+        if packet_bound.status is ExecutionStatus.REBASE_REQUIRED:
+            return packet_bound
+        current = packet.baseline if current_baseline is None else current_baseline
+        return result.classified(current)
 
     ingest_result = submit_result
 
@@ -354,26 +471,18 @@ class ClaudeIntegration:
         """Map Claude/tool outcomes into the frozen executor result vocabulary."""
 
         raw_result = _unwrap_result(raw_result)
-        if isinstance(raw_result, Mapping):
-            if "status" in raw_result or "outcome" in raw_result:
-                raw_status = raw_result.get("status", raw_result.get("outcome"))
-            elif raw_result.get("is_error") is True:
-                raw_status = "fail"
-            else:
-                raw_status = raw_result.get("subtype", "fail")
-            message = str(raw_result.get("message", ""))
-            artifacts_value = raw_result.get("artifacts", ())
-            validation_value = raw_result.get("validation", {})
-        elif isinstance(raw_result, str):
-            raw_status = raw_result
-            message = ""
-            artifacts_value = ()
-            validation_value = {}
-        else:
+        if not isinstance(raw_result, Mapping):
+            raise IntegrationError("Claude result must be a bound structured object")
+        identities = _result_identity(raw_result)
+        if "status" in raw_result or "outcome" in raw_result:
+            raw_status = raw_result.get("status", raw_result.get("outcome"))
+        elif raw_result.get("is_error") is True:
             raw_status = "fail"
-            message = "Claude returned no structured result"
-            artifacts_value = ()
-            validation_value = {}
+        else:
+            raw_status = raw_result.get("subtype", "fail")
+        message = str(raw_result.get("message", ""))
+        artifacts_value = raw_result.get("artifacts", ())
+        validation_value = raw_result.get("validation", {})
         normalized_name = re.sub(r"[\s-]+", "_", str(raw_status).strip().casefold())
         status = _STATUS_ALIASES.get(normalized_name, ExecutionStatus.FAIL)
         if normalized_name not in _STATUS_ALIASES and not message:
@@ -388,15 +497,16 @@ class ClaudeIntegration:
             validation = {}
             status = ExecutionStatus.FAIL
             message = message or "Claude result validation must be an object"
-        return ExecutionResult(
+        result = ExecutionResult(
             status,
-            packet.base_commit,
-            packet.contract_fingerprint,
-            packet.project_model_fingerprint,
+            identities.base_commit,
+            identities.contract_hash,
+            identities.project_model_fingerprint,
             artifacts,
             validation,
             message,
         )
+        return result.classified(packet.baseline)
 
     @staticmethod
     def submit_validation(validation: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -443,6 +553,176 @@ class ClaudeIntegration:
     def save_changeset(repository: ProjectRepository, changeset: ChangeSet) -> str:
         return ChangeSetRepository(repository.store).save(changeset)
 
+    def run_greenfield_standard_workflow(
+        self,
+        plan: ClaudeExecutionPlan,
+        runner: ClaudeHarnessRunner,
+        *,
+        evidence_id: str,
+        recorded_at: datetime,
+    ) -> ClaudeWorkflowOutcome:
+        repository = ProjectRepository(plan.worktree_root)
+        project = repository.load().project
+        if project.lifecycle is not ProjectLifecycle.GREENFIELD:
+            raise IntegrationError("greenfield STANDARD workflow requires a greenfield project")
+        if project.workflow_depth is not WorkflowDepth.STANDARD:
+            raise IntegrationError("greenfield workflow depth must be STANDARD")
+        return self._run_standard_workflow(
+            plan, runner, evidence_id=evidence_id, recorded_at=recorded_at
+        )
+
+    def run_brownfield_changeset_workflow(
+        self,
+        plan: ClaudeExecutionPlan,
+        runner: ClaudeHarnessRunner,
+        *,
+        changeset_id: str,
+        evidence_id: str,
+        recorded_at: datetime,
+    ) -> ClaudeWorkflowOutcome:
+        repository = ProjectRepository(plan.worktree_root)
+        project = repository.load().project
+        if project.lifecycle is not ProjectLifecycle.BROWNFIELD:
+            raise IntegrationError("brownfield ChangeSet workflow requires a brownfield project")
+        if project.workflow_depth is not WorkflowDepth.STANDARD:
+            raise IntegrationError("brownfield workflow depth must be STANDARD")
+        changesets = ChangeSetRepository(repository.store)
+        changeset = changesets.load(changeset_id)
+        if changeset.baseline_commit not in (None, plan.packet.base_commit):
+            raise IntegrationError("ChangeSet baseline does not match the execution packet")
+        if changeset.status.value == "PROPOSED":
+            changeset = changeset.transition(
+                "ACCEPTED", actor="artifex-core", commit=plan.packet.base_commit
+            )
+            changeset = changeset.transition(
+                "IMPLEMENTING", actor="artifex-core", commit=plan.packet.base_commit
+            )
+            changesets.save(changeset)
+        elif changeset.status.value != "IMPLEMENTING":
+            raise IntegrationError("ChangeSet must be PROPOSED or IMPLEMENTING")
+
+        outcome = self._run_standard_workflow(
+            plan, runner, evidence_id=evidence_id, recorded_at=recorded_at
+        )
+        if outcome.accepted:
+            changeset = changeset.transition(
+                "VERIFIED", actor="artifex-core", commit=plan.packet.base_commit
+            )
+            changesets.save(changeset)
+        return replace(outcome, changeset_status=changeset.status.value)
+
+    def _run_standard_workflow(
+        self,
+        plan: ClaudeExecutionPlan,
+        runner: ClaudeHarnessRunner,
+        *,
+        evidence_id: str,
+        recorded_at: datetime,
+    ) -> ClaudeWorkflowOutcome:
+        packet = plan.packet
+        task_id = str(packet.task_contract.get("id", "CLAUDE-STANDARD"))
+        claim = str(packet.acceptance_criteria[0])
+        workflow = WorkflowEngine()
+        stage = StageContract(
+            stage_id=f"STG-{task_id}",
+            requires=("project-model",),
+            produces=("bound-executor-result",),
+            capabilities=frozenset({Capability.REPOSITORY_READ.value}),
+            validators=(_CLAUDE_VALIDATOR_ID,),
+        )
+        workflow.register(stage)
+        workflow.transition(stage.stage_id, StageState.READY)
+        workflow.start(
+            stage.stage_id,
+            available_inputs={"project-model"},
+            available_capabilities={Capability.REPOSITORY_READ.value},
+            baseline=packet.baseline,
+        )
+        execution_result = self.execute_stage(plan, runner)
+        artifacts_valid = _artifacts_are_owned_and_present(
+            Path(plan.worktree_root), packet, execution_result
+        )
+        passed = execution_result.status is ExecutionStatus.SUCCESS and artifacts_valid
+        if execution_result.status is ExecutionStatus.SUCCESS:
+            workflow.claim_complete(
+                stage.stage_id, outputs={"bound-executor-result"}
+            )
+            workflow.transition(stage.stage_id, StageState.VALIDATING)
+        elif execution_result.status is ExecutionStatus.BLOCKED:
+            workflow.transition(stage.stage_id, StageState.BLOCKED)
+        else:
+            workflow.transition(stage.stage_id, StageState.FAILED)
+
+        binding = EvidenceBinding(
+            packet.base_commit,
+            packet.contract_fingerprint,
+            (packet.project_model_fingerprint,),
+        )
+        validation = StructuredInspectionValidator(
+            _CLAUDE_VALIDATOR_ID, _CLAUDE_VALIDATOR_VERSION
+        ).validate(
+            ValidationContext(claim, "claude", binding),
+            inspector_id="artifex-core",
+            passed=passed,
+            facts=(
+                MeasuredFact("bound_result", execution_result.baseline == packet.baseline),
+                MeasuredFact("owned_artifacts_present", artifacts_valid),
+            ),
+        )
+        evidence = EvidenceEntry.create(
+            evidence_id, validation, binding, recorded_at=recorded_at
+        )
+        journal = (
+            Path(plan.worktree_root)
+            / ".artifex"
+            / "validation"
+            / "evidence"
+            / "claude-standard.jsonl"
+        )
+        ledger = EvidenceLedger(
+            {_CLAUDE_VALIDATOR_ID: _CLAUDE_VALIDATOR_VERSION}, journal_path=journal
+        )
+        ledger.append(evidence)
+        gate = GateGraph(
+            (
+                GateDefinition(
+                    f"G-{task_id}",
+                    GateLevel.TASK,
+                    (
+                        EvidenceRequirement(
+                            claim,
+                            frozenset({_CLAUDE_VALIDATOR_ID}),
+                            frozenset({ValidatorKind.STRUCTURED_INSPECTION}),
+                            require_independent=True,
+                        ),
+                    ),
+                ),
+            )
+        )
+        gate_state = gate.evaluate(
+            f"G-{task_id}",
+            ledger=ledger,
+            binding=binding,
+            authority=AcceptanceAuthority.CORE,
+            at=recorded_at,
+        )
+        runtime = workflow.get(stage.stage_id)
+        if runtime.state is StageState.VALIDATING:
+            workflow.transition(
+                stage.stage_id,
+                StageState.ACCEPTED if gate_state is GateState.PASS else StageState.FAILED,
+                authority=(
+                    AcceptanceAuthority.CORE if gate_state is GateState.PASS else None
+                ),
+            )
+        return ClaudeWorkflowOutcome(
+            execution_result,
+            workflow.get(stage.stage_id).state,
+            gate_state,
+            evidence,
+            journal.relative_to(Path(plan.worktree_root)).as_posix(),
+        )
+
     @staticmethod
     def continuity_snapshot(
         project_root: str | Path, *, packet: ExecutionPacket | None = None
@@ -456,6 +736,8 @@ class ClaudeIntegration:
             if path.suffix.casefold() not in _SEMANTIC_SUFFIXES:
                 continue
             relative = path.relative_to(root).as_posix()
+            if _is_ephemeral_state_path(relative):
+                continue
             try:
                 parsed = (
                     json.loads(path.read_text(encoding="utf-8"))
@@ -483,14 +765,37 @@ def _unwrap_result(value: Mapping[str, Any] | str | None) -> Mapping[str, Any] |
         return value
     nested = value["result"]
     if isinstance(nested, Mapping):
-        return nested
+        merged = dict(value)
+        merged.pop("result", None)
+        merged.update(nested)
+        return merged
     if isinstance(nested, str):
         try:
             decoded = json.loads(nested)
         except json.JSONDecodeError:
             return value
-        return decoded if isinstance(decoded, Mapping) else value
+        if isinstance(decoded, Mapping):
+            merged = dict(value)
+            merged.pop("result", None)
+            merged.update(decoded)
+            return merged
+        return value
     return value
+
+
+def _result_identity(value: Mapping[str, Any]) -> ExecutionBaseline:
+    names = (
+        "base_commit",
+        "execution_contract_fingerprint",
+        "project_model_fingerprint",
+    )
+    observed: list[str] = []
+    for name in names:
+        item = value.get(name)
+        if not isinstance(item, str) or not item.strip():
+            raise IntegrationError(f"Claude result is missing bound identity: {name}")
+        observed.append(item)
+    return ExecutionBaseline(observed[0], observed[1], observed[2])
 
 
 def _mapping_items(value: Any) -> tuple[tuple[Mapping[str, Any], ...], str | None]:
@@ -499,6 +804,46 @@ def _mapping_items(value: Any) -> tuple[tuple[Mapping[str, Any], ...], str | Non
     if not all(isinstance(item, Mapping) for item in value):
         return (), "Claude result artifacts must contain objects"
     return tuple(dict(item) for item in value), None
+
+
+def _artifacts_are_owned_and_present(
+    root: Path, packet: ExecutionPacket, result: ExecutionResult
+) -> bool:
+    ownership = packet.ownership.get("paths")
+    if not isinstance(ownership, Sequence) or isinstance(ownership, (str, bytes, bytearray)):
+        return False
+    try:
+        owned = tuple(normalize_relative_path(str(item)) for item in ownership)
+    except (TypeError, ValueError):
+        return False
+    if not owned or not result.artifacts:
+        return False
+    for artifact in result.artifacts:
+        path = artifact.get("path")
+        if not isinstance(path, str):
+            return False
+        try:
+            normalized, target = resolve_inside(root, path)
+        except ValueError:
+            return False
+        if not any(
+            normalized == allowed or normalized.startswith(allowed.rstrip("/") + "/")
+            for allowed in owned
+        ):
+            return False
+        if not target.is_file():
+            return False
+    return True
+
+
+def _is_ephemeral_state_path(relative: str) -> bool:
+    parts = tuple(part.casefold() for part in Path(relative).parts)
+    filename = parts[-1]
+    return any(part in _EPHEMERAL_STATE_DIRECTORIES for part in parts[1:-1]) or (
+        filename.startswith((".", "~"))
+        or ".tmp." in filename
+        or filename.endswith((".bak.json", ".bak.yaml", ".bak.yml"))
+    )
 
 
 def _git_common_dir(root: Path) -> Path:
@@ -547,7 +892,9 @@ def _semantic_fingerprint(
 __all__ = [
     "ClaudeDetection",
     "ClaudeExecutionPlan",
+    "ClaudeHarnessRunner",
     "ClaudeIntegration",
+    "ClaudeWorkflowOutcome",
     "ContinuitySnapshot",
     "detect_claude",
 ]
