@@ -9,3 +9,6 @@
 {"id":"EVT-M02-001","type":"MILESTONE_ACCEPTED","at":"2026-08-21T20:51:50+03:00","data":{"milestone":"M02","task_gates":"12/12","evidence":"EVD-M02-001"}}
 {"id":"EVT-M03-001","type":"MILESTONE_ACCEPTED","at":"2026-08-21T20:51:50+03:00","data":{"milestone":"M03","task_gates":"10/10","comprehension_score":1.0,"evidence":"EVD-M03-001"}}
 {"id":"EVT-WAVE-002","type":"EXECUTION_STARTED","at":"2026-08-21T20:55:00+03:00","data":{"milestones":["M04","M08"],"base_commit":"a6cf1c8008cc0454ef502e271516b5dcc34dca7e","contracts":["VAL-M04","VAL-M08"]}}
+{"id":"EVT-M04-001","type":"VALIDATION_REJECTED","at":"2026-08-21T21:16:00+03:00","data":{"milestone":"M04","passed_tasks":9,"total_tasks":10,"blocker":"malformed skill shim references"}}
+{"id":"EVT-M04-002","type":"MILESTONE_ACCEPTED","at":"2026-08-21T21:20:12+03:00","data":{"milestone":"M04","task_gates":"10/10","evidence":"EVD-M04-001","ci_run":32512690687}}
+{"id":"EVT-M08-001","type":"MILESTONE_ACCEPTED","at":"2026-08-21T21:20:12+03:00","data":{"milestone":"M08","task_gates":"11/11","evidence":"EVD-M08-001"}}

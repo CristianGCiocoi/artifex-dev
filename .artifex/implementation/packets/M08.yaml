@@ -3,5 +3,6 @@ base_commit: a6cf1c8008cc0454ef502e271516b5dcc34dca7e
 project_model_fingerprint: 2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506
 worker_branch: feat/m08-knowledge
 ownership: [src/artifex/knowledge, tests/test_knowledge.py, schemas/knowledge.schema.json, schemas/overlay.schema.json]
-state: ACTIVE
-
+worker_result_commit: 3a1af74fd11132d665fd2735a14906f8757808b1
+integration_commit: 3396bcd4534747b9121e220ef14412ce3629d42c
+state: SUCCESS

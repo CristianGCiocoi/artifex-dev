@@ -1,22 +1,22 @@
 schema_version: "1.0"
-derived_at: "2026-08-21T20:51:50+03:00"
+derived_at: "2026-08-21T21:20:12+03:00"
 project: ARTIFEX
 implementation:
-  current_milestone: M04
-  current_state: ACTIVE
+  current_milestone: M05
+  current_state: READY
   release: PLANNED
 milestones:
   M00: ACCEPTED
   M01: ACCEPTED
   M02: ACCEPTED
   M03: ACCEPTED
-  M04: ACTIVE
-  M05: PLANNED
-  M06: PLANNED
-  M07: PLANNED
-  M08: ACTIVE
+  M04: ACCEPTED
+  M05: READY
+  M06: READY
+  M07: READY
+  M08: ACCEPTED
   M09: PLANNED
-  M10: PLANNED
+  M10: READY
   M11: PLANNED
 publication:
   remote: CONFIGURED

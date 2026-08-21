@@ -1,0 +1,14 @@
+schema_version: "1.0"
+evidence:
+  id: EVD-M04-001
+  gate: G-M04-MILESTONE
+  claim: M04 Integration Foundation satisfies its immutable execution contract
+  validator: {id: codex-independent-integration-validator, version: "2026-08-21", type: independent_agent}
+  source: {commit: "2f224c4e23f3e009ad3d461e4e59c381f8a3ef27", contract_hash: "a71bd512305bcaf56b4692861284668abcebfd6336a3370e0348ccfe02eaf396", project_model_fingerprint: "2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506"}
+  result:
+    status: PASS
+    measured: {task_gates_passed: 10, task_gates_total: 10, full_tests: 150, coverage_percent: 85.54, focused_m04_tests: 20, skill_bundles: 7, skill_portability_passed: 7, ci_jobs_passed: 6, ci_run: 32512690687}
+  evidence_excerpt: Manual CLI API MCP conformance and seven canonical portable skills PASS
+  scrubbed: true
+  created_at: "2026-08-21T21:20:12+03:00"
+

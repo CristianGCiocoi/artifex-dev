@@ -1,0 +1,14 @@
+schema_version: "1.0"
+evidence:
+  id: EVD-M08-001
+  gate: G-M08-MILESTONE
+  claim: M08 Knowledge and Controlled Evolution satisfies its immutable execution contract
+  validator: {id: codex-independent-integration-validator, version: "2026-08-21", type: independent_agent}
+  source: {commit: "2f224c4e23f3e009ad3d461e4e59c381f8a3ef27", contract_hash: "e20764195e332f0be3e87dd6832cb3a74c1ebc138613f9157ceeb6dfe1bc23f6", project_model_fingerprint: "2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506"}
+  result:
+    status: PASS
+    measured: {task_gates_passed: 11, task_gates_total: 11, focused_tests: 19, full_tests: 150, coverage_percent: 85.54, two_instance_isolation: PASS, integration_memory_isolation: PASS, privilege_non_escalation: PASS}
+  evidence_excerpt: Two instances and Hermes Codex Claude auxiliary namespaces remain isolated; Core unchanged
+  scrubbed: true
+  created_at: "2026-08-21T21:20:12+03:00"
+
