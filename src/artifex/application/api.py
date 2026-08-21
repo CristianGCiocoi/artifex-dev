@@ -2,11 +2,26 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
 from artifex import __version__
+from artifex.integrations import (
+    ExecutionPacket,
+    ExecutionResult,
+    IntegrationConformanceSuite,
+    IntegrationRegistry,
+    IntegrationRole,
+    ManualIntegration,
+    ResearchBundle,
+    ResearchRequest,
+    SelectionPolicy,
+    SelectionRequest,
+    run_doctor,
+    select_integration,
+)
+from artifex.workflow import ExecutionBaseline
 
 
 @dataclass(frozen=True, slots=True)
@@ -36,6 +51,16 @@ class OperationResult:
     value: Mapping[str, Any] = field(default_factory=dict)
     error: OperationError | None = None
 
+    def to_dict(self) -> dict[str, Any]:
+        value: dict[str, Any] = {"ok": self.ok, "value": dict(self.value)}
+        if self.error is not None:
+            value["error"] = {
+                "code": self.error.code,
+                "message": self.error.message,
+                "details": dict(self.error.details),
+            }
+        return value
+
 
 Operation = Callable[[OperationRequest], OperationResult]
 
@@ -43,10 +68,24 @@ Operation = Callable[[OperationRequest], OperationResult]
 class Application:
     """The single semantic API used by CLI, MCP, and interface packs."""
 
-    def __init__(self) -> None:
+    def __init__(self, registry: IntegrationRegistry | None = None) -> None:
         self._operations: dict[str, Operation] = {}
+        self.registry = (
+            IntegrationRegistry((ManualIntegration(),)) if registry is None else registry
+        )
         self.register("system.version", self._version)
         self.register("system.health", self._health)
+        self.register("system.operations", self._operation_list)
+        self.register("system.doctor", self._doctor)
+        self.register("integrations.list", self._integrations_list)
+        self.register("integrations.health", self._integration_health)
+        self.register("integrations.select", self._integration_select)
+        self.register("integrations.conformance", self._integration_conformance)
+        self.register("project.status", self._project_status)
+        self.register("manual.packet.create", self._manual_packet_create)
+        self.register("manual.result.submit", self._manual_result_submit)
+        self.register("research.request.validate", self._research_request_validate)
+        self.register("research.bundle.validate", self._research_bundle_validate)
 
     def register(self, name: str, operation: Operation) -> None:
         if not name or name in self._operations:
@@ -70,6 +109,10 @@ class Application:
                 error=OperationError("OPERATION_FAILED", str(exc), {"type": type(exc).__name__}),
             )
 
+    @property
+    def operation_names(self) -> tuple[str, ...]:
+        return tuple(sorted(self._operations))
+
     @staticmethod
     def _version(_: OperationRequest) -> OperationResult:
         return OperationResult(ok=True, value={"version": __version__})
@@ -77,3 +120,176 @@ class Application:
     @staticmethod
     def _health(_: OperationRequest) -> OperationResult:
         return OperationResult(ok=True, value={"status": "PASS", "core": "available"})
+
+    def _operation_list(self, _: OperationRequest) -> OperationResult:
+        return OperationResult(ok=True, value={"operations": list(self.operation_names)})
+
+    def _doctor(self, request: OperationRequest) -> OperationResult:
+        root = request.arguments.get("project_root", request.context.project_root)
+        if root is not None and not isinstance(root, str):
+            raise TypeError("project_root must be a string")
+        return OperationResult(
+            ok=True,
+            value=run_doctor(self.registry, project_root=root).to_dict(),
+        )
+
+    def _integrations_list(self, _: OperationRequest) -> OperationResult:
+        return OperationResult(ok=True, value={"integrations": self.registry.report()})
+
+    def _integration_health(self, request: OperationRequest) -> OperationResult:
+        identifier = _required_string(request.arguments, "integration_id")
+        integration = self.registry.get(identifier)
+        return OperationResult(
+            ok=True,
+            value={
+                "integration_id": identifier,
+                "health": integration.health().to_dict(),
+                "compatibility": integration.metadata.to_dict(core_version=__version__)[
+                    "core_compatible"
+                ],
+            },
+        )
+
+    def _integration_select(self, request: OperationRequest) -> OperationResult:
+        role = IntegrationRole(_required_string(request.arguments, "role"))
+        capabilities = frozenset(_string_sequence(request.arguments, "capabilities"))
+        requested = request.arguments.get("integration_id")
+        if requested is not None and not isinstance(requested, str):
+            raise TypeError("integration_id must be a string")
+        preferred = tuple(_string_sequence(request.arguments, "preferred_integrations"))
+        allowed = frozenset(_string_sequence(request.arguments, "allowed_integrations"))
+        policy = SelectionPolicy(
+            allowed_integrations=allowed,
+            preferred_integrations=preferred or ("manual",),
+            allow_fallback=_optional_bool(request.arguments, "allow_fallback", True),
+        )
+        decision = select_integration(
+            self.registry,
+            SelectionRequest(role, capabilities, requested),
+            policy,
+        )
+        return OperationResult(ok=True, value=decision.to_dict())
+
+    def _integration_conformance(self, request: OperationRequest) -> OperationResult:
+        identifier = str(request.arguments.get("integration_id", "manual"))
+        integration = self.registry.get(identifier)
+        # Runtime protocol behavior is intentionally exercised by the suite.
+        report = IntegrationConformanceSuite().run(
+            integration  # type: ignore[arg-type]
+        )
+        return OperationResult(ok=report.status.value == "PASS", value=report.to_dict())
+
+    def _project_status(self, request: OperationRequest) -> OperationResult:
+        root = request.arguments.get("project_root", request.context.project_root)
+        if not isinstance(root, str) or not root:
+            raise ValueError("project_root is required")
+        identifier = str(request.arguments.get("integration_id", "manual"))
+        integration = self.registry.get(identifier)
+        reader = getattr(integration, "read_project_status", None)
+        if not callable(reader):
+            raise ValueError(f"integration does not support project status read: {identifier}")
+        return OperationResult(ok=True, value=dict(reader(root)))
+
+    def _manual_packet_create(self, request: OperationRequest) -> OperationResult:
+        manual = self.registry.get("manual")
+        if not isinstance(manual, ManualIntegration):
+            raise TypeError("registered manual integration has an invalid adapter type")
+        packet = manual.prepare_execution(
+            task_contract=_required_mapping(request.arguments, "task_contract"),
+            context=_optional_mapping(request.arguments, "context"),
+            base_commit=_required_string(request.arguments, "base_commit"),
+            project_model_fingerprint=_required_string(
+                request.arguments, "project_model_fingerprint"
+            ),
+            acceptance_criteria=_required_sequence(request.arguments, "acceptance_criteria"),
+            ownership=_optional_mapping(request.arguments, "ownership"),
+            expected_result=_required_mapping(request.arguments, "expected_result"),
+            interfaces=_string_sequence(request.arguments, "interfaces"),
+            invariants=_string_sequence(request.arguments, "invariants"),
+        )
+        return OperationResult(ok=True, value={"packet": packet.to_dict()})
+
+    def _manual_result_submit(self, request: OperationRequest) -> OperationResult:
+        manual = self.registry.get("manual")
+        if not isinstance(manual, ManualIntegration):
+            raise TypeError("registered manual integration has an invalid adapter type")
+        packet = ExecutionPacket.from_dict(_required_mapping(request.arguments, "packet"))
+        result = ExecutionResult.from_dict(_required_mapping(request.arguments, "result"))
+        current_value = request.arguments.get("current_baseline")
+        current = None
+        if current_value is not None:
+            baseline = _mapping(current_value, "current_baseline")
+            current = ExecutionBaseline(
+                _required_string(baseline, "base_commit"),
+                _required_string(baseline, "execution_contract_fingerprint"),
+                _required_string(baseline, "project_model_fingerprint"),
+            )
+        classified = manual.submit_result(packet, result, current_baseline=current)
+        return OperationResult(
+            ok=True,
+            value={"result": classified.to_dict(), "canonical_acceptance": False},
+        )
+
+    @staticmethod
+    def _research_request_validate(request: OperationRequest) -> OperationResult:
+        value = ResearchRequest.from_dict(_required_mapping(request.arguments, "request"))
+        return OperationResult(ok=True, value={"request": value.to_dict(), "valid": True})
+
+    @staticmethod
+    def _research_bundle_validate(request: OperationRequest) -> OperationResult:
+        value = ResearchBundle.from_dict(_required_mapping(request.arguments, "bundle"))
+        return OperationResult(
+            ok=True,
+            value={
+                "bundle": value.to_dict(),
+                "valid": True,
+                "canonical_decision": False,
+            },
+        )
+
+
+def _mapping(value: Any, name: str) -> Mapping[str, Any]:
+    if not isinstance(value, Mapping):
+        raise TypeError(f"{name} must be an object")
+    return value
+
+
+def _required_mapping(arguments: Mapping[str, Any], name: str) -> Mapping[str, Any]:
+    value = _mapping(arguments.get(name), name)
+    if not value:
+        raise ValueError(f"{name} is required")
+    return value
+
+
+def _optional_mapping(arguments: Mapping[str, Any], name: str) -> Mapping[str, Any]:
+    return _mapping(arguments.get(name, {}), name)
+
+
+def _required_string(arguments: Mapping[str, Any], name: str) -> str:
+    value = arguments.get(name)
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{name} is required and must be a string")
+    return value
+
+
+def _required_sequence(arguments: Mapping[str, Any], name: str) -> Sequence[Any]:
+    value = arguments.get(name)
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)) or not value:
+        raise ValueError(f"{name} is required and must be a non-empty array")
+    return value
+
+
+def _string_sequence(arguments: Mapping[str, Any], name: str) -> tuple[str, ...]:
+    value = arguments.get(name, ())
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
+        raise TypeError(f"{name} must be an array")
+    if not all(isinstance(item, str) and item for item in value):
+        raise TypeError(f"{name} must contain strings")
+    return tuple(value)
+
+
+def _optional_bool(arguments: Mapping[str, Any], name: str, default: bool) -> bool:
+    value = arguments.get(name, default)
+    if not isinstance(value, bool):
+        raise TypeError(f"{name} must be a boolean")
+    return value

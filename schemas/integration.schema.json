@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://artifex.local/schemas/integration.schema.json",
+  "title": "ARTIFEX Integration Metadata",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "name",
+    "version",
+    "compatibility",
+    "tested_external_versions",
+    "roles",
+    "capabilities",
+    "configuration_provenance"
+  ],
+  "properties": {
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$"},
+    "name": {"type": "string", "minLength": 1},
+    "version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+(?:[-+][A-Za-z0-9.-]+)?$"},
+    "compatibility": {"$ref": "#/$defs/compatibility"},
+    "tested_external_versions": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "roles": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "enum": ["interface", "harness", "implementer", "research_provider"]
+      }
+    },
+    "capabilities": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "configuration_provenance": {"$ref": "#/$defs/configurationProvenance"},
+    "core_compatible": {"type": "boolean"}
+  },
+  "$defs": {
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["minimum", "maximum_exclusive"],
+      "properties": {
+        "minimum": {"type": "string", "minLength": 1},
+        "maximum_exclusive": {"type": ["string", "null"]}
+      }
+    },
+    "configurationProvenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "reference"],
+      "properties": {
+        "source": {"type": "string", "minLength": 1},
+        "reference": {"type": ["string", "null"]}
+      }
+    }
+  }
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "ARTIFEX Review"
+  short_description: "Verify deliverables against acceptance evidence"
+  default_prompt: "Use  to independently verify this ARTIFEX deliverable against its frozen contract."

@@ -33,3 +33,41 @@ def test_registration_rejects_duplicates_and_normalizes_failures() -> None:
     result = app.dispatch(OperationRequest("test.failing"))
     assert result.error is not None
     assert result.error.code == "OPERATION_FAILED"
+
+
+@pytest.mark.unit
+def test_application_registers_semantic_integration_operations() -> None:
+    application = Application()
+    operations = application.dispatch(OperationRequest("system.operations"))
+    assert {
+        "system.doctor",
+        "integrations.list",
+        "integrations.select",
+        "integrations.conformance",
+        "manual.packet.create",
+        "manual.result.submit",
+        "research.request.validate",
+        "research.bundle.validate",
+    } <= set(operations.value["operations"])
+    assert (
+        application.dispatch(OperationRequest("integrations.list")).value["integrations"][0]["id"]
+        == "manual"
+    )
+    assert (
+        application.dispatch(
+            OperationRequest(
+                "integrations.select",
+                {"role": "implementer", "capabilities": ["structured_output"]},
+            )
+        ).value["integration_id"]
+        == "manual"
+    )
+
+
+@pytest.mark.conformance
+def test_application_runs_manual_conformance_without_accepting_executor_claims() -> None:
+    result = Application().dispatch(
+        OperationRequest("integrations.conformance", {"integration_id": "manual"})
+    )
+    assert result.ok is True
+    assert result.value["status"] == "PASS"

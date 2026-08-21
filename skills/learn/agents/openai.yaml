@@ -1,0 +1,4 @@
+interface:
+  display_name: "ARTIFEX Learn"
+  short_description: "Capture scoped lessons and proposals"
+  default_prompt: "Use  to capture evidence-backed ARTIFEX lessons without changing Core authority."

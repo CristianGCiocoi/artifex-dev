@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://artifex.local/schemas/research.schema.json",
+  "title": "ARTIFEX Research Contracts",
+  "oneOf": [
+    {"$ref": "#/$defs/researchRequest"},
+    {"$ref": "#/$defs/researchBundle"}
+  ],
+  "$defs": {
+    "researchRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "kind",
+        "request_id",
+        "purpose",
+        "stage",
+        "questions",
+        "project_constraints",
+        "required_freshness",
+        "required_source_quality",
+        "resource_envelope",
+        "desired_alternatives",
+        "desired_risks",
+        "output_form"
+      ],
+      "properties": {
+        "schema_version": {"const": "1.0"},
+        "kind": {"const": "RESEARCH_REQUEST"},
+        "request_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
+        "purpose": {"type": "string", "minLength": 1},
+        "stage": {"type": "string", "minLength": 1},
+        "questions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "project_constraints": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "required_freshness": {"type": "string", "minLength": 1},
+        "required_source_quality": {"type": "string", "minLength": 1},
+        "resource_envelope": {"type": "object"},
+        "desired_alternatives": {"type": "integer", "minimum": 0},
+        "desired_risks": {"type": "boolean"},
+        "output_form": {"type": "string", "minLength": 1}
+      }
+    },
+    "researchClaim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim", "evidence_source_ids", "confidence"],
+      "properties": {
+        "claim": {"type": "string", "minLength": 1},
+        "evidence_source_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "researchSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_id", "uri", "title", "retrieved_at", "quality"],
+      "properties": {
+        "source_id": {"type": "string", "minLength": 1},
+        "uri": {"type": "string", "minLength": 1},
+        "title": {"type": "string", "minLength": 1},
+        "retrieved_at": {"type": "string", "format": "date-time"},
+        "quality": {"type": "string", "minLength": 1}
+      }
+    },
+    "researchBundle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "kind",
+        "bundle_id",
+        "request_id",
+        "findings",
+        "alternatives",
+        "claims",
+        "unresolved_questions",
+        "source_manifest",
+        "generation_metadata"
+      ],
+      "properties": {
+        "schema_version": {"const": "1.0"},
+        "kind": {"const": "RESEARCH_BUNDLE"},
+        "bundle_id": {"type": "string", "minLength": 1},
+        "request_id": {"type": "string", "minLength": 1},
+        "findings": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "alternatives": {"type": "array", "items": {"type": "object"}},
+        "claims": {"type": "array", "items": {"$ref": "#/$defs/researchClaim"}},
+        "unresolved_questions": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "source_manifest": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/researchSource"}
+        },
+        "generation_metadata": {"type": "object", "minProperties": 1}
+      }
+    }
+  }
+}

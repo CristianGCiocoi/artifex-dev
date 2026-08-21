@@ -1,0 +1,4 @@
+interface:
+  display_name: "ARTIFEX Research"
+  short_description: "Produce decision-relevant research evidence"
+  default_prompt: "Use  to define and execute provider-neutral research for this ARTIFEX decision."

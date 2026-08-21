@@ -1,0 +1,4 @@
+interface:
+  display_name: "ARTIFEX Router"
+  short_description: "Route work to the correct ARTIFEX stage"
+  default_prompt: "Use  to identify the correct ARTIFEX stage and minimum context for this request."

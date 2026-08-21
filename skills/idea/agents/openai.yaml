@@ -1,0 +1,4 @@
+interface:
+  display_name: "ARTIFEX Idea"
+  short_description: "Shape an idea into a governed candidate"
+  default_prompt: "Use  to capture this idea as a bounded ARTIFEX candidate with explicit assumptions."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "ARTIFEX Implementation Plan"
+  short_description: "Compile accepted design into executable work"
+  default_prompt: "Use -plan to convert accepted ARTIFEX design into owned tasks and gates."
