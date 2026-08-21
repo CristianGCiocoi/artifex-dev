@@ -1,0 +1,1481 @@
+{
+  "artifacts": [
+    {
+      "depends_on": [
+        "ART-SELF-ARCH",
+        "RSR-SELF-001"
+      ],
+      "fingerprint": "b2d3ad56aa2e507612809bc6cbff92dd505c5d429ed3e3fffc28c40e899aa200",
+      "id": "ADR-COMPILATION-002",
+      "metadata": {
+        "authority": "ARTIFEX Core",
+        "changeset": "CHG-SELF-001"
+      },
+      "path": "docs/architecture/adr/ADR-COMPILATION-002.md",
+      "provenance": {
+        "commit": "f3cceb304077c2ca139d5c039917547286b34bbd",
+        "path": "docs/architecture/adr/ADR-COMPILATION-002.md",
+        "source": "M11 self-host governance"
+      },
+      "status": "ACCEPTED",
+      "type": "architecture-decision"
+    },
+    {
+      "depends_on": [
+        "ART-SELF-CHARTER"
+      ],
+      "fingerprint": "14192d5887fddcb61d3b3e3ec3e59d0d2a687ecdd31045601af17d1e85553e99",
+      "id": "ART-SELF-ARCHITECTURE",
+      "metadata": {},
+      "path": "docs/architecture/ARCHITECTURE.md",
+      "provenance": {
+        "commit": "f3cceb304077c2ca139d5c039917547286b34bbd",
+        "path": "docs/architecture/ARCHITECTURE.md",
+        "source": "repository"
+      },
+      "status": "ACCEPTED",
+      "type": "architecture"
+    },
+    {
+      "depends_on": [
+        "ADR-COMPILATION-002",
+        "ART-SELF-M11"
+      ],
+      "fingerprint": "a59e618de1ff72957452e0ebad64345fb1fffa5d7de4ef8f33f0edca5b6088e1",
+      "id": "ART-SELF-CHANGE-PLAN",
+      "metadata": {
+        "authority": "ARTIFEX Core",
+        "changeset": "CHG-SELF-001"
+      },
+      "path": "docs/implementation/self-host/CHG-SELF-001_IMPLEMENTATION_PLAN.md",
+      "provenance": {
+        "commit": "f3cceb304077c2ca139d5c039917547286b34bbd",
+        "path": "docs/implementation/self-host/CHG-SELF-001_IMPLEMENTATION_PLAN.md",
+        "source": "M11 self-host governance"
+      },
+      "status": "ACCEPTED",
+      "type": "implementation-plan"
+    },
+    {
+      "depends_on": [],
+      "fingerprint": "258e78e55247c81d2a0a21b2ff46ade05ad45992d65143d81d3263a3e853cb79",
+      "id": "ART-SELF-CHARTER",
+      "metadata": {
+        "understanding": {
+          "admin_guide": {
+            "health": "Use doctor and discovery read-only first; apply only allowlisted project-owned fixes with explicit approval.",
+            "lifecycle": "Install, upgrade, and uninstall only strict provenance-bound native bundles through authenticated manifests and rollback-capable transactions."
+          },
+          "architecture": {
+            "authority": "ARTIFEX Core alone derives canonical acceptance from immutable contracts, current evidence, gate policy, and explicit waivers.",
+            "canonical_truth": "Filesystem and Git semantic state owned by Core; generated documentation, dashboards, packets, and vendor shims are non-canonical views.",
+            "interfaces": "One semantic Application API is exposed through CLI and local JSON-lines MCP; integrations remain replaceable capability providers."
+          },
+          "authority": {
+            "acceptance": "Core gate evaluation",
+            "architect": "external for major architecture changes",
+            "canonical_state": "CORE"
+          },
+          "capabilities": [
+            "brownfield and greenfield project control",
+            "Git-bound execution packets",
+            "independent validation and evidence freshness",
+            "human and machine documentation compilation",
+            "Hermes-preferred replaceable integrations",
+            "Codex and Claude standalone operation",
+            "manual fallback",
+            "controlled knowledge promotion",
+            "beginner, guided, and expert modes",
+            "native reversible distribution"
+          ],
+          "concepts": {
+            "Acceptance Contract": "Immutable criteria and bindings frozen before execution.",
+            "ChangeSet": "Governed brownfield change lifecycle from proposal through verified application.",
+            "Evidence Ledger": "Append-only, integrity-checked results bound to commit, contract, and Project Model fingerprints.",
+            "Execution Packet": "Immutable, context-bounded work assignment with ownership and baseline fingerprints.",
+            "Project Model": "Typed canonical project identity, Git state, artifacts, entities, provenance, dependencies, and status."
+          },
+          "core_components": [
+            "Project Model and Git Store",
+            "Workflow Engine",
+            "Validation and Evidence",
+            "Compilation and Understanding",
+            "Integration Registry",
+            "Knowledge and Controlled Evolution",
+            "Distribution and Beginner Experience",
+            "Application API, CLI, and MCP"
+          ],
+          "deployment": {
+            "native": "PyInstaller one-directory bundles for declared OS and architecture targets.",
+            "source": "Locked Python environment for development and validation."
+          },
+          "developer_guide": {
+            "quality": [
+              "uv run ruff check .",
+              "uv run mypy src",
+              "uv run pytest --cov=artifex --cov-report=term-missing"
+            ],
+            "rule": "Extend the semantic Application API and typed contracts before adding interface-specific behavior.",
+            "setup": [
+              "Python 3.12 or 3.13",
+              "uv sync --locked --all-groups"
+            ]
+          },
+          "extension_points": [
+            "Integration Protocol and capability registry",
+            "ResearchTransport",
+            "PaperCompiler",
+            "candidate overlays",
+            "portable interface packs"
+          ],
+          "extensions": "Extensions may contribute capability or evidence but cannot become canonical authority or expand privilege without policy approval.",
+          "history": {
+            "source": ".artifex/history/events.jsonl and immutable milestone tags"
+          },
+          "implementation": {
+            "milestones": "M00 through M10 accepted; M11 self-host and release active",
+            "remote": "private GitHub repository configured"
+          },
+          "interfaces": {
+            "claude": "Standalone worktree-bound worker with portable semantic snapshots and authority-path protection.",
+            "codex": "Standalone worktree-bound worker with pre/post canonical checks and authority-path protection.",
+            "hermes": "Preferred capable integration with durable stage execution and restart continuity.",
+            "manual": "Portable packet and result exchange with explicit identity bindings.",
+            "research": "Provider-neutral ResearchRequest and evidence-only ResearchBundle; Pandora remains optional and non-canonical."
+          },
+          "invariants": [
+            "Core owns canonical state and acceptance transitions.",
+            "Generated views are never canonical inputs.",
+            "Executor completion is only a claim.",
+            "Contracts cannot be silently weakened after execution starts.",
+            "Evidence binds exact source, contract, and model fingerprints.",
+            "No native harness memory is required for continuity.",
+            "Self-improvement cannot expand privilege or mutate Core autonomously.",
+            "Metrics are measured, not narrated.",
+            "Secrets are scrubbed from evidence and generated context."
+          ],
+          "known_limitations": [
+            "Native release qualification currently covers Windows X64, Linux X64, and macOS ARM64 only.",
+            "Native artifacts are provenance-attested but not publisher-signed or notarized.",
+            "Live optional-provider availability is environment dependent; DeepSeek may remain degraded when absent.",
+            "The dashboard is static and derived from repository evidence.",
+            "Windows native bundles intentionally reject symlink-bearing artifact inventories."
+          ],
+          "migration": "Pre-acceptance artifact/install manifests are intentionally rejected rather than silently converted.",
+          "operations": {
+            "commands": [
+              "start",
+              "discover",
+              "doctor",
+              "mode",
+              "setup",
+              "project",
+              "integration",
+              "manual",
+              "research",
+              "install",
+              "upgrade",
+              "uninstall",
+              "system"
+            ],
+            "state": ".artifex and Git are sufficient to reconstruct canonical project state."
+          },
+          "permissions": {
+            "default": "least privilege",
+            "runtime_self_edit": false,
+            "vendor_config": "no mutation without explicit project-owned setup consent"
+          },
+          "project_history": [
+            "M00 froze architecture and governance.",
+            "M01-M03 established Project Model, workflow, validation, and compilation.",
+            "M04-M08 added integrations and controlled evolution.",
+            "M09 qualified beginner distribution on three operating systems.",
+            "M10 qualified optional DeepSeek and Pandora packs independently.",
+            "M11 adopts ARTIFEX and produces V1 release evidence."
+          ],
+          "purpose": "Provide an agent-neutral control plane for durable project truth, governed execution, independent validation, continuity, distribution, and human and machine understanding.",
+          "recovery": "Restore from Git and canonical .artifex state; harness conversation and provider-native memory are never required.",
+          "runbook": {
+            "diagnose": "Run read-only discovery and doctor, inspect canonical status, then check current evidence and Git identity.",
+            "recover": "Use authenticated lifecycle rollback or a compensating ChangeSet; never erase audit/evidence history."
+          },
+          "security": {
+            "boundaries": [
+              "path containment",
+              "symlink and traversal rejection",
+              "exact ownership",
+              "one-time approvals",
+              "HMAC lifecycle manifests",
+              "executor authority exclusions"
+            ],
+            "policy": "Fail closed on stale identity, tampering, unsupported capability, privilege expansion, or canonical-state claims by an executor."
+          },
+          "upgrade": {
+            "policy": "Plan first, bind exact source and installed manifest, back up authenticated files, verify after replacement, roll back on failure."
+          },
+          "user_guide": {
+            "beginner": "Start from a plain-language goal; ARTIFEX creates project-owned state without requiring YAML, PATH, or MCP configuration.",
+            "expert": "Use semantic CLI/API/MCP operations, contracts, packets, and evidence directly.",
+            "guided": "Review plan-first effects, risk, rollback, and one-time confirmation tokens before mutations."
+          },
+          "validation": {
+            "coverage_floor_percent": 85,
+            "preference": [
+              "deterministic",
+              "structured inspection",
+              "independent agent",
+              "explicit human"
+            ],
+            "release": [
+              "BUILD",
+              "VALIDATION",
+              "UNDERSTANDING",
+              "CONTINUITY",
+              "PORTABILITY",
+              "PACKAGING",
+              "SELF-HOST"
+            ]
+          },
+          "versioning": {
+            "artifact_manifest": "4.0",
+            "install_manifest": "3.0",
+            "project_model": "1.0"
+          },
+          "workflows": {
+            "acceptance": [
+              "task gates",
+              "integration gate",
+              "milestone gate",
+              "release gate"
+            ],
+            "changeset": [
+              "PROPOSED",
+              "ACCEPTED",
+              "IMPLEMENTING",
+              "VERIFIED",
+              "APPLIED",
+              "ARCHIVED"
+            ],
+            "primary": [
+              "intent",
+              "research and impact",
+              "architecture delta",
+              "plan and contracts",
+              "implementation",
+              "independent evidence",
+              "documentation and dashboard",
+              "comprehension",
+              "lesson"
+            ],
+            "self_host": "ARTIFEX adopts and changes its own repository through the same source-controlled contracts and authority boundaries used for other brownfield projects."
+          }
+        }
+      },
+      "path": ".artifex/project.yaml",
+      "provenance": {
+        "commit": "f3cceb304077c2ca139d5c039917547286b34bbd",
+        "path": ".artifex/project.yaml",
+        "source": "repository"
+      },
+      "status": "ACCEPTED",
+      "type": "project-charter"
+    },
+    {
+      "depends_on": [
+        "ART-SELF-REQUIREMENTS"
+      ],
+      "fingerprint": "82de9a667de6db94faaf149e395f793f5b0bafc3df2dc0a136b8beafaf49178a",
+      "id": "ART-SELF-IMPLEMENTATION",
+      "metadata": {},
+      "path": "docs/implementation/IMPLEMENTATION_PLAN.md",
+      "provenance": {
+        "commit": "f3cceb304077c2ca139d5c039917547286b34bbd",
+        "path": "docs/implementation/IMPLEMENTATION_PLAN.md",
+        "source": "repository"
+      },
+      "status": "ACCEPTED",
+      "type": "implementation-plan"
+    },
+    {
+      "depends_on": [
+        "ART-SELF-ARCHITECTURE"
+      ],
+      "fingerprint": "9ef6c0a3f568deee85afd6f249c9be6923c4cd1ebe3b147349389494dc1a9470",
+      "id": "ART-SELF-INVARIANTS",
+      "metadata": {},
+      "path": "docs/architecture/INVARIANTS.md",
+      "provenance": {
+        "commit": "f3cceb304077c2ca139d5c039917547286b34bbd",
+        "path": "docs/architecture/INVARIANTS.md",
+        "source": "repository"
+      },
+      "status": "ACCEPTED",
+      "type": "invariants"
+    },
+    {
+      "depends_on": [
+        "ART-SELF-IMPLEMENTATION"
+      ],
+      "fingerprint": "3167ad6beb2b4638013697d660733506cac5cb7d94186d901831a1b678e95751",
+      "id": "ART-SELF-M11",
+      "metadata": {},
+      "path": "docs/implementation/milestones/M11_SELF_HOST_RELEASE.md",
+      "provenance": {
+        "commit": "f3cceb304077c2ca139d5c039917547286b34bbd",
+        "path": "docs/implementation/milestones/M11_SELF_HOST_RELEASE.md",
+        "source": "repository"
+      },
+      "status": "ACCEPTED",
+      "type": "milestone"
+    },
+    {
+      "depends_on": [
+        "ART-SELF-ARCHITECTURE",
+        "ART-SELF-INVARIANTS"
+      ],
+      "fingerprint": "d82a2c714d17ab57650653dc1d976a23da272186c2a7c903601b390ff7713d93",
+      "id": "ART-SELF-REQUIREMENTS",
+      "metadata": {},
+      "path": "docs/requirements/REQUIREMENTS_BASELINE.md",
+      "provenance": {
+        "commit": "f3cceb304077c2ca139d5c039917547286b34bbd",
+        "path": "docs/requirements/REQUIREMENTS_BASELINE.md",
+        "source": "repository"
+      },
+      "status": "ACCEPTED",
+      "type": "requirements"
+    },
+    {
+      "depends_on": [
+        "ART-SELF-CHARTER",
+        "ART-SELF-M11"
+      ],
+      "fingerprint": "1bf6570a6ab24b1a79caf819e56df2da021c296efd94482306927f9a0707e276",
+      "id": "RSR-SELF-001",
+      "metadata": {
+        "authority": "ARTIFEX Core",
+        "changeset": "CHG-SELF-001"
+      },
+      "path": "docs/implementation/self-host/RSR-SELF-001.md",
+      "provenance": {
+        "commit": "f3cceb304077c2ca139d5c039917547286b34bbd",
+        "path": "docs/implementation/self-host/RSR-SELF-001.md",
+        "source": "M11 self-host governance"
+      },
+      "status": "ACCEPTED",
+      "type": "research-impact"
+    }
+  ],
+  "entities": [
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-001",
+      "kind": "requirement",
+      "statement": "Initialize a greenfield ARTIFEX project.",
+      "title": "REQ-F-001"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-002",
+      "kind": "requirement",
+      "statement": "Adopt an existing repository without destroying existing content.",
+      "title": "REQ-F-002"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-003",
+      "kind": "requirement",
+      "statement": "Classify workflow depth as QUICK, STANDARD or DEEP.",
+      "title": "REQ-F-003"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-004",
+      "kind": "requirement",
+      "statement": "Detect/record Git state and establish a versioned baseline for managed development.",
+      "title": "REQ-F-004"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-010",
+      "kind": "requirement",
+      "statement": "Perform targeted software-development research needed for a decision.",
+      "title": "REQ-F-010"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-011",
+      "kind": "requirement",
+      "statement": "Support pluggable `research_provider` integrations.",
+      "title": "REQ-F-011"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-012",
+      "kind": "requirement",
+      "statement": "Normalize research output through `ResearchBundle`.",
+      "title": "REQ-F-012"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-013",
+      "kind": "requirement",
+      "statement": "Treat external content as untrusted data, never instruction authority.",
+      "title": "REQ-F-013"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-014",
+      "kind": "requirement",
+      "statement": "Support optional Pandora research without Core dependency.",
+      "title": "REQ-F-014"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-020",
+      "kind": "requirement",
+      "statement": "Maintain requirements, constraints, assumptions and non-goals.",
+      "title": "REQ-F-020"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-021",
+      "kind": "requirement",
+      "statement": "Produce/maintain architecture, interfaces, workflows and invariants.",
+      "title": "REQ-F-021"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-022",
+      "kind": "requirement",
+      "statement": "Maintain ADRs with alternatives, rationale and revisit triggers.",
+      "title": "REQ-F-022"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-023",
+      "kind": "requirement",
+      "statement": "Bind resource constraints into design validation when supplied.",
+      "title": "REQ-F-023"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-030",
+      "kind": "requirement",
+      "statement": "Convert architecture into milestones/tasks with dependencies.",
+      "title": "REQ-F-030"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-031",
+      "kind": "requirement",
+      "statement": "Each executable task must have an Acceptance Contract.",
+      "title": "REQ-F-031"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-032",
+      "kind": "requirement",
+      "statement": "Support explicit file/surface ownership and integration tasks.",
+      "title": "REQ-F-032"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-033",
+      "kind": "requirement",
+      "statement": "Support ChangeSets for meaningful brownfield changes.",
+      "title": "REQ-F-033"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-034",
+      "kind": "requirement",
+      "statement": "Maintain requirements→design→task→evidence traceability.",
+      "title": "REQ-F-034"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-040",
+      "kind": "requirement",
+      "statement": "Support integration roles: interface, harness, implementer, research_provider.",
+      "title": "REQ-F-040"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-041",
+      "kind": "requirement",
+      "statement": "Support Manual integration without any external harness.",
+      "title": "REQ-F-041"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-042",
+      "kind": "requirement",
+      "statement": "Hermes must be the preferred orchestrator when available.",
+      "title": "REQ-F-042"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-043",
+      "kind": "requirement",
+      "statement": "Codex must work standalone as interface+harness+implementer.",
+      "title": "REQ-F-043"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-044",
+      "kind": "requirement",
+      "statement": "Claude must work standalone as interface+harness+implementer.",
+      "title": "REQ-F-044"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-045",
+      "kind": "requirement",
+      "statement": "Support optional DeepSeek Harness integration.",
+      "title": "REQ-F-045"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-046",
+      "kind": "requirement",
+      "statement": "Execution packets must bind base commit, task contract and project fingerprint.",
+      "title": "REQ-F-046"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-047",
+      "kind": "requirement",
+      "statement": "Return `REBASE_REQUIRED` when execution result is stale.",
+      "title": "REQ-F-047"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-050",
+      "kind": "requirement",
+      "statement": "Canonical acceptance state is controlled by ARTIFEX Core, not executor claims.",
+      "title": "REQ-F-050"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-051",
+      "kind": "requirement",
+      "statement": "Prefer deterministic validators over LLM judgment when possible.",
+      "title": "REQ-F-051"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-052",
+      "kind": "requirement",
+      "statement": "Maintain Evidence Ledger entries bound to verified state.",
+      "title": "REQ-F-052"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-053",
+      "kind": "requirement",
+      "statement": "Support task, integration, milestone and release gates.",
+      "title": "REQ-F-053"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-054",
+      "kind": "requirement",
+      "statement": "Evidence becomes STALE when its verified basis changes materially.",
+      "title": "REQ-F-054"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-055",
+      "kind": "requirement",
+      "statement": "Acceptance criteria cannot be silently weakened after execution begins.",
+      "title": "REQ-F-055"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-056",
+      "kind": "requirement",
+      "statement": "Waivers require explicit authority and provenance.",
+      "title": "REQ-F-056"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-057",
+      "kind": "requirement",
+      "statement": "Detect premature completion, self-certification and evidence tampering.",
+      "title": "REQ-F-057"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-058",
+      "kind": "requirement",
+      "statement": "Detect workflow no-progress loops via liveness policy.",
+      "title": "REQ-F-058"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-060",
+      "kind": "requirement",
+      "statement": "Compile human documentation from canonical Project Model.",
+      "title": "REQ-F-060"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-061",
+      "kind": "requirement",
+      "statement": "Compile machine-first context/views from canonical Project Model.",
+      "title": "REQ-F-061"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-062",
+      "kind": "requirement",
+      "statement": "Generate an implementation dashboard from measured state/evidence.",
+      "title": "REQ-F-062"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-063",
+      "kind": "requirement",
+      "statement": "Detect CURRENT/STALE/MISSING/N/A documentation state.",
+      "title": "REQ-F-063"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-064",
+      "kind": "requirement",
+      "statement": "Support a fresh-context Comprehension Gate.",
+      "title": "REQ-F-064"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-065",
+      "kind": "requirement",
+      "statement": "Produce at least README, User Guide, Admin Guide and Developer Guide for STANDARD/DEEP projects.",
+      "title": "REQ-F-065"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-066",
+      "kind": "requirement",
+      "statement": "Support optional paper generation only when eligibility criteria are met.",
+      "title": "REQ-F-066"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-070",
+      "kind": "requirement",
+      "statement": "Capture project lessons with provenance.",
+      "title": "REQ-F-070"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-071",
+      "kind": "requirement",
+      "statement": "Maintain instance-level knowledge separately from project knowledge.",
+      "title": "REQ-F-071"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-072",
+      "kind": "requirement",
+      "statement": "Generate Improvement Proposals.",
+      "title": "REQ-F-072"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-073",
+      "kind": "requirement",
+      "statement": "Support candidate overlays without modifying Core directly.",
+      "title": "REQ-F-073"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-074",
+      "kind": "requirement",
+      "statement": "Store confidence, sensitivity/scope and revisit triggers for knowledge.",
+      "title": "REQ-F-074"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-080",
+      "kind": "requirement",
+      "statement": "Support Core/Profile/Instance/Project/Run separation conceptually.",
+      "title": "REQ-F-080"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-081",
+      "kind": "requirement",
+      "statement": "Local evolution must be rebaseable over future Core releases.",
+      "title": "REQ-F-081"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-082",
+      "kind": "requirement",
+      "statement": "Upgrade flow must classify local changes as CARRY_FORWARD, SUPERSEDED, REVALIDATE or CONFLICT.",
+      "title": "REQ-F-082"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-083",
+      "kind": "requirement",
+      "statement": "Updates must activate atomically after validation.",
+      "title": "REQ-F-083"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-084",
+      "kind": "requirement",
+      "statement": "Project semantic truth must remain reconstructable from repository artifacts.",
+      "title": "REQ-F-084"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-090",
+      "kind": "requirement",
+      "statement": "Harness-native memory is auxiliary only.",
+      "title": "REQ-F-090"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-091",
+      "kind": "requirement",
+      "statement": "No correctness-critical state may exist only in harness memory.",
+      "title": "REQ-F-091"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-092",
+      "kind": "requirement",
+      "statement": "Support memory promotion RUN→PROJECT→INSTANCE with policy.",
+      "title": "REQ-F-092"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-093",
+      "kind": "requirement",
+      "statement": "Wider-scope promotion must require stronger evidence.",
+      "title": "REQ-F-093"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-100",
+      "kind": "requirement",
+      "statement": "Support BEGINNER, GUIDED and EXPERT experience modes independently of workflow depth.",
+      "title": "REQ-F-100"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-101",
+      "kind": "requirement",
+      "statement": "BEGINNER mode must not reduce architecture/validation rigor.",
+      "title": "REQ-F-101"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-102",
+      "kind": "requirement",
+      "statement": "High-impact decisions must explain recommendation, gains, trade-offs and reversibility.",
+      "title": "REQ-F-102"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-103",
+      "kind": "requirement",
+      "statement": "A beginner install must not require manual Python/pip/venv setup.",
+      "title": "REQ-F-103"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-104",
+      "kind": "requirement",
+      "statement": "Provide `doctor`/environment diagnostics and safe remediation.",
+      "title": "REQ-F-104"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-110",
+      "kind": "requirement",
+      "statement": "Resource Envelope is optional.",
+      "title": "REQ-F-110"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-111",
+      "kind": "requirement",
+      "statement": "Separate development resources from target runtime resources.",
+      "title": "REQ-F-111"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-112",
+      "kind": "requirement",
+      "statement": "Distinguish HARD constraints from SOFT preferences.",
+      "title": "REQ-F-112"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-113",
+      "kind": "requirement",
+      "statement": "Unspecified resources mean unspecified, not unlimited.",
+      "title": "REQ-F-113"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-F-114",
+      "kind": "requirement",
+      "statement": "Detect resource contradictions when measurable.",
+      "title": "REQ-F-114"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-NF-001",
+      "kind": "requirement",
+      "statement": "Agent-neutral.",
+      "title": "REQ-NF-001"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-NF-002",
+      "kind": "requirement",
+      "statement": "Filesystem/Git canonical semantic truth.",
+      "title": "REQ-NF-002"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-NF-003",
+      "kind": "requirement",
+      "statement": "No mandatory DB in V1.",
+      "title": "REQ-NF-003"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-NF-004",
+      "kind": "requirement",
+      "statement": "No mandatory daemon in V1.",
+      "title": "REQ-NF-004"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-NF-005",
+      "kind": "requirement",
+      "statement": "Replaceable integrations.",
+      "title": "REQ-NF-005"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-NF-006",
+      "kind": "requirement",
+      "statement": "Graceful degradation when an integration is unavailable.",
+      "title": "REQ-NF-006"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-NF-007",
+      "kind": "requirement",
+      "statement": "Cross-platform Windows/Linux/macOS target.",
+      "title": "REQ-NF-007"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-NF-008",
+      "kind": "requirement",
+      "statement": "Inspectable state without proprietary UI.",
+      "title": "REQ-NF-008"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-NF-009",
+      "kind": "requirement",
+      "statement": "Secret-safe artifacts/evidence/memory.",
+      "title": "REQ-NF-009"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-NF-010",
+      "kind": "requirement",
+      "statement": "Self-improvement cannot autonomously expand privileges.",
+      "title": "REQ-NF-010"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-NF-011",
+      "kind": "requirement",
+      "statement": "Interface switch must preserve semantic state.",
+      "title": "REQ-NF-011"
+    },
+    {
+      "artifact_id": "ART-SELF-REQUIREMENTS",
+      "depends_on": [],
+      "id": "REQ-NF-012",
+      "kind": "requirement",
+      "statement": "Core V1 must be distributable without requiring users to install Python manually.",
+      "title": "REQ-NF-012"
+    },
+    {
+      "artifact_id": "ART-SELF-INVARIANTS",
+      "depends_on": [],
+      "id": "INV-001",
+      "kind": "invariant",
+      "statement": "acceptance-relevant outcomes are represented by explicit artifacts/state.",
+      "title": "INV-001"
+    },
+    {
+      "artifact_id": "ART-SELF-INVARIANTS",
+      "depends_on": [],
+      "id": "INV-002",
+      "kind": "invariant",
+      "statement": "no fundamental project semantic depends on one agent vendor.",
+      "title": "INV-002"
+    },
+    {
+      "artifact_id": "ART-SELF-INVARIANTS",
+      "depends_on": [],
+      "id": "INV-003",
+      "kind": "invariant",
+      "statement": "Hermes is preferred when available but never required for project continuity.",
+      "title": "INV-003"
+    },
+    {
+      "artifact_id": "ART-SELF-INVARIANTS",
+      "depends_on": [],
+      "id": "INV-004",
+      "kind": "invariant",
+      "statement": "project semantic state remains reconstructable from repository artifacts.",
+      "title": "INV-004"
+    },
+    {
+      "artifact_id": "ART-SELF-INVARIANTS",
+      "depends_on": [],
+      "id": "INV-005",
+      "kind": "invariant",
+      "statement": "generated docs/dashboard/vendor shims are views, not source of truth.",
+      "title": "INV-005"
+    },
+    {
+      "artifact_id": "ART-SELF-INVARIANTS",
+      "depends_on": [],
+      "id": "INV-006",
+      "kind": "invariant",
+      "statement": "execution context is the minimum sufficient context, not project history.",
+      "title": "INV-006"
+    },
+    {
+      "artifact_id": "ART-SELF-INVARIANTS",
+      "depends_on": [],
+      "id": "INV-007",
+      "kind": "invariant",
+      "statement": "QUICK/STANDARD/DEEP alter depth, not truth/validation semantics.",
+      "title": "INV-007"
+    },
+    {
+      "artifact_id": "ART-SELF-INVARIANTS",
+      "depends_on": [],
+      "id": "INV-008",
+      "kind": "invariant",
+      "statement": "critical work is not accepted solely by its own implementer.",
+      "title": "INV-008"
+    },
+    {
+      "artifact_id": "ART-SELF-INVARIANTS",
+      "depends_on": [],
+      "id": "INV-009",
+      "kind": "invariant",
+      "statement": "both are first-class outputs from one Project Model.",
+      "title": "INV-009"
+    },
+    {
+      "artifact_id": "ART-SELF-INVARIANTS",
+      "depends_on": [],
+      "id": "INV-010",
+      "kind": "invariant",
+      "statement": "external integrations are behind capabilities/contracts.",
+      "title": "INV-010"
+    },
+    {
+      "artifact_id": "ART-SELF-INVARIANTS",
+      "depends_on": [],
+      "id": "INV-011",
+      "kind": "invariant",
+      "statement": "self-improvement does not mutate installed Core directly.",
+      "title": "INV-011"
+    },
+    {
+      "artifact_id": "ART-SELF-INVARIANTS",
+      "depends_on": [],
+      "id": "INV-012",
+      "kind": "invariant",
+      "statement": "local evolution remains replayable/validatable over newer Core baselines.",
+      "title": "INV-012"
+    },
+    {
+      "artifact_id": "ART-SELF-INVARIANTS",
+      "depends_on": [],
+      "id": "INV-013",
+      "kind": "invariant",
+      "statement": "historical chat is never required for project continuity.",
+      "title": "INV-013"
+    },
+    {
+      "artifact_id": "ART-SELF-INVARIANTS",
+      "depends_on": [],
+      "id": "INV-014",
+      "kind": "invariant",
+      "statement": "one missing integration does not invalidate the project.",
+      "title": "INV-014"
+    },
+    {
+      "artifact_id": "ART-SELF-INVARIANTS",
+      "depends_on": [],
+      "id": "INV-015",
+      "kind": "invariant",
+      "statement": "acceptance state cannot rely solely on an agent claim.",
+      "title": "INV-015"
+    },
+    {
+      "artifact_id": "ART-SELF-INVARIANTS",
+      "depends_on": [],
+      "id": "INV-016",
+      "kind": "invariant",
+      "statement": "only Core-authorized evaluation transitions canonical workflow/acceptance state.",
+      "title": "INV-016"
+    },
+    {
+      "artifact_id": "ART-SELF-INVARIANTS",
+      "depends_on": [],
+      "id": "INV-017",
+      "kind": "invariant",
+      "statement": "acceptance requires valid evidence or an explicitly authorized manual/waiver path.",
+      "title": "INV-017"
+    },
+    {
+      "artifact_id": "ART-SELF-INVARIANTS",
+      "depends_on": [],
+      "id": "INV-018",
+      "kind": "invariant",
+      "statement": "evidence is valid only for the artifact/contract state it verified.",
+      "title": "INV-018"
+    },
+    {
+      "artifact_id": "ART-SELF-INVARIANTS",
+      "depends_on": [],
+      "id": "INV-019",
+      "kind": "invariant",
+      "statement": "acceptance criteria cannot be silently weakened after execution starts.",
+      "title": "INV-019"
+    },
+    {
+      "artifact_id": "ART-SELF-INVARIANTS",
+      "depends_on": [],
+      "id": "INV-020",
+      "kind": "invariant",
+      "statement": "untrusted external content cannot gain instruction authority.",
+      "title": "INV-020"
+    },
+    {
+      "artifact_id": "ART-SELF-INVARIANTS",
+      "depends_on": [],
+      "id": "INV-021",
+      "kind": "invariant",
+      "statement": "knowledge cannot move to a broader scope without promotion policy.",
+      "title": "INV-021"
+    },
+    {
+      "artifact_id": "ART-SELF-INVARIANTS",
+      "depends_on": [],
+      "id": "INV-022",
+      "kind": "invariant",
+      "statement": "autonomous workflows have mechanical liveness/resource bounds.",
+      "title": "INV-022"
+    },
+    {
+      "artifact_id": "ART-SELF-INVARIANTS",
+      "depends_on": [],
+      "id": "INV-023",
+      "kind": "invariant",
+      "statement": "self-improvement cannot autonomously expand privileges.",
+      "title": "INV-023"
+    },
+    {
+      "artifact_id": "ART-SELF-INVARIANTS",
+      "depends_on": [],
+      "id": "INV-024",
+      "kind": "invariant",
+      "statement": "switching supported interfaces does not change project semantic state.",
+      "title": "INV-024"
+    },
+    {
+      "artifact_id": "ART-SELF-INVARIANTS",
+      "depends_on": [],
+      "id": "INV-025",
+      "kind": "invariant",
+      "statement": "secrets do not become canonical artifacts, evidence or promoted memory.",
+      "title": "INV-025"
+    },
+    {
+      "artifact_id": "ART-SELF-INVARIANTS",
+      "depends_on": [],
+      "id": "INV-026",
+      "kind": "invariant",
+      "statement": "dashboard/report metrics are computed from evidence, not remembered narration.",
+      "title": "INV-026"
+    },
+    {
+      "artifact_id": "ART-SELF-INVARIANTS",
+      "depends_on": [],
+      "id": "INV-027",
+      "kind": "invariant",
+      "statement": "meaningful brownfield changes use explicit ChangeSet state.",
+      "title": "INV-027"
+    },
+    {
+      "artifact_id": "ART-SELF-INVARIANTS",
+      "depends_on": [],
+      "id": "INV-028",
+      "kind": "invariant",
+      "statement": "research providers provide evidence, not canonical architectural decisions.",
+      "title": "INV-028"
+    },
+    {
+      "artifact_id": "ART-SELF-M11",
+      "depends_on": [],
+      "id": "M11-T01",
+      "kind": "task",
+      "statement": "M11-T01",
+      "title": "M11-T01"
+    },
+    {
+      "artifact_id": "ART-SELF-M11",
+      "depends_on": [],
+      "id": "M11-T02",
+      "kind": "task",
+      "statement": "M11-T02",
+      "title": "M11-T02"
+    },
+    {
+      "artifact_id": "ART-SELF-M11",
+      "depends_on": [],
+      "id": "M11-T03",
+      "kind": "task",
+      "statement": "M11-T03",
+      "title": "M11-T03"
+    },
+    {
+      "artifact_id": "ART-SELF-M11",
+      "depends_on": [],
+      "id": "M11-T04",
+      "kind": "task",
+      "statement": "M11-T04",
+      "title": "M11-T04"
+    },
+    {
+      "artifact_id": "ART-SELF-M11",
+      "depends_on": [],
+      "id": "M11-T05",
+      "kind": "task",
+      "statement": "M11-T05",
+      "title": "M11-T05"
+    },
+    {
+      "artifact_id": "ART-SELF-M11",
+      "depends_on": [],
+      "id": "M11-T06",
+      "kind": "task",
+      "statement": "M11-T06",
+      "title": "M11-T06"
+    },
+    {
+      "artifact_id": "ART-SELF-M11",
+      "depends_on": [],
+      "id": "M11-T07",
+      "kind": "task",
+      "statement": "M11-T07",
+      "title": "M11-T07"
+    },
+    {
+      "artifact_id": "ART-SELF-M11",
+      "depends_on": [],
+      "id": "M11-T08",
+      "kind": "task",
+      "statement": "M11-T08",
+      "title": "M11-T08"
+    },
+    {
+      "artifact_id": "ART-SELF-M11",
+      "depends_on": [],
+      "id": "M11-T09",
+      "kind": "task",
+      "statement": "M11-T09",
+      "title": "M11-T09"
+    },
+    {
+      "artifact_id": "ART-SELF-M11",
+      "depends_on": [],
+      "id": "M11-T10",
+      "kind": "task",
+      "statement": "M11-T10",
+      "title": "M11-T10"
+    },
+    {
+      "artifact_id": "ART-SELF-M11",
+      "depends_on": [],
+      "id": "M11-T11",
+      "kind": "task",
+      "statement": "M11-T11",
+      "title": "M11-T11"
+    },
+    {
+      "artifact_id": "ART-SELF-M11",
+      "depends_on": [],
+      "id": "M11-T12",
+      "kind": "task",
+      "statement": "M11-T12",
+      "title": "M11-T12"
+    },
+    {
+      "artifact_id": "ART-SELF-M11",
+      "depends_on": [],
+      "id": "M11-T13",
+      "kind": "task",
+      "statement": "M11-T13",
+      "title": "M11-T13"
+    },
+    {
+      "artifact_id": "ART-SELF-IMPLEMENTATION",
+      "depends_on": [],
+      "id": "M00",
+      "kind": "milestone",
+      "statement": "ARTIFEX implementation milestone M00",
+      "title": "M00"
+    },
+    {
+      "artifact_id": "ART-SELF-IMPLEMENTATION",
+      "depends_on": [],
+      "id": "M01",
+      "kind": "milestone",
+      "statement": "ARTIFEX implementation milestone M01",
+      "title": "M01"
+    },
+    {
+      "artifact_id": "ART-SELF-IMPLEMENTATION",
+      "depends_on": [],
+      "id": "M02",
+      "kind": "milestone",
+      "statement": "ARTIFEX implementation milestone M02",
+      "title": "M02"
+    },
+    {
+      "artifact_id": "ART-SELF-IMPLEMENTATION",
+      "depends_on": [],
+      "id": "M03",
+      "kind": "milestone",
+      "statement": "ARTIFEX implementation milestone M03",
+      "title": "M03"
+    },
+    {
+      "artifact_id": "ART-SELF-IMPLEMENTATION",
+      "depends_on": [],
+      "id": "M04",
+      "kind": "milestone",
+      "statement": "ARTIFEX implementation milestone M04",
+      "title": "M04"
+    },
+    {
+      "artifact_id": "ART-SELF-IMPLEMENTATION",
+      "depends_on": [],
+      "id": "M05",
+      "kind": "milestone",
+      "statement": "ARTIFEX implementation milestone M05",
+      "title": "M05"
+    },
+    {
+      "artifact_id": "ART-SELF-IMPLEMENTATION",
+      "depends_on": [],
+      "id": "M06",
+      "kind": "milestone",
+      "statement": "ARTIFEX implementation milestone M06",
+      "title": "M06"
+    },
+    {
+      "artifact_id": "ART-SELF-IMPLEMENTATION",
+      "depends_on": [],
+      "id": "M07",
+      "kind": "milestone",
+      "statement": "ARTIFEX implementation milestone M07",
+      "title": "M07"
+    },
+    {
+      "artifact_id": "ART-SELF-IMPLEMENTATION",
+      "depends_on": [],
+      "id": "M08",
+      "kind": "milestone",
+      "statement": "ARTIFEX implementation milestone M08",
+      "title": "M08"
+    },
+    {
+      "artifact_id": "ART-SELF-IMPLEMENTATION",
+      "depends_on": [],
+      "id": "M09",
+      "kind": "milestone",
+      "statement": "ARTIFEX implementation milestone M09",
+      "title": "M09"
+    },
+    {
+      "artifact_id": "ART-SELF-IMPLEMENTATION",
+      "depends_on": [],
+      "id": "M10",
+      "kind": "milestone",
+      "statement": "ARTIFEX implementation milestone M10",
+      "title": "M10"
+    },
+    {
+      "artifact_id": "ART-SELF-IMPLEMENTATION",
+      "depends_on": [],
+      "id": "M11",
+      "kind": "milestone",
+      "statement": "ARTIFEX implementation milestone M11",
+      "title": "M11"
+    },
+    {
+      "artifact_id": "ART-SELF-CHARTER",
+      "depends_on": [],
+      "id": "ART-CAP-INTEGRATION",
+      "kind": "capability",
+      "statement": "Manual, Hermes, Codex, Claude, and optional providers use typed capabilities.",
+      "title": "Replaceable integrations"
+    },
+    {
+      "artifact_id": "ART-SELF-CHARTER",
+      "depends_on": [],
+      "id": "ART-CAP-COMPILATION",
+      "kind": "capability",
+      "statement": "Human and machine views derive from canonical Project Model state.",
+      "title": "Compilation and understanding"
+    },
+    {
+      "artifact_id": "ART-SELF-CHARTER",
+      "depends_on": [],
+      "id": "ART-CAP-DISTRIBUTION",
+      "kind": "capability",
+      "statement": "Plan-bound reversible native lifecycle on qualified platforms.",
+      "title": "Native distribution"
+    },
+    {
+      "artifact_id": "ART-SELF-CHARTER",
+      "depends_on": [],
+      "id": "INT-APPLICATION",
+      "kind": "interface",
+      "statement": "One semantic API backs CLI and MCP.",
+      "title": "Application API"
+    },
+    {
+      "artifact_id": "ART-SELF-CHARTER",
+      "depends_on": [],
+      "id": "INT-RESEARCH",
+      "kind": "interface",
+      "statement": "Research providers return evidence-only bundles without canonical authority.",
+      "title": "Research boundary"
+    }
+  ],
+  "git": {
+    "baseline_commit": "f3cceb304077c2ca139d5c039917547286b34bbd",
+    "branch": "main",
+    "current_commit": "f3cceb304077c2ca139d5c039917547286b34bbd",
+    "dirty": false,
+    "initialized": true,
+    "remote_status": "CONFIGURED",
+    "remotes": [
+      {
+        "name": "origin",
+        "url": "https://github.com/CristianGCiocoi/artifex-dev.git"
+      }
+    ]
+  },
+  "project": {
+    "description": "Agent-neutral development control, continuity, validation, distribution, and understanding layer",
+    "id": "ARTIFEX",
+    "lifecycle": "brownfield",
+    "name": "ARTIFEX",
+    "workflow_depth": "DEEP"
+  },
+  "schema_version": "1.0"
+}
