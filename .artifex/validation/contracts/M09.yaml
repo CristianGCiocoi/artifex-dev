@@ -1,0 +1,11 @@
+schema_version: "1.0"
+contract:
+  id: VAL-M09
+  milestone: M09
+  state: EXECUTION_STARTED
+  authority_source: docs/implementation/milestones/M09_BEGINNER_DISTRIBUTION.md
+  execution_base_commit: 5e424a2da1041b51fcd082ed7b6d46cdc0681275
+  project_model_fingerprint: 2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506
+  packet_hash: 837d1bb861a7bddb7e07ed7aa410af2782cae94c005fff3022a2a4e3947db2a1
+  criteria: [T01 installer strategy, T02 frozen native executable, T03 environment discovery, T04 integration setup automation, T05 experience modes, T06 risk approval UX, T07 resource envelope, T08 doctor fix, T09 upgrade uninstall, T10 clean-machine target matrix, T11 beginner journey]
+  validators: [packet-integrity, frozen-build, no-user-python, discovery, setup-safety, experience-policy, risk-approval, resource-envelope, doctor-fix, upgrade-uninstall, clean-machine-matrix, beginner-journey, standalone-regression, full-suite, independent-review]

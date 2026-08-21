@@ -1,0 +1,7 @@
+packet_hash: 837d1bb861a7bddb7e07ed7aa410af2782cae94c005fff3022a2a4e3947db2a1
+hash_basis: M09|5e424a2da1041b51fcd082ed7b6d46cdc0681275|2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506|feat/m09-beginner-distribution|src/artifex/distribution,src/artifex/cli.py,src/artifex/application/api.py,tests/test_distribution.py,tests/test_beginner_journey.py,packaging,.github/workflows/ci.yml,pyproject.toml
+base_commit: 5e424a2da1041b51fcd082ed7b6d46cdc0681275
+project_model_fingerprint: 2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506
+worker_branch: feat/m09-beginner-distribution
+ownership: [src/artifex/distribution, src/artifex/cli.py, src/artifex/application/api.py, tests/test_distribution.py, tests/test_beginner_journey.py, packaging, .github/workflows/ci.yml, pyproject.toml]
+state: ACTIVE
