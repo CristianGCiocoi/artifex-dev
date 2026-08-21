@@ -85,6 +85,8 @@ class DecisionExplanation:
     rollback: str
     approval_required: bool
     confirmation_token: str | None = None
+    plan_fingerprint: str = ""
+    expires_at: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -94,6 +96,8 @@ class DecisionExplanation:
             "rollback": self.rollback,
             "approval_required": self.approval_required,
             "confirmation_token": self.confirmation_token,
+            "plan_fingerprint": self.plan_fingerprint,
+            "expires_at": self.expires_at,
         }
 
 

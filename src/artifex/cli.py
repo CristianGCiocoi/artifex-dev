@@ -10,6 +10,7 @@ from typing import Annotated, Any
 import typer
 
 from artifex.application import Application, OperationContext, OperationRequest
+from artifex.distribution import complete_deferred_uninstall
 
 app = typer.Typer(help="ARTIFEX development continuity and validation control plane.")
 system_app = typer.Typer(help="Inspect the ARTIFEX installation.")
@@ -164,11 +165,12 @@ def upgrade_command(
     """Plan or perform a backed-up, rollback-capable executable upgrade."""
 
     operation = "distribution.upgrade" if apply else "distribution.upgrade.plan"
-    arguments: dict[str, Any] = {"install_root": install_root}
+    arguments: dict[str, Any] = {
+        "install_root": install_root,
+        "source_executable": source_executable,
+    }
     if apply:
-        arguments.update(
-            {"source_executable": source_executable, "confirmation_token": confirm}
-        )
+        arguments["confirmation_token"] = confirm
     _emit(operation, arguments)
 
 
@@ -184,6 +186,27 @@ def uninstall_command(
     _emit(
         operation,
         {"install_root": install_root, "confirmation_token": confirm},
+    )
+
+
+@app.command("_complete-uninstall", hidden=True)
+def complete_uninstall_command(
+    request_file: str = typer.Option(..., "--request-file"),
+    parent_pid: int = typer.Option(..., "--parent-pid"),
+) -> None:
+    """Complete an authenticated uninstall after the invoking process exits."""
+
+    # The signed request is authoritative; the duplicated PID option prevents
+    # accidental invocation with a different process identity.
+    value = json.loads(Path(request_file).read_text(encoding="utf-8"))
+    if not isinstance(value, dict) or value.get("parent_pid") != parent_pid:
+        raise typer.BadParameter("parent PID does not match signed request")
+    typer.echo(
+        json.dumps(
+            complete_deferred_uninstall(request_file),
+            sort_keys=True,
+            ensure_ascii=False,
+        )
     )
 
 

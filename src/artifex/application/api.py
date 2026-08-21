@@ -300,7 +300,7 @@ class Application:
         token = request.arguments.get("confirmation_token")
         if token is not None and not isinstance(token, str):
             raise TypeError("confirmation_token must be a string")
-        plan = plan_integration_setup(root, identifiers)
+        plan = plan_integration_setup(root, identifiers, issue_token=False)
         return OperationResult(
             ok=True,
             value=apply_integration_setup(plan, confirmation_token=token).to_dict(),
@@ -346,7 +346,10 @@ class Application:
 
     @staticmethod
     def _distribution_upgrade_plan(request: OperationRequest) -> OperationResult:
-        decision = upgrade_plan(_required_string(request.arguments, "install_root"))
+        decision = upgrade_plan(
+            _required_string(request.arguments, "source_executable"),
+            _required_string(request.arguments, "install_root"),
+        )
         return OperationResult(ok=True, value=decision.to_dict())
 
     @staticmethod

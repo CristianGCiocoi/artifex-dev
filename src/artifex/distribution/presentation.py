@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
-import hashlib
+from collections.abc import Mapping
+from datetime import datetime
+from typing import Any
 
+from artifex.distribution.approvals import ApprovalStore, consume_decision, issue_decision
 from artifex.distribution.models import DecisionExplanation, ExperienceMode, RiskLevel
 
 _POLICY: dict[ExperienceMode, dict[str, object]] = {
@@ -39,22 +42,30 @@ def explain_decision(
     *,
     effects: tuple[str, ...],
     rollback: str,
+    binding: Mapping[str, Any] | None = None,
+    approval_store: ApprovalStore | None = None,
+    issue_token: bool = True,
+    now: datetime | None = None,
+    ttl_seconds: int = 600,
 ) -> DecisionExplanation:
-    if not action.strip() or not effects or not rollback.strip():
-        raise ValueError("action, effects, and rollback are required")
-    level = RiskLevel(risk)
-    approval = level is not RiskLevel.READ_ONLY
-    token = None
-    if approval:
-        digest = hashlib.sha256(
-            (action + "\0" + "\0".join(effects) + "\0" + rollback).encode("utf-8")
-        ).hexdigest()[:12]
-        token = f"approve-{digest}"
-    return DecisionExplanation(action, level, effects, rollback, approval, token)
+    return issue_decision(
+        action,
+        risk,
+        effects=effects,
+        rollback=rollback,
+        binding=binding,
+        approval_store=approval_store,
+        issue_token=issue_token,
+        now=now,
+        ttl_seconds=ttl_seconds,
+    )
 
 
-def require_approval(decision: DecisionExplanation, supplied_token: str | None) -> None:
-    if decision.approval_required and supplied_token != decision.confirmation_token:
-        raise PermissionError(
-            f"explicit approval required; use confirmation token {decision.confirmation_token}"
-        )
+def require_approval(
+    decision: DecisionExplanation,
+    supplied_token: str | None,
+    *,
+    approval_store: ApprovalStore | None = None,
+    now: datetime | None = None,
+) -> None:
+    consume_decision(decision, supplied_token, approval_store=approval_store, now=now)
