@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://artifex.dev/schemas/overlay.schema.json",
+  "title": "ARTIFEX Candidate Overlay",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "proposal_id", "origin_core_version", "reason", "evidence", "target", "expected_benefit", "compatibility", "validation_status", "changes", "requested_privileges"],
+  "properties": {
+    "id": {"type": "string", "minLength": 1},
+    "proposal_id": {"type": "string", "pattern": "^IMP-[A-Z0-9][A-Z0-9-]*$"},
+    "origin_core_version": {"type": "string", "minLength": 1},
+    "reason": {"type": "string", "minLength": 1},
+    "evidence": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true},
+    "target": {"type": "string", "minLength": 1},
+    "expected_benefit": {"type": "string", "minLength": 1},
+    "compatibility": {"type": "string", "minLength": 1},
+    "validation_status": {"enum": ["PROPOSED", "PASSED", "FAILED"]},
+    "changes": {"type": "object"},
+    "requested_privileges": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+  }
+}
