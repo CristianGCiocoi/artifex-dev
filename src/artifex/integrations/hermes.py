@@ -402,6 +402,13 @@ class HermesIntegration:
         raw_status = native_result.get("status")
         if not isinstance(raw_status, str):
             raise IntegrationError("Hermes result status must be a string")
+        base_commit = _required_native_binding(native_result, "base_commit")
+        contract_fingerprint = _required_native_binding(
+            native_result, "execution_contract_fingerprint"
+        )
+        model_fingerprint = _required_native_binding(
+            native_result, "project_model_fingerprint"
+        )
         status = _NATIVE_STATUS.get(raw_status.strip().lower(), ExecutionStatus.FAIL)
         artifacts_value = native_result.get("artifacts", ())
         if not isinstance(artifacts_value, Sequence) or isinstance(
@@ -421,9 +428,9 @@ class HermesIntegration:
             raise IntegrationError("Hermes result message must be a string")
         normalized = ExecutionResult(
             status,
-            packet.base_commit,
-            packet.contract_fingerprint,
-            packet.project_model_fingerprint,
+            base_commit,
+            contract_fingerprint,
+            model_fingerprint,
             tuple(artifacts),
             validation,
             message,
@@ -543,3 +550,10 @@ def _pack_content_fingerprint(content: bytes) -> str:
     """Keep signed text-pack hashes stable across Git LF/CRLF checkouts."""
 
     return hashlib.sha256(content.replace(b"\r\n", b"\n")).hexdigest()
+
+
+def _required_native_binding(value: Mapping[str, Any], name: str) -> str:
+    binding = value.get(name)
+    if not isinstance(binding, str) or not binding.strip() or binding != binding.strip():
+        raise IntegrationError(f"Hermes result binding {name} is required and must be normalized")
+    return binding

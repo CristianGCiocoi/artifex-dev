@@ -32,7 +32,14 @@ from artifex.integrations.selection import (
     SelectionRequest,
     select_integration,
 )
-from artifex.workflow import ExecutionBaseline, ExecutionStatus
+from artifex.policy import AcceptanceAuthority
+from artifex.workflow import (
+    ExecutionBaseline,
+    ExecutionStatus,
+    StageContract,
+    StageState,
+    WorkflowEngine,
+)
 
 
 def _packet_fields(task_id: str = "M05-FIXTURE") -> dict[str, object]:
@@ -80,6 +87,18 @@ def _research_bundle(request: ResearchRequest) -> ResearchBundle:
         (source,),
         {"provider": "hermes-simulated", "fixture": True},
     )
+
+
+def _native_result(
+    packet: ExecutionPacket, status: str = "completed", **values: object
+) -> dict[str, object]:
+    return {
+        "status": status,
+        "base_commit": packet.base_commit,
+        "execution_contract_fingerprint": packet.contract_fingerprint,
+        "project_model_fingerprint": packet.project_model_fingerprint,
+        **values,
+    }
 
 
 @pytest.mark.unit
@@ -215,12 +234,13 @@ def test_m05_t07_normalizes_native_results_fail_closed(
     packet = integration.prepare_execution(**_packet_fields())
     result = integration.normalize_result(
         packet,
-        {
-            "status": native,
-            "artifacts": [{"path": "owned.txt"}],
-            "validation": {"outcome": "PASS"},
-            "message": "fixture",
-        },
+        _native_result(
+            packet,
+            native,
+            artifacts=[{"path": "owned.txt"}],
+            validation={"outcome": "PASS"},
+            message="fixture",
+        ),
     )
     assert result.status is expected
     assert integration.submit_validation({"outcome": "PASS"})["canonical"] is False
@@ -231,10 +251,44 @@ def test_m05_t07_normalizes_native_results_fail_closed(
     )
     assert (
         integration.normalize_result(
-            packet, {"status": "completed"}, current_baseline=stale
+            packet, _native_result(packet), current_baseline=stale
         ).status
         is ExecutionStatus.REBASE_REQUIRED
     )
+
+
+@pytest.mark.adversarial
+@pytest.mark.parametrize(
+    "binding",
+    ("base_commit", "execution_contract_fingerprint", "project_model_fingerprint"),
+)
+def test_m05_t07_preserves_native_binding_and_classifies_forgery_as_stale(
+    binding: str,
+) -> None:
+    integration = HermesIntegration.simulated()
+    packet = integration.prepare_execution(**_packet_fields())
+    native = _native_result(packet)
+    native[binding] = "f" * (40 if binding == "base_commit" else 64)
+
+    result = integration.normalize_result(packet, native)
+
+    assert result.status is ExecutionStatus.REBASE_REQUIRED
+    assert result.to_dict()[binding] == native[binding]
+
+
+@pytest.mark.adversarial
+@pytest.mark.parametrize(
+    "binding",
+    ("base_commit", "execution_contract_fingerprint", "project_model_fingerprint"),
+)
+def test_m05_t07_rejects_missing_native_binding_as_malformed(binding: str) -> None:
+    integration = HermesIntegration.simulated()
+    packet = integration.prepare_execution(**_packet_fields())
+    native = _native_result(packet)
+    del native[binding]
+
+    with pytest.raises(IntegrationError, match=rf"binding {binding} is required"):
+        integration.normalize_result(packet, native)
 
 
 @pytest.mark.integration
@@ -252,17 +306,73 @@ def test_m05_t08_end_to_end_hermes_fixture_is_deterministic_and_non_mutating(
     status_path.write_text(yaml.safe_dump(canonical, sort_keys=True), encoding="utf-8")
     before = status_path.read_bytes()
     integration = HermesIntegration.simulated("0.20.4")
+    engine = WorkflowEngine()
+    contracts = (
+        StageContract("idea", ("request",), ("idea",), frozenset(), ("core",)),
+        StageContract("research", ("idea",), ("research-bundle",), frozenset(), ("core",)),
+        StageContract(
+            "architecture",
+            ("idea", "research-bundle"),
+            ("architecture",),
+            frozenset(),
+            ("core",),
+        ),
+        StageContract(
+            "implementation-plan",
+            ("architecture",),
+            ("plan",),
+            frozenset(),
+            ("core",),
+        ),
+    )
+    for contract in contracts:
+        engine.register(contract)
 
-    stages = ("idea", "research", "architecture", "implementation-plan")
-    dispatches = [
-        integration.prepare_stage_execution(stage, **_packet_fields(f"FIX-{stage}"))
-        for stage in stages
-    ]
-    research = integration.prepare_research(_research_request())
+    available_outputs = {"request"}
+    dispatches = []
+    for contract in contracts:
+        dispatch = integration.prepare_stage_execution(
+            contract.stage_id, **_packet_fields(f"FIX-{contract.stage_id}")
+        )
+        dispatches.append(dispatch)
+        engine.transition(contract.stage_id, StageState.READY)
+        engine.start(
+            contract.stage_id,
+            available_inputs=available_outputs,
+            available_capabilities=set(),
+            baseline=dispatch.packet.baseline,
+        )
+        executor_claim = integration.normalize_result(
+            dispatch.packet,
+            _native_result(
+                dispatch.packet,
+                artifacts=[{"stage": contract.stage_id, "fixture": True}],
+                validation={"outcome": "PASS", "authority": "executor-claim"},
+            ),
+        )
+        assert executor_claim.status is ExecutionStatus.SUCCESS
+        assert integration.submit_validation(executor_claim.validation)["canonical"] is False
+        claimed = engine.claim_complete(contract.stage_id, outputs=set(contract.produces))
+        assert claimed.state is StageState.CLAIMED_COMPLETE
+        engine.transition(contract.stage_id, StageState.VALIDATING)
+        accepted = engine.transition(
+            contract.stage_id,
+            StageState.ACCEPTED,
+            authority=AcceptanceAuthority.CORE,
+        )
+        assert accepted.state is StageState.ACCEPTED
+        available_outputs.update(contract.produces)
 
-    assert tuple(item.stage for item in dispatches) == stages
+    request = _research_request()
+    research = integration.prepare_research(request)
+    bundle = integration.submit_research_result(request, _research_bundle(request).to_dict())
+
+    assert tuple(item.stage for item in dispatches) == tuple(
+        contract.stage_id for contract in contracts
+    )
     assert all(item.mode == "packet" for item in dispatches)
-    assert research.request.request_id == "RSR-M05-001"
+    assert research.request.request_id == bundle.request_id
+    assert all(engine.get(contract.stage_id).state is StageState.ACCEPTED for contract in contracts)
     assert integration.read_project_status(tmp_path)["state"] == canonical
     assert status_path.read_bytes() == before
     assert list(tmp_path.rglob("*")) == [state, status_path]
@@ -349,4 +459,6 @@ def test_m05_t10_security_boundaries_reject_pack_escape_and_malformed_results(
     with pytest.raises(IntegrationError, match="status must be a string"):
         integration.normalize_result(packet, {"status": ["completed"]})
     with pytest.raises(IntegrationError, match="artifacts must be objects"):
-        integration.normalize_result(packet, {"status": "completed", "artifacts": ["bad"]})
+        integration.normalize_result(
+            packet, _native_result(packet, artifacts=["bad"])
+        )
