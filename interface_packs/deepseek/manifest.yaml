@@ -1,0 +1,28 @@
+schema_version: "1.0"
+id: deepseek
+name: ARTIFEX DeepSeek Optional Harness
+release_status: optional
+core_ga_blocking: false
+enable_when:
+  compatibility: STABLE
+  required_capabilities:
+    - headless
+    - structured_output
+roles:
+  - harness
+  - implementer
+interface_role_policy: stable_useful_surface_only
+authority:
+  execution_results: executor_claim
+  project_model_transition: forbidden
+transport:
+  input: execution-packet-v1-json
+  output: execution-result-v1-json
+command:
+  - deepseek
+  - run
+  - --headless
+  - --format
+  - json
+  - --input
+  - '-'
