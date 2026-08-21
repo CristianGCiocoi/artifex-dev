@@ -1,0 +1,17 @@
+schema_version: "1.0"
+evidence:
+  id: EVD-M03-001
+  gate: G-M03-MILESTONE
+  claim: M03 Compilation and Understanding satisfies its governed contract and fresh-context gate
+  validator: {id: codex-fresh-context-comprehension, version: "2026-08-21", type: independent_agent}
+  source:
+    commit: "637011780a06defae506e64e601b35f486dd4f27"
+    contract_hash: "d6544fff2ccaeb75aa9fb6bace83de506b70eb9b3abf8eb4e61a46945b201a42"
+    project_model_fingerprint: "2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506"
+  result:
+    status: PASS
+    measured: {task_gates_passed: 10, task_gates_total: 10, comprehension_topics_correct: 11, comprehension_topics_total: 11, comprehension_score: 1.0, full_tests: 116, coverage_percent: 89.71, ci_jobs_passed: 6, ci_run: 32510046427}
+  evidence_excerpt: Repository-only evaluator identified purpose architecture components workflows invariants operations extensions limitations and exact current state; score 1.00 PASS
+  scrubbed: true
+  created_at: "2026-08-21T20:51:50+03:00"
+

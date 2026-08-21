@@ -4,3 +4,7 @@
 {"id":"EVT-M00-001","type":"VALIDATION_REJECTED","at":"2026-08-21T20:08:00+03:00","data":{"commit":"9a78796293972e9a8f9660c289d4f72dd2d1fb41","passed_tasks":5,"total_tasks":10}}
 {"id":"EVT-M00-002","type":"MILESTONE_ACCEPTED","at":"2026-08-21T20:14:04+03:00","data":{"milestone":"M00","commit":"b823fbeea00cd7872b78690e3eb880606523c999","task_gates":"10/10","ci_run":32506965693}}
 {"id":"EVT-GOV-001","type":"CONTRACT_RECONCILIATION_OPENED","at":"2026-08-21T20:42:00+03:00","data":{"milestones":["M01","M02","M03"],"reason":"Independent review found implementation began from hashed Execution Packets but milestone acceptance contracts were not persisted canonically","policy":"Criteria are copied without weakening from accepted milestone packs; new evidence must bind to governed contract files and post-repair source commit"}}
+{"id":"EVT-GOV-002","type":"CONTRACT_RECONCILIATION_CLOSED","at":"2026-08-21T20:51:50+03:00","data":{"milestones":["M01","M02","M03"],"source_commit":"637011780a06defae506e64e601b35f486dd4f27","criteria_weakened":false}}
+{"id":"EVT-M01-001","type":"MILESTONE_ACCEPTED","at":"2026-08-21T20:51:50+03:00","data":{"milestone":"M01","task_gates":"10/10","evidence":"EVD-M01-001"}}
+{"id":"EVT-M02-001","type":"MILESTONE_ACCEPTED","at":"2026-08-21T20:51:50+03:00","data":{"milestone":"M02","task_gates":"12/12","evidence":"EVD-M02-001"}}
+{"id":"EVT-M03-001","type":"MILESTONE_ACCEPTED","at":"2026-08-21T20:51:50+03:00","data":{"milestone":"M03","task_gates":"10/10","comprehension_score":1.0,"evidence":"EVD-M03-001"}}

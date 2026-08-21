@@ -1,0 +1,17 @@
+schema_version: "1.0"
+evidence:
+  id: EVD-M01-001
+  gate: G-M01-MILESTONE
+  claim: M01 Project Model and Git Store satisfies its governed contract
+  validator: {id: codex-independent-integration-validator, version: "2026-08-21", type: independent_agent}
+  source:
+    commit: "637011780a06defae506e64e601b35f486dd4f27"
+    contract_hash: "ced375c5a359194a97df6aa348a7ff784a449711b1346ff4a3b758519ffc8262"
+    project_model_fingerprint: "2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506"
+  result:
+    status: PASS
+    measured: {task_gates_passed: 10, task_gates_total: 10, focused_tests: 40, full_tests: 116, coverage_percent: 89.71, integration_tests: 9, ci_jobs_passed: 6, ci_run: 32510046427}
+  evidence_excerpt: M01 10/10 PASS; integration PASS; architecture PASS
+  scrubbed: true
+  created_at: "2026-08-21T20:51:50+03:00"
+

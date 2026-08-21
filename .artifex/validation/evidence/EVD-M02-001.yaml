@@ -1,0 +1,17 @@
+schema_version: "1.0"
+evidence:
+  id: EVD-M02-001
+  gate: G-M02-MILESTONE
+  claim: M02 Workflow and Validation Core satisfies its governed contract
+  validator: {id: codex-independent-integration-validator, version: "2026-08-21", type: independent_agent}
+  source:
+    commit: "637011780a06defae506e64e601b35f486dd4f27"
+    contract_hash: "2ec8b21a59e6653244cbbd1fa039a7958633709cdbdecef28a3cb1b8445b0601"
+    project_model_fingerprint: "2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506"
+  result:
+    status: PASS
+    measured: {task_gates_passed: 12, task_gates_total: 12, adversarial_scenarios_passed: 8, persistence_reopen: PASS, full_tests: 116, coverage_percent: 89.71, ci_jobs_passed: 6, ci_run: 32510046427}
+  evidence_excerpt: M02 12/12 PASS; durable JSONL evidence reconstruction PASS; adversarial 8/8 PASS
+  scrubbed: true
+  created_at: "2026-08-21T20:51:50+03:00"
+

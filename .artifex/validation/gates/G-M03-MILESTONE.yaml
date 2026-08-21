@@ -1,0 +1,3 @@
+schema_version: "1.0"
+gate: {id: G-M03-MILESTONE, scope: MILESTONE, target: M03, state: PASS, contract_hash: "d6544fff2ccaeb75aa9fb6bace83de506b70eb9b3abf8eb4e61a46945b201a42", required_evidence: [EVD-M03-001], waiver_allowed: false}
+
