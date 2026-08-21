@@ -1,0 +1,23 @@
+schema_version: "1.0"
+contract:
+  id: VAL-M00
+  milestone: M00
+  state: ACTIVE
+  immutable_after: EXECUTION_STARTED
+  base_commit: "82b63edd7243c0af30fec9f6c8a17a1d87cb7f96"
+  project_model_fingerprint: "2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506"
+  criteria:
+    - {task: M00-T01, outcome: Python 3.12 package, locked dependencies, lint, type, test, coverage, CI}
+    - {task: M00-T02, outcome: Six logical Core package boundaries and architecture test}
+    - {task: M00-T03, outcome: Stable ID parse, validation, and serialization}
+    - {task: M00-T04, outcome: Transport-neutral Application API health/version smoke}
+    - {task: M00-T05, outcome: ProjectStore and RunStore seams}
+    - {task: M00-T06, outcome: Frozen packaging ADR with platform criteria}
+    - {task: M00-T07, outcome: Test taxonomy and reusable fixture repositories}
+    - {task: M00-T08, outcome: Complete requirements ownership traceability}
+    - {task: M00-T09, outcome: Formal dashboard state schema}
+    - {task: M00-T10, outcome: Authority, trust, secret, and privilege policies}
+  validators:
+    - {type: deterministic, argv: [uv, run, ruff, check, .], timeout_seconds: 120}
+    - {type: deterministic, argv: [uv, run, mypy, src], timeout_seconds: 120}
+    - {type: deterministic, argv: [uv, run, pytest, --cov=artifex], timeout_seconds: 300}

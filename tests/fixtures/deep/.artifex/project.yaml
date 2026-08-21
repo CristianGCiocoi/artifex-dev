@@ -1,0 +1,6 @@
+schema_version: "1.0"
+project:
+  id: FIXTURE-DEEP
+  name: Deep Fixture
+  workflow_depth: DEEP
+

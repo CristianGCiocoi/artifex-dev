@@ -1,0 +1,24 @@
+schema_version: "1.0"
+project:
+  id: ARTIFEX
+  name: ARTIFEX
+  description: Agent-neutral development control, continuity, and understanding layer
+  lifecycle: greenfield
+  workflow_depth: DEEP
+  experience_mode: EXPERT
+  autonomy_mode: AUTONOMOUS
+  architecture_version: "1.0 ACCEPTED"
+  implementation_plan_version: "1.0 ACCEPTED"
+git:
+  baseline_commit: "82b63edd7243c0af30fec9f6c8a17a1d87cb7f96"
+  remote_status: CONFIGURED
+  remote: "https://github.com/CristianGCiocoi/artifex-dev.git"
+integrations:
+  preferred: hermes
+  required: [manual, hermes, codex, claude]
+  optional: [deepseek, pandora]
+authority:
+  canonical_state: CORE
+  architect: external
+  major_architecture_gate: required
+

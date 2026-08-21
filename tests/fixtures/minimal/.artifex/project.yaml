@@ -1,0 +1,6 @@
+schema_version: "1.0"
+project:
+  id: FIXTURE-MINIMAL
+  name: Minimal Fixture
+  workflow_depth: QUICK
+

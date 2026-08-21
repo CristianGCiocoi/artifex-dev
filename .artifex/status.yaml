@@ -1,0 +1,24 @@
+schema_version: "1.0"
+derived_at: null
+project: ARTIFEX
+implementation:
+  current_milestone: M00
+  current_state: ACTIVE
+  release: PLANNED
+milestones:
+  M00: ACTIVE
+  M01: PLANNED
+  M02: PLANNED
+  M03: PLANNED
+  M04: PLANNED
+  M05: PLANNED
+  M06: PLANNED
+  M07: PLANNED
+  M08: PLANNED
+  M09: PLANNED
+  M10: PLANNED
+  M11: PLANNED
+publication:
+  remote: CONFIGURED
+  url: "https://github.com/CristianGCiocoi/artifex-dev"
+

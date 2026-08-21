@@ -1,0 +1,22 @@
+schema_version: "1.0"
+source: docs/requirements/REQUIREMENTS_BASELINE.md
+policy: every accepted requirement has an owning milestone
+ownership:
+  REQ-F-001..004: [M01]
+  REQ-F-010..014: [M04, M05, M10]
+  REQ-F-020..023: [M01, M03]
+  REQ-F-030..034: [M01, M02, M03]
+  REQ-F-040..047: [M04, M05, M06, M07, M10]
+  REQ-F-050..058: [M02]
+  REQ-F-060..066: [M03]
+  REQ-F-070..074: [M08]
+  REQ-F-080..084: [M01, M08, M11]
+  REQ-F-090..093: [M08]
+  REQ-F-100..104: [M09]
+  REQ-F-110..114: [M09]
+  REQ-NF-001..012: [M00, M01, M02, M03, M04, M09, M11]
+metrics:
+  requirements_total: null
+  requirements_traced: null
+  orphan_requirements: null
+

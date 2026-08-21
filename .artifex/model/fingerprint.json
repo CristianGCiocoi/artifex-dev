@@ -1,0 +1,11 @@
+{
+  "algorithm": "sha256-of-ordered-sha256-lines",
+  "fingerprint": "2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506",
+  "sources": [
+    ".artifex/project.yaml",
+    "docs/architecture/ARCHITECTURE.md",
+    "docs/architecture/INVARIANTS.md",
+    "docs/requirements/REQUIREMENTS_BASELINE.md",
+    "docs/implementation/IMPLEMENTATION_PLAN.md"
+  ]
+}

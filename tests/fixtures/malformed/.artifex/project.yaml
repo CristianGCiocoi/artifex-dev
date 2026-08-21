@@ -1,0 +1,3 @@
+schema_version: [not, a, scalar]
+project: malformed
+

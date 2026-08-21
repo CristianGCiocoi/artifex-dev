@@ -1,0 +1,15 @@
+schema_version: "1.0"
+nodes:
+  M00: {depends_on: [], blocks_release: true}
+  M01: {depends_on: [M00], blocks_release: true}
+  M02: {depends_on: [M01], blocks_release: true}
+  M03: {depends_on: [M01], blocks_release: true}
+  M04: {depends_on: [M02, M03], blocks_release: true}
+  M05: {depends_on: [M04], blocks_release: true}
+  M06: {depends_on: [M04], blocks_release: true}
+  M07: {depends_on: [M04], blocks_release: true}
+  M08: {depends_on: [M01, M02], completion_evidence_after: [M05, M06, M07], blocks_release: true}
+  M09: {depends_on: [M05, M06, M07], blocks_release: true}
+  M10: {depends_on: [M04], blocks_release: false}
+  M11: {depends_on: [M05, M06, M07, M08, M09], blocks_release: true}
+
