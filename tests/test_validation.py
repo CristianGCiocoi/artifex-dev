@@ -234,13 +234,39 @@ def test_evidence_is_scrubbed_minimized_integrity_checked_and_invalidated() -> N
     assert ledger.state(entry, _binding()) is EvidenceState.STALE
 
 
+@pytest.mark.integration
+def test_evidence_ledger_persists_and_reconstructs_jsonl(tmp_path: Path) -> None:
+    journal = tmp_path / ".artifex" / "validation" / "evidence" / "ledger.jsonl"
+    entry = _entry()
+    ledger = EvidenceLedger({"VAL-TEST": "1"}, journal_path=journal)
+    ledger.append(entry)
+    ledger.invalidate([entry.evidence_id], reason="verified input changed")
+
+    reconstructed = EvidenceLedger({"VAL-TEST": "1"}, journal_path=journal)
+    assert reconstructed.entries == (entry,)
+    assert reconstructed.state(entry, _binding()) is EvidenceState.STALE
+    lines = journal.read_text(encoding="utf-8").splitlines()
+    assert [json.loads(line)["type"] for line in lines] == ["EVIDENCE", "INVALIDATION"]
+
+
+@pytest.mark.integration
+def test_evidence_ledger_fails_closed_on_corrupt_journal(tmp_path: Path) -> None:
+    journal = tmp_path / "ledger.jsonl"
+    journal.write_text('{"type":"EVIDENCE","entry":{}}\n', encoding="utf-8")
+    with pytest.raises(ValidationError, match="corrupt evidence journal"):
+        EvidenceLedger({"VAL-TEST": "1"}, journal_path=journal)
+
+
 @pytest.mark.unit
 def test_evidence_and_ledger_reject_invalid_operations() -> None:
     with pytest.raises(ValidationError, match="EVD"):
         EvidenceEntry.create("BAD", _result(), _binding(), recorded_at=NOW)  # type: ignore[arg-type]
     with pytest.raises(ValidationError, match="timezone"):
         EvidenceEntry.create(
-            "EVD-X", _result(), _binding(), recorded_at=datetime(2026, 1, 1)  # type: ignore[arg-type]
+            "EVD-X",
+            _result(),
+            _binding(),
+            recorded_at=datetime(2026, 1, 1),  # type: ignore[arg-type]
         )
     with pytest.raises(ValidationError, match="bind"):
         EvidenceBinding("", "contract", ("model",))
@@ -302,9 +328,7 @@ def _requirement(claim: str, validator: str = "VAL-TEST") -> EvidenceRequirement
         (EvidenceOutcome.BLOCKED, GateState.BLOCKED),
     ],
 )
-def test_gate_evaluates_current_evidence(
-    outcome: EvidenceOutcome, expected: GateState
-) -> None:
+def test_gate_evaluates_current_evidence(outcome: EvidenceOutcome, expected: GateState) -> None:
     ledger = EvidenceLedger({"VAL-TEST": "1"})
     ledger.append(_entry(outcome=outcome))
     graph = GateGraph((GateDefinition("G-TASK", GateLevel.TASK, (_requirement("tests pass"),)),))
@@ -380,9 +404,7 @@ def test_gate_states_pending_stale_waived_and_authority() -> None:
 def test_hierarchical_gate_requires_distinct_parent_evidence() -> None:
     gates = (
         GateDefinition("G-TASK", GateLevel.TASK, (_requirement("task"),)),
-        GateDefinition(
-            "G-INT", GateLevel.INTEGRATION, (_requirement("integration"),), ("G-TASK",)
-        ),
+        GateDefinition("G-INT", GateLevel.INTEGRATION, (_requirement("integration"),), ("G-TASK",)),
         GateDefinition(
             "G-MILESTONE", GateLevel.MILESTONE, (_requirement("milestone"),), ("G-INT",)
         ),
@@ -437,7 +459,5 @@ def test_contract_schemas_accept_representative_documents() -> None:
         },
         stage_schema,
     )
-    evidence_schema = json.loads(
-        (root / "schemas" / "acceptance-evidence.schema.json").read_text()
-    )
+    evidence_schema = json.loads((root / "schemas" / "acceptance-evidence.schema.json").read_text())
     jsonschema.Draft202012Validator.check_schema(evidence_schema)

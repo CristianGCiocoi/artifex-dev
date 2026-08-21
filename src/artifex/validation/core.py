@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field, replace
@@ -200,13 +201,12 @@ class CommandOutcome:
 
 
 class CommandRunner(Protocol):
-    def __call__(self, argv: tuple[str, ...], cwd: Path, timeout_seconds: float) -> CommandOutcome:
-        ...
+    def __call__(
+        self, argv: tuple[str, ...], cwd: Path, timeout_seconds: float
+    ) -> CommandOutcome: ...
 
 
-def _subprocess_runner(
-    argv: tuple[str, ...], cwd: Path, timeout_seconds: float
-) -> CommandOutcome:
+def _subprocess_runner(argv: tuple[str, ...], cwd: Path, timeout_seconds: float) -> CommandOutcome:
     completed = subprocess.run(
         argv,
         cwd=cwd,
@@ -452,23 +452,32 @@ class EvidenceState(StrEnum):
 class EvidenceLedger:
     """Append-only evidence with trusted validator identities and explicit invalidation."""
 
-    def __init__(self, trusted_validators: Mapping[str, str]) -> None:
+    def __init__(
+        self, trusted_validators: Mapping[str, str], *, journal_path: Path | None = None
+    ) -> None:
         self._trusted = dict(trusted_validators)
         self._entries: list[EvidenceEntry] = []
         self._invalidations: dict[str, str] = {}
+        self._journal_path = journal_path
+        if journal_path is not None and journal_path.exists():
+            self._load_journal()
 
     @property
     def entries(self) -> tuple[EvidenceEntry, ...]:
         return tuple(self._entries)
 
     def append(self, entry: EvidenceEntry) -> None:
+        self._validate_entry(entry)
+        self._persist({"type": "EVIDENCE", "entry": self._entry_payload(entry)})
+        self._entries.append(entry)
+
+    def _validate_entry(self, entry: EvidenceEntry) -> None:
         if self._trusted.get(entry.validator_id) != entry.validator_version:
             raise ValidationError("untrusted or spoofed validator identity")
         if not entry.verify_integrity():
             raise ValidationError("evidence integrity check failed")
         if any(item.evidence_id == entry.evidence_id for item in self._entries):
             raise ValidationError(f"duplicate evidence ID: {entry.evidence_id}")
-        self._entries.append(entry)
 
     def invalidate(self, evidence_ids: Iterable[str], *, reason: str) -> None:
         if not reason:
@@ -477,12 +486,105 @@ class EvidenceLedger:
         for evidence_id in evidence_ids:
             if evidence_id not in known:
                 raise ValidationError(f"cannot invalidate unknown evidence: {evidence_id}")
+            self._persist({"type": "INVALIDATION", "evidence_id": evidence_id, "reason": reason})
             self._invalidations[evidence_id] = reason
 
     def state(self, entry: EvidenceEntry, expected: EvidenceBinding) -> EvidenceState:
         if entry.evidence_id in self._invalidations or entry.binding != expected:
             return EvidenceState.STALE
         return EvidenceState.CURRENT
+
+    def _persist(self, event: Mapping[str, Any]) -> None:
+        if self._journal_path is None:
+            return
+        self._journal_path.parent.mkdir(parents=True, exist_ok=True)
+        encoded = json.dumps(event, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+        with self._journal_path.open("a", encoding="utf-8", newline="\n") as stream:
+            stream.write(encoded + "\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+
+    def _load_journal(self) -> None:
+        assert self._journal_path is not None
+        try:
+            lines = self._journal_path.read_text(encoding="utf-8").splitlines()
+            for line_number, line in enumerate(lines, start=1):
+                if not line.strip():
+                    continue
+                event = json.loads(line)
+                event_type = event.get("type")
+                if event_type == "EVIDENCE":
+                    entry = self._entry_from_payload(event["entry"])
+                    self._validate_entry(entry)
+                    self._entries.append(entry)
+                elif event_type == "INVALIDATION":
+                    evidence_id = str(event["evidence_id"])
+                    reason = str(event["reason"])
+                    if not reason or evidence_id not in {
+                        entry.evidence_id for entry in self._entries
+                    }:
+                        raise ValidationError("invalid evidence invalidation event")
+                    self._invalidations[evidence_id] = reason
+                else:
+                    raise ValidationError(f"unknown evidence journal event at line {line_number}")
+        except (OSError, KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
+            if isinstance(exc, ValidationError):
+                raise
+            raise ValidationError(f"corrupt evidence journal: {exc}") from exc
+
+    @staticmethod
+    def _entry_payload(entry: EvidenceEntry) -> dict[str, Any]:
+        return {
+            "evidence_id": entry.evidence_id,
+            "validator_id": entry.validator_id,
+            "validator_version": entry.validator_version,
+            "validator_kind": entry.validator_kind,
+            "claim": entry.claim,
+            "outcome": entry.outcome,
+            "facts": [{"name": fact.name, "value": fact.value} for fact in entry.facts],
+            "binding": {
+                "base_commit": entry.binding.base_commit,
+                "contract_hash": entry.binding.contract_hash,
+                "project_model_fingerprints": list(entry.binding.project_model_fingerprints),
+            },
+            "output": entry.output,
+            "recorded_at": entry.recorded_at.isoformat(),
+            "producer_id": entry.producer_id,
+            "independent_of_executor": entry.independent_of_executor,
+            "entry_hash": entry.entry_hash,
+        }
+
+    @staticmethod
+    def _entry_from_payload(payload: Mapping[str, Any]) -> EvidenceEntry:
+        binding_payload = payload["binding"]
+        if not isinstance(binding_payload, Mapping):
+            raise ValidationError("corrupt evidence binding")
+        facts_payload = payload["facts"]
+        if not isinstance(facts_payload, list):
+            raise ValidationError("corrupt evidence facts")
+        return EvidenceEntry(
+            evidence_id=str(payload["evidence_id"]),
+            validator_id=str(payload["validator_id"]),
+            validator_version=str(payload["validator_version"]),
+            validator_kind=ValidatorKind(str(payload["validator_kind"])),
+            claim=str(payload["claim"]),
+            outcome=EvidenceOutcome(str(payload["outcome"])),
+            facts=tuple(
+                MeasuredFact(str(fact["name"]), fact["value"])
+                for fact in facts_payload
+                if isinstance(fact, Mapping)
+            ),
+            binding=EvidenceBinding(
+                str(binding_payload["base_commit"]),
+                str(binding_payload["contract_hash"]),
+                tuple(str(item) for item in binding_payload["project_model_fingerprints"]),
+            ),
+            output=str(payload["output"]),
+            recorded_at=datetime.fromisoformat(str(payload["recorded_at"])),
+            producer_id=str(payload["producer_id"]),
+            independent_of_executor=bool(payload["independent_of_executor"]),
+            entry_hash=str(payload["entry_hash"]),
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -638,9 +740,7 @@ class GateGraph:
         except KeyError as error:
             raise ValidationError(f"unknown gate: {gate_id}") from error
 
-        active_waivers = {
-            waiver.gate_id: waiver for waiver in waivers if waiver.is_active(at=now)
-        }
+        active_waivers = {waiver.gate_id: waiver for waiver in waivers if waiver.is_active(at=now)}
         if gate.gate_id in active_waivers:
             if not gate.waiver_allowed:
                 raise ValidationError("this gate cannot be waived")

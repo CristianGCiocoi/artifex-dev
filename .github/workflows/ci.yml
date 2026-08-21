@@ -20,5 +20,5 @@ jobs:
       - run: uv sync --locked --all-groups
       - run: uv run ruff check .
       - run: uv run mypy src
+      - run: uv run coverage erase
       - run: uv run pytest --cov=artifex --cov-report=term-missing
-
