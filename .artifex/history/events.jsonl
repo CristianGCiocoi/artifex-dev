@@ -12,3 +12,4 @@
 {"id":"EVT-M04-001","type":"VALIDATION_REJECTED","at":"2026-08-21T21:16:00+03:00","data":{"milestone":"M04","passed_tasks":9,"total_tasks":10,"blocker":"malformed skill shim references"}}
 {"id":"EVT-M04-002","type":"MILESTONE_ACCEPTED","at":"2026-08-21T21:20:12+03:00","data":{"milestone":"M04","task_gates":"10/10","evidence":"EVD-M04-001","ci_run":32512690687}}
 {"id":"EVT-M08-001","type":"MILESTONE_ACCEPTED","at":"2026-08-21T21:20:12+03:00","data":{"milestone":"M08","task_gates":"11/11","evidence":"EVD-M08-001"}}
+{"id":"EVT-WAVE-003","type":"EXECUTION_STARTED","at":"2026-08-21T21:23:00+03:00","data":{"milestones":["M05","M06","M07"],"base_commit":"a284a143307a54c21ac4854ed7a8f7d862c986c5","contracts":["VAL-M05","VAL-M06","VAL-M07"],"shared_integration_task":"M07-T10 owned by orchestrator after adapter merge"}}

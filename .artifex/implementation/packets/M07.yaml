@@ -1,0 +1,7 @@
+packet_hash: b5a7facd579504b1e825273bcb17e6fa558a45fc847590835a135dda1e0d1e68
+base_commit: a284a143307a54c21ac4854ed7a8f7d862c986c5
+project_model_fingerprint: 2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506
+worker_branch: feat/m07-claude
+ownership: [src/artifex/integrations/claude.py, tests/test_claude.py, interface_packs/claude]
+state: ACTIVE
+

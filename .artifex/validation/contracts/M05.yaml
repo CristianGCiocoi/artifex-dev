@@ -1,0 +1,12 @@
+schema_version: "1.0"
+contract:
+  id: VAL-M05
+  milestone: M05
+  state: EXECUTION_STARTED
+  authority_source: docs/implementation/milestones/M05_HERMES_INTEGRATION.md
+  execution_base_commit: a284a143307a54c21ac4854ed7a8f7d862c986c5
+  project_model_fingerprint: 2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506
+  packet_hash: e01052a1c727e6462ba63a8b4c709185b12cdbbddc38a0edc57e0f50d4dc1f3d
+  criteria: [T01 detection doctor, T02 interface pack installation, T03 stage adapter, T04 task subagent mapping, T05 research provider, T06 native memory isolation, T07 failure normalization, T08 fixture workflow, T09 shutdown reopen continuity, T10 conformance security review]
+  validators: [detection, conformance, fixture-workflow, reopen-continuity, memory-isolation, permissions, full-suite, independent-review]
+

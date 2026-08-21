@@ -1,0 +1,7 @@
+packet_hash: e01052a1c727e6462ba63a8b4c709185b12cdbbddc38a0edc57e0f50d4dc1f3d
+base_commit: a284a143307a54c21ac4854ed7a8f7d862c986c5
+project_model_fingerprint: 2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506
+worker_branch: feat/m05-hermes
+ownership: [src/artifex/integrations/hermes.py, tests/test_hermes.py, interface_packs/hermes]
+state: ACTIVE
+

@@ -1,0 +1,12 @@
+schema_version: "1.0"
+contract:
+  id: VAL-M07
+  milestone: M07
+  state: EXECUTION_STARTED
+  authority_source: docs/implementation/milestones/M07_CLAUDE_STANDALONE.md
+  execution_base_commit: a284a143307a54c21ac4854ed7a8f7d862c986c5
+  project_model_fingerprint: 2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506
+  packet_hash: b5a7facd579504b1e825273bcb17e6fa558a45fc847590835a135dda1e0d1e68
+  criteria: [T01 detection, T02 interface pack skills rules, T03 CLAUDE shim, T04 stage execution, T05 worktree support, T06 optional MCP Desktop entry, T07 greenfield STANDARD, T08 brownfield ChangeSet, T09 conformance normalization, T10 cross-interface continuity]
+  validators: [detection, interface-pack, greenfield, brownfield, worktree-binding, mcp-entry, conformance, cross-interface-continuity, full-suite, independent-review]
+

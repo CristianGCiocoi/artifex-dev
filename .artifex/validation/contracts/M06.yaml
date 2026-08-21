@@ -1,0 +1,12 @@
+schema_version: "1.0"
+contract:
+  id: VAL-M06
+  milestone: M06
+  state: EXECUTION_STARTED
+  authority_source: docs/implementation/milestones/M06_CODEX_STANDALONE.md
+  execution_base_commit: a284a143307a54c21ac4854ed7a8f7d862c986c5
+  project_model_fingerprint: 2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506
+  packet_hash: 13f5e60d73f29751a71d376cb89e0aaeb8b912c8c3465e7c1b2ca103f8019f5e
+  criteria: [T01 detection, T02 interface pack skills, T03 AGENTS shim, T04 stage execution, T05 worker worktree, T06 CLI MCP bridge, T07 greenfield STANDARD, T08 brownfield ChangeSet, T09 conformance normalization, T10 continuity fixture]
+  validators: [detection, interface-pack, greenfield, brownfield, worktree-binding, cli-mcp-bridge, conformance, full-suite, independent-review]
+
