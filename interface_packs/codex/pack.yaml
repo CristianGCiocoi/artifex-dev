@@ -32,3 +32,5 @@ execution:
   raw_result_identity: required_no_defaults
   success_artifacts: owned_created_or_content_changed
   post_run_project_model_recheck: required
+  core_authority_artifacts: forbidden
+  artifex_output_namespaces: [.artifex/generated, .artifex/runs]

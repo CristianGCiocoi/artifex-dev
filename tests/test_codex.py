@@ -107,10 +107,16 @@ def _packet(
     model_fingerprint: str = "b" * 64,
     task_id: str = "M06-T04",
     owned_paths: tuple[str, ...] = ("owned.txt",),
+    governing_changeset: str | None = None,
 ) -> ExecutionPacket:
+    task_contract = {"id": task_id, "stage": "execution"}
+    context: dict[str, object] = {"relevant": ["INV-024"]}
+    if governing_changeset is not None:
+        task_contract["changeset_id"] = governing_changeset
+        context["governing_changeset"] = governing_changeset
     return integration.prepare_execution(
-        task_contract={"id": task_id, "stage": "execution"},
-        context={"relevant": ["INV-024"]},
+        task_contract=task_contract,
+        context=context,
         base_commit=base_commit,
         project_model_fingerprint=model_fingerprint,
         acceptance_criteria=("Codex result is portable",),
@@ -348,6 +354,7 @@ def test_m06_t04_injectable_harness_consumes_bound_plan_without_live_mutation(
         integration,
         base_commit=head,
         model_fingerprint=_model_fingerprint(repository),
+        owned_paths=("owned.txt", ".artifex/generated/harness-result.txt"),
     )
     plan = integration.prepare_stage(packet, root, require_clean=True)
     consumed: list[str] = []
@@ -359,12 +366,21 @@ def test_m06_t04_injectable_harness_consumes_bound_plan_without_live_mutation(
             f"after runner {observed_plan.packet.contract_fingerprint}\n",
             encoding="utf-8",
         )
+        generated = root / ".artifex" / "generated" / "harness-result.txt"
+        generated.parent.mkdir(parents=True, exist_ok=True)
+        generated.write_text("generated output\n", encoding="utf-8")
         return {
             "status": "completed",
             "base_commit": packet.base_commit,
             "execution_contract_fingerprint": packet.contract_fingerprint,
             "project_model_fingerprint": packet.project_model_fingerprint,
-            "artifacts": [{"path": "owned.txt", "state": "produced"}],
+            "artifacts": [
+                {"path": "owned.txt", "state": "produced"},
+                {
+                    "path": ".artifex/generated/harness-result.txt",
+                    "state": "produced",
+                },
+            ],
             "validation": {"tests": "PASS"},
         }
 
@@ -373,6 +389,7 @@ def test_m06_t04_injectable_harness_consumes_bound_plan_without_live_mutation(
     assert result.validation == {"tests": "PASS"}
     assert consumed == [packet.contract_fingerprint]
     assert (root / "owned.txt").read_text(encoding="utf-8").startswith("after runner")
+    assert (root / ".artifex" / "generated" / "harness-result.txt").is_file()
     assert integration.submit_validation(result.validation)["canonical"] is False
 
 
@@ -645,6 +662,18 @@ def test_m06_t09_failure_cancel_stale_noop_and_post_run_drift_fail_closed(
     root = tmp_path / "adversarial-runner"
     repository = ProjectRepository.initialize(root, project_id="ADVERSARIAL", name="Adversarial")
     (root / "owned.txt").write_text("preexisting\n", encoding="utf-8")
+    authority_paths = (
+        ".artifex/project-model.json",
+        ".artifex/status.yaml",
+        ".artifex/validation/contracts/VAL-M06-FORBID.yaml",
+        ".artifex/validation/evidence/EVD-M06-FORBID.json",
+        ".artifex/changesets/CHG-M06-FORBID.json",
+        "governance/CHG-M06-FORBID.json",
+    )
+    for authority_path in authority_paths[1:]:
+        target = root / authority_path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text("state: CORE\n", encoding="utf-8")
     head = _commit_all(root, "adversarial baseline")
     bound_packet = _packet(
         integration,
@@ -688,15 +717,44 @@ def test_m06_t09_failure_cancel_stale_noop_and_post_run_drift_fail_closed(
     with pytest.raises(IntegrationError, match="outside packet ownership"):
         integration.execute_stage(plan, write_outside_ownership)
 
+    authority_packet = _packet(
+        integration,
+        base_commit=head,
+        model_fingerprint=_model_fingerprint(repository),
+        owned_paths=authority_paths,
+        governing_changeset="CHG-M06-FORBID",
+    )
+    authority_plan = integration.prepare_stage(authority_packet, root)
+
+    def authority_result(path: str) -> dict[str, object]:
+        return {
+            "status": "SUCCESS",
+            "base_commit": authority_packet.base_commit,
+            "execution_contract_fingerprint": authority_packet.contract_fingerprint,
+            "project_model_fingerprint": authority_packet.project_model_fingerprint,
+            "artifacts": [{"path": path}],
+        }
+
+    for forbidden in authority_paths[1:]:
+        def mutate_authority(
+            _: CodexWorkerPlan, path: str = forbidden
+        ) -> Mapping[str, object]:
+            (root / path).write_text(f"mutated by runner: {path}\n", encoding="utf-8")
+            return authority_result(path)
+
+        with pytest.raises(IntegrationError, match="Core authority artifact"):
+            integration.execute_stage(authority_plan, mutate_authority)
+
     def mutate_model_after_execution(_: CodexWorkerPlan) -> Mapping[str, object]:
-        (root / "new.txt").write_text("runner delta\n", encoding="utf-8")
         model_path = root / ".artifex" / "project-model.json"
         model = json.loads(model_path.read_text(encoding="utf-8"))
         model["project"]["name"] = "Post-run drift"
         model_path.write_text(json.dumps(model), encoding="utf-8")
-        return bound_result([{"path": "new.txt"}])
+        return authority_result(".artifex/project-model.json")
 
-    post_run_drift = integration.execute_stage(plan, mutate_model_after_execution)
+    post_run_drift = integration.execute_stage(
+        authority_plan, mutate_model_after_execution
+    )
     assert post_run_drift.status is ExecutionStatus.REBASE_REQUIRED
 
 

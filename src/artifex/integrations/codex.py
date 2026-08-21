@@ -600,7 +600,9 @@ class CodexIntegration:
                 plan.packet, classified, current_baseline=current_baseline
             )
         if classified.status is ExecutionStatus.SUCCESS:
-            _verify_success_artifacts(root, classified, owned_paths, before)
+            _verify_success_artifacts(
+                root, plan.packet, classified, owned_paths, before
+            )
         return classified
 
     def normalize_result(
@@ -868,6 +870,7 @@ def _snapshot_owned_artifacts(
 
 def _verify_success_artifacts(
     root: Path,
+    packet: ExecutionPacket,
     result: ExecutionResult,
     owned_paths: Sequence[str],
     before: Mapping[str, str],
@@ -881,6 +884,12 @@ def _verify_success_artifacts(
         if relative in seen:
             raise IntegrationError(f"duplicate Codex result artifact: {relative}")
         seen.add(relative)
+        authority_reason = _core_authority_reason(relative, packet)
+        if authority_reason is not None:
+            raise IntegrationError(
+                f"Codex SUCCESS cannot claim Core authority artifact {relative}: "
+                f"{authority_reason}"
+            )
         if not any(
             relative == owner or relative.startswith(f"{owner}/")
             for owner in owned_paths
@@ -893,6 +902,40 @@ def _verify_success_artifacts(
             raise IntegrationError(
                 f"Codex SUCCESS artifact was not created or content-changed: {relative}"
             )
+
+
+def _core_authority_reason(
+    relative_path: str, packet: ExecutionPacket
+) -> str | None:
+    normalized = relative_path.casefold()
+    allowed_artifex_outputs = (".artifex/generated/", ".artifex/runs/")
+    if normalized == ".artifex" or (
+        normalized.startswith(".artifex/")
+        and not normalized.startswith(allowed_artifex_outputs)
+    ):
+        return "the .artifex namespace is Core-owned outside generated/run outputs"
+    governing_changesets = _governing_changeset_ids(packet)
+    upper_path = relative_path.upper()
+    for changeset_id in governing_changesets:
+        if changeset_id in upper_path:
+            return f"{changeset_id} is a governing ChangeSet"
+    return None
+
+
+def _governing_changeset_ids(packet: ExecutionPacket) -> frozenset[str]:
+    payload = json.dumps(
+        {
+            "task_contract": _copy_json(packet.task_contract),
+            "context": _copy_json(packet.context),
+            "ownership": _copy_json(packet.ownership),
+        },
+        sort_keys=True,
+        ensure_ascii=False,
+    )
+    return frozenset(
+        match.group(0).upper()
+        for match in re.finditer(r"(?<![A-Z0-9-])CHG-[A-Z0-9][A-Z0-9-]*", payload, re.IGNORECASE)
+    )
 
 
 def _safe_artifact_path(root: Path, value: str) -> tuple[str, Path]:

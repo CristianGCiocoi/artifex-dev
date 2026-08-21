@@ -16,8 +16,10 @@ harness results to echo all three binding fields; missing identity fails closed
 and stale identity is `REBASE_REQUIRED`. Recheck canonical identity after the
 runner returns. Accept `SUCCESS` only for claimed owned files whose bytes were
 created or changed by that invocation; reject missing, unchanged, escaped, or
-no-op claims. Never infer canonical acceptance from a Codex success or
-validation claim.
+no-op claims. Never claim Core authority state—including the Project Model,
+status, workflow, validation contracts/evidence, or a governing ChangeSet—as an
+executor artifact, even when packet ownership includes its path. Never infer
+canonical acceptance from a Codex success or validation claim.
 
 Native Codex memory and parent transcripts are auxiliary. Continuity must be
 reconstructable from repository artifacts alone. Do not start live mutating
