@@ -40,7 +40,14 @@ def detect_resources(path: str | Path = ".") -> ResourceEnvelope:
 
             status = MemoryStatus()
             status.length = ctypes.sizeof(status)
-            if ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(status)):
+            # ``ctypes.windll`` intentionally exists only on Windows. Resolve it
+            # dynamically so non-Windows type-checking does not assume a
+            # platform-specific module attribute while the runtime branch stays
+            # guarded by ``os.name == "nt"``.
+            windows_dlls = getattr(ctypes, "windll", None)
+            if windows_dlls is not None and windows_dlls.kernel32.GlobalMemoryStatusEx(
+                ctypes.byref(status)
+            ):
                 memory = int(status.total_physical)
         except (AttributeError, OSError):
             memory = None
