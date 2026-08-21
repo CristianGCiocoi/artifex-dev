@@ -7,10 +7,15 @@ import runpy
 import sys
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any
 
 import pytest
+from typer.testing import CliRunner
 
+from artifex import cli as cli_module
 from artifex.application import Application, OperationContext, OperationRequest
+from artifex.application import api as application_api
+from artifex.cli import app
 from artifex.distribution import (
     ApprovalStore,
     ExperienceMode,
@@ -47,11 +52,19 @@ def _write_test_artifact(directory: Path, content: bytes) -> Path:
     bundled_runtime = directory / "_internal" / "runtime.bin"
     bundled_runtime.parent.mkdir(parents=True, exist_ok=True)
     bundled_runtime.write_bytes(b"runtime:" + content)
-    manifest = create_artifact_manifest(source)
-    (directory / "artifex-artifact.json").write_text(
+    _rewrite_artifact_manifest(source)
+    return source
+
+
+def _rewrite_artifact_manifest(source: Path) -> None:
+    manifest = create_artifact_manifest(
+        source,
+        pyinstaller_version="test-pyinstaller",
+        source_commit="0" * 40,
+    )
+    (source.parent / "artifex-artifact.json").write_text(
         json.dumps(manifest, sort_keys=True, indent=2) + "\n", encoding="utf-8"
     )
-    return source
 
 
 def _test_identity_probe(source: Path, _: float) -> dict[str, object]:
@@ -230,12 +243,189 @@ def test_native_artifact_platform_names_fail_closed(
 def test_frozen_runtime_identity_is_content_bound(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(artifact.sys, "frozen", True, raising=False)
     identity = artifact.runtime_release_identity()
-    executable = Path(sys.executable)
+    executable = Path(sys.executable).resolve()
     assert identity["product"] == "ARTIFEX"
     assert identity["format"] == "pyinstaller-onedir"
     assert identity["artifact"] == executable.name
     assert identity["sha256"] == hashlib.sha256(executable.read_bytes()).hexdigest()
     assert str(identity["build_id"]).endswith(str(identity["sha256"])[:16])
+
+
+@pytest.mark.integration
+def test_internal_symlinks_are_inventoried_and_preserved_through_lifecycle(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    approvals = ApprovalStore(tmp_path / "approvals")
+    security = tmp_path / "security"
+    source = _write_test_artifact(tmp_path / "release", b"native")
+    link = source.parent / "runtime-link.bin"
+    framework = source.parent / "_internal" / "Python.framework"
+    version = framework / "Versions" / "3.12"
+    version.mkdir(parents=True)
+    (version / "Python").write_bytes(b"framework-runtime")
+    current = framework / "Versions" / "Current"
+    framework_binary = framework / "Python"
+    try:
+        link.symlink_to("_internal/runtime.bin")
+        current.symlink_to("3.12", target_is_directory=True)
+        framework_binary.symlink_to("Versions/Current/Python")
+    except OSError:
+        pytest.skip("symlink creation is unavailable")
+    _rewrite_artifact_manifest(source)
+    verified = verify_artifact(source, identity_probe=_test_identity_probe)
+    link_entry = next(item for item in verified.files if item["path"] == link.name)
+    assert link_entry["kind"] == "symlink"
+    assert link_entry["target"] == "_internal/runtime.bin"
+    assert next(
+        item for item in verified.files if item["path"].endswith("Versions/Current")
+    )["target"] == "3.12"
+    manifest_path = source.parent / "artifex-artifact.json"
+    tampered = json.loads(manifest_path.read_text(encoding="utf-8"))
+    next(item for item in tampered["files"] if item["path"] == link.name)[
+        "target"
+    ] = "../outside"
+    manifest_path.write_text(json.dumps(tampered), encoding="utf-8")
+    with pytest.raises(ValueError, match=r"symlink inventory|inventory"):
+        verify_artifact(source, identity_probe=_test_identity_probe)
+    _rewrite_artifact_manifest(source)
+
+    root = tmp_path / "installed"
+    plan = install_plan(
+        source, root, approval_store=approvals, identity_probe=_test_identity_probe
+    )
+    installed = install(
+        source,
+        root,
+        confirmation_token=plan.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+    )
+    installed_link = root / link.name
+    assert installed_link.is_symlink()
+    assert os.readlink(installed_link) == "_internal/runtime.bin"
+    installed_framework_binary = root / "_internal" / "Python.framework" / "Python"
+    assert installed_framework_binary.is_symlink()
+    assert installed_framework_binary.read_bytes() == b"framework-runtime"
+
+    _write_test_artifact(source.parent, b"native-v2")
+    upgrade_decision = upgrade_plan(
+        source,
+        root,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+    )
+    upgraded = upgrade(
+        source,
+        root,
+        confirmation_token=upgrade_decision.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+    )
+    assert installed_link.is_symlink()
+    assert installed_link.read_bytes() == b"runtime:native-v2"
+    assert upgraded.backup is not None
+    assert (Path(upgraded.backup) / link.name).is_symlink()
+
+    _write_test_artifact(source.parent, b"native-v3")
+    rollback_decision = upgrade_plan(
+        source,
+        root,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+    )
+
+    def fail_manifest(*_: object, **__: object) -> None:
+        raise OSError("injected symlink lifecycle rollback")
+
+    monkeypatch.setattr(lifecycle, "_write_manifest", fail_manifest)
+    with pytest.raises(OSError, match="symlink lifecycle rollback"):
+        upgrade(
+            source,
+            root,
+            confirmation_token=rollback_decision.confirmation_token,
+            approval_store=approvals,
+            security_root=security,
+            identity_probe=_test_identity_probe,
+        )
+    assert installed_link.is_symlink()
+    assert installed_link.read_bytes() == b"runtime:native-v2"
+
+    remove_plan = uninstall_plan(root, approval_store=approvals, security_root=security)
+    uninstall(
+        root,
+        confirmation_token=remove_plan.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+    )
+    assert not os.path.lexists(installed_link)
+    assert not Path(installed.executable).exists()
+
+
+@pytest.mark.adversarial
+@pytest.mark.parametrize("link_case", ["absolute", "escape", "dangling", "cycle"])
+def test_artifact_symlinks_fail_closed(
+    tmp_path: Path, link_case: str
+) -> None:
+    release = tmp_path / link_case
+    source = _write_test_artifact(release, b"native")
+    link = release / "unsafe-link"
+    external = tmp_path / "external.bin"
+    external.write_bytes(b"outside")
+    try:
+        if link_case == "absolute":
+            link.symlink_to(external.resolve())
+        elif link_case == "escape":
+            link.symlink_to("../external.bin")
+        elif link_case == "dangling":
+            link.symlink_to("missing.bin")
+        else:
+            other = release / "other-link"
+            link.symlink_to(other.name)
+            other.symlink_to(link.name)
+    except OSError:
+        pytest.skip("symlink creation is unavailable")
+    with pytest.raises(ValueError, match=r"relative|escapes|dangling|cyclic"):
+        create_artifact_manifest(source)
+
+
+@pytest.mark.adversarial
+def test_installed_symlink_retargeting_fails_closed(tmp_path: Path) -> None:
+    approvals = ApprovalStore(tmp_path / "approvals")
+    security = tmp_path / "security"
+    source = _write_test_artifact(tmp_path / "release", b"native")
+    link = source.parent / "runtime-link.bin"
+    try:
+        link.symlink_to("_internal/runtime.bin")
+    except OSError:
+        pytest.skip("symlink creation is unavailable")
+    _rewrite_artifact_manifest(source)
+    root = tmp_path / "installed"
+    plan = install_plan(
+        source, root, approval_store=approvals, identity_probe=_test_identity_probe
+    )
+    install(
+        source,
+        root,
+        confirmation_token=plan.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+    )
+    installed_link = root / link.name
+    installed_link.unlink()
+    installed_link.symlink_to(tmp_path / "outside")
+    remove_plan = uninstall_plan(root, approval_store=approvals, security_root=security)
+    with pytest.raises(ValueError, match="modified"):
+        uninstall(
+            root,
+            confirmation_token=remove_plan.confirmation_token,
+            approval_store=approvals,
+            security_root=security,
+        )
 
 
 @pytest.mark.unit
@@ -829,6 +1019,248 @@ def test_application_exposes_distribution_operations(tmp_path: Path) -> None:
     assert result.ok and result.value["mode"] == "GUIDED"
 
 
+@pytest.mark.integration
+def test_application_distribution_beginner_services_are_portable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "local-state"))
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "xdg-state"))
+    application = Application()
+    context = OperationContext(project_root=str(tmp_path), actor="test")
+    requests = (
+        OperationRequest(
+            "distribution.discover", {"resource_path": str(tmp_path)}, context
+        ),
+        OperationRequest("distribution.doctor", {"fix": True}, context),
+        OperationRequest(
+            "distribution.setup.plan", {"integration_ids": ["manual"]}, context
+        ),
+        OperationRequest(
+            "beginner.start",
+            {"intent": "I want to build a portable tool", "project_name": "portable"},
+            context,
+        ),
+        OperationRequest("system.version", {}, context),
+    )
+    results = [application.dispatch(request) for request in requests]
+    assert all(result.ok for result in results)
+    assert results[1].value["dry_run"] is True
+    assert results[2].value["actions"][0]["integration_id"] == "manual"
+    assert results[3].value["presentation"]["mode"] == "BEGINNER"
+    assert results[4].value["product"] == "ARTIFEX"
+    invalid_requests = (
+        OperationRequest("distribution.discover", {"resource_path": 3}, context),
+        OperationRequest("distribution.doctor", {"project_root": 3}, context),
+        OperationRequest(
+            "distribution.setup.apply",
+            {"integration_ids": ["manual"], "confirmation_token": 3},
+            context,
+        ),
+    )
+    assert all(not application.dispatch(request).ok for request in invalid_requests)
+
+
+@pytest.mark.unit
+def test_application_lifecycle_routes_explicit_arguments(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    class Stub:
+        def __init__(self, operation: str) -> None:
+            self.operation = operation
+
+        def to_dict(self) -> dict[str, str]:
+            return {"operation": self.operation}
+
+    monkeypatch.setattr(
+        application_api, "install_plan", lambda source, root: Stub("install-plan")
+    )
+    monkeypatch.setattr(
+        application_api,
+        "install",
+        lambda source, root, confirmation_token: Stub("install"),
+    )
+    monkeypatch.setattr(
+        application_api, "upgrade_plan", lambda source, root: Stub("upgrade-plan")
+    )
+    monkeypatch.setattr(
+        application_api,
+        "upgrade",
+        lambda source, root, confirmation_token: Stub("upgrade"),
+    )
+    monkeypatch.setattr(
+        application_api, "uninstall_plan", lambda root: Stub("uninstall-plan")
+    )
+    monkeypatch.setattr(
+        application_api,
+        "uninstall",
+        lambda root, confirmation_token: {"operation": "uninstall"},
+    )
+    monkeypatch.setattr(
+        application_api,
+        "plan_integration_setup",
+        lambda root, identifiers, issue_token=False: Stub("setup-plan"),
+    )
+    monkeypatch.setattr(
+        application_api,
+        "apply_integration_setup",
+        lambda plan, confirmation_token: Stub("setup-apply"),
+    )
+    application = Application()
+    context = OperationContext(project_root=str(tmp_path), actor="test")
+    source = str(tmp_path / "artifact")
+    root = str(tmp_path / "installed")
+    operations = (
+        ("distribution.install.plan", {"source_executable": source, "install_root": root}),
+        (
+            "distribution.install",
+            {
+                "source_executable": source,
+                "install_root": root,
+                "confirmation_token": "token",
+            },
+        ),
+        ("distribution.upgrade.plan", {"source_executable": source, "install_root": root}),
+        (
+            "distribution.upgrade",
+            {
+                "source_executable": source,
+                "install_root": root,
+                "confirmation_token": "token",
+            },
+        ),
+        ("distribution.uninstall.plan", {"install_root": root}),
+        (
+            "distribution.uninstall",
+            {"install_root": root, "confirmation_token": "token"},
+        ),
+        (
+            "distribution.setup.apply",
+            {"integration_ids": ["manual"], "confirmation_token": "token"},
+        ),
+    )
+    results = [
+        application.dispatch(OperationRequest(name, arguments, context))
+        for name, arguments in operations
+    ]
+    assert all(result.ok for result in results)
+    assert [result.value["operation"] for result in results] == [
+        "install-plan",
+        "install",
+        "upgrade-plan",
+        "upgrade",
+        "uninstall-plan",
+        "uninstall",
+        "setup-apply",
+    ]
+
+
+@pytest.mark.integration
+def test_distribution_cli_routes_beginner_safe_commands(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "local-state"))
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "xdg-state"))
+    runner = CliRunner()
+    commands = (
+        ["mode", "expert"],
+        ["doctor", "--project-root", str(tmp_path), "--fix"],
+        ["setup", "--project-root", str(tmp_path), "--integration", "manual"],
+    )
+    payloads: list[dict[str, Any]] = []
+    for command in commands:
+        result = runner.invoke(app, command)
+        assert result.exit_code == 0, result.stdout
+        payloads.append(json.loads(result.stdout))
+    assert all(payload["ok"] is True for payload in payloads)
+    assert payloads[0]["value"]["mode"] == "EXPERT"
+    assert payloads[1]["value"]["dry_run"] is True
+    assert payloads[2]["value"]["applied"] is False
+
+
+@pytest.mark.unit
+def test_lifecycle_cli_builds_explicit_plan_and_apply_requests(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[tuple[str, dict[str, Any]]] = []
+
+    def capture(
+        operation: str,
+        arguments: dict[str, Any] | None = None,
+        *,
+        project_root: str | None = None,
+    ) -> None:
+        assert project_root is None
+        calls.append((operation, arguments or {}))
+
+    monkeypatch.setattr(cli_module, "_emit", capture)
+    cli_module.install_command("installed", "release/artifex", False, None)
+    cli_module.install_command("installed", "release/artifex", True, "install-token")
+    cli_module.upgrade_command("installed", "release/artifex", False, None)
+    cli_module.upgrade_command("installed", "release/artifex", True, "upgrade-token")
+    cli_module.uninstall_command("installed", False, None)
+    cli_module.uninstall_command("installed", True, "uninstall-token")
+    assert [operation for operation, _ in calls] == [
+        "distribution.install.plan",
+        "distribution.install",
+        "distribution.upgrade.plan",
+        "distribution.upgrade",
+        "distribution.uninstall.plan",
+        "distribution.uninstall",
+    ]
+    assert calls[0][1]["confirmation_token"] is None
+    assert "confirmation_token" not in calls[2][1]
+    assert calls[3][1]["confirmation_token"] == "upgrade-token"
+
+
+@pytest.mark.adversarial
+def test_portable_artifact_schema_helpers_fail_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    missing = tmp_path / "missing"
+    with pytest.raises(FileNotFoundError, match="not found"):
+        create_artifact_manifest(missing)
+    with pytest.raises(ValueError, match="inventory entry"):
+        artifact._file_entries([{"path": "x", "kind": "unknown", "sha256": "0" * 64}])
+    with pytest.raises(ValueError, match="symlink inventory"):
+        artifact._file_entries(
+            [
+                {
+                    "path": "x",
+                    "kind": "symlink",
+                    "target": "target",
+                    "sha256": "0" * 64,
+                }
+            ]
+        )
+
+    def failed_run(*_: object, **__: object) -> object:
+        raise OSError("cannot execute")
+
+    monkeypatch.setattr(artifact.subprocess, "run", failed_run)
+    with pytest.raises(ValueError, match="identity probe failed"):
+        artifact.probe_artifact_identity(tmp_path / "artifact", 1)
+
+    class InvalidPayload:
+        returncode = 0
+        stdout = json.dumps({"ok": False})
+
+    monkeypatch.setattr(
+        artifact.subprocess, "run", lambda *args, **kwargs: InvalidPayload()
+    )
+    with pytest.raises(ValueError, match="successful ARTIFEX"):
+        artifact.probe_artifact_identity(tmp_path / "artifact", 1)
+
+    class MissingIdentity:
+        returncode = 0
+        stdout = json.dumps({"ok": True, "value": "not-an-object"})
+
+    monkeypatch.setattr(
+        artifact.subprocess, "run", lambda *args, **kwargs: MissingIdentity()
+    )
+    with pytest.raises(ValueError, match="identity metadata"):
+        artifact.probe_artifact_identity(tmp_path / "artifact", 1)
+
+
 @pytest.mark.conformance
 def test_all_v1_interfaces_remain_standalone_first_class() -> None:
     integrations = (
@@ -859,6 +1291,7 @@ def test_native_build_contract_and_ci_cover_all_target_platforms() -> None:
     assert "windows-latest" in workflow
     assert "macos-latest" in workflow
     assert "packaging/build.py --clean --smoke" in workflow
+    assert workflow.count("fail-fast: false") == 2
 
 
 @pytest.mark.adversarial

@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import importlib.metadata
 import json
+import os
 import platform
 import re
 import subprocess
@@ -17,7 +18,7 @@ from typing import Any
 from artifex import __version__
 
 ARTIFACT_MANIFEST_NAME = "artifex-artifact.json"
-ARTIFACT_SCHEMA_VERSION = "3.0"
+ARTIFACT_SCHEMA_VERSION = "4.0"
 ARTIFACT_FORMAT = "pyinstaller-onedir"
 PRODUCT_ID = "ARTIFEX"
 MAX_IDENTITY_OUTPUT_BYTES = 4096
@@ -42,7 +43,8 @@ _FIELDS = frozenset(
         "requires_user_venv",
     }
 )
-_FILE_FIELDS = frozenset({"path", "sha256"})
+_REGULAR_FILE_FIELDS = frozenset({"path", "kind", "sha256"})
+_SYMLINK_FIELDS = frozenset({"path", "kind", "target", "sha256"})
 
 IdentityProbe = Callable[[Path, float], Mapping[str, Any]]
 
@@ -86,8 +88,11 @@ def create_artifact_manifest(
     pyinstaller_version: str | None = None,
     source_commit: str | None = None,
 ) -> dict[str, Any]:
-    artifact = Path(source).resolve()
-    if not artifact.is_file() or artifact.is_symlink():
+    supplied = Path(source).absolute()
+    if supplied.is_symlink():
+        raise FileNotFoundError(f"native ARTIFEX artifact must not be a symlink: {supplied}")
+    artifact = supplied.resolve()
+    if not artifact.is_file():
         raise FileNotFoundError(f"native ARTIFEX artifact not found: {artifact}")
     bundle_root = artifact.parent
     files = _bundle_files(bundle_root)
@@ -121,7 +126,10 @@ def verify_artifact(
     *,
     identity_probe: IdentityProbe | None = None,
 ) -> VerifiedArtifact:
-    artifact = Path(source).resolve()
+    supplied = Path(source).absolute()
+    if supplied.is_symlink():
+        raise ValueError("native ARTIFEX executable must not be a symlink")
+    artifact = supplied.resolve()
     bundle_root = artifact.parent
     manifest_path = bundle_root / ARTIFACT_MANIFEST_NAME
     try:
@@ -236,7 +244,12 @@ def _validate_manifest_identity(
     expected_files = _bundle_files(artifact.parent)
     if tuple(files) != tuple(expected_files):
         raise ValueError("artifact bundle file inventory does not match its manifest")
-    if not any(item["path"] == artifact.name and item["sha256"] == digest for item in files):
+    if not any(
+        item["path"] == artifact.name
+        and item["kind"] == "file"
+        and item["sha256"] == digest
+        for item in files
+    ):
         raise ValueError("artifact executable is absent from the bundle inventory")
     return files
 
@@ -260,15 +273,34 @@ def _validate_probe_identity(
 
 def _bundle_files(root: Path) -> tuple[Mapping[str, str], ...]:
     files: list[Mapping[str, str]] = []
-    paths = sorted(root.rglob("*"))
-    if any(path.is_symlink() for path in paths):
-        raise ValueError("artifact bundles may not contain symlinks")
-    for path in (item for item in paths if item.is_file()):
-        if path.name == ARTIFACT_MANIFEST_NAME:
+    canonical_root = root.resolve(strict=True)
+    paths: list[Path] = []
+    for current, directories, names in os.walk(
+        canonical_root, followlinks=False, onerror=_raise_walk_error
+    ):
+        current_path = Path(current)
+        link_directories = [name for name in directories if (current_path / name).is_symlink()]
+        directories[:] = [name for name in directories if name not in link_directories]
+        paths.extend(current_path / name for name in [*link_directories, *names])
+    for path in sorted(paths, key=lambda item: item.relative_to(canonical_root).as_posix()):
+        relative = path.relative_to(canonical_root).as_posix()
+        if relative == ARTIFACT_MANIFEST_NAME:
             continue
-        files.append(
-            {"path": path.relative_to(root).as_posix(), "sha256": _sha256(path)}
-        )
+        if path.is_symlink():
+            target = os.readlink(path)
+            _validate_symlink(canonical_root, path, target)
+            files.append(
+                {
+                    "path": relative,
+                    "kind": "symlink",
+                    "target": target,
+                    "sha256": _symlink_digest(target),
+                }
+            )
+        elif path.is_file():
+            files.append({"path": relative, "kind": "file", "sha256": _sha256(path)})
+        else:
+            raise ValueError(f"artifact bundle contains unsupported file type: {path}")
     return tuple(files)
 
 
@@ -278,7 +310,11 @@ def _file_entries(value: object) -> tuple[Mapping[str, str], ...]:
     entries: list[Mapping[str, str]] = []
     seen: set[str] = set()
     for item in value:
-        if not isinstance(item, Mapping) or set(item) != _FILE_FIELDS:
+        if not isinstance(item, Mapping):
+            raise ValueError("artifact file inventory entry is invalid")
+        kind = item.get("kind")
+        expected_fields = _REGULAR_FILE_FIELDS if kind == "file" else _SYMLINK_FIELDS
+        if kind not in {"file", "symlink"} or set(item) != expected_fields:
             raise ValueError("artifact file inventory entry is invalid")
         relative = str(item["path"])
         digest = str(item["sha256"])
@@ -293,8 +329,43 @@ def _file_entries(value: object) -> tuple[Mapping[str, str], ...]:
         ):
             raise ValueError("artifact file inventory path or digest is invalid")
         seen.add(relative)
-        entries.append({"path": path.as_posix(), "sha256": digest})
+        entry = {"path": path.as_posix(), "kind": str(kind), "sha256": digest}
+        if kind == "symlink":
+            target = item.get("target")
+            if (
+                not isinstance(target, str)
+                or not target
+                or Path(target).is_absolute()
+                or _symlink_digest(target) != digest
+            ):
+                raise ValueError("artifact symlink inventory entry is invalid")
+            entry["target"] = target
+        entries.append(entry)
     return tuple(entries)
+
+
+def _validate_symlink(root: Path, link: Path, target: str) -> Path:
+    target_path = Path(target)
+    if not target or target_path.is_absolute():
+        raise ValueError(f"artifact symlink target must be relative: {link}")
+    try:
+        resolved = (link.parent / target_path).resolve(strict=True)
+    except (OSError, RuntimeError) as exc:
+        raise ValueError(f"artifact symlink is dangling or cyclic: {link}") from exc
+    canonical_root = root.resolve(strict=True)
+    if resolved != canonical_root and canonical_root not in resolved.parents:
+        raise ValueError(f"artifact symlink escapes bundle: {link}")
+    if not resolved.is_file() and not resolved.is_dir():
+        raise ValueError(f"artifact symlink targets an unsupported file type: {link}")
+    return resolved
+
+
+def _symlink_digest(target: str) -> str:
+    return hashlib.sha256(target.encode("utf-8")).hexdigest()
+
+
+def _raise_walk_error(error: OSError) -> None:
+    raise error
 
 
 def _source_commit(root: Path) -> str:

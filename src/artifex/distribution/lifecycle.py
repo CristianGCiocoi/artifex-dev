@@ -22,11 +22,17 @@ from typing import Any
 
 from artifex import __version__
 from artifex.distribution.approvals import ApprovalStore, user_state_root
-from artifex.distribution.artifact import IdentityProbe, VerifiedArtifact, verify_artifact
+from artifex.distribution.artifact import (
+    IdentityProbe,
+    VerifiedArtifact,
+    _symlink_digest,
+    _validate_symlink,
+    verify_artifact,
+)
 from artifex.distribution.presentation import explain_decision, require_approval
 
 MANIFEST_NAME = "artifex-install-manifest.json"
-MANIFEST_SCHEMA_VERSION = "2.0"
+MANIFEST_SCHEMA_VERSION = "3.0"
 _AUTH_ALGORITHM = "HMAC-SHA256"
 _DEFERRED_REQUEST_TTL_SECONDS = 120
 
@@ -119,7 +125,9 @@ def install(
     )
     destination = root / str(verified.manifest["artifact"])
     manifest_path = root / MANIFEST_NAME
-    if manifest_path.exists() or any((root / item["path"]).exists() for item in verified.files):
+    if manifest_path.exists() or any(
+        _path_lexists(root / item["path"]) for item in verified.files
+    ):
         raise FileExistsError("ARTIFEX is already installed; use upgrade")
     require_approval(decision, confirmation_token, approval_store=approval_store)
     root_created = not root.exists()
@@ -274,17 +282,22 @@ def _perform_upgrade(
     new_entries = tuple(dict(item) for item in verified.files)
     mutation_started = False
     try:
-        for item in old_entries:
+        for item in _copy_order(old_entries):
             source = _safe_child(root, item["path"])
             target = _safe_child(backup, item["path"])
             target.parent.mkdir(parents=True, exist_ok=True)
-            _copy_atomic(source, target)
-            backup_entries.append(
-                {
-                    "path": target.relative_to(root).as_posix(),
-                    "sha256": _sha256(target),
-                }
+            _copy_manifest_entry(
+                source, target, item, source_root=root
             )
+            backup_entry = dict(item)
+            backup_entry["path"] = target.relative_to(root).as_posix()
+            backup_entries.append(backup_entry)
+        backup_entries.sort(key=lambda item: item["path"])
+        if not all(
+            _entry_matches(root, _safe_child(root, item["path"]), item)
+            for item in backup_entries
+        ):
+            raise ValueError("upgrade backup bundle verification failed")
         mutation_started = True
         _copy_verified_bundle(verified, root)
         new_paths = {item["path"] for item in new_entries}
@@ -309,10 +322,25 @@ def _perform_upgrade(
     except Exception:
         if mutation_started:
             _remove_manifest_paths(root, new_entries)
-            for old_item, backup_item in zip(old_entries, backup_entries, strict=True):
+            backups_by_suffix = {
+                Path(item["path"]).relative_to(backup.relative_to(root)).as_posix(): item
+                for item in backup_entries
+            }
+            for old_item in _copy_order(old_entries):
+                backup_item = backups_by_suffix[old_item["path"]]
                 old_path = _safe_child(root, old_item["path"])
                 old_path.parent.mkdir(parents=True, exist_ok=True)
-                _copy_atomic(_safe_child(root, backup_item["path"]), old_path)
+                _copy_manifest_entry(
+                    _safe_child(root, backup_item["path"]),
+                    old_path,
+                    old_item,
+                    source_root=backup,
+                )
+            if not all(
+                _entry_matches(root, _safe_child(root, item["path"]), item)
+                for item in old_entries
+            ):
+                raise ValueError("upgrade rollback bundle verification failed") from None
         shutil.rmtree(backup, ignore_errors=True)
         with suppress(OSError):
             backup.parent.rmdir()
@@ -617,7 +645,7 @@ def _launch_deferred_helper(
         running_root = running_executable.parent.resolve()
         if running_root in runtime_root.parents:
             relative_runtime = runtime_root.relative_to(running_root)
-            shutil.copytree(runtime_root, helper_dir / relative_runtime)
+            shutil.copytree(runtime_root, helper_dir / relative_runtime, symlinks=True)
     creationflags = 0
     if os.name == "nt":
         creationflags = (
@@ -696,15 +724,34 @@ def _manifest_entries(
         if not isinstance(item, dict):
             raise ValueError("invalid install manifest file entry")
         path = item.get("path")
+        kind = item.get("kind")
         digest = item.get("sha256")
+        expected_fields = (
+            {"path", "kind", "sha256"}
+            if kind == "file"
+            else {"path", "kind", "target", "sha256"}
+        )
         if (
-            not isinstance(path, str)
+            kind not in {"file", "symlink"}
+            or set(item) != expected_fields
+            or not isinstance(path, str)
             or not isinstance(digest, str)
             or len(digest) != 64
             or any(character not in "0123456789abcdef" for character in digest)
         ):
             raise ValueError("invalid install manifest file entry")
-        entries.append({"path": path, "sha256": digest})
+        entry = {"path": path, "kind": kind, "sha256": digest}
+        if kind == "symlink":
+            target = item.get("target")
+            if (
+                not isinstance(target, str)
+                or not target
+                or Path(target).is_absolute()
+                or _symlink_digest(target) != digest
+            ):
+                raise ValueError("invalid install manifest symlink entry")
+            entry["target"] = target
+        entries.append(entry)
     return tuple(entries)
 
 
@@ -720,6 +767,8 @@ def _manifest_files(
     for item in _manifest_entries(manifest, field, required=required):
         relative_text = item["path"]
         target = _safe_child(root, relative_text)
+        if item.get("kind") == "symlink":
+            _validate_symlink(root, target, item["target"])
         canonical_relative = target.relative_to(root).as_posix()
         if canonical_relative in seen:
             raise ValueError("manifest path escapes install root or is duplicated")
@@ -750,11 +799,7 @@ def _verify_managed_checksums(root: Path, manifest: Mapping[str, Any]) -> None:
             if target in all_paths:
                 raise ValueError("managed path is duplicated across manifest sections")
             all_paths.add(target)
-            expected = item["sha256"]
-            if (
-                len(expected) != 64
-                or not hmac.compare_digest(_sha256(target) if target.is_file() else "", expected)
-            ):
+            if not _entry_matches(root, target, item):
                 raise ValueError(
                     f"managed file is missing or modified; refusing mutation: {target}"
                 )
@@ -770,27 +815,89 @@ def _safe_child(root: Path, relative_text: str) -> Path:
     ):
         raise ValueError("unsafe install manifest path")
     canonical_root = root.resolve()
-    target = (canonical_root / relative).resolve()
-    if canonical_root not in target.parents:
-        raise ValueError("manifest path escapes install root")
+    target = canonical_root.joinpath(*relative.parts)
     cursor = canonical_root
     for part in relative.parts[:-1]:
         cursor /= part
-        if cursor.exists() and cursor.is_symlink():
+        if _path_lexists(cursor) and cursor.is_symlink():
             raise ValueError("manifest path traverses a symlink")
-    if target.exists() and target.is_symlink():
-        raise ValueError("manifest path targets a symlink")
     return target
 
 
 def _copy_verified_bundle(verified: VerifiedArtifact, destination_root: Path) -> None:
-    for item in verified.files:
+    for item in _copy_order(verified.files):
         source = _safe_child(verified.bundle_root, item["path"])
         destination = _safe_child(destination_root, item["path"])
-        if not source.is_file() or _sha256(source) != item["sha256"]:
+        if not _entry_matches(verified.bundle_root, source, item):
             raise ValueError("verified artifact bundle changed before copying")
         destination.parent.mkdir(parents=True, exist_ok=True)
-        _copy_atomic(source, destination)
+        _copy_manifest_entry(
+            source,
+            destination,
+            item,
+            source_root=verified.bundle_root,
+        )
+    if not all(
+        _entry_matches(
+            destination_root, _safe_child(destination_root, item["path"]), item
+        )
+        for item in verified.files
+    ):
+        raise ValueError("copied artifact bundle verification failed")
+
+
+def _copy_order(
+    entries: tuple[Mapping[str, str], ...] | list[dict[str, str]],
+) -> tuple[Mapping[str, str], ...]:
+    return tuple(
+        sorted(entries, key=lambda item: (item.get("kind") == "symlink", item["path"]))
+    )
+
+
+def _entry_matches(root: Path, path: Path, item: Mapping[str, str]) -> bool:
+    kind = item.get("kind")
+    digest = item.get("sha256", "")
+    if kind == "file":
+        return (
+            path.is_file()
+            and not path.is_symlink()
+            and hmac.compare_digest(_sha256(path), digest)
+        )
+    if kind == "symlink":
+        target = item.get("target")
+        if not isinstance(target, str) or not path.is_symlink():
+            return False
+        try:
+            observed = os.readlink(path)
+            _validate_symlink(root, path, observed)
+        except (OSError, ValueError):
+            return False
+        return observed == target and hmac.compare_digest(_symlink_digest(observed), digest)
+    return False
+
+
+def _copy_manifest_entry(
+    source: Path,
+    destination: Path,
+    item: Mapping[str, str],
+    *,
+    source_root: Path,
+) -> None:
+    if not _entry_matches(source_root, source, item):
+        raise ValueError("manifest-owned source changed before copying")
+    if _path_lexists(destination):
+        if destination.is_dir() and not destination.is_symlink():
+            raise ValueError("manifest destination collides with a directory")
+        destination.unlink()
+    if item.get("kind") == "symlink":
+        target = item["target"]
+        os.symlink(target, destination, target_is_directory=source.resolve().is_dir())
+        return
+    _copy_atomic(source, destination)
+
+
+def _path_lexists(path: Path) -> bool:
+    return os.path.lexists(path)
 
 
 def _remove_manifest_paths(
@@ -821,16 +928,28 @@ def _request_artifact_files(
         raise ValueError("deferred upgrade bundle inventory is invalid")
     entries: list[Mapping[str, str]] = []
     for item in raw:
-        if not isinstance(item, Mapping) or set(item) != {"path", "sha256"}:
+        if not isinstance(item, Mapping):
             raise ValueError("deferred upgrade bundle inventory is invalid")
         relative = item.get("path")
+        kind = item.get("kind")
         digest = item.get("sha256")
-        if not isinstance(relative, str) or not isinstance(digest, str):
+        expected_fields = (
+            {"path", "kind", "sha256"}
+            if kind == "file"
+            else {"path", "kind", "target", "sha256"}
+        )
+        if (
+            kind not in {"file", "symlink"}
+            or set(item) != expected_fields
+            or not isinstance(relative, str)
+            or not isinstance(digest, str)
+        ):
             raise ValueError("deferred upgrade bundle inventory is invalid")
         target = _safe_child(bundle_root, relative)
-        if not target.is_file() or not hmac.compare_digest(_sha256(target), digest):
+        normalized = {key: str(value) for key, value in item.items()}
+        if not _entry_matches(bundle_root, target, normalized):
             raise ValueError("deferred upgrade staged bundle changed")
-        entries.append({"path": relative, "sha256": digest})
+        entries.append(normalized)
     return tuple(entries)
 
 
