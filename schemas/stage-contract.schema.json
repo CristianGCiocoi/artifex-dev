@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://artifex.dev/schemas/stage-contract.schema.json",
+  "title": "ARTIFEX Stage Contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["stage_id", "requires", "produces", "capabilities", "validators", "transitions", "liveness"],
+  "properties": {
+    "stage_id": {"type": "string", "minLength": 1},
+    "requires": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "produces": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "capabilities": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "validators": {"type": "array", "minItems": 1, "items": {"type": "string"}, "uniqueItems": true},
+    "transitions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source", "target"],
+        "properties": {
+          "source": {"$ref": "#/$defs/stageState"},
+          "target": {"$ref": "#/$defs/stageState"}
+        }
+      }
+    },
+    "liveness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_stage_visits", "max_no_progress_observations", "max_stall_seconds"],
+      "properties": {
+        "max_stage_visits": {"type": "integer", "minimum": 1},
+        "max_no_progress_observations": {"type": "integer", "minimum": 1},
+        "max_stall_seconds": {"type": "number", "exclusiveMinimum": 0}
+      }
+    }
+  },
+  "$defs": {
+    "stageState": {
+      "enum": ["PENDING", "READY", "RUNNING", "CLAIMED_COMPLETE", "VALIDATING", "ACCEPTED", "FAILED", "BLOCKED", "CANCELLED"]
+    }
+  }
+}
