@@ -1,0 +1,31 @@
+schema_version: "1.0"
+kind: ARTIFEX_INTERFACE_PACK
+id: codex
+name: OpenAI Codex standalone
+integration_module: artifex.integrations.codex
+roles: [interface, harness, implementer]
+capabilities:
+  - interactive
+  - headless
+  - resume
+  - skills
+  - MCP
+  - worktrees
+  - subagents
+  - structured_output
+  - repository_read
+  - repository_write
+  - test_execution
+  - background_jobs
+entrypoints:
+  instructions: AGENTS.md
+  mcp: mcp.json
+  skills: skills
+authority:
+  canonical: repository ARTIFEX Project Model, contracts, evidence, and gates
+  native_memory: auxiliary_only
+  executor_claims: non_canonical
+execution:
+  live_default: disabled
+  fixture_mode: deterministic_non_mutating
+  worktree_binding: base_commit_and_project_model_fingerprint
