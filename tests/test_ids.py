@@ -19,4 +19,3 @@ def test_stable_ids_round_trip(value: str) -> None:
 def test_stable_ids_reject_invalid_values(value: str) -> None:
     with pytest.raises(ValueError):
         StableId.parse(value)
-

@@ -14,4 +14,3 @@ def test_system_commands_use_application_api(command: str) -> None:
     result = CliRunner().invoke(app, ["system", command])
     assert result.exit_code == 0
     assert json.loads(result.stdout)["ok"] is True
-

@@ -3,55 +3,45 @@
   "$id": "https://artifex.local/schemas/dashboard-state.schema.json",
   "title": "ARTIFEX Dashboard State",
   "type": "object",
-  "required": ["schema_version", "project", "milestones", "gates", "evidence", "traceability", "git"],
+  "additionalProperties": false,
+  "required": ["schema_version", "project", "milestones", "gates", "evidence", "tests", "traceability", "documentation", "integrations", "comprehension", "git"],
   "properties": {
     "schema_version": {"const": "1.0"},
     "project": {
-      "type": "object",
-      "required": ["id", "name", "architecture_version", "implementation_plan_version"],
-      "additionalProperties": true
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "name", "architecture_version", "implementation_plan_version", "current_stage", "current_milestone", "accepted_baseline"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1}, "name": {"type": "string", "minLength": 1},
+        "architecture_version": {"type": "string", "minLength": 1}, "implementation_plan_version": {"type": "string", "minLength": 1},
+        "current_stage": {"type": ["string", "null"]}, "current_milestone": {"anyOf": [{"type": "string", "pattern": "^M[0-9]{2}$"}, {"type": "null"}]},
+        "accepted_baseline": {"type": ["string", "null"]}
+      }
     },
     "milestones": {"type": "array", "items": {"$ref": "#/$defs/milestone"}},
-    "gates": {"$ref": "#/$defs/gateCounts"},
-    "evidence": {
-      "type": "object",
-      "required": ["current", "stale"],
-      "properties": {"current": {"type": "integer", "minimum": 0}, "stale": {"type": "integer", "minimum": 0}}
-    },
-    "traceability": {
-      "type": "object",
-      "required": ["requirements_total", "requirements_traced", "orphan_requirements"],
-      "properties": {
-        "requirements_total": {"type": "integer", "minimum": 0},
-        "requirements_traced": {"type": "integer", "minimum": 0},
-        "orphan_requirements": {"type": "integer", "minimum": 0}
-      }
-    },
-    "git": {"type": "object", "required": ["commit", "dirty"], "additionalProperties": true}
+    "gates": {"$ref": "#/$defs/gateCounts"}, "evidence": {"$ref": "#/$defs/currentStaleCounts"},
+    "tests": {"type": "object", "additionalProperties": false, "required": ["suites"], "properties": {"suites": {"type": "array", "items": {"type": "object"}}}},
+    "traceability": {"type": "object", "additionalProperties": false, "required": ["requirements_total", "requirements_traced", "orphan_requirements"], "properties": {
+      "requirements_total": {"type": "integer", "minimum": 0}, "requirements_traced": {"type": "integer", "minimum": 0}, "orphan_requirements": {"type": "integer", "minimum": 0}
+    }},
+    "documentation": {"type": "array", "items": {"$ref": "#/$defs/document"}},
+    "integrations": {"type": "array", "items": {"$ref": "#/$defs/integration"}},
+    "comprehension": {"type": "object", "additionalProperties": false, "required": ["state", "score"], "properties": {
+      "state": {"enum": ["PASS", "WARN", "FAIL", "NOT_RUN"]}, "score": {"type": ["number", "null"], "minimum": 0, "maximum": 1}
+    }},
+    "git": {"type": "object", "additionalProperties": false, "required": ["commit", "tag", "dirty"], "properties": {
+      "commit": {"type": ["string", "null"]}, "tag": {"type": ["string", "null"]}, "dirty": {"type": ["boolean", "null"]}
+    }}
   },
   "$defs": {
-    "milestone": {
-      "type": "object",
-      "required": ["id", "state", "completed_tasks", "total_tasks"],
-      "properties": {
-        "id": {"pattern": "^M[0-9]{2}$"},
-        "state": {"enum": ["PLANNED", "READY", "ACTIVE", "BLOCKED", "IMPLEMENTED", "VERIFYING", "ACCEPTED", "SUPERSEDED"]},
-        "completed_tasks": {"type": "integer", "minimum": 0},
-        "total_tasks": {"type": "integer", "minimum": 0},
-        "blockers": {"type": "array", "items": {"type": "string"}}
-      }
-    },
-    "gateCounts": {
-      "type": "object",
-      "required": ["pass", "fail", "blocked", "waived", "stale"],
-      "properties": {
-        "pass": {"type": "integer", "minimum": 0},
-        "fail": {"type": "integer", "minimum": 0},
-        "blocked": {"type": "integer", "minimum": 0},
-        "waived": {"type": "integer", "minimum": 0},
-        "stale": {"type": "integer", "minimum": 0}
-      }
-    }
+    "milestone": {"type": "object", "additionalProperties": false, "required": ["id", "state", "completed_tasks", "total_tasks", "blockers"], "properties": {
+      "id": {"type": "string", "pattern": "^M[0-9]{2}$"}, "state": {"enum": ["PLANNED", "READY", "ACTIVE", "BLOCKED", "IMPLEMENTED", "VERIFYING", "ACCEPTED", "SUPERSEDED"]},
+      "completed_tasks": {"type": "integer", "minimum": 0}, "total_tasks": {"type": "integer", "minimum": 0}, "blockers": {"type": "array", "items": {"type": "string"}}
+    }},
+    "gateCounts": {"type": "object", "additionalProperties": false, "required": ["pass", "fail", "blocked", "waived", "stale"], "properties": {
+      "pass": {"type": "integer", "minimum": 0}, "fail": {"type": "integer", "minimum": 0}, "blocked": {"type": "integer", "minimum": 0}, "waived": {"type": "integer", "minimum": 0}, "stale": {"type": "integer", "minimum": 0}
+    }},
+    "currentStaleCounts": {"type": "object", "additionalProperties": false, "required": ["current", "stale"], "properties": {"current": {"type": "integer", "minimum": 0}, "stale": {"type": "integer", "minimum": 0}}},
+    "document": {"type": "object", "additionalProperties": false, "required": ["path", "state"], "properties": {"path": {"type": "string", "minLength": 1}, "state": {"enum": ["CURRENT", "STALE", "MISSING", "NOT_APPLICABLE"]}}},
+    "integration": {"type": "object", "additionalProperties": false, "required": ["id", "state", "version"], "properties": {"id": {"type": "string", "minLength": 1}, "state": {"enum": ["PASS", "WARN", "FAIL", "NOT_INSTALLED", "UNVERIFIED"]}, "version": {"type": ["string", "null"]}}}
   }
 }
-

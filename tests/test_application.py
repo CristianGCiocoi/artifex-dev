@@ -33,4 +33,3 @@ def test_registration_rejects_duplicates_and_normalizes_failures() -> None:
     result = app.dispatch(OperationRequest("test.failing"))
     assert result.error is not None
     assert result.error.code == "OPERATION_FAILED"
-

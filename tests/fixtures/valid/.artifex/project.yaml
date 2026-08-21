@@ -1,0 +1,8 @@
+schema_version: "1.0"
+project:
+  id: FIXTURE-VALID
+  name: Valid Standard Fixture
+  workflow_depth: STANDARD
+  experience_mode: GUIDED
+  autonomy_mode: ASSISTED
+

@@ -17,6 +17,6 @@ def _load_validator():
 
 @pytest.mark.architecture
 def test_every_requirement_has_milestone_ownership() -> None:
-    accepted, traced = _load_validator().measure()
+    accepted, traced, architecture = _load_validator().measure()
     assert accepted == traced
-
+    assert accepted == architecture

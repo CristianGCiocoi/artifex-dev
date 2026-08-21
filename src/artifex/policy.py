@@ -21,6 +21,18 @@ class AcceptanceAuthority(StrEnum):
     HUMAN = "HUMAN"
 
 
+def can_transition_canonical_acceptance(authority: AcceptanceAuthority) -> bool:
+    """Only Core may perform a canonical acceptance state transition."""
+
+    return authority is AcceptanceAuthority.CORE
+
+
+def can_supply_instructions(trust: InstructionTrust) -> bool:
+    """External material remains data and cannot become instruction authority."""
+
+    return trust is not InstructionTrust.EXTERNAL_DATA
+
+
 _SECRET_PATTERNS = tuple(
     re.compile(pattern, re.IGNORECASE)
     for pattern in (
@@ -48,4 +60,3 @@ class PrivilegePolicy:
 
     def permits_overlay(self, requested: set[str]) -> bool:
         return requested.issubset(self.allowed)
-
