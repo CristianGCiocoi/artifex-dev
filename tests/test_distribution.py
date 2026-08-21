@@ -259,26 +259,29 @@ def test_internal_symlinks_are_inventoried_and_preserved_through_lifecycle(
     security = tmp_path / "security"
     source = _write_test_artifact(tmp_path / "release", b"native")
     link = source.parent / "runtime-link.bin"
-    framework = source.parent / "_internal" / "Python.framework"
-    version = framework / "Versions" / "3.12"
-    version.mkdir(parents=True)
-    (version / "Python").write_bytes(b"framework-runtime")
-    current = framework / "Versions" / "Current"
-    framework_binary = framework / "Python"
     try:
         link.symlink_to("_internal/runtime.bin")
-        current.symlink_to("3.12", target_is_directory=True)
-        framework_binary.symlink_to("Versions/Current/Python")
     except OSError:
         pytest.skip("symlink creation is unavailable")
+    framework_binary: Path | None = None
+    if os.name == "posix":
+        framework = source.parent / "_internal" / "Python.framework"
+        version = framework / "Versions" / "3.12"
+        version.mkdir(parents=True)
+        (version / "Python").write_bytes(b"framework-runtime")
+        current = framework / "Versions" / "Current"
+        framework_binary = framework / "Python"
+        current.symlink_to("3.12", target_is_directory=True)
+        framework_binary.symlink_to("Versions/Current/Python")
     _rewrite_artifact_manifest(source)
     verified = verify_artifact(source, identity_probe=_test_identity_probe)
     link_entry = next(item for item in verified.files if item["path"] == link.name)
     assert link_entry["kind"] == "symlink"
     assert link_entry["target"] == "_internal/runtime.bin"
-    assert next(
-        item for item in verified.files if item["path"].endswith("Versions/Current")
-    )["target"] == "3.12"
+    if framework_binary is not None:
+        assert next(
+            item for item in verified.files if item["path"].endswith("Versions/Current")
+        )["target"] == "3.12"
     manifest_path = source.parent / "artifex-artifact.json"
     tampered = json.loads(manifest_path.read_text(encoding="utf-8"))
     next(item for item in tampered["files"] if item["path"] == link.name)[
@@ -304,9 +307,10 @@ def test_internal_symlinks_are_inventoried_and_preserved_through_lifecycle(
     installed_link = root / link.name
     assert installed_link.is_symlink()
     assert os.readlink(installed_link) == "_internal/runtime.bin"
-    installed_framework_binary = root / "_internal" / "Python.framework" / "Python"
-    assert installed_framework_binary.is_symlink()
-    assert installed_framework_binary.read_bytes() == b"framework-runtime"
+    if framework_binary is not None:
+        installed_framework_binary = root / "_internal" / "Python.framework" / "Python"
+        assert installed_framework_binary.is_symlink()
+        assert installed_framework_binary.read_bytes() == b"framework-runtime"
 
     _write_test_artifact(source.parent, b"native-v2")
     upgrade_decision = upgrade_plan(
