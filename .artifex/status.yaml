@@ -1,9 +1,9 @@
 schema_version: "1.0"
-derived_at: "2026-08-21T22:55:00+03:00"
+derived_at: "2026-08-22T01:44:45+03:00"
 project: ARTIFEX
 implementation:
-  current_milestone: M09
-  current_state: ACTIVE
+  current_milestone: M11
+  current_state: READY
   release: PLANNED
 milestones:
   M00: ACCEPTED
@@ -15,9 +15,9 @@ milestones:
   M06: ACCEPTED
   M07: ACCEPTED
   M08: ACCEPTED
-  M09: ACTIVE
+  M09: ACCEPTED
   M10: ACCEPTED
-  M11: PLANNED
+  M11: READY
 publication:
   remote: CONFIGURED
   url: "https://github.com/CristianGCiocoi/artifex-dev"

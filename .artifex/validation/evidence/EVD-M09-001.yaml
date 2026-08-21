@@ -1,0 +1,27 @@
+evidence_id: EVD-M09-001
+validator:
+  id: codex-independent-distribution-validator
+  version: "2026-08-22"
+  kind: INDEPENDENT_AGENT
+claim: M09 Beginner Mode and Distribution satisfies its immutable execution contract
+outcome: PASS
+facts:
+  - {name: task_gates_passed, value: 11}
+  - {name: task_gates_total, value: 11}
+  - {name: ci_jobs_passed, value: 9}
+  - {name: ci_jobs_total, value: 9}
+  - {name: ci_run, value: 32533785668}
+  - {name: full_tests_per_ci_job, value: 266}
+  - {name: minimum_coverage_percent, value: 85.30}
+  - {name: native_platform_lifecycles_passed, value: 3}
+  - {name: windows_symlink_fail_closed, value: true}
+  - {name: posix_symlink_lifecycle, value: true}
+binding:
+  base_commit: 5e424a2da1041b51fcd082ed7b6d46cdc0681275
+  contract_hash: 886396b39642a0bb732855c050134bf9c85eaede00c3da21fe592ca2f2c1e172
+  project_model_fingerprints:
+    - 2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506
+output: Exact-SHA CI 32533785668 passed 9/9; native onedir lifecycle and full test matrix passed on Windows, Linux, and macOS.
+recorded_at: "2026-08-22T01:44:45+03:00"
+producer_id: m09-independent-validator-8ccd2c7
+entry_hash: 09ec34dbf2f445ad700f61c458e21fcb00a0c2c2bf55736b9a033638100ba241
