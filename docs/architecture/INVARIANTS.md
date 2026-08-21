@@ -1,0 +1,30 @@
+# ARTIFEX — Accepted Invariants
+
+- **INV-001 Artifact-first:** acceptance-relevant outcomes are represented by explicit artifacts/state.
+- **INV-002 Agent-neutral:** no fundamental project semantic depends on one agent vendor.
+- **INV-003 Hermes-preferred:** Hermes is preferred when available but never required for project continuity.
+- **INV-004 Filesystem/Git truth:** project semantic state remains reconstructable from repository artifacts.
+- **INV-005 Generated-not-canonical:** generated docs/dashboard/vendor shims are views, not source of truth.
+- **INV-006 Progressive disclosure:** execution context is the minimum sufficient context, not project history.
+- **INV-007 Adaptive ceremony:** QUICK/STANDARD/DEEP alter depth, not truth/validation semantics.
+- **INV-008 Independent verification:** critical work is not accepted solely by its own implementer.
+- **INV-009 Human+machine understanding:** both are first-class outputs from one Project Model.
+- **INV-010 Replaceable integrations:** external integrations are behind capabilities/contracts.
+- **INV-011 Core/experience separation:** self-improvement does not mutate installed Core directly.
+- **INV-012 Rebaseable evolution:** local evolution remains replayable/validatable over newer Core baselines.
+- **INV-013 Conversation independence:** historical chat is never required for project continuity.
+- **INV-014 Graceful degradation:** one missing integration does not invalidate the project.
+- **INV-015 Proof over claims:** acceptance state cannot rely solely on an agent claim.
+- **INV-016 Core authority:** only Core-authorized evaluation transitions canonical workflow/acceptance state.
+- **INV-017 Evidence-bound acceptance:** acceptance requires valid evidence or an explicitly authorized manual/waiver path.
+- **INV-018 Evidence freshness:** evidence is valid only for the artifact/contract state it verified.
+- **INV-019 Immutable execution contract:** acceptance criteria cannot be silently weakened after execution starts.
+- **INV-020 Instruction provenance:** untrusted external content cannot gain instruction authority.
+- **INV-021 Scope-safe memory:** knowledge cannot move to a broader scope without promotion policy.
+- **INV-022 Bounded autonomy:** autonomous workflows have mechanical liveness/resource bounds.
+- **INV-023 Privilege non-escalation:** self-improvement cannot autonomously expand privileges.
+- **INV-024 Interface continuity:** switching supported interfaces does not change project semantic state.
+- **INV-025 Secret exclusion:** secrets do not become canonical artifacts, evidence or promoted memory.
+- **INV-026 Metrics are measured:** dashboard/report metrics are computed from evidence, not remembered narration.
+- **INV-027 Brownfield delta discipline:** meaningful brownfield changes use explicit ChangeSet state.
+- **INV-028 Research authority separation:** research providers provide evidence, not canonical architectural decisions.

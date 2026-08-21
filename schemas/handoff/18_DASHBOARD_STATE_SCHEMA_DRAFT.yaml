@@ -1,0 +1,56 @@
+schema_version: "draft-0.1"
+dashboard:
+  project:
+    id: string
+    name: string
+    version: string|null
+    architecture_version: string
+    implementation_plan_version: string
+    current_stage: string|null
+    current_milestone: string|null
+    accepted_baseline: string|null
+
+  milestones:
+    - id: string
+      state: PLANNED|READY|ACTIVE|BLOCKED|IMPLEMENTED|VERIFYING|ACCEPTED|SUPERSEDED
+      progress:
+        completed_tasks: integer
+        total_tasks: integer
+      blockers: [string]
+
+  gates:
+    pass: integer
+    fail: integer
+    blocked: integer
+    waived: integer
+    stale: integer
+
+  evidence:
+    current: integer
+    stale: integer
+
+  tests:
+    suites: []
+
+  traceability:
+    requirements_total: integer
+    requirements_traced: integer
+    orphan_requirements: integer
+
+  documentation:
+    - path: string
+      state: CURRENT|STALE|MISSING|NOT_APPLICABLE
+
+  integrations:
+    - id: string
+      state: PASS|WARN|FAIL|NOT_INSTALLED|UNVERIFIED
+      version: string|null
+
+  comprehension:
+    state: PASS|WARN|FAIL|NOT_RUN
+    score: number|null
+
+  git:
+    commit: string|null
+    tag: string|null
+    dirty: boolean|null

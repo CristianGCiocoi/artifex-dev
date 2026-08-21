@@ -1,0 +1,55 @@
+handoff:
+  project: ARTIFEX
+  implementation_plan: "v1.0"
+  architecture: "v1.0 ACCEPTED"
+  scope: "Complete V1 handoff M0-M11"
+  handoff_policy: "All files are supplied at bootstrap; no later file transfer is required."
+  expected_root_files:
+    - 00_START_HERE_CODEX_ORCHESTRATOR.md
+    - 01_HANDOFF_MANIFEST.yaml
+    - 02_PRODUCT_DEFINITION.md
+    - 03_REQUIREMENTS_BASELINE.md
+    - 04_ARCHITECTURE_V1_ACCEPTED.md
+    - 05_INVARIANTS.md
+    - 06_THREAT_FAILURE_ANALYSIS.md
+    - 07_ROADMAP_V1_V3.md
+    - 08_IMPLEMENTATION_PLAN_V1_ACCEPTED.md
+    - 09_ROOT_ORGANIZATION_PLAN.md
+    - 10_VALIDATION_EVIDENCE_SPEC.md
+    - 11_INTEGRATION_CONTRACT.md
+    - 12_MEMORY_EVOLUTION_SPEC.md
+    - 13_COMPILATION_UNDERSTANDING_SPEC.md
+    - 14_BEGINNER_RESOURCE_SPEC.md
+    - 15_PANDORA_RESEARCH_SPEC.md
+    - 16_PROJECT_MODEL_SCHEMA_DRAFT.yaml
+    - 17_STAGE_CONTRACT_SCHEMA_DRAFT.yaml
+    - 18_DASHBOARD_STATE_SCHEMA_DRAFT.yaml
+    - 19_TASK_CONTRACT_TEMPLATE.yaml
+    - 20_GATE_EVIDENCE_TEMPLATES.yaml
+    - 21_ARCHITECT_ESCALATION_TEMPLATE.md
+    - 22_MILESTONE_ACCEPTANCE_TEMPLATE.md
+    - 23_FINAL_RELEASE_GATE.md
+    - M00_BOOTSTRAP_CONTRACTS.md
+    - M01_PROJECT_MODEL_GIT_STORE.md
+    - M02_WORKFLOW_VALIDATION_CORE.md
+    - M03_COMPILATION_UNDERSTANDING.md
+    - M04_INTEGRATION_FOUNDATION.md
+    - M05_HERMES_INTEGRATION.md
+    - M06_CODEX_STANDALONE.md
+    - M07_CLAUDE_STANDALONE.md
+    - M08_KNOWLEDGE_EVOLUTION.md
+    - M09_BEGINNER_DISTRIBUTION.md
+    - M10_OPTIONAL_PROVIDERS.md
+    - M11_SELF_HOST_RELEASE.md
+
+integrity:
+  note: "SHA256 values are supplied in 99_SHA256SUMS.txt and should be verified before reorganization."
+
+authority:
+  project_architect: "External ChatGPT project Architect"
+  implementation_orchestrator: "Codex"
+  human_gate_policy: "Only major architecture changes or genuinely irreversible/security-sensitive decisions."
+
+additional_files:
+  - 24_SOURCE_INDEX.md
+  - 99_SHA256SUMS.txt

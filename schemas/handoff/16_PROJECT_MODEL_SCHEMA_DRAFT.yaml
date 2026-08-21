@@ -1,0 +1,50 @@
+schema_version: "draft-0.1"
+project:
+  id: string
+  name: string
+  description: string
+  lifecycle: greenfield|brownfield
+  workflow_depth: QUICK|STANDARD|DEEP
+  experience_mode: BEGINNER|GUIDED|EXPERT
+  autonomy_mode: INTERACTIVE|ASSISTED|AUTONOMOUS
+  architecture_version: string
+  implementation_plan_version: string
+
+git:
+  required_for_managed_mode: true
+  baseline_commit: string|null
+  current_commit: string|null
+  dirty: boolean|null
+  remote_status: CONFIGURED|PENDING|NONE|null
+
+artifacts:
+  items:
+    - id: string
+      type: string
+      path: string
+      status: DRAFT|REVIEW|ACCEPTED|STALE|SUPERSEDED
+      fingerprint: string
+      depends_on: [string]
+      provenance: object
+
+requirements:
+  functional: [string]
+  nonfunctional: [string]
+
+knowledge:
+  assumptions: [string]
+  constraints: [string]
+  lessons: [string]
+
+implementation:
+  current_milestone: string|null
+  current_task: string|null
+  milestones: [string]
+
+resources:
+  development: object|null
+  runtime: object|null
+
+integrations:
+  preferred: string|null
+  available: [string]

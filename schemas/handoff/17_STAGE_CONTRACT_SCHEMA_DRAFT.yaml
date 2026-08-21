@@ -1,0 +1,24 @@
+schema_version: "draft-0.1"
+stage:
+  id: string
+  name: string
+  description: string
+  requires:
+    artifacts: [string]
+    capabilities: [string]
+  produces:
+    artifacts: [string]
+  validators: [string]
+  transitions:
+    pass: string|null
+    fail: string|null
+    needs_research: string|null
+    needs_definition: string|null
+    blocked: string|null
+  liveness:
+    max_revisits: integer|null
+    max_no_progress_cycles: integer|null
+  human_gate:
+    QUICK: boolean
+    STANDARD: boolean
+    DEEP: boolean

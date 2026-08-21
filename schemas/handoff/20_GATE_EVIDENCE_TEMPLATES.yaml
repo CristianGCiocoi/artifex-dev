@@ -1,0 +1,36 @@
+gate:
+  id: G-M00-01
+  scope: TASK|INTEGRATION|MILESTONE|RELEASE
+  target: ""
+  state: PENDING
+  contract_hash: null
+  required_evidence: []
+  waiver_allowed: false
+
+evidence:
+  id: EVD-000
+  gate: G-M00-01
+  claim: ""
+  validator:
+    id: ""
+    version: null
+    type: deterministic|structured|independent_agent|human
+  source:
+    commit: null
+    contract_hash: null
+    project_model_fingerprint: null
+  result:
+    status: PASS|FAIL|BLOCKED
+    measured: {}
+  evidence_excerpt: ""
+  scrubbed: true
+  created_at: null
+
+waiver:
+  id: WAV-000
+  gate: G-M00-01
+  reason: ""
+  impact: ""
+  requested_by: ""
+  approved_by: null
+  expires_or_revisit: null

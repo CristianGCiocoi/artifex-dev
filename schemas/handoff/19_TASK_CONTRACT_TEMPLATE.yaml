@@ -1,0 +1,38 @@
+task:
+  id: M00-T00
+  title: ""
+  milestone: M00
+  state: PLANNED
+
+dependencies: []
+
+ownership:
+  paths: []
+  shared_surfaces: []
+
+execution:
+  base_commit: null
+  project_model_fingerprint: null
+  contract_hash: null
+  preferred_capabilities: []
+  recommended_effort: strong|standard|mechanical
+
+deliverable:
+  summary: ""
+  expected_files: []
+
+requirements: []
+interfaces: []
+invariants: []
+
+acceptance:
+  - id: AC-01
+    outcome: ""
+    validator: ""
+
+do_not:
+  - ""
+
+result_contract:
+  status: SUCCESS|FAIL|BLOCKED|CANCELLED|REBASE_REQUIRED
+  expected_artifacts: []
