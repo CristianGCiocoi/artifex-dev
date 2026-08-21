@@ -9,7 +9,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, TypeVar
 
-from artifex.project import FileSystemProjectStore
+from artifex.project import FileSystemProjectStore, UnsafePathError, normalize_relative_path
 
 from .model import CandidateOverlay, ImprovementProposal, KnowledgeItem, KnowledgeScope
 
@@ -171,6 +171,12 @@ class InstanceKnowledgeStore:
 
 def _namespace(value: str, name: str) -> str:
     if not _NAMESPACE.fullmatch(value):
+        raise KnowledgeIsolationError(f"invalid {name}: {value!r}")
+    try:
+        normalized = normalize_relative_path(value)
+    except UnsafePathError as exc:
+        raise KnowledgeIsolationError(f"invalid {name}: {value!r}") from exc
+    if normalized != value:
         raise KnowledgeIsolationError(f"invalid {name}: {value!r}")
     return value
 

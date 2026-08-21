@@ -277,6 +277,14 @@ def test_instance_namespace_property_cannot_escape_state_root(value: str) -> Non
         assert store.root.parent == (root / "instances").resolve()
 
 
+@pytest.mark.parametrize("value", ["NUL", "nul.txt", "CON", "COM1.log", "name."])
+def test_instance_namespace_rejects_nonportable_windows_names(
+    tmp_path: Path, value: str
+) -> None:
+    with pytest.raises(KnowledgeIsolationError):
+        InstanceKnowledgeStore(tmp_path, value)
+
+
 @pytest.mark.integration
 @pytest.mark.parametrize("provider", ["hermes", "codex", "claude"])
 def test_integration_memory_is_auxiliary_and_provider_isolated(
