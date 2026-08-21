@@ -30,3 +30,5 @@ execution:
   fixture_mode: deterministic_non_mutating
   worktree_binding: base_commit_and_project_model_fingerprint
   raw_result_identity: required_no_defaults
+  success_artifacts: owned_created_or_content_changed
+  post_run_project_model_recheck: required

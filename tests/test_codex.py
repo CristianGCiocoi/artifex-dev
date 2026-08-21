@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+from collections.abc import Mapping
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -16,7 +17,6 @@ from artifex.ids import StableId
 from artifex.integrations.codex import (
     CODEX_OPERATION_NAMES,
     CodexDetection,
-    CodexExecutionFixture,
     CodexIntegration,
     CodexWorkerPlan,
     ContinuitySnapshot,
@@ -106,6 +106,7 @@ def _packet(
     base_commit: str = "a" * 40,
     model_fingerprint: str = "b" * 64,
     task_id: str = "M06-T04",
+    owned_paths: tuple[str, ...] = ("owned.txt",),
 ) -> ExecutionPacket:
     return integration.prepare_execution(
         task_contract={"id": task_id, "stage": "execution"},
@@ -113,7 +114,7 @@ def _packet(
         base_commit=base_commit,
         project_model_fingerprint=model_fingerprint,
         acceptance_criteria=("Codex result is portable",),
-        ownership={"paths": ["owned.txt"]},
+        ownership={"paths": list(owned_paths)},
         expected_result={"status": [status.value for status in ExecutionStatus]},
         interfaces=("Application API", "MCP"),
         invariants=("INV-013", "INV-024"),
@@ -169,13 +170,25 @@ def _execute_and_accept(
         baseline=packet.baseline,
     )
     plan = integration.prepare_stage(packet, root)
-    fixture = CodexExecutionFixture.bound(
-        packet,
-        ExecutionStatus.SUCCESS,
-        artifacts=({"path": output, "state": "produced"},),
-        validation={"adapter_boundary": "PASS"},
-    )
-    result = integration.execute_stage(plan, fixture)
+
+    def deterministic_runner(observed_plan: CodexWorkerPlan) -> Mapping[str, object]:
+        assert observed_plan.packet.contract_fingerprint == packet.contract_fingerprint
+        target = root / output
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(
+            f"produced by {stage_id} for {packet.contract_fingerprint}\n",
+            encoding="utf-8",
+        )
+        return {
+            "status": "SUCCESS",
+            "base_commit": observed_plan.packet.base_commit,
+            "execution_contract_fingerprint": observed_plan.packet.contract_fingerprint,
+            "project_model_fingerprint": observed_plan.packet.project_model_fingerprint,
+            "artifacts": [{"path": output, "state": "produced"}],
+            "validation": {"adapter_boundary": "PASS"},
+        }
+
+    result = integration.execute_stage(plan, deterministic_runner)
     assert result.status is ExecutionStatus.SUCCESS
     assert result.validation == {"adapter_boundary": "PASS"}
     workflow.claim_complete(stage_id, outputs={output})
@@ -329,6 +342,7 @@ def test_m06_t04_injectable_harness_consumes_bound_plan_without_live_mutation(
     }
     root = tmp_path / "harness"
     repository = ProjectRepository.initialize(root, project_id="HARNESS", name="Harness")
+    (root / "owned.txt").write_text("before runner\n", encoding="utf-8")
     head = _commit_all(root, "harness baseline")
     packet = _packet(
         integration,
@@ -341,6 +355,10 @@ def test_m06_t04_injectable_harness_consumes_bound_plan_without_live_mutation(
     def runner(observed_plan: CodexWorkerPlan) -> dict[str, object]:
         assert observed_plan is plan
         consumed.append(plan.packet.contract_fingerprint)
+        (root / "owned.txt").write_text(
+            f"after runner {observed_plan.packet.contract_fingerprint}\n",
+            encoding="utf-8",
+        )
         return {
             "status": "completed",
             "base_commit": packet.base_commit,
@@ -354,7 +372,7 @@ def test_m06_t04_injectable_harness_consumes_bound_plan_without_live_mutation(
     assert result.status is ExecutionStatus.SUCCESS
     assert result.validation == {"tests": "PASS"}
     assert consumed == [packet.contract_fingerprint]
-    assert _git(root, "status", "--porcelain=v1") == ""
+    assert (root / "owned.txt").read_text(encoding="utf-8").startswith("after runner")
     assert integration.submit_validation(result.validation)["canonical"] is False
 
 
@@ -482,23 +500,26 @@ def test_m06_t07_codex_only_greenfield_standard_preserves_state_evidence_and_doc
     assert model.project.lifecycle is ProjectLifecycle.GREENFIELD
     assert model.project.workflow_depth is WorkflowDepth.STANDARD
     integration = CodexIntegration(_successful_detection())
+    output = "generated/standard-implementation.txt"
     packet = _packet(
         integration,
         base_commit=head,
         model_fingerprint=_model_fingerprint(repository),
         task_id="M06-T07",
+        owned_paths=(output,),
     )
     result, ledger, workflow = _execute_and_accept(
         root,
         integration,
         packet,
         stage_id="STG-CODEX-GREEN",
-        output="standard-implementation",
+        output=output,
         evidence_id="EVD-CODEX-GREEN",
     )
     assert workflow.get("STG-CODEX-GREEN").state is StageState.ACCEPTED
     assert len(ledger.entries) == 1
-    assert result.artifacts == ({"path": "standard-implementation", "state": "produced"},)
+    assert result.artifacts == ({"path": output, "state": "produced"},)
+    assert (root / output).is_file()
 
     documents = compile_human_documentation(repository.load().to_dict())
     for name, content in documents.items():
@@ -542,11 +563,13 @@ def test_m06_t08_codex_only_brownfield_changeset_preserves_existing_content(
     changesets.save(changeset)
 
     integration = CodexIntegration(_successful_detection())
+    output = "src/codex-brownfield-change.txt"
     packet = _packet(
         integration,
         base_commit=head,
         model_fingerprint=_model_fingerprint(repository),
         task_id="M06-T08",
+        owned_paths=(output,),
     )
     assert changesets.load(changeset.id).status is ChangeSetStatus.IMPLEMENTING
     result, ledger, workflow = _execute_and_accept(
@@ -554,7 +577,7 @@ def test_m06_t08_codex_only_brownfield_changeset_preserves_existing_content(
         integration,
         packet,
         stage_id="STG-CODEX-BROWN",
-        output=change_path,
+        output=output,
         evidence_id="EVD-CODEX-BROWN",
     )
     assert workflow.get("STG-CODEX-BROWN").state is StageState.ACCEPTED
@@ -566,11 +589,14 @@ def test_m06_t08_codex_only_brownfield_changeset_preserves_existing_content(
     assert result.status is ExecutionStatus.SUCCESS
     assert changesets.load(changeset.id).status is ChangeSetStatus.APPLIED
     assert readme.read_text(encoding="utf-8") == "# Existing system\n"
+    assert (root / output).is_file()
     assert any(item["path"] == change_path for item in snapshot.files)
 
 
 @pytest.mark.adversarial
-def test_m06_t09_failure_cancel_and_stale_result_mapping_fail_closed() -> None:
+def test_m06_t09_failure_cancel_stale_noop_and_post_run_drift_fail_closed(
+    tmp_path: Path,
+) -> None:
     integration = CodexIntegration(_successful_detection())
     packet = _packet(integration)
 
@@ -615,6 +641,63 @@ def test_m06_t09_failure_cancel_and_stale_result_mapping_fail_closed() -> None:
             integration.normalize_result(packet, incomplete)
     with pytest.raises(IntegrationError, match="unsupported"):
         integration.normalize_result(packet, raw("mysterious"))
+
+    root = tmp_path / "adversarial-runner"
+    repository = ProjectRepository.initialize(root, project_id="ADVERSARIAL", name="Adversarial")
+    (root / "owned.txt").write_text("preexisting\n", encoding="utf-8")
+    head = _commit_all(root, "adversarial baseline")
+    bound_packet = _packet(
+        integration,
+        base_commit=head,
+        model_fingerprint=_model_fingerprint(repository),
+        owned_paths=("owned.txt", "missing.txt", "new.txt"),
+    )
+    plan = integration.prepare_stage(bound_packet, root, require_clean=True)
+
+    def bound_result(artifacts: list[dict[str, str]]) -> dict[str, object]:
+        return {
+            "status": "SUCCESS",
+            "base_commit": bound_packet.base_commit,
+            "execution_contract_fingerprint": bound_packet.contract_fingerprint,
+            "project_model_fingerprint": bound_packet.project_model_fingerprint,
+            "artifacts": artifacts,
+        }
+
+    with pytest.raises(IntegrationError, match="not created or content-changed"):
+        integration.execute_stage(
+            plan,
+            lambda _: bound_result([{"path": "owned.txt"}]),
+        )
+    with pytest.raises(IntegrationError, match="at least one"):
+        integration.execute_stage(plan, lambda _: bound_result([]))
+    with pytest.raises(IntegrationError, match="does not exist"):
+        integration.execute_stage(
+            plan,
+            lambda _: bound_result([{"path": "missing.txt"}]),
+        )
+    with pytest.raises(IntegrationError, match="escapes project root"):
+        integration.execute_stage(
+            plan,
+            lambda _: bound_result([{"path": "../escape.txt"}]),
+        )
+
+    def write_outside_ownership(_: CodexWorkerPlan) -> Mapping[str, object]:
+        (root / "outside.txt").write_text("unowned delta\n", encoding="utf-8")
+        return bound_result([{"path": "outside.txt"}])
+
+    with pytest.raises(IntegrationError, match="outside packet ownership"):
+        integration.execute_stage(plan, write_outside_ownership)
+
+    def mutate_model_after_execution(_: CodexWorkerPlan) -> Mapping[str, object]:
+        (root / "new.txt").write_text("runner delta\n", encoding="utf-8")
+        model_path = root / ".artifex" / "project-model.json"
+        model = json.loads(model_path.read_text(encoding="utf-8"))
+        model["project"]["name"] = "Post-run drift"
+        model_path.write_text(json.dumps(model), encoding="utf-8")
+        return bound_result([{"path": "new.txt"}])
+
+    post_run_drift = integration.execute_stage(plan, mutate_model_after_execution)
+    assert post_run_drift.status is ExecutionStatus.REBASE_REQUIRED
 
 
 @pytest.mark.conformance

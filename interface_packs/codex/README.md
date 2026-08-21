@@ -9,7 +9,10 @@ worktree inspection. Stage preparation recomputes the canonical Project Model
 fingerprint as well as Git HEAD. A caller must explicitly inject a runner to
 execute a generated plan; the runner result must echo the packet's base commit,
 execution-contract fingerprint, and Project Model fingerprint. Missing or stale
-identity fails closed. Executor validation is a claim until ARTIFEX Core records
+identity fails closed. For `SUCCESS`, every claimed artifact must be inside the
+packet's owned paths and must have been created or content-changed by that exact
+runner invocation. The adapter rechecks canonical Project Model identity after
+the runner returns. Executor validation is a claim until ARTIFEX Core records
 evidence and passes the applicable gate.
 
 The `skills/` entries are Codex-facing shims for the canonical agent-neutral

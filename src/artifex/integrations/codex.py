@@ -585,13 +585,23 @@ class CodexIntegration:
         # handing the packet to a runner.  Preparing a plan cannot freeze a
         # repository that changed afterward.
         self.inspect_worktree(plan.packet, plan.worktree.root)
+        root = Path(plan.worktree.root).resolve()
+        owned_paths, before = _snapshot_owned_artifacts(root, plan.packet)
         raw_result = runner(plan)
         if not isinstance(raw_result, Mapping):
             raise IntegrationError("Codex harness runner must return an object")
         result = self.normalize_result(plan.packet, raw_result)
-        return self.submit_result(
-            plan.packet, result, current_baseline=current_baseline
+        observed_baseline = _observed_repository_baseline(root, plan.packet)
+        classified = self.submit_result(
+            plan.packet, result, current_baseline=observed_baseline
         )
+        if classified.status is ExecutionStatus.SUCCESS and current_baseline is not None:
+            classified = self.submit_result(
+                plan.packet, classified, current_baseline=current_baseline
+            )
+        if classified.status is ExecutionStatus.SUCCESS:
+            _verify_success_artifacts(root, classified, owned_paths, before)
+        return classified
 
     def normalize_result(
         self, packet: ExecutionPacket, value: Mapping[str, Any]
@@ -821,6 +831,81 @@ def _canonical_project_model_fingerprint(root: Path) -> str:
         allow_nan=False,
     ).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
+
+
+def _observed_repository_baseline(
+    root: Path, packet: ExecutionPacket
+) -> ExecutionBaseline:
+    return ExecutionBaseline(
+        _git_value(_read_only_runner, root, "rev-parse", "HEAD"),
+        packet.contract_fingerprint,
+        _canonical_project_model_fingerprint(root),
+    )
+
+
+def _snapshot_owned_artifacts(
+    root: Path, packet: ExecutionPacket
+) -> tuple[tuple[str, ...], Mapping[str, str]]:
+    paths = _required_sequence(packet.ownership, "paths")
+    if not all(isinstance(item, str) and item.strip() for item in paths):
+        raise IntegrationError("ownership paths must contain non-empty strings")
+    owned = tuple(dict.fromkeys(_safe_artifact_path(root, str(item))[0] for item in paths))
+    snapshot: dict[str, str] = {}
+    for relative in owned:
+        target = _safe_artifact_path(root, relative)[1]
+        if target.is_file():
+            snapshot[relative] = hashlib.sha256(target.read_bytes()).hexdigest()
+        elif target.is_dir():
+            for candidate in target.rglob("*"):
+                if not candidate.is_file():
+                    continue
+                candidate_relative, resolved = _safe_artifact_path(
+                    root, _portable_path(candidate.relative_to(root))
+                )
+                snapshot[candidate_relative] = hashlib.sha256(resolved.read_bytes()).hexdigest()
+    return owned, snapshot
+
+
+def _verify_success_artifacts(
+    root: Path,
+    result: ExecutionResult,
+    owned_paths: Sequence[str],
+    before: Mapping[str, str],
+) -> None:
+    if not result.artifacts:
+        raise IntegrationError("Codex SUCCESS must claim at least one produced artifact")
+    seen: set[str] = set()
+    for artifact in result.artifacts:
+        raw_path = _required_string(artifact, "path")
+        relative, target = _safe_artifact_path(root, raw_path)
+        if relative in seen:
+            raise IntegrationError(f"duplicate Codex result artifact: {relative}")
+        seen.add(relative)
+        if not any(
+            relative == owner or relative.startswith(f"{owner}/")
+            for owner in owned_paths
+        ):
+            raise IntegrationError(f"Codex result artifact is outside packet ownership: {relative}")
+        if not target.is_file():
+            raise IntegrationError(f"Codex SUCCESS artifact does not exist: {relative}")
+        after = hashlib.sha256(target.read_bytes()).hexdigest()
+        if before.get(relative) == after:
+            raise IntegrationError(
+                f"Codex SUCCESS artifact was not created or content-changed: {relative}"
+            )
+
+
+def _safe_artifact_path(root: Path, value: str) -> tuple[str, Path]:
+    candidate = Path(value)
+    if candidate.is_absolute() or not candidate.parts or ".." in candidate.parts:
+        raise IntegrationError(f"artifact path escapes project root: {value!r}")
+    relative = _portable_path(candidate)
+    target = (root / candidate).resolve()
+    try:
+        target.relative_to(root)
+    except ValueError as exc:
+        raise IntegrationError(f"artifact path escapes project root: {value!r}") from exc
+    return relative, target
 
 
 def _semantic_file_manifest(root: Path) -> tuple[Mapping[str, str], ...]:
