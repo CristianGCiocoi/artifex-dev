@@ -568,7 +568,11 @@ class ClaudeIntegration:
         if project.workflow_depth is not WorkflowDepth.STANDARD:
             raise IntegrationError("greenfield workflow depth must be STANDARD")
         return self._run_standard_workflow(
-            plan, runner, evidence_id=evidence_id, recorded_at=recorded_at
+            plan,
+            runner,
+            evidence_id=evidence_id,
+            recorded_at=recorded_at,
+            forbidden_artifacts=(".artifex/project-model.json",),
         )
 
     def run_brownfield_changeset_workflow(
@@ -590,21 +594,24 @@ class ClaudeIntegration:
         changeset = changesets.load(changeset_id)
         if changeset.baseline_commit not in (None, plan.packet.base_commit):
             raise IntegrationError("ChangeSet baseline does not match the execution packet")
-        if changeset.status.value == "PROPOSED":
-            changeset = changeset.transition(
-                "ACCEPTED", actor="artifex-core", commit=plan.packet.base_commit
-            )
-            changeset = changeset.transition(
-                "IMPLEMENTING", actor="artifex-core", commit=plan.packet.base_commit
-            )
-            changesets.save(changeset)
-        elif changeset.status.value != "IMPLEMENTING":
+        if changeset.status.value not in {"PROPOSED", "IMPLEMENTING"}:
             raise IntegrationError("ChangeSet must be PROPOSED or IMPLEMENTING")
 
         outcome = self._run_standard_workflow(
-            plan, runner, evidence_id=evidence_id, recorded_at=recorded_at
+            plan,
+            runner,
+            evidence_id=evidence_id,
+            recorded_at=recorded_at,
+            forbidden_artifacts=(".artifex/project-model.json", changesets.path_for(changeset.id)),
         )
         if outcome.accepted:
+            if changeset.status.value == "PROPOSED":
+                changeset = changeset.transition(
+                    "ACCEPTED", actor="artifex-core", commit=plan.packet.base_commit
+                )
+                changeset = changeset.transition(
+                    "IMPLEMENTING", actor="artifex-core", commit=plan.packet.base_commit
+                )
             changeset = changeset.transition(
                 "VERIFIED", actor="artifex-core", commit=plan.packet.base_commit
             )
@@ -618,6 +625,7 @@ class ClaudeIntegration:
         *,
         evidence_id: str,
         recorded_at: datetime,
+        forbidden_artifacts: Sequence[str],
     ) -> ClaudeWorkflowOutcome:
         packet = plan.packet
         task_id = str(packet.task_contract.get("id", "CLAUDE-STANDARD"))
@@ -638,20 +646,28 @@ class ClaudeIntegration:
             available_capabilities={Capability.REPOSITORY_READ.value},
             baseline=packet.baseline,
         )
+        before_artifacts = _snapshot_owned_artifacts(Path(plan.worktree_root), packet)
         execution_result = self.execute_stage(plan, runner)
-        artifacts_valid = _artifacts_are_owned_and_present(
-            Path(plan.worktree_root), packet, execution_result
+        artifacts_valid = _artifacts_are_owned_changed_and_present(
+            Path(plan.worktree_root),
+            packet,
+            execution_result,
+            before_artifacts,
+            forbidden_artifacts=frozenset(
+                normalize_relative_path(path) for path in forbidden_artifacts
+            ),
         )
-        passed = execution_result.status is ExecutionStatus.SUCCESS and artifacts_valid
-        if execution_result.status is ExecutionStatus.SUCCESS:
-            workflow.claim_complete(
-                stage.stage_id, outputs={"bound-executor-result"}
+        if execution_result.status is not ExecutionStatus.SUCCESS:
+            raise IntegrationError(
+                "Claude STANDARD workflow requires a bound SUCCESS result before evidence"
             )
-            workflow.transition(stage.stage_id, StageState.VALIDATING)
-        elif execution_result.status is ExecutionStatus.BLOCKED:
-            workflow.transition(stage.stage_id, StageState.BLOCKED)
-        else:
-            workflow.transition(stage.stage_id, StageState.FAILED)
+        if not artifacts_valid:
+            raise IntegrationError(
+                "Claude SUCCESS result must contain only safe, owned artifacts changed "
+                "by this invocation"
+            )
+        workflow.claim_complete(stage.stage_id, outputs={"bound-executor-result"})
+        workflow.transition(stage.stage_id, StageState.VALIDATING)
 
         binding = EvidenceBinding(
             packet.base_commit,
@@ -663,7 +679,7 @@ class ClaudeIntegration:
         ).validate(
             ValidationContext(claim, "claude", binding),
             inspector_id="artifex-core",
-            passed=passed,
+            passed=True,
             facts=(
                 MeasuredFact("bound_result", execution_result.baseline == packet.baseline),
                 MeasuredFact("owned_artifacts_present", artifacts_valid),
@@ -806,8 +822,40 @@ def _mapping_items(value: Any) -> tuple[tuple[Mapping[str, Any], ...], str | Non
     return tuple(dict(item) for item in value), None
 
 
-def _artifacts_are_owned_and_present(
-    root: Path, packet: ExecutionPacket, result: ExecutionResult
+def _snapshot_owned_artifacts(root: Path, packet: ExecutionPacket) -> dict[str, str]:
+    ownership = packet.ownership.get("paths")
+    if not isinstance(ownership, Sequence) or isinstance(ownership, (str, bytes, bytearray)):
+        raise IntegrationError("execution packet ownership paths must be an array")
+    snapshot: dict[str, str] = {}
+    try:
+        owned = tuple(normalize_relative_path(str(item)) for item in ownership)
+    except (TypeError, ValueError):
+        raise IntegrationError("execution packet contains an unsafe ownership path") from None
+    if not owned:
+        raise IntegrationError("execution packet must own at least one artifact path")
+    for path in owned:
+        _, target = resolve_inside(root, path)
+        candidate = root.joinpath(*path.split("/"))
+        if candidate.is_symlink():
+            raise IntegrationError(f"owned artifact path cannot be a symlink: {path}")
+        if target.is_file():
+            snapshot[path] = _file_fingerprint(target)
+        elif target.is_dir():
+            for child in sorted(item for item in target.rglob("*") if item.is_file()):
+                if child.is_symlink():
+                    raise IntegrationError("owned artifact directory contains a symlink")
+                normalized = normalize_relative_path(child.relative_to(root).as_posix())
+                snapshot[normalized] = _file_fingerprint(child)
+    return snapshot
+
+
+def _artifacts_are_owned_changed_and_present(
+    root: Path,
+    packet: ExecutionPacket,
+    result: ExecutionResult,
+    before: Mapping[str, str],
+    *,
+    forbidden_artifacts: frozenset[str],
 ) -> bool:
     ownership = packet.ownership.get("paths")
     if not isinstance(ownership, Sequence) or isinstance(ownership, (str, bytes, bytearray)):
@@ -818,6 +866,7 @@ def _artifacts_are_owned_and_present(
         return False
     if not owned or not result.artifacts:
         return False
+    observed_paths: set[str] = set()
     for artifact in result.artifacts:
         path = artifact.get("path")
         if not isinstance(path, str):
@@ -826,6 +875,12 @@ def _artifacts_are_owned_and_present(
             normalized, target = resolve_inside(root, path)
         except ValueError:
             return False
+        candidate = root.joinpath(*normalized.split("/"))
+        if candidate.is_symlink() or normalized in forbidden_artifacts:
+            return False
+        if normalized in observed_paths:
+            return False
+        observed_paths.add(normalized)
         if not any(
             normalized == allowed or normalized.startswith(allowed.rstrip("/") + "/")
             for allowed in owned
@@ -833,7 +888,13 @@ def _artifacts_are_owned_and_present(
             return False
         if not target.is_file():
             return False
+        if before.get(normalized) == _file_fingerprint(target):
+            return False
     return True
+
+
+def _file_fingerprint(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def _is_ephemeral_state_path(relative: str) -> bool:

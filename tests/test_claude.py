@@ -245,17 +245,18 @@ def test_greenfield_standard_and_worktree_binding_without_live_execution(tmp_pat
     def runner(received: object) -> dict[str, object]:
         assert received is workflow_plan
         observed_plans.append(received)
+        (root / "green-output.txt").write_text("created by runner\n", encoding="utf-8")
         return _raw_result(
             workflow_packet,
             "success",
-            artifacts=({"path": ".artifex/project-model.json"},),
+            artifacts=({"path": "green-output.txt"},),
         )
 
     workflow_packet = _packet(
         adapter,
         head,
         model_fingerprint_value=fingerprint,
-        owned_path=".artifex/project-model.json",
+        owned_path="green-output.txt",
         task_id="M07-T07",
     )
     workflow_plan = adapter.plan_stage_execution(workflow_packet, project_root=root)
@@ -270,6 +271,92 @@ def test_greenfield_standard_and_worktree_binding_without_live_execution(tmp_pat
     assert workflow.evidence.independent_of_executor
     assert (root / workflow.evidence_journal).is_file()
     assert observed_plans == [workflow_plan]
+
+    journal = root / workflow.evidence_journal
+    evidence_lines = journal.read_text(encoding="utf-8").splitlines()
+
+    canonical_packet = _packet(
+        adapter,
+        head,
+        model_fingerprint_value=fingerprint,
+        owned_path=".artifex/project-model.json",
+        task_id="M07-T07-NOOP",
+    )
+    canonical_plan = adapter.plan_stage_execution(canonical_packet, project_root=root)
+    with pytest.raises(IntegrationError, match="changed by this invocation"):
+        adapter.run_greenfield_standard_workflow(
+            canonical_plan,
+            lambda _: _raw_result(
+                canonical_packet,
+                "success",
+                artifacts=({"path": ".artifex/project-model.json"},),
+            ),
+            evidence_id="EVD-M07-GREEN-NOOP",
+            recorded_at=datetime(2026, 8, 21, tzinfo=UTC),
+        )
+
+    unchanged = root / "unchanged.txt"
+    unchanged.write_text("pre-existing\n", encoding="utf-8")
+    unchanged_packet = _packet(
+        adapter,
+        head,
+        model_fingerprint_value=fingerprint,
+        owned_path="unchanged.txt",
+        task_id="M07-T07-UNCHANGED",
+    )
+    unchanged_plan = adapter.plan_stage_execution(unchanged_packet, project_root=root)
+    with pytest.raises(IntegrationError, match="changed by this invocation"):
+        adapter.run_greenfield_standard_workflow(
+            unchanged_plan,
+            lambda _: _raw_result(
+                unchanged_packet,
+                "success",
+                artifacts=({"path": "unchanged.txt"},),
+            ),
+            evidence_id="EVD-M07-GREEN-UNCHANGED",
+            recorded_at=datetime(2026, 8, 21, tzinfo=UTC),
+        )
+
+    missing_packet = _packet(
+        adapter,
+        head,
+        model_fingerprint_value=fingerprint,
+        owned_path="missing-output.txt",
+        task_id="M07-T07-MISSING",
+    )
+    missing_plan = adapter.plan_stage_execution(missing_packet, project_root=root)
+    with pytest.raises(IntegrationError, match="changed by this invocation"):
+        adapter.run_greenfield_standard_workflow(
+            missing_plan,
+            lambda _: _raw_result(
+                missing_packet,
+                "success",
+                artifacts=({"path": "missing-output.txt"},),
+            ),
+            evidence_id="EVD-M07-GREEN-MISSING",
+            recorded_at=datetime(2026, 8, 21, tzinfo=UTC),
+        )
+
+    escape_packet = _packet(
+        adapter,
+        head,
+        model_fingerprint_value=fingerprint,
+        owned_path="safe-output.txt",
+        task_id="M07-T07-ESCAPE",
+    )
+    escape_plan = adapter.plan_stage_execution(escape_packet, project_root=root)
+    with pytest.raises(IntegrationError, match="changed by this invocation"):
+        adapter.run_greenfield_standard_workflow(
+            escape_plan,
+            lambda _: _raw_result(
+                escape_packet,
+                "success",
+                artifacts=({"path": "../escaped.txt"},),
+            ),
+            evidence_id="EVD-M07-GREEN-ESCAPE",
+            recorded_at=datetime(2026, 8, 21, tzinfo=UTC),
+        )
+    assert journal.read_text(encoding="utf-8").splitlines() == evidence_lines
 
     stale = _packet(adapter, "f" * 40, model_fingerprint_value=fingerprint)
     with pytest.raises(ValueError, match="does not match packet base"):
@@ -345,11 +432,34 @@ def test_brownfield_changeset_and_portable_continuity_snapshot(tmp_path: Path) -
     _git(root, "commit", "-m", "brownfield baseline")
     head = _git(root, "rev-parse", "HEAD")
     fingerprint = model_fingerprint(repository.load().to_dict())
-    packet = _packet(
+    fake_packet = _packet(
         adapter,
         head,
         model_fingerprint_value=fingerprint,
         owned_path=path,
+        task_id="M07-T08-NOOP",
+    )
+    fake_plan = adapter.plan_stage_execution(fake_packet, project_root=root)
+    with pytest.raises(IntegrationError, match="changed by this invocation"):
+        adapter.run_brownfield_changeset_workflow(
+            fake_plan,
+            lambda _: _raw_result(
+                fake_packet, "success", artifacts=({"path": path},)
+            ),
+            changeset_id="CHG-M07-LOGIN",
+            evidence_id="EVD-M07-BROWN-NOOP",
+            recorded_at=datetime(2026, 8, 21, tzinfo=UTC),
+        )
+    assert json.loads(repository.store.read(path))["status"] == "PROPOSED"
+    assert not (
+        root / ".artifex" / "validation" / "evidence" / "claude-standard.jsonl"
+    ).exists()
+
+    packet = _packet(
+        adapter,
+        head,
+        model_fingerprint_value=fingerprint,
+        owned_path="brown-output.txt",
         task_id="M07-T08",
     )
     plan = adapter.plan_stage_execution(packet, project_root=root)
@@ -357,7 +467,10 @@ def test_brownfield_changeset_and_portable_continuity_snapshot(tmp_path: Path) -
     def runner(received: object) -> dict[str, object]:
         assert received is plan
         assert packet.contract_fingerprint in plan.prompt
-        return _raw_result(packet, "success", artifacts=({"path": path},))
+        (root / "brown-output.txt").write_text("created by runner\n", encoding="utf-8")
+        return _raw_result(
+            packet, "success", artifacts=({"path": "brown-output.txt"},)
+        )
 
     workflow = adapter.run_brownfield_changeset_workflow(
         plan,
@@ -449,4 +562,6 @@ def test_claude_interface_pack_has_shim_rules_skill_and_optional_mcp_entry() -> 
     assert "worktree HEAD" in skill
     assert "execution_contract_fingerprint" in rules
     assert "project_model_fingerprint" in skill
+    assert "newly created or content-changed" in rules
+    assert "governing ChangeSet" in skill
     assert mcp["mcpServers"]["artifex"]["transport"] == "stdio"

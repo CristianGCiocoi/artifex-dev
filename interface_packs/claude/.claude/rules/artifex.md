@@ -12,3 +12,6 @@ paths:
 - Return structured SUCCESS, FAIL, BLOCKED, CANCELLED, or REBASE_REQUIRED results.
 - Echo the packet `base_commit`, `execution_contract_fingerprint`, and
   `project_model_fingerprint`; a result without all three identities is rejected.
+- A SUCCESS artifact must be a safe owned file newly created or content-changed by
+  this invocation. Never claim the canonical Project Model or governing ChangeSet
+  itself as produced work.
