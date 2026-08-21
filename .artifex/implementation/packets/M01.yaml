@@ -1,0 +1,8 @@
+packet_hash: 3f296804de352865e32a6da7c228218b681bae509ecf550b8a00a38c79545d34
+base_commit: d0cd2dd770a7c40e2a055ff00421c9ddb512d7ca
+project_model_fingerprint: 2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506
+worker_branch: feat/m01-project-store
+worker_result_commit: 2c34bd014999810ee62e43ef6d2aa1e1e0939d38
+ownership: [src/artifex/project, tests/test_project_model.py, tests/test_project_store.py, schemas/project-model.schema.json]
+result: SUCCESS
+

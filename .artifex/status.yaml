@@ -3,13 +3,13 @@ derived_at: "2026-08-21T20:14:04+03:00"
 project: ARTIFEX
 implementation:
   current_milestone: M01
-  current_state: READY
+  current_state: VERIFYING
   release: PLANNED
 milestones:
   M00: ACCEPTED
-  M01: READY
-  M02: PLANNED
-  M03: PLANNED
+  M01: VERIFYING
+  M02: VERIFYING
+  M03: VERIFYING
   M04: PLANNED
   M05: PLANNED
   M06: PLANNED

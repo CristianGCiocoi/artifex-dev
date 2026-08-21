@@ -1,0 +1,26 @@
+schema_version: "1.0"
+contract:
+  id: VAL-M01
+  version: 1
+  milestone: M01
+  state: EXECUTION_RECONCILED
+  authority_source: docs/implementation/milestones/M01_PROJECT_MODEL_GIT_STORE.md
+  execution_base_commit: d0cd2dd770a7c40e2a055ff00421c9ddb512d7ca
+  execution_result_commit: 19ab900049e71a083bf872109c4d4d761f9bea09
+  project_model_fingerprint: 2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506
+  criteria:
+    - M01-T01 greenfield initialization and safe brownfield adoption
+    - M01-T02 Git baseline, main branch, dirty policy, and remote metadata
+    - M01-T03 Markdown front matter plus YAML and JSON artifact index
+    - M01-T04 typed Project Model entities
+    - M01-T05 dependency graph and transitive STALE propagation
+    - M01-T06 external edit reconciliation event
+    - M01-T07 six-state ChangeSet lifecycle
+    - M01-T08 append-only significant event history
+    - M01-T09 Git-backed artifact and event provenance
+    - M01-T10 atomic, corruption-safe, cross-platform ProjectStore
+  validators: [schema, property, git, staleness, external-edit, changeset, cross-platform, independent-review]
+  reconciliation:
+    criteria_changed_from_authority: false
+    acceptance_before_current_evidence: prohibited
+

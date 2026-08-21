@@ -1,0 +1,28 @@
+schema_version: "1.0"
+contract:
+  id: VAL-M02
+  version: 1
+  milestone: M02
+  state: EXECUTION_RECONCILED
+  authority_source: docs/implementation/milestones/M02_WORKFLOW_VALIDATION_CORE.md
+  execution_base_commit: d0cd2dd770a7c40e2a055ff00421c9ddb512d7ca
+  execution_result_commit: deba97172db022c97f702a6a75237be33d932985
+  project_model_fingerprint: 2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506
+  criteria:
+    - M02-T01 allowed forward and backward stage state machine
+    - M02-T02 typed Stage Contract and liveness policy
+    - M02-T03 immutable fingerprinted Acceptance Contract
+    - M02-T04 typed validator framework
+    - M02-T05 durable reconstructable Evidence Ledger bound to verified state
+    - M02-T06 hierarchical task integration milestone release gates
+    - M02-T07 explicit-authority waivers with expiry or revisit
+    - M02-T08 evidence invalidation and STALE propagation
+    - M02-T09 execution baseline binding and REBASE_REQUIRED
+    - M02-T10 revisit and no-progress liveness guard
+    - M02-T11 instruction trust hierarchy
+    - M02-T12 eight named adversarial scenarios fail safely
+  validators: [workflow, validation, adversarial, persistence-reopen, core-integration, independent-review]
+  reconciliation:
+    criteria_changed_from_authority: false
+    acceptance_before_current_evidence: prohibited
+

@@ -1,0 +1,8 @@
+packet_hash: f9e91e5f60cb8677ca1044f1a11e7939d42cd6d6c66ae226755d5a93068fd48f
+base_commit: d0cd2dd770a7c40e2a055ff00421c9ddb512d7ca
+project_model_fingerprint: 2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506
+worker_branch: feat/m03-compilation
+worker_result_commit: c9f681292dba8bd0033d0822908067a43f987d39
+ownership: [src/artifex/compilation, tests/test_compilation.py, tests/test_comprehension.py, schemas/context-packet.schema.json]
+result: SUCCESS
+
