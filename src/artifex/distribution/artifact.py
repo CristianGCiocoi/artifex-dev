@@ -82,6 +82,10 @@ def canonical_architecture() -> str:
         raise ValueError(f"unsupported native artifact architecture: {observed}") from exc
 
 
+def _supports_bundle_symlinks() -> bool:
+    return canonical_platform() != "windows"
+
+
 def create_artifact_manifest(
     source: str | Path,
     *,
@@ -287,6 +291,8 @@ def _bundle_files(root: Path) -> tuple[Mapping[str, str], ...]:
         if relative == ARTIFACT_MANIFEST_NAME:
             continue
         if path.is_symlink():
+            if not _supports_bundle_symlinks():
+                raise ValueError("artifact bundle symlinks are unsupported on Windows")
             target = os.readlink(path)
             _validate_symlink(canonical_root, path, target)
             files.append(
@@ -339,6 +345,8 @@ def _file_entries(value: object) -> tuple[Mapping[str, str], ...]:
                 or _symlink_digest(target) != digest
             ):
                 raise ValueError("artifact symlink inventory entry is invalid")
+            if not _supports_bundle_symlinks():
+                raise ValueError("artifact bundle symlinks are unsupported on Windows")
             entry["target"] = target
         entries.append(entry)
     return tuple(entries)

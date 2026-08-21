@@ -263,25 +263,36 @@ def test_internal_symlinks_are_inventoried_and_preserved_through_lifecycle(
         link.symlink_to("_internal/runtime.bin")
     except OSError:
         pytest.skip("symlink creation is unavailable")
-    framework_binary: Path | None = None
-    if os.name == "posix":
-        framework = source.parent / "_internal" / "Python.framework"
-        version = framework / "Versions" / "3.12"
-        version.mkdir(parents=True)
-        (version / "Python").write_bytes(b"framework-runtime")
-        current = framework / "Versions" / "Current"
-        framework_binary = framework / "Python"
-        current.symlink_to("3.12", target_is_directory=True)
-        framework_binary.symlink_to("Versions/Current/Python")
+    if os.name == "nt":
+        error = "symlinks are unsupported on Windows"
+        with pytest.raises(ValueError, match=error):
+            create_artifact_manifest(source)
+        with pytest.raises(ValueError, match=error):
+            verify_artifact(source, identity_probe=_test_identity_probe)
+        root = tmp_path / "must-not-install"
+        with pytest.raises(ValueError, match=error):
+            install_plan(
+                source, root, approval_store=approvals, identity_probe=_test_identity_probe
+            )
+        assert not root.exists()
+        return
+
+    framework = source.parent / "_internal" / "Python.framework"
+    version = framework / "Versions" / "3.12"
+    version.mkdir(parents=True)
+    (version / "Python").write_bytes(b"framework-runtime")
+    current = framework / "Versions" / "Current"
+    framework_binary = framework / "Python"
+    current.symlink_to("3.12", target_is_directory=True)
+    framework_binary.symlink_to("Versions/Current/Python")
     _rewrite_artifact_manifest(source)
     verified = verify_artifact(source, identity_probe=_test_identity_probe)
     link_entry = next(item for item in verified.files if item["path"] == link.name)
     assert link_entry["kind"] == "symlink"
     assert link_entry["target"] == "_internal/runtime.bin"
-    if framework_binary is not None:
-        assert next(
-            item for item in verified.files if item["path"].endswith("Versions/Current")
-        )["target"] == "3.12"
+    assert next(
+        item for item in verified.files if item["path"].endswith("Versions/Current")
+    )["target"] == "3.12"
     manifest_path = source.parent / "artifex-artifact.json"
     tampered = json.loads(manifest_path.read_text(encoding="utf-8"))
     next(item for item in tampered["files"] if item["path"] == link.name)[
@@ -307,10 +318,9 @@ def test_internal_symlinks_are_inventoried_and_preserved_through_lifecycle(
     installed_link = root / link.name
     assert installed_link.is_symlink()
     assert os.readlink(installed_link) == "_internal/runtime.bin"
-    if framework_binary is not None:
-        installed_framework_binary = root / "_internal" / "Python.framework" / "Python"
-        assert installed_framework_binary.is_symlink()
-        assert installed_framework_binary.read_bytes() == b"framework-runtime"
+    installed_framework_binary = root / "_internal" / "Python.framework" / "Python"
+    assert installed_framework_binary.is_symlink()
+    assert installed_framework_binary.read_bytes() == b"framework-runtime"
 
     _write_test_artifact(source.parent, b"native-v2")
     upgrade_decision = upgrade_plan(
@@ -392,7 +402,9 @@ def test_artifact_symlinks_fail_closed(
             other.symlink_to(link.name)
     except OSError:
         pytest.skip("symlink creation is unavailable")
-    with pytest.raises(ValueError, match=r"relative|escapes|dangling|cyclic"):
+    with pytest.raises(
+        ValueError, match=r"relative|escapes|dangling|cyclic|unsupported on Windows"
+    ):
         create_artifact_manifest(source)
 
 
@@ -406,6 +418,10 @@ def test_installed_symlink_retargeting_fails_closed(tmp_path: Path) -> None:
         link.symlink_to("_internal/runtime.bin")
     except OSError:
         pytest.skip("symlink creation is unavailable")
+    if os.name == "nt":
+        with pytest.raises(ValueError, match="symlinks are unsupported on Windows"):
+            _rewrite_artifact_manifest(source)
+        return
     _rewrite_artifact_manifest(source)
     root = tmp_path / "installed"
     plan = install_plan(
@@ -430,6 +446,52 @@ def test_installed_symlink_retargeting_fails_closed(tmp_path: Path) -> None:
             approval_store=approvals,
             security_root=security,
         )
+
+
+@pytest.mark.adversarial
+def test_windows_symlink_policy_rejects_all_manifest_entry_paths(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    target = "_internal/runtime.bin"
+    entry = {
+        "path": "runtime-link.bin",
+        "kind": "symlink",
+        "target": target,
+        "sha256": hashlib.sha256(target.encode()).hexdigest(),
+    }
+    monkeypatch.setattr(artifact, "_supports_bundle_symlinks", lambda: False)
+    monkeypatch.setattr(lifecycle, "_supports_bundle_symlinks", lambda: False)
+    error = "symlinks are unsupported on Windows"
+
+    with pytest.raises(ValueError, match=error):
+        artifact._file_entries([entry])
+    with pytest.raises(ValueError, match=error):
+        lifecycle._manifest_entries({"files": [entry]}, "files", required=True)
+    source = tmp_path / "artifex.exe"
+    source.write_bytes(b"native")
+    verified = artifact.VerifiedArtifact(
+        source,
+        tmp_path,
+        tmp_path / "artifex-artifact.json",
+        {},
+        "0" * 64,
+        (entry,),
+    )
+    with pytest.raises(ValueError, match=error):
+        lifecycle._copy_verified_bundle(verified, tmp_path / "installed")
+    with pytest.raises(ValueError, match=error):
+        lifecycle._request_artifact_files(tmp_path, {"files": [entry]})
+
+    synthetic_link = tmp_path / "synthetic-link"
+    synthetic_link.write_bytes(b"not dereferenced")
+    original_is_symlink = Path.is_symlink
+    monkeypatch.setattr(
+        Path,
+        "is_symlink",
+        lambda path: path == synthetic_link or original_is_symlink(path),
+    )
+    with pytest.raises(ValueError, match=error):
+        artifact._bundle_files(tmp_path)
 
 
 @pytest.mark.unit
@@ -1233,6 +1295,18 @@ def test_portable_artifact_schema_helpers_fail_closed(
                     "kind": "symlink",
                     "target": "target",
                     "sha256": "0" * 64,
+                }
+            ]
+        )
+    monkeypatch.setattr(artifact.platform, "system", lambda: "Windows")
+    with pytest.raises(ValueError, match="symlinks are unsupported on Windows"):
+        artifact._file_entries(
+            [
+                {
+                    "path": "runtime-link.bin",
+                    "kind": "symlink",
+                    "target": "_internal/runtime.bin",
+                    "sha256": hashlib.sha256(b"_internal/runtime.bin").hexdigest(),
                 }
             ]
         )

@@ -25,6 +25,7 @@ from artifex.distribution.approvals import ApprovalStore, user_state_root
 from artifex.distribution.artifact import (
     IdentityProbe,
     VerifiedArtifact,
+    _supports_bundle_symlinks,
     _symlink_digest,
     _validate_symlink,
     verify_artifact,
@@ -750,6 +751,8 @@ def _manifest_entries(
                 or _symlink_digest(target) != digest
             ):
                 raise ValueError("invalid install manifest symlink entry")
+            if not _supports_bundle_symlinks():
+                raise ValueError("managed bundle symlinks are unsupported on Windows")
             entry["target"] = target
         entries.append(entry)
     return tuple(entries)
@@ -825,6 +828,10 @@ def _safe_child(root: Path, relative_text: str) -> Path:
 
 
 def _copy_verified_bundle(verified: VerifiedArtifact, destination_root: Path) -> None:
+    if not _supports_bundle_symlinks() and any(
+        item.get("kind") == "symlink" for item in verified.files
+    ):
+        raise ValueError("managed bundle symlinks are unsupported on Windows")
     for item in _copy_order(verified.files):
         source = _safe_child(verified.bundle_root, item["path"])
         destination = _safe_child(destination_root, item["path"])
@@ -945,6 +952,8 @@ def _request_artifact_files(
             or not isinstance(digest, str)
         ):
             raise ValueError("deferred upgrade bundle inventory is invalid")
+        if kind == "symlink" and not _supports_bundle_symlinks():
+            raise ValueError("managed bundle symlinks are unsupported on Windows")
         target = _safe_child(bundle_root, relative)
         normalized = {key: str(value) for key, value in item.items()}
         if not _entry_matches(bundle_root, target, normalized):
