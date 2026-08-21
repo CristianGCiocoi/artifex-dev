@@ -5,6 +5,7 @@ from pathlib import Path
 
 import jsonschema
 import pytest
+import yaml
 
 from artifex.integrations import (
     ConformanceSuite,
@@ -166,3 +167,28 @@ def test_doctor_is_non_mutating_and_reports_project_health(tmp_path: Path) -> No
         "project",
         "integration:manual",
     }
+
+
+@pytest.mark.conformance
+def test_canonical_skill_bundles_are_portable_and_reference_themselves() -> None:
+    root = Path(__file__).parents[1] / "skills"
+    expected = {
+        "router",
+        "idea",
+        "research",
+        "architecture",
+        "implementation-plan",
+        "review",
+        "learn",
+    }
+    assert {path.name for path in root.iterdir() if path.is_dir()} == expected
+    for skill_name in expected:
+        skill_root = root / skill_name
+        instructions = (skill_root / "SKILL.md").read_text(encoding="utf-8")
+        shim = yaml.safe_load(
+            (skill_root / "agents" / "openai.yaml").read_text(encoding="utf-8")
+        )
+        prompt = shim["interface"]["default_prompt"]
+        assert f"${skill_name}" in prompt
+        assert "ARTIFEX" in instructions
+        assert "canonical" in instructions.lower() or "authority" in instructions.lower()

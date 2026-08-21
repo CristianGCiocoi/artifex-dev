@@ -1,4 +1,4 @@
 interface:
   display_name: "ARTIFEX Architecture"
   short_description: "Develop authority-bound architecture decisions"
-  default_prompt: "Use  to compare alternatives and prepare an ARTIFEX architecture decision."
+  default_prompt: "Use $architecture to compare alternatives and prepare an ARTIFEX architecture decision."
