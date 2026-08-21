@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -17,6 +18,7 @@ from artifex.integrations.codex import (
     CodexDetection,
     CodexExecutionFixture,
     CodexIntegration,
+    CodexWorkerPlan,
     ContinuitySnapshot,
     create_codex_application,
     detect_codex,
@@ -31,6 +33,7 @@ from artifex.integrations.contracts import (
     IntegrationError,
 )
 from artifex.mcp import LocalMCPServer
+from artifex.policy import AcceptanceAuthority
 from artifex.project import (
     ChangeSet,
     ChangeSetRepository,
@@ -39,7 +42,29 @@ from artifex.project import (
     ProjectRepository,
     WorkflowDepth,
 )
-from artifex.workflow import ExecutionBaseline, ExecutionStatus
+from artifex.validation import (
+    AcceptanceContract,
+    AcceptanceCriterion,
+    EvidenceBinding,
+    EvidenceEntry,
+    EvidenceLedger,
+    EvidenceRequirement,
+    GateDefinition,
+    GateGraph,
+    GateLevel,
+    GateState,
+    MeasuredFact,
+    StructuredInspectionValidator,
+    ValidationContext,
+    ValidatorKind,
+)
+from artifex.workflow import (
+    ExecutionBaseline,
+    ExecutionStatus,
+    StageContract,
+    StageState,
+    WorkflowEngine,
+)
 
 
 def _successful_detection() -> CodexDetection:
@@ -93,6 +118,115 @@ def _packet(
         interfaces=("Application API", "MCP"),
         invariants=("INV-013", "INV-024"),
     )
+
+
+def _model_fingerprint(repository: ProjectRepository) -> str:
+    return str(
+        generation_manifest(repository.load().to_dict())["project_model_fingerprint"]
+    )
+
+
+def _execute_and_accept(
+    root: Path,
+    integration: CodexIntegration,
+    packet: ExecutionPacket,
+    *,
+    stage_id: str,
+    output: str,
+    evidence_id: str,
+) -> tuple[ExecutionResult, EvidenceLedger, WorkflowEngine]:
+    acceptance = AcceptanceContract(
+        contract_id=f"VAL-{stage_id}",
+        deliverable=output,
+        requirements=("REQ-F-043",),
+        interfaces=("Codex",),
+        invariants=("INV-013", "INV-024"),
+        criteria=(AcceptanceCriterion(f"AC-{stage_id}", "adapter result is bound"),),
+        validators=("VAL-CODEX-INDEPENDENT",),
+        base_commit=packet.base_commit,
+        project_model_fingerprint=packet.project_model_fingerprint,
+    ).start()
+    binding = EvidenceBinding(
+        acceptance.base_commit,
+        acceptance.fingerprint,
+        (acceptance.project_model_fingerprint,),
+    )
+    workflow = WorkflowEngine()
+    workflow.register(
+        StageContract(
+            stage_id=stage_id,
+            requires=("project-model",),
+            produces=(output,),
+            capabilities=frozenset({"repository_read", "repository_write"}),
+            validators=("VAL-CODEX-INDEPENDENT",),
+        )
+    )
+    workflow.transition(stage_id, StageState.READY)
+    workflow.start(
+        stage_id,
+        available_inputs={"project-model"},
+        available_capabilities={"repository_read", "repository_write"},
+        baseline=packet.baseline,
+    )
+    plan = integration.prepare_stage(packet, root)
+    fixture = CodexExecutionFixture.bound(
+        packet,
+        ExecutionStatus.SUCCESS,
+        artifacts=({"path": output, "state": "produced"},),
+        validation={"adapter_boundary": "PASS"},
+    )
+    result = integration.execute_stage(plan, fixture)
+    assert result.status is ExecutionStatus.SUCCESS
+    assert result.validation == {"adapter_boundary": "PASS"}
+    workflow.claim_complete(stage_id, outputs={output})
+    workflow.transition(stage_id, StageState.VALIDATING)
+
+    validator_result = StructuredInspectionValidator(
+        "VAL-CODEX-INDEPENDENT", "1"
+    ).validate(
+        ValidationContext("bound adapter execution", "codex", binding),
+        inspector_id="independent-fixture",
+        passed=result.status is ExecutionStatus.SUCCESS,
+        facts=(MeasuredFact("artifact_count", len(result.artifacts)),),
+    )
+    entry = EvidenceEntry.create(
+        evidence_id,
+        validator_result,
+        binding,
+        recorded_at=datetime(2026, 8, 21, tzinfo=UTC),
+    )
+    ledger = EvidenceLedger(
+        {"VAL-CODEX-INDEPENDENT": "1"},
+        journal_path=root / ".artifex" / "validation" / "evidence" / "ledger.jsonl",
+    )
+    ledger.append(entry)
+    gate = GateGraph(
+        (
+            GateDefinition(
+                f"G-{stage_id}",
+                GateLevel.TASK,
+                (
+                    EvidenceRequirement(
+                        "bound adapter execution",
+                        frozenset({"VAL-CODEX-INDEPENDENT"}),
+                        frozenset({ValidatorKind.STRUCTURED_INSPECTION}),
+                        require_independent=True,
+                    ),
+                ),
+            ),
+        )
+    )
+    assert (
+        gate.evaluate(
+            f"G-{stage_id}",
+            ledger=ledger,
+            binding=binding,
+            authority=AcceptanceAuthority.CORE,
+        )
+        is GateState.PASS
+    )
+    workflow.transition(stage_id, StageState.ACCEPTED, authority=AcceptanceAuthority.CORE)
+    return result, ledger, workflow
 
 
 @pytest.mark.unit
@@ -180,7 +314,9 @@ def test_m06_t03_agents_hierarchy_is_scoped_and_override_aware(tmp_path: Path) -
 
 
 @pytest.mark.conformance
-def test_m06_t04_codex_stage_fixture_and_m04_conformance_are_normalized() -> None:
+def test_m06_t04_injectable_harness_consumes_bound_plan_without_live_mutation(
+    tmp_path: Path,
+) -> None:
     integration = CodexIntegration(_successful_detection())
     report = IntegrationConformanceSuite().run(integration)
     assert report.status is HealthStatus.PASS
@@ -191,39 +327,79 @@ def test_m06_t04_codex_stage_fixture_and_m04_conformance_are_normalized() -> Non
         "cancellation-mapping",
         "stale-result-mapping",
     }
-    packet = _packet(integration)
-    fixture = CodexExecutionFixture(
-        ExecutionStatus.SUCCESS,
-        artifacts=({"path": "owned.txt", "state": "produced"},),
-        validation={"tests": "PASS"},
+    root = tmp_path / "harness"
+    repository = ProjectRepository.initialize(root, project_id="HARNESS", name="Harness")
+    head = _commit_all(root, "harness baseline")
+    packet = _packet(
+        integration,
+        base_commit=head,
+        model_fingerprint=_model_fingerprint(repository),
     )
-    result = integration.execute_stage(packet, fixture)
+    plan = integration.prepare_stage(packet, root, require_clean=True)
+    consumed: list[str] = []
+
+    def runner(observed_plan: CodexWorkerPlan) -> dict[str, object]:
+        assert observed_plan is plan
+        consumed.append(plan.packet.contract_fingerprint)
+        return {
+            "status": "completed",
+            "base_commit": packet.base_commit,
+            "execution_contract_fingerprint": packet.contract_fingerprint,
+            "project_model_fingerprint": packet.project_model_fingerprint,
+            "artifacts": [{"path": "owned.txt", "state": "produced"}],
+            "validation": {"tests": "PASS"},
+        }
+
+    result = integration.execute_stage(plan, runner)
     assert result.status is ExecutionStatus.SUCCESS
     assert result.validation == {"tests": "PASS"}
+    assert consumed == [packet.contract_fingerprint]
+    assert _git(root, "status", "--porcelain=v1") == ""
     assert integration.submit_validation(result.validation)["canonical"] is False
 
 
 @pytest.mark.integration
 def test_m06_t05_worker_is_bound_to_exact_worktree_and_baseline(tmp_path: Path) -> None:
     root = tmp_path / "worker"
-    root.mkdir()
-    _git(root, "init", "-b", "main")
+    repository = ProjectRepository.initialize(root, project_id="WORKER", name="Worker")
     (root / "AGENTS.md").write_text("worker scope\n", encoding="utf-8")
     (root / "owned.txt").write_text("baseline\n", encoding="utf-8")
     head = _commit_all(root, "baseline")
     integration = CodexIntegration(_successful_detection())
-    packet = _packet(integration, base_commit=head)
+    model_fingerprint = _model_fingerprint(repository)
+    packet = _packet(
+        integration, base_commit=head, model_fingerprint=model_fingerprint
+    )
     binding = integration.inspect_worktree(packet, root, require_clean=True)
     assert binding.bound is True
     assert binding.clean is True
+    assert binding.observed_project_model_fingerprint == model_fingerprint
     plan = integration.prepare_stage(packet, root, require_clean=True)
     assert plan.worktree.head_commit == head
     assert plan.instruction_layers[0].path == "AGENTS.md"
     assert plan.to_dict()["execution_mode"] == "explicit-runner-required"
 
-    stale = _packet(integration, base_commit="0" * 40)
+    stale = _packet(
+        integration,
+        base_commit="0" * 40,
+        model_fingerprint=model_fingerprint,
+    )
     with pytest.raises(IntegrationError, match="does not match"):
         integration.inspect_worktree(stale, root)
+    forged_model = _packet(
+        integration,
+        base_commit=head,
+        model_fingerprint="0" * 64,
+    )
+    with pytest.raises(IntegrationError, match="Project Model fingerprint"):
+        integration.inspect_worktree(forged_model, root)
+
+    model_path = root / ".artifex" / "project-model.json"
+    changed_model = json.loads(model_path.read_text(encoding="utf-8"))
+    changed_model["project"]["name"] = "Semantic drift"
+    model_path.write_text(json.dumps(changed_model), encoding="utf-8")
+    with pytest.raises(IntegrationError, match="Project Model fingerprint"):
+        integration.prepare_stage(packet, root)
 
 
 @pytest.mark.conformance
@@ -255,7 +431,17 @@ def test_m06_t06_application_cli_and_mcp_share_codex_bridge(
             "codex.result.submit",
             {
                 "packet": packet_result.value["packet"],
-                "result": {"status": "completed", "validation": {"parity": "PASS"}},
+                "result": {
+                    "status": "completed",
+                    "base_commit": packet_result.value["packet"]["base_commit"],
+                    "execution_contract_fingerprint": packet_result.value["packet"][
+                        "execution_contract_fingerprint"
+                    ],
+                    "project_model_fingerprint": packet_result.value["packet"][
+                        "project_model_fingerprint"
+                    ],
+                    "validation": {"parity": "PASS"},
+                },
             },
         )
     )
@@ -295,38 +481,35 @@ def test_m06_t07_codex_only_greenfield_standard_preserves_state_evidence_and_doc
     model = repository.load()
     assert model.project.lifecycle is ProjectLifecycle.GREENFIELD
     assert model.project.workflow_depth is WorkflowDepth.STANDARD
-    model_fingerprint = str(generation_manifest(model.to_dict())["project_model_fingerprint"])
-
-    documents = compile_human_documentation(model.to_dict())
-    for name, content in documents.items():
-        (root / name).write_text(content, encoding="utf-8")
-    evidence = root / ".artifex" / "validation" / "evidence" / "EVD-CODEX-GREEN.json"
-    evidence.parent.mkdir(parents=True)
-    evidence.write_text('{"status":"PASS","canonical":true}\n', encoding="utf-8")
-
     integration = CodexIntegration(_successful_detection())
     packet = _packet(
         integration,
         base_commit=head,
-        model_fingerprint=model_fingerprint,
+        model_fingerprint=_model_fingerprint(repository),
         task_id="M06-T07",
     )
-    before = integration.continuity_snapshot(root, packet=packet)
-    integration.inspect_worktree(packet, root)
-    result = integration.execute_stage(
+    result, ledger, workflow = _execute_and_accept(
+        root,
+        integration,
         packet,
-        CodexExecutionFixture(
-            ExecutionStatus.SUCCESS,
-            artifacts=({"path": "README.md"}, {"path": str(evidence.relative_to(root))}),
-        ),
+        stage_id="STG-CODEX-GREEN",
+        output="standard-implementation",
+        evidence_id="EVD-CODEX-GREEN",
     )
+    assert workflow.get("STG-CODEX-GREEN").state is StageState.ACCEPTED
+    assert len(ledger.entries) == 1
+    assert result.artifacts == ({"path": "standard-implementation", "state": "produced"},)
+
+    documents = compile_human_documentation(repository.load().to_dict())
+    for name, content in documents.items():
+        (root / name).write_text(content, encoding="utf-8")
     after = integration.continuity_snapshot(root, packet=packet)
     assert result.status is ExecutionStatus.SUCCESS
-    assert before.semantic_fingerprint == after.semantic_fingerprint
     assert {"README.md", "USER_GUIDE.md", "ADMIN_GUIDE.md", "DEVELOPER_GUIDE.md"} <= {
-        item["path"] for item in before.files
+        item["path"] for item in after.files
     }
-    assert any(item["path"].endswith("EVD-CODEX-GREEN.json") for item in before.files)
+    assert any(item["path"].endswith("ledger.jsonl") for item in after.files)
+    assert ContinuitySnapshot.from_dict(after.to_dict()) == after
 
 
 @pytest.mark.integration
@@ -350,33 +533,38 @@ def test_m06_t08_codex_only_brownfield_changeset_preserves_existing_content(
         (StableId.parse("ART-EXISTING"),),
         baseline_commit=head,
     )
-    for status in (
-        ChangeSetStatus.ACCEPTED,
-        ChangeSetStatus.IMPLEMENTING,
-        ChangeSetStatus.VERIFIED,
-    ):
-        changeset = changeset.transition(status, actor="fixture", commit=head)
+    changeset = changeset.transition(ChangeSetStatus.ACCEPTED, actor="core", commit=head)
     change_path = changesets.save(changeset)
+    head = _commit_all(root, "accept brownfield changeset")
+    changeset = changeset.transition(
+        ChangeSetStatus.IMPLEMENTING, actor="core", commit=head
+    )
+    changesets.save(changeset)
 
     integration = CodexIntegration(_successful_detection())
-    model_fingerprint = str(generation_manifest(model.to_dict())["project_model_fingerprint"])
     packet = _packet(
         integration,
         base_commit=head,
-        model_fingerprint=model_fingerprint,
+        model_fingerprint=_model_fingerprint(repository),
         task_id="M06-T08",
     )
-    result = integration.execute_stage(
+    assert changesets.load(changeset.id).status is ChangeSetStatus.IMPLEMENTING
+    result, ledger, workflow = _execute_and_accept(
+        root,
+        integration,
         packet,
-        {
-            "status": "completed",
-            "artifacts": [{"path": change_path, "state": "VERIFIED"}],
-            "validation": {"changeset": "PASS"},
-        },
+        stage_id="STG-CODEX-BROWN",
+        output=change_path,
+        evidence_id="EVD-CODEX-BROWN",
     )
+    assert workflow.get("STG-CODEX-BROWN").state is StageState.ACCEPTED
+    assert len(ledger.entries) == 1
+    changeset = changeset.transition(ChangeSetStatus.VERIFIED, actor="core", commit=head)
+    changeset = changeset.transition(ChangeSetStatus.APPLIED, actor="core", commit=head)
+    changesets.save(changeset)
     snapshot = integration.continuity_snapshot(root, packet=packet)
     assert result.status is ExecutionStatus.SUCCESS
-    assert changesets.load(changeset.id).status is ChangeSetStatus.VERIFIED
+    assert changesets.load(changeset.id).status is ChangeSetStatus.APPLIED
     assert readme.read_text(encoding="utf-8") == "# Existing system\n"
     assert any(item["path"] == change_path for item in snapshot.files)
 
@@ -385,9 +573,20 @@ def test_m06_t08_codex_only_brownfield_changeset_preserves_existing_content(
 def test_m06_t09_failure_cancel_and_stale_result_mapping_fail_closed() -> None:
     integration = CodexIntegration(_successful_detection())
     packet = _packet(integration)
-    assert integration.execute_stage(packet, {"status": "failed"}).status is ExecutionStatus.FAIL
+
+    def raw(status: str, **overrides: str) -> dict[str, str]:
+        value = {
+            "status": status,
+            "base_commit": packet.base_commit,
+            "execution_contract_fingerprint": packet.contract_fingerprint,
+            "project_model_fingerprint": packet.project_model_fingerprint,
+        }
+        value.update(overrides)
+        return value
+
+    assert integration.normalize_result(packet, raw("failed")).status is ExecutionStatus.FAIL
     assert (
-        integration.execute_stage(packet, {"status": "blocked"}).status
+        integration.normalize_result(packet, raw("blocked")).status
         is ExecutionStatus.BLOCKED
     )
     assert integration.cancel(packet).status is ExecutionStatus.CANCELLED
@@ -395,19 +594,27 @@ def test_m06_t09_failure_cancel_and_stale_result_mapping_fail_closed() -> None:
     stale = ExecutionBaseline(
         "c" * 40, packet.contract_fingerprint, packet.project_model_fingerprint
     )
+    success = integration.normalize_result(packet, raw("success"))
     assert (
-        integration.execute_stage(packet, {"status": "success"}, current_baseline=stale).status
+        integration.submit_result(packet, success, current_baseline=stale).status
         is ExecutionStatus.REBASE_REQUIRED
     )
-    forged = ExecutionResult(
-        ExecutionStatus.SUCCESS,
-        "d" * 40,
-        packet.contract_fingerprint,
-        packet.project_model_fingerprint,
+    forged = integration.normalize_result(
+        packet,
+        raw("success", base_commit="d" * 40),
     )
-    assert integration.submit_result(packet, forged).status is ExecutionStatus.REBASE_REQUIRED
+    assert forged.status is ExecutionStatus.REBASE_REQUIRED
+    for missing in (
+        "base_commit",
+        "execution_contract_fingerprint",
+        "project_model_fingerprint",
+    ):
+        incomplete = raw("success")
+        incomplete.pop(missing)
+        with pytest.raises(IntegrationError, match=missing):
+            integration.normalize_result(packet, incomplete)
     with pytest.raises(IntegrationError, match="unsupported"):
-        integration.execute_stage(packet, {"status": "mysterious"})
+        integration.normalize_result(packet, raw("mysterious"))
 
 
 @pytest.mark.conformance

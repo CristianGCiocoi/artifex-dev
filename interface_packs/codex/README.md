@@ -5,9 +5,12 @@ Hermes is not required. Repository artifacts remain canonical; Codex sessions,
 transcripts, and native memory are auxiliary.
 
 The adapter performs only read-only Codex detection (`codex --version`) and Git
-worktree inspection. A caller must explicitly provide a runner/result to execute
-a stage. Executor validation is a claim until ARTIFEX Core records evidence and
-passes the applicable gate.
+worktree inspection. Stage preparation recomputes the canonical Project Model
+fingerprint as well as Git HEAD. A caller must explicitly inject a runner to
+execute a generated plan; the runner result must echo the packet's base commit,
+execution-contract fingerprint, and Project Model fingerprint. Missing or stale
+identity fails closed. Executor validation is a claim until ARTIFEX Core records
+evidence and passes the applicable gate.
 
 The `skills/` entries are Codex-facing shims for the canonical agent-neutral
 skills under the repository's top-level `skills/` directory. `AGENTS.md` defines

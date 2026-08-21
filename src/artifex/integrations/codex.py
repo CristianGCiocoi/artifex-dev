@@ -238,10 +238,14 @@ class CodexWorktreeBinding:
     clean: bool
     contract_fingerprint: str
     project_model_fingerprint: str
+    observed_project_model_fingerprint: str
 
     @property
     def bound(self) -> bool:
-        return self.head_commit == self.expected_base_commit
+        return (
+            self.head_commit == self.expected_base_commit
+            and self.observed_project_model_fingerprint == self.project_model_fingerprint
+        )
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -252,7 +256,8 @@ class CodexWorktreeBinding:
             "clean": self.clean,
             "bound": self.bound,
             "execution_contract_fingerprint": self.contract_fingerprint,
-            "project_model_fingerprint": self.project_model_fingerprint,
+            "expected_project_model_fingerprint": self.project_model_fingerprint,
+            "observed_project_model_fingerprint": self.observed_project_model_fingerprint,
             "inspection_mode": "read-only",
         }
 
@@ -280,23 +285,59 @@ class CodexWorkerPlan:
 
 @dataclass(frozen=True, slots=True)
 class CodexExecutionFixture:
-    """Deterministic, non-mutating stand-in for a Codex stage result."""
+    """Injectable, deterministic harness runner with an explicit result identity."""
 
     status: ExecutionStatus
+    base_commit: str
+    execution_contract_fingerprint: str
+    project_model_fingerprint: str
     artifacts: tuple[Mapping[str, Any], ...] = ()
     validation: Mapping[str, Any] = field(default_factory=dict)
     message: str = ""
 
-    def result_for(self, packet: ExecutionPacket) -> ExecutionResult:
-        return ExecutionResult(
-            self.status,
+    @classmethod
+    def bound(
+        cls,
+        packet: ExecutionPacket,
+        status: ExecutionStatus,
+        *,
+        artifacts: tuple[Mapping[str, Any], ...] = (),
+        validation: Mapping[str, Any] | None = None,
+        message: str = "",
+    ) -> CodexExecutionFixture:
+        return cls(
+            status,
             packet.base_commit,
             packet.contract_fingerprint,
             packet.project_model_fingerprint,
-            artifacts=self.artifacts,
-            validation=self.validation,
-            message=self.message,
+            artifacts,
+            {} if validation is None else validation,
+            message,
         )
+
+    def __call__(self, plan: CodexWorkerPlan) -> Mapping[str, Any]:
+        packet = plan.packet
+        expected = (
+            packet.base_commit,
+            packet.contract_fingerprint,
+            packet.project_model_fingerprint,
+        )
+        observed = (
+            self.base_commit,
+            self.execution_contract_fingerprint,
+            self.project_model_fingerprint,
+        )
+        if observed != expected:
+            raise IntegrationError("deterministic harness fixture is not bound to the worker plan")
+        return {
+            "status": self.status.value,
+            "base_commit": self.base_commit,
+            "execution_contract_fingerprint": self.execution_contract_fingerprint,
+            "project_model_fingerprint": self.project_model_fingerprint,
+            "artifacts": [_copy_json(item) for item in self.artifacts],
+            "validation": _copy_json(self.validation),
+            "message": self.message,
+        }
 
 
 @dataclass(frozen=True, slots=True)
@@ -470,6 +511,7 @@ class CodexIntegration:
         if Path(observed_root).resolve() != root:
             raise IntegrationError("selected project root is not the Git worktree root")
         head = _git_value(command_runner, root, "rev-parse", "HEAD")
+        observed_model_fingerprint = _canonical_project_model_fingerprint(root)
         branch_result = command_runner(
             ("git", "-C", str(root), "symbolic-ref", "--quiet", "--short", "HEAD")
         )
@@ -483,11 +525,21 @@ class CodexIntegration:
             clean=not bool(status),
             contract_fingerprint=packet.contract_fingerprint,
             project_model_fingerprint=packet.project_model_fingerprint,
+            observed_project_model_fingerprint=observed_model_fingerprint,
         )
-        if not binding.bound:
+        if binding.head_commit != binding.expected_base_commit:
             raise IntegrationError(
                 f"worktree HEAD {binding.head_commit} does not match packet base "
                 f"{binding.expected_base_commit}"
+            )
+        if (
+            binding.observed_project_model_fingerprint
+            != binding.project_model_fingerprint
+        ):
+            raise IntegrationError(
+                "canonical Project Model fingerprint "
+                f"{binding.observed_project_model_fingerprint} does not match packet fingerprint "
+                f"{binding.project_model_fingerprint}"
             )
         if require_clean and not binding.clean:
             raise IntegrationError("worker execution requires a clean Git worktree")
@@ -522,19 +574,24 @@ class CodexIntegration:
 
     def execute_stage(
         self,
-        packet: ExecutionPacket,
-        fixture: CodexExecutionFixture | Mapping[str, Any],
+        plan: CodexWorkerPlan,
+        runner: Callable[[CodexWorkerPlan], Mapping[str, Any]],
         *,
         current_baseline: ExecutionBaseline | None = None,
     ) -> ExecutionResult:
-        """Normalize an explicit deterministic fixture; never invoke live Codex."""
+        """Execute a prepared plan only through an injected non-mutating harness boundary."""
 
-        result = (
-            fixture.result_for(packet)
-            if isinstance(fixture, CodexExecutionFixture)
-            else self.normalize_result(packet, fixture)
+        # Re-read both Git and canonical semantic identity immediately before
+        # handing the packet to a runner.  Preparing a plan cannot freeze a
+        # repository that changed afterward.
+        self.inspect_worktree(plan.packet, plan.worktree.root)
+        raw_result = runner(plan)
+        if not isinstance(raw_result, Mapping):
+            raise IntegrationError("Codex harness runner must return an object")
+        result = self.normalize_result(plan.packet, raw_result)
+        return self.submit_result(
+            plan.packet, result, current_baseline=current_baseline
         )
-        return self.submit_result(packet, result, current_baseline=current_baseline)
 
     def normalize_result(
         self, packet: ExecutionPacket, value: Mapping[str, Any]
@@ -562,19 +619,16 @@ class CodexIntegration:
             raise IntegrationError("Codex result artifacts must be an array")
         artifacts = tuple(_mapping(item, "artifact") for item in artifacts_value)
         validation = _mapping(value.get("validation", {}), "validation")
-        return ExecutionResult(
+        result = ExecutionResult(
             status_map[raw_status],
-            str(value.get("base_commit", packet.base_commit)),
-            str(
-                value.get(
-                    "execution_contract_fingerprint", packet.contract_fingerprint
-                )
-            ),
-            str(value.get("project_model_fingerprint", packet.project_model_fingerprint)),
+            _required_string(value, "base_commit"),
+            _required_string(value, "execution_contract_fingerprint"),
+            _required_string(value, "project_model_fingerprint"),
             artifacts=artifacts,
             validation=validation,
             message=str(value.get("message", "")),
         )
+        return result.classified(packet.baseline)
 
     def submit_result(
         self,
@@ -747,6 +801,26 @@ def _git_value(
         detail = completed.stderr.strip() or value or "unknown Git failure"
         raise IntegrationError(f"read-only Git inspection failed: {detail}")
     return value
+
+
+def _canonical_project_model_fingerprint(root: Path) -> str:
+    model_path = root / ".artifex" / "project-model.json"
+    try:
+        value = json.loads(model_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise IntegrationError(
+            f"cannot read canonical Project Model at {model_path}"
+        ) from exc
+    if not isinstance(value, Mapping):
+        raise IntegrationError("canonical Project Model must be an object")
+    encoded = json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+        allow_nan=False,
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
 
 
 def _semantic_file_manifest(root: Path) -> tuple[Mapping[str, str], ...]:
