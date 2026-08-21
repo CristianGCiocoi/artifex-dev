@@ -1,4 +1,5 @@
 {"id":"EVT-BOOTSTRAP-001","type":"HANDOFF_VERIFIED","at":"2026-08-21T20:00:00+03:00","data":{"manifest_files":38,"checksum_entries":37,"checksum_mismatches":0}}
 {"id":"EVT-BOOTSTRAP-002","type":"BASELINE_COMMITTED","at":"2026-08-21T20:00:00+03:00","data":{"commit":"82b63edd7243c0af30fec9f6c8a17a1d87cb7f96"}}
 {"id":"EVT-BOOTSTRAP-003","type":"REMOTE_CONFIGURED","at":"2026-08-21T20:00:00+03:00","data":{"visibility":"PRIVATE","remote":"https://github.com/CristianGCiocoi/artifex-dev.git"}}
-
+{"id":"EVT-M00-001","type":"VALIDATION_REJECTED","at":"2026-08-21T20:08:00+03:00","data":{"commit":"9a78796293972e9a8f9660c289d4f72dd2d1fb41","passed_tasks":5,"total_tasks":10}}
+{"id":"EVT-M00-002","type":"MILESTONE_ACCEPTED","at":"2026-08-21T20:14:04+03:00","data":{"milestone":"M00","commit":"b823fbeea00cd7872b78690e3eb880606523c999","task_gates":"10/10","ci_run":32506965693}}

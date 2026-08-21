@@ -1,0 +1,37 @@
+schema_version: "1.0"
+evidence:
+  id: EVD-M00-001
+  gate: G-M00-MILESTONE
+  claim: M00 Bootstrap and Architecture Contracts satisfies its immutable acceptance contract
+  validator:
+    id: codex-independent-m00-validator
+    version: "2026-08-21"
+    type: independent_agent
+  source:
+    commit: "b823fbeea00cd7872b78690e3eb880606523c999"
+    contract_hash: "4730d6f3ce34658fc73290609e250c81fdde968011efe3b9d4ed5ae002e3a06b"
+    project_model_fingerprint: "2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506"
+  result:
+    status: PASS
+    measured:
+      task_gates_passed: 10
+      task_gates_total: 10
+      tests_passed: 27
+      coverage_percent: 91.49
+      ruff: PASS
+      mypy_source_files: 14
+      requirements_total: 78
+      requirements_traced_to_milestone: 78
+      requirements_traced_to_architecture: 78
+      orphan_requirements: 0
+      ci_matrix_jobs_passed: 6
+      ci_run: 32506965693
+      windows_frozen_poc:
+        state: PASS
+        artifact_sha256: c4032b6a032a42e5c3c5c98dc87a0dae74fddec1b2c42608473b97dee921ca50
+        executable_bytes: 5666419
+        scope: supplemental POC; not a V1 platform qualification claim
+  evidence_excerpt: Independent revalidation PASS 10/10; integration PASS; architecture PASS; no blockers
+  scrubbed: true
+  created_at: "2026-08-21T20:14:04+03:00"
+
