@@ -1,0 +1,12 @@
+schema_version: "1.0"
+contract:
+  id: VAL-M10
+  milestone: M10
+  state: EXECUTION_STARTED
+  authority_source: docs/implementation/milestones/M10_OPTIONAL_PROVIDERS.md
+  execution_base_commit: 5515bfc275c385c925e588bdc9128e4988c17504
+  project_model_fingerprint: 2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506
+  packet_hash: 2abb81f8e1679431b34635d477760eada0d09ffadbffbe735f887e4ebb01b2a1
+  criteria: [T01 DeepSeek detection, T02 headless adapter, T03 result mapping, T04 conformance, T05 compatibility fail-closed, T06 optional interface boundary, T07 request export, T08 bundle import, T09 Pandora adapter, T10 deep policy, T11 authority isolation, T12 future transport seam]
+  validators: [packet-integrity, deepseek-detection, deepseek-conformance, compatibility-preview, filesystem-roundtrip, research-schema, authority-isolation, transport-seam, full-suite, independent-review]
+  release_policy: OPTIONAL_NON_BLOCKING_CORE_GA

@@ -1,0 +1,7 @@
+packet_hash: 2abb81f8e1679431b34635d477760eada0d09ffadbffbe735f887e4ebb01b2a1
+hash_basis: M10|5515bfc275c385c925e588bdc9128e4988c17504|2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506|feat/m10-optional-providers|src/artifex/integrations/deepseek.py,src/artifex/integrations/pandora.py,tests/test_optional_providers.py,interface_packs/deepseek
+base_commit: 5515bfc275c385c925e588bdc9128e4988c17504
+project_model_fingerprint: 2d1738113e5d35fe447279e5527853e3f455ff63226f55141a728103faffd506
+worker_branch: feat/m10-optional-providers
+ownership: [src/artifex/integrations/deepseek.py, src/artifex/integrations/pandora.py, tests/test_optional_providers.py, interface_packs/deepseek]
+state: ACTIVE
