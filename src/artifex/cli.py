@@ -189,12 +189,12 @@ def uninstall_command(
     )
 
 
-@app.command("_complete-uninstall", hidden=True)
+@app.command("_complete-lifecycle", hidden=True)
 def complete_uninstall_command(
     request_file: str = typer.Option(..., "--request-file"),
     parent_pid: int = typer.Option(..., "--parent-pid"),
 ) -> None:
-    """Complete an authenticated uninstall after the invoking process exits."""
+    """Complete an authenticated lifecycle operation after its parent exits."""
 
     # The signed request is authoritative; the duplicated PID option prevents
     # accidental invocation with a different process identity.

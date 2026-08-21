@@ -22,6 +22,7 @@ from artifex.distribution import (
     upgrade,
     upgrade_plan,
 )
+from artifex.distribution.artifact import runtime_release_identity
 from artifex.integrations import (
     ExecutionPacket,
     ExecutionResult,
@@ -142,7 +143,7 @@ class Application:
 
     @staticmethod
     def _version(_: OperationRequest) -> OperationResult:
-        return OperationResult(ok=True, value={"version": __version__})
+        return OperationResult(ok=True, value=runtime_release_identity())
 
     @staticmethod
     def _health(_: OperationRequest) -> OperationResult:

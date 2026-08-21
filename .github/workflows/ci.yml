@@ -39,6 +39,6 @@ jobs:
       - run: uv run python packaging/build.py --clean --smoke
       - uses: actions/upload-artifact@v4
         with:
-          name: artifex-${{ runner.os }}-${{ runner.arch }}
-          path: dist/native/*
+          name: artifex-onedir-${{ runner.os }}-${{ runner.arch }}
+          path: dist/native/artifex/
           if-no-files-found: error

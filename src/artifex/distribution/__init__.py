@@ -1,6 +1,12 @@
 """Installable-product and beginner-experience services."""
 
 from artifex.distribution.approvals import ApprovalStore
+from artifex.distribution.artifact import (
+    ARTIFACT_MANIFEST_NAME,
+    VerifiedArtifact,
+    create_artifact_manifest,
+    verify_artifact,
+)
 from artifex.distribution.beginner import BeginnerJourneyResult, start_beginner_journey
 from artifex.distribution.discovery import SUPPORTED_TOOLS, detect_resources, discover_environment
 from artifex.distribution.doctor import run_distribution_doctor
@@ -34,6 +40,7 @@ from artifex.distribution.presentation import (
 from artifex.distribution.setup import apply_integration_setup, plan_integration_setup
 
 __all__ = [
+    "ARTIFACT_MANIFEST_NAME",
     "SUPPORTED_TOOLS",
     "ApprovalStore",
     "BeginnerJourneyResult",
@@ -48,8 +55,10 @@ __all__ = [
     "SetupAction",
     "SetupPlan",
     "ToolDiscovery",
+    "VerifiedArtifact",
     "apply_integration_setup",
     "complete_deferred_uninstall",
+    "create_artifact_manifest",
     "detect_resources",
     "discover_environment",
     "explain_decision",
@@ -64,4 +73,5 @@ __all__ = [
     "uninstall_plan",
     "upgrade",
     "upgrade_plan",
+    "verify_artifact",
 ]

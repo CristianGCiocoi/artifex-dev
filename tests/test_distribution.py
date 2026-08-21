@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import runpy
 import sys
 from datetime import UTC, datetime, timedelta
@@ -15,7 +16,9 @@ from artifex.distribution import (
     ExperienceMode,
     ResourceEnvelope,
     apply_integration_setup,
+    artifact,
     complete_deferred_uninstall,
+    create_artifact_manifest,
     discover_environment,
     explain_decision,
     install,
@@ -29,11 +32,42 @@ from artifex.distribution import (
     uninstall_plan,
     upgrade,
     upgrade_plan,
+    verify_artifact,
 )
 from artifex.integrations.claude import ClaudeDetection, ClaudeIntegration
 from artifex.integrations.codex import CodexDetection, CodexIntegration
 from artifex.integrations.hermes import HermesIntegration
 from artifex.integrations.manual import ManualIntegration
+
+
+def _write_test_artifact(directory: Path, content: bytes) -> Path:
+    directory.mkdir(parents=True, exist_ok=True)
+    source = directory / ("artifex.exe" if os.name == "nt" else "artifex")
+    source.write_bytes(content)
+    bundled_runtime = directory / "_internal" / "runtime.bin"
+    bundled_runtime.parent.mkdir(parents=True, exist_ok=True)
+    bundled_runtime.write_bytes(b"runtime:" + content)
+    manifest = create_artifact_manifest(source)
+    (directory / "artifex-artifact.json").write_text(
+        json.dumps(manifest, sort_keys=True, indent=2) + "\n", encoding="utf-8"
+    )
+    return source
+
+
+def _test_identity_probe(source: Path, _: float) -> dict[str, object]:
+    manifest = json.loads(
+        (source.parent / "artifex-artifact.json").read_text(encoding="utf-8")
+    )
+    return {
+        "product": manifest["product"],
+        "version": manifest["product_version"],
+        "build_id": manifest["build_id"],
+        "format": manifest["format"],
+        "platform": manifest["platform"],
+        "architecture": manifest["architecture"],
+        "artifact": manifest["artifact"],
+        "sha256": manifest["sha256"],
+    }
 
 
 @pytest.mark.unit
@@ -67,6 +101,141 @@ def test_discovery_reports_missing_tools_without_failure(tmp_path: Path) -> None
         resource_path=tmp_path,
     )
     assert {tool.status for tool in report.tools} == {"NOT_FOUND"}
+
+
+@pytest.mark.adversarial
+def test_artifact_verification_rejects_missing_and_checksum_only_manifests(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / ("artifex.exe" if os.name == "nt" else "artifex")
+    source.write_bytes(b"arbitrary bytes")
+    with pytest.raises(ValueError, match="adjacent artifact manifest"):
+        verify_artifact(source, identity_probe=_test_identity_probe)
+    (tmp_path / "artifex-artifact.json").write_text(
+        json.dumps({"sha256": hashlib.sha256(source.read_bytes()).hexdigest()}),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="schema or fields"):
+        verify_artifact(source, identity_probe=_test_identity_probe)
+
+
+@pytest.mark.adversarial
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("platform", "wrong-os", "platform"),
+        ("architecture", "wrong-arch", "architecture"),
+        ("artifact", "wrong-name.exe", "filename"),
+        ("product_version", "999.0.0", "product or release"),
+        ("format", "zip", "pyinstaller-onedir"),
+    ],
+)
+def test_artifact_verification_rejects_incompatible_identity(
+    tmp_path: Path, field: str, value: str, message: str
+) -> None:
+    source = _write_test_artifact(tmp_path / "release", b"native")
+    manifest_path = source.parent / "artifex-artifact.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest[field] = value
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match=message):
+        verify_artifact(source, identity_probe=_test_identity_probe)
+
+
+@pytest.mark.adversarial
+def test_artifact_identity_probe_must_execute_and_match_manifest(tmp_path: Path) -> None:
+    source = _write_test_artifact(tmp_path / "release", b"native")
+
+    def failing_probe(_: Path, __: float) -> dict[str, object]:
+        raise ValueError("probe failed")
+
+    with pytest.raises(ValueError, match="probe failed"):
+        verify_artifact(source, identity_probe=failing_probe)
+    spoofed = _test_identity_probe(source, 1)
+    spoofed["product"] = "NOT_ARTIFEX"
+    with pytest.raises(ValueError, match="does not match"):
+        verify_artifact(source, identity_probe=lambda _source, _timeout: spoofed)
+
+
+@pytest.mark.adversarial
+def test_artifact_manifest_rejects_unknown_fields_and_bundle_tampering(
+    tmp_path: Path,
+) -> None:
+    source = _write_test_artifact(tmp_path / "release", b"native")
+    manifest_path = source.parent / "artifex-artifact.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert manifest["format"] == "pyinstaller-onedir"
+    assert manifest["python_version"]
+    assert manifest["pyinstaller_version"]
+    assert len(manifest["source_commit"]) == 40
+    assert manifest["requires_user_python"] is False
+    manifest["unexpected"] = True
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="schema or fields"):
+        verify_artifact(source, identity_probe=_test_identity_probe)
+    _write_test_artifact(source.parent, b"native")
+    (source.parent / "_internal" / "runtime.bin").write_bytes(b"tampered")
+    with pytest.raises(ValueError, match="inventory"):
+        verify_artifact(source, identity_probe=_test_identity_probe)
+
+
+@pytest.mark.unit
+def test_bounded_artifact_probe_accepts_only_successful_identity_json(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source = _write_test_artifact(tmp_path / "release", b"native")
+    identity = _test_identity_probe(source, 1)
+
+    class Result:
+        returncode = 0
+        stdout = json.dumps({"ok": True, "value": identity})
+
+    monkeypatch.setattr(artifact.subprocess, "run", lambda *args, **kwargs: Result())
+    assert artifact.probe_artifact_identity(source, 1) == identity
+
+    class FailedResult:
+        returncode = 9
+        stdout = "{}"
+
+    monkeypatch.setattr(
+        artifact.subprocess, "run", lambda *args, **kwargs: FailedResult()
+    )
+    with pytest.raises(ValueError, match="exited with code 9"):
+        artifact.probe_artifact_identity(source, 1)
+
+    class InvalidResult:
+        returncode = 0
+        stdout = "not-json"
+
+    monkeypatch.setattr(
+        artifact.subprocess, "run", lambda *args, **kwargs: InvalidResult()
+    )
+    with pytest.raises(ValueError, match="did not return JSON"):
+        artifact.probe_artifact_identity(source, 1)
+
+
+@pytest.mark.unit
+def test_native_artifact_platform_names_fail_closed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(artifact.platform, "system", lambda: "unsupported-os")
+    with pytest.raises(ValueError, match="unsupported native artifact platform"):
+        artifact.canonical_platform()
+    monkeypatch.setattr(artifact.platform, "machine", lambda: "unsupported-cpu")
+    with pytest.raises(ValueError, match="unsupported native artifact architecture"):
+        artifact.canonical_architecture()
+
+
+@pytest.mark.unit
+def test_frozen_runtime_identity_is_content_bound(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(artifact.sys, "frozen", True, raising=False)
+    identity = artifact.runtime_release_identity()
+    executable = Path(sys.executable)
+    assert identity["product"] == "ARTIFEX"
+    assert identity["format"] == "pyinstaller-onedir"
+    assert identity["artifact"] == executable.name
+    assert identity["sha256"] == hashlib.sha256(executable.read_bytes()).hexdigest()
+    assert str(identity["build_id"]).endswith(str(identity["sha256"])[:16])
 
 
 @pytest.mark.unit
@@ -209,23 +378,29 @@ def test_setup_approval_is_bound_to_exact_integration_selection(tmp_path: Path) 
 def test_manifest_lifecycle_is_reversible_and_preserves_unrelated_files(tmp_path: Path) -> None:
     approvals = ApprovalStore(tmp_path / "approvals")
     security = tmp_path / "security"
-    source = tmp_path / "source.exe"
-    source.write_bytes(b"version-one")
+    source = _write_test_artifact(tmp_path / "release", b"version-one")
     root = tmp_path / "installed"
-    plan = install_plan(source, root, approval_store=approvals)
+    plan = install_plan(
+        source, root, approval_store=approvals, identity_probe=_test_identity_probe
+    )
     result = install(
         source,
         root,
         confirmation_token=plan.confirmation_token,
         approval_store=approvals,
         security_root=security,
+        identity_probe=_test_identity_probe,
     )
     executable = Path(result.executable)
     unrelated = root / "user-notes.txt"
     unrelated.write_text("preserve", encoding="utf-8")
-    source.write_bytes(b"version-two")
+    _write_test_artifact(source.parent, b"version-two")
     next_plan = upgrade_plan(
-        source, root, approval_store=approvals, security_root=security
+        source,
+        root,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
     )
     upgraded = upgrade(
         source,
@@ -233,9 +408,12 @@ def test_manifest_lifecycle_is_reversible_and_preserves_unrelated_files(tmp_path
         confirmation_token=next_plan.confirmation_token,
         approval_store=approvals,
         security_root=security,
+        identity_probe=_test_identity_probe,
     )
     assert executable.read_bytes() == b"version-two"
-    assert upgraded.backup is not None and Path(upgraded.backup).read_bytes() == b"version-one"
+    assert upgraded.backup is not None
+    backup_executable = Path(upgraded.backup) / executable.name
+    assert backup_executable.read_bytes() == b"version-one"
     remove_plan = uninstall_plan(
         root, approval_store=approvals, security_root=security
     )
@@ -246,7 +424,7 @@ def test_manifest_lifecycle_is_reversible_and_preserves_unrelated_files(tmp_path
         security_root=security,
     )
     assert str(executable) in removed["removed"]
-    assert upgraded.backup in removed["removed"]
+    assert str(backup_executable) in removed["removed"]
     assert unrelated.read_text(encoding="utf-8") == "preserve"
     assert root.is_dir()
 
@@ -255,16 +433,18 @@ def test_manifest_lifecycle_is_reversible_and_preserves_unrelated_files(tmp_path
 def test_uninstall_refuses_modified_or_escaping_manifest(tmp_path: Path) -> None:
     approvals = ApprovalStore(tmp_path / "approvals")
     security = tmp_path / "security"
-    source = tmp_path / "source"
-    source.write_bytes(b"trusted")
+    source = _write_test_artifact(tmp_path / "release", b"trusted")
     root = tmp_path / "installed"
-    plan = install_plan(source, root, approval_store=approvals)
+    plan = install_plan(
+        source, root, approval_store=approvals, identity_probe=_test_identity_probe
+    )
     result = install(
         source,
         root,
         confirmation_token=plan.confirmation_token,
         approval_store=approvals,
         security_root=security,
+        identity_probe=_test_identity_probe,
     )
     Path(result.executable).write_bytes(b"locally modified")
     remove_plan = uninstall_plan(root, approval_store=approvals, security_root=security)
@@ -288,16 +468,18 @@ def test_uninstall_refuses_modified_or_escaping_manifest(tmp_path: Path) -> None
 def test_tampered_manifest_cannot_reclassify_unmanaged_child(tmp_path: Path) -> None:
     approvals = ApprovalStore(tmp_path / "approvals")
     security = tmp_path / "security"
-    source = tmp_path / "source"
-    source.write_bytes(b"trusted")
+    source = _write_test_artifact(tmp_path / "release", b"trusted")
     root = tmp_path / "installed"
-    plan = install_plan(source, root, approval_store=approvals)
+    plan = install_plan(
+        source, root, approval_store=approvals, identity_probe=_test_identity_probe
+    )
     result = install(
         source,
         root,
         confirmation_token=plan.confirmation_token,
         approval_store=approvals,
         security_root=security,
+        identity_probe=_test_identity_probe,
     )
     unmanaged = root / "user-data.txt"
     unmanaged.write_text("must survive", encoding="utf-8")
@@ -318,10 +500,11 @@ def test_install_rolls_back_binary_key_and_manifest_on_manifest_failure(
 ) -> None:
     approvals = ApprovalStore(tmp_path / "approvals")
     security = tmp_path / "security"
-    source = tmp_path / "source"
-    source.write_bytes(b"trusted")
+    source = _write_test_artifact(tmp_path / "release", b"trusted")
     root = tmp_path / "installed"
-    plan = install_plan(source, root, approval_store=approvals)
+    plan = install_plan(
+        source, root, approval_store=approvals, identity_probe=_test_identity_probe
+    )
 
     def fail_manifest(*_: object, **__: object) -> None:
         raise OSError("injected manifest persistence failure")
@@ -334,6 +517,7 @@ def test_install_rolls_back_binary_key_and_manifest_on_manifest_failure(
             confirmation_token=plan.confirmation_token,
             approval_store=approvals,
             security_root=security,
+            identity_probe=_test_identity_probe,
         )
     assert not root.exists() or not any(root.iterdir())
     assert not list(security.rglob("*.key"))
@@ -343,16 +527,18 @@ def test_install_rolls_back_binary_key_and_manifest_on_manifest_failure(
 def test_missing_install_key_and_malformed_signed_values_fail_closed(tmp_path: Path) -> None:
     approvals = ApprovalStore(tmp_path / "approvals")
     security = tmp_path / "security"
-    source = tmp_path / "source"
-    source.write_bytes(b"trusted")
+    source = _write_test_artifact(tmp_path / "release", b"trusted")
     root = tmp_path / "installed"
-    plan = install_plan(source, root, approval_store=approvals)
+    plan = install_plan(
+        source, root, approval_store=approvals, identity_probe=_test_identity_probe
+    )
     install(
         source,
         root,
         confirmation_token=plan.confirmation_token,
         approval_store=approvals,
         security_root=security,
+        identity_probe=_test_identity_probe,
     )
     next(security.rglob("*.key")).unlink()
     with pytest.raises(ValueError, match="security key is missing"):
@@ -372,16 +558,18 @@ def test_missing_install_key_and_malformed_signed_values_fail_closed(tmp_path: P
 def test_deferred_self_uninstall_completes_after_parent_exit(tmp_path: Path) -> None:
     approvals = ApprovalStore(tmp_path / "approvals")
     security = tmp_path / "security"
-    source = tmp_path / "source.exe"
-    source.write_bytes(b"trusted")
+    source = _write_test_artifact(tmp_path / "release", b"trusted")
     root = tmp_path / "installed"
-    plan = install_plan(source, root, approval_store=approvals)
+    plan = install_plan(
+        source, root, approval_store=approvals, identity_probe=_test_identity_probe
+    )
     installed = install(
         source,
         root,
         confirmation_token=plan.confirmation_token,
         approval_store=approvals,
         security_root=security,
+        identity_probe=_test_identity_probe,
     )
     unmanaged = root / "keep.txt"
     unmanaged.write_text("keep", encoding="utf-8")
@@ -427,26 +615,145 @@ def test_deferred_self_uninstall_completes_after_parent_exit(tmp_path: Path) -> 
     assert unmanaged.read_text(encoding="utf-8") == "keep"
 
 
-@pytest.mark.adversarial
-def test_upgrade_token_is_source_bound_and_failure_restores_state(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+@pytest.mark.integration
+def test_deferred_self_upgrade_completes_without_running_file_replacement(
+    tmp_path: Path,
 ) -> None:
     approvals = ApprovalStore(tmp_path / "approvals")
     security = tmp_path / "security"
-    source = tmp_path / "source"
-    source.write_bytes(b"v1")
+    source = _write_test_artifact(tmp_path / "release", b"v1")
     root = tmp_path / "installed"
-    initial = install_plan(source, root, approval_store=approvals)
+    initial = install_plan(
+        source, root, approval_store=approvals, identity_probe=_test_identity_probe
+    )
     installed = install(
         source,
         root,
         confirmation_token=initial.confirmation_token,
         approval_store=approvals,
         security_root=security,
+        identity_probe=_test_identity_probe,
     )
-    source.write_bytes(b"v2")
-    stale = upgrade_plan(source, root, approval_store=approvals, security_root=security)
-    source.write_bytes(b"changed-after-approval")
+    _write_test_artifact(source.parent, b"v2")
+    plan = upgrade_plan(
+        source,
+        root,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+    )
+    launched: list[tuple[Path, Path, int]] = []
+    deferred = upgrade(
+        source,
+        root,
+        confirmation_token=plan.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+        running_executable=installed.executable,
+        force_deferred=True,
+        deferred_launcher=lambda executable, request, pid: launched.append(
+            (executable, request, pid)
+        ),
+    )
+    assert deferred.status == "DEFERRED"
+    assert Path(installed.executable).read_bytes() == b"v1"
+    assert not (root / ".artifex-backups").exists()
+    completed = complete_deferred_uninstall(
+        launched[0][1], security_root=security, parent_checker=lambda _: False
+    )
+    assert completed["operation"] == "upgrade"
+    assert Path(installed.executable).read_bytes() == b"v2"
+    assert len(list((root / ".artifex-backups").glob("*"))) == 1
+    persisted = json.loads(Path(installed.manifest).read_text(encoding="utf-8"))
+    assert persisted["artifact_manifest"]["sha256"] == hashlib.sha256(b"v2").hexdigest()
+
+
+@pytest.mark.adversarial
+def test_deferred_upgrade_failure_leaves_no_orphan_and_restores_manifest(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    approvals = ApprovalStore(tmp_path / "approvals")
+    security = tmp_path / "security"
+    source = _write_test_artifact(tmp_path / "release", b"v1")
+    root = tmp_path / "installed"
+    initial = install_plan(
+        source, root, approval_store=approvals, identity_probe=_test_identity_probe
+    )
+    installed = install(
+        source,
+        root,
+        confirmation_token=initial.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+    )
+    original_manifest = Path(installed.manifest).read_bytes()
+    _write_test_artifact(source.parent, b"v2")
+    plan = upgrade_plan(
+        source,
+        root,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+    )
+    launched: list[tuple[Path, Path, int]] = []
+    upgrade(
+        source,
+        root,
+        confirmation_token=plan.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+        running_executable=installed.executable,
+        force_deferred=True,
+        deferred_launcher=lambda executable, request, pid: launched.append(
+            (executable, request, pid)
+        ),
+    )
+
+    def fail_manifest(*_: object, **__: object) -> None:
+        raise OSError("injected deferred manifest failure")
+
+    monkeypatch.setattr(lifecycle, "_write_manifest", fail_manifest)
+    with pytest.raises(OSError, match="injected deferred"):
+        complete_deferred_uninstall(
+            launched[0][1], security_root=security, parent_checker=lambda _: False
+        )
+    assert Path(installed.executable).read_bytes() == b"v1"
+    assert Path(installed.manifest).read_bytes() == original_manifest
+    assert not (root / ".artifex-backups").exists()
+    assert not list((security / "staged-artifacts").glob("*"))
+
+
+@pytest.mark.adversarial
+def test_upgrade_token_is_source_bound_and_failure_restores_state(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    approvals = ApprovalStore(tmp_path / "approvals")
+    security = tmp_path / "security"
+    source = _write_test_artifact(tmp_path / "release", b"v1")
+    root = tmp_path / "installed"
+    initial = install_plan(
+        source, root, approval_store=approvals, identity_probe=_test_identity_probe
+    )
+    installed = install(
+        source,
+        root,
+        confirmation_token=initial.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+    )
+    _write_test_artifact(source.parent, b"v2")
+    stale = upgrade_plan(
+        source,
+        root,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+    )
+    _write_test_artifact(source.parent, b"changed-after-approval")
     with pytest.raises(PermissionError, match="different operation"):
         upgrade(
             source,
@@ -454,12 +761,19 @@ def test_upgrade_token_is_source_bound_and_failure_restores_state(
             confirmation_token=stale.confirmation_token,
             approval_store=approvals,
             security_root=security,
+            identity_probe=_test_identity_probe,
         )
     executable = Path(installed.executable)
     manifest = Path(installed.manifest)
     assert executable.read_bytes() == b"v1"
     original_manifest = manifest.read_bytes()
-    valid = upgrade_plan(source, root, approval_store=approvals, security_root=security)
+    valid = upgrade_plan(
+        source,
+        root,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+    )
 
     def fail_manifest(*_: object, **__: object) -> None:
         raise OSError("injected upgrade manifest failure")
@@ -472,10 +786,11 @@ def test_upgrade_token_is_source_bound_and_failure_restores_state(
             confirmation_token=valid.confirmation_token,
             approval_store=approvals,
             security_root=security,
+            identity_probe=_test_identity_probe,
         )
     assert executable.read_bytes() == b"v1"
     assert manifest.read_bytes() == original_manifest
-    assert not list(root.glob("*.bak"))
+    assert not (root / ".artifex-backups").exists()
 
 
 @pytest.mark.integration
@@ -536,9 +851,10 @@ def test_native_build_contract_and_ci_cover_all_target_platforms() -> None:
     root = Path(__file__).resolve().parents[1]
     build_script = (root / "packaging" / "build.py").read_text(encoding="utf-8")
     workflow = (root / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
-    assert '"--onefile"' in build_script
+    assert '"--onedir"' in build_script
+    assert '"--contents-directory"' in build_script
     assert '"--smoke"' in build_script
-    assert '"requires_user_python": False' in build_script
+    assert "create_artifact_manifest" in build_script
     assert "ubuntu-latest" in workflow
     assert "windows-latest" in workflow
     assert "macos-latest" in workflow

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
+import importlib.metadata
 import json
 import os
 import shutil
@@ -12,6 +12,8 @@ import sys
 import time
 import uuid
 from pathlib import Path
+
+from artifex.distribution.artifact import create_artifact_manifest
 
 
 def validated_clean_targets(root: Path, output: Path, work: Path) -> tuple[Path, Path]:
@@ -72,6 +74,37 @@ def _run_frozen_json(executable: Path, arguments: tuple[str, ...]) -> dict[str, 
     return payload
 
 
+def _source_commit(root: Path) -> str:
+    result = subprocess.run(
+        ["git", "-C", str(root), "rev-parse", "HEAD"],
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+    return result.stdout.strip()
+
+
+def _wait_for_lifecycle(executable: Path, manifest: Path, *, operation: str) -> None:
+    deadline = time.monotonic() + 45
+    while time.monotonic() < deadline:
+        if operation == "upgrade" and executable.is_file() and manifest.is_file():
+            try:
+                lifecycle_value = json.loads(manifest.read_text(encoding="utf-8"))
+                if not lifecycle_value.get("backups"):
+                    time.sleep(0.2)
+                    continue
+                _run_frozen_json(executable, ("system", "version"))
+            except (json.JSONDecodeError, OSError, RuntimeError, subprocess.SubprocessError):
+                time.sleep(0.2)
+                continue
+            return
+        if operation == "uninstall" and not executable.exists() and not manifest.exists():
+            return
+        time.sleep(0.2)
+    raise RuntimeError(f"frozen self-{operation} helper did not complete")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, default=Path("dist/native"))
@@ -96,7 +129,9 @@ def main() -> int:
         "PyInstaller",
         "--noconfirm",
         "--clean",
-        "--onefile",
+        "--onedir",
+        "--contents-directory",
+        "_internal",
         "--name",
         "artifex",
         "--paths",
@@ -110,20 +145,17 @@ def main() -> int:
         str(root / "src" / "artifex" / "cli.py"),
     ]
     subprocess.run(command, cwd=root, check=True)
-    executable = output / ("artifex.exe" if os.name == "nt" else "artifex")
+    bundle = output / "artifex"
+    executable = bundle / ("artifex.exe" if os.name == "nt" else "artifex")
     if not executable.is_file():
         raise FileNotFoundError(f"PyInstaller did not produce {executable}")
-    manifest = {
-        "schema_version": "1.0",
-        "format": "pyinstaller-onefile",
-        "platform": sys.platform,
-        "artifact": executable.name,
-        "sha256": hashlib.sha256(executable.read_bytes()).hexdigest(),
-        "requires_user_python": False,
-        "requires_user_pip": False,
-        "requires_user_venv": False,
-    }
-    (output / "artifex-artifact.json").write_text(
+    manifest = create_artifact_manifest(
+        executable,
+        pyinstaller_version=importlib.metadata.version("pyinstaller"),
+        source_commit=_source_commit(root),
+    )
+    artifact_manifest_path = bundle / "artifex-artifact.json"
+    artifact_manifest_path.write_text(
         json.dumps(manifest, sort_keys=True, indent=2) + "\n", encoding="utf-8"
     )
     if args.smoke:
@@ -149,6 +181,25 @@ def main() -> int:
         )
         installed = lifecycle_root / executable.name
         _run_frozen_json(installed, ("system", "version"))
+        upgrade_arguments = (
+            "upgrade",
+            "--install-root",
+            str(lifecycle_root),
+            "--source-executable",
+            str(executable),
+        )
+        upgrade_plan_payload = _run_frozen_json(installed, upgrade_arguments)
+        upgrade_value = upgrade_plan_payload.get("value")
+        if not isinstance(upgrade_value, dict):
+            raise RuntimeError("frozen upgrade plan did not return a value")
+        upgrade_token = upgrade_value.get("confirmation_token")
+        if not isinstance(upgrade_token, str):
+            raise RuntimeError("frozen upgrade plan did not return a confirmation token")
+        _run_frozen_json(
+            installed, (*upgrade_arguments, "--apply", "--confirm", upgrade_token)
+        )
+        installed_manifest = lifecycle_root / "artifex-install-manifest.json"
+        _wait_for_lifecycle(installed, installed_manifest, operation="upgrade")
         unrelated = lifecycle_root / "unmanaged-user-file.txt"
         unrelated.write_text("preserve", encoding="utf-8")
         uninstall_arguments = ("uninstall", "--install-root", str(lifecycle_root))
@@ -162,11 +213,7 @@ def main() -> int:
         _run_frozen_json(
             installed, (*uninstall_arguments, "--apply", "--confirm", uninstall_token)
         )
-        deadline = time.monotonic() + 30
-        while (installed.exists() or (lifecycle_root / "artifex-install-manifest.json").exists()):
-            if time.monotonic() >= deadline:
-                raise RuntimeError("frozen self-uninstall helper did not complete")
-            time.sleep(0.1)
+        _wait_for_lifecycle(installed, installed_manifest, operation="uninstall")
         if unrelated.read_text(encoding="utf-8") != "preserve":
             raise RuntimeError("frozen uninstall changed an unmanaged file")
     print(json.dumps({"artifact": str(executable), "manifest": manifest}, sort_keys=True))

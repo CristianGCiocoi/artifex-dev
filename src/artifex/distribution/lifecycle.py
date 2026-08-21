@@ -22,6 +22,7 @@ from typing import Any
 
 from artifex import __version__
 from artifex.distribution.approvals import ApprovalStore, user_state_root
+from artifex.distribution.artifact import IdentityProbe, VerifiedArtifact, verify_artifact
 from artifex.distribution.presentation import explain_decision, require_approval
 
 MANIFEST_NAME = "artifex-install-manifest.json"
@@ -61,11 +62,26 @@ def install_plan(
     *,
     approval_store: ApprovalStore | None = None,
     issue_token: bool = True,
+    identity_probe: IdentityProbe | None = None,
 ) -> Any:
-    source = Path(source_executable).resolve()
     root = Path(install_root).resolve()
-    if not source.is_file():
-        raise FileNotFoundError(f"frozen ARTIFEX executable not found: {source}")
+    verified = verify_artifact(source_executable, identity_probe=identity_probe)
+    return _install_decision(
+        verified,
+        root,
+        approval_store=approval_store,
+        issue_token=issue_token,
+    )
+
+
+def _install_decision(
+    verified: VerifiedArtifact,
+    root: Path,
+    *,
+    approval_store: ApprovalStore | None,
+    issue_token: bool,
+) -> Any:
+    source = verified.source
     return explain_decision(
         "install ARTIFEX",
         "REVERSIBLE",
@@ -75,6 +91,7 @@ def install_plan(
             "operation": "install",
             "install_root": str(root),
             "source_sha256": _sha256(source),
+            "artifact_manifest_fingerprint": verified.manifest_fingerprint,
             "destination": _native_executable_name(),
             "manifest_schema": MANIFEST_SCHEMA_VERSION,
             "artifex_version": __version__,
@@ -91,15 +108,18 @@ def install(
     confirmation_token: str | None,
     approval_store: ApprovalStore | None = None,
     security_root: str | Path | None = None,
+    identity_probe: IdentityProbe | None = None,
 ) -> InstallResult:
-    source = Path(source_executable).resolve()
+    verified = verify_artifact(source_executable, identity_probe=identity_probe)
     root = Path(install_root).resolve()
     if root == Path(root.anchor) or len(root.parts) < 2:
         raise ValueError("refusing broad install root")
-    decision = install_plan(source, root, approval_store=approval_store, issue_token=False)
-    destination = root / _native_executable_name()
+    decision = _install_decision(
+        verified, root, approval_store=approval_store, issue_token=False
+    )
+    destination = root / str(verified.manifest["artifact"])
     manifest_path = root / MANIFEST_NAME
-    if manifest_path.exists() or destination.exists():
+    if manifest_path.exists() or any((root / item["path"]).exists() for item in verified.files):
         raise FileExistsError("ARTIFEX is already installed; use upgrade")
     require_approval(decision, confirmation_token, approval_store=approval_store)
     root_created = not root.exists()
@@ -108,21 +128,23 @@ def install(
     key: bytes | None = None
     try:
         key = _create_install_key(key_path)
-        _copy_atomic(source, destination)
+        _copy_verified_bundle(verified, root)
         manifest = _signed_manifest(
             {
                 "schema_version": MANIFEST_SCHEMA_VERSION,
                 "artifex_version": __version__,
                 "install_root": str(root),
-                "files": [{"path": destination.name, "sha256": _sha256(destination)}],
+                "files": [dict(item) for item in verified.files],
                 "backups": [],
+                "artifact_manifest": dict(verified.manifest),
+                "artifact_manifest_fingerprint": verified.manifest_fingerprint,
             },
             key,
         )
         _write_manifest(manifest_path, manifest)
     except Exception:
         manifest_path.unlink(missing_ok=True)
-        destination.unlink(missing_ok=True)
+        _remove_manifest_paths(root, verified.files)
         if key is not None:
             key_path.unlink(missing_ok=True)
         if root_created:
@@ -139,12 +161,31 @@ def upgrade_plan(
     approval_store: ApprovalStore | None = None,
     security_root: str | Path | None = None,
     issue_token: bool = True,
+    identity_probe: IdentityProbe | None = None,
 ) -> Any:
-    source = Path(source_executable).resolve()
-    if not source.is_file():
-        raise FileNotFoundError(f"frozen ARTIFEX executable not found: {source}")
+    verified = verify_artifact(source_executable, identity_probe=identity_probe)
     root, _, manifest, _ = _load_manifest(install_root, security_root=security_root)
-    destination = _single_managed_file(root, manifest)
+    destination = _managed_executable(root, manifest)
+    return _upgrade_decision(
+        verified,
+        root,
+        manifest,
+        destination,
+        approval_store=approval_store,
+        issue_token=issue_token,
+    )
+
+
+def _upgrade_decision(
+    verified: VerifiedArtifact,
+    root: Path,
+    manifest: Mapping[str, Any],
+    destination: Path,
+    *,
+    approval_store: ApprovalStore | None,
+    issue_token: bool,
+) -> Any:
+    source = verified.source
     return explain_decision(
         "upgrade ARTIFEX",
         "REVERSIBLE",
@@ -154,6 +195,7 @@ def upgrade_plan(
             "operation": "upgrade",
             "install_root": str(root),
             "source_sha256": _sha256(source),
+            "artifact_manifest_fingerprint": verified.manifest_fingerprint,
             "manifest_fingerprint": _manifest_fingerprint(manifest),
             "destination": destination.name,
         },
@@ -169,49 +211,114 @@ def upgrade(
     confirmation_token: str | None,
     approval_store: ApprovalStore | None = None,
     security_root: str | Path | None = None,
+    identity_probe: IdentityProbe | None = None,
+    running_executable: str | Path | None = None,
+    force_deferred: bool | None = None,
+    deferred_launcher: DeferredLauncher | None = None,
 ) -> InstallResult:
-    source = Path(source_executable).resolve()
+    verified = verify_artifact(source_executable, identity_probe=identity_probe)
     root, manifest_path, manifest, key = _load_manifest(
         install_root, security_root=security_root
     )
     _verify_managed_checksums(root, manifest)
-    decision = upgrade_plan(
-        source,
+    destination = _managed_executable(root, manifest)
+    decision = _upgrade_decision(
+        verified,
         root,
+        manifest,
+        destination,
         approval_store=approval_store,
-        security_root=security_root,
         issue_token=False,
     )
     require_approval(decision, confirmation_token, approval_store=approval_store)
-    destination = _single_managed_file(root, manifest)
+    current = Path(running_executable or sys.executable).resolve()
+    self_managed = _same_file(current, destination)
+    defer = (os.name == "nt" and self_managed) if force_deferred is None else force_deferred
+    if defer:
+        request_file = _prepare_deferred_upgrade(
+            root,
+            manifest,
+            key,
+            verified,
+            security_root=security_root,
+            parent_pid=os.getpid(),
+        )
+        launcher = deferred_launcher or _launch_deferred_helper
+        launcher(current, request_file, os.getpid())
+        return InstallResult(
+            "upgrade",
+            str(root),
+            str(destination),
+            str(manifest_path),
+            status="DEFERRED",
+            deferred_request=str(request_file),
+        )
+    backup = _perform_upgrade(root, manifest_path, manifest, key, verified)
+    return InstallResult(
+        "upgrade", str(root), str(destination), str(manifest_path), str(backup)
+    )
+
+
+def _perform_upgrade(
+    root: Path,
+    manifest_path: Path,
+    manifest: dict[str, Any],
+    key: bytes,
+    verified: VerifiedArtifact,
+) -> Path:
     old_manifest = manifest_path.read_bytes()
-    backup = root / f"{destination.name}.pre-upgrade-{_sha256(destination)[:12]}.bak"
-    if backup.exists():
-        raise FileExistsError(f"upgrade backup already exists: {backup}")
-    _copy_atomic(destination, backup)
+    transaction = uuid.uuid4().hex
+    backup = root / ".artifex-backups" / transaction
+    backup_entries: list[dict[str, str]] = []
+    old_entries = _manifest_entries(manifest, "files", required=True)
+    new_entries = tuple(dict(item) for item in verified.files)
+    mutation_started = False
     try:
-        _copy_atomic(source, destination)
+        for item in old_entries:
+            source = _safe_child(root, item["path"])
+            target = _safe_child(backup, item["path"])
+            target.parent.mkdir(parents=True, exist_ok=True)
+            _copy_atomic(source, target)
+            backup_entries.append(
+                {
+                    "path": target.relative_to(root).as_posix(),
+                    "sha256": _sha256(target),
+                }
+            )
+        mutation_started = True
+        _copy_verified_bundle(verified, root)
+        new_paths = {item["path"] for item in new_entries}
+        for item in old_entries:
+            if item["path"] not in new_paths:
+                _safe_child(root, item["path"]).unlink()
         previous_backups = list(_manifest_entries(manifest, "backups", required=False))
-        previous_backups.append({"path": backup.name, "sha256": _sha256(backup)})
+        previous_backups.extend(backup_entries)
         updated = _signed_manifest(
             {
                 "schema_version": MANIFEST_SCHEMA_VERSION,
                 "artifex_version": __version__,
                 "install_root": str(root),
-                "files": [{"path": destination.name, "sha256": _sha256(destination)}],
+                "files": list(new_entries),
                 "backups": previous_backups,
+                "artifact_manifest": dict(verified.manifest),
+                "artifact_manifest_fingerprint": verified.manifest_fingerprint,
             },
             key,
         )
         _write_manifest(manifest_path, updated)
     except Exception:
-        _copy_atomic(backup, destination)
-        backup.unlink(missing_ok=True)
+        if mutation_started:
+            _remove_manifest_paths(root, new_entries)
+            for old_item, backup_item in zip(old_entries, backup_entries, strict=True):
+                old_path = _safe_child(root, old_item["path"])
+                old_path.parent.mkdir(parents=True, exist_ok=True)
+                _copy_atomic(_safe_child(root, backup_item["path"]), old_path)
+        shutil.rmtree(backup, ignore_errors=True)
+        with suppress(OSError):
+            backup.parent.rmdir()
         _write_bytes_atomic(manifest_path, old_manifest)
         raise
-    return InstallResult(
-        "upgrade", str(root), str(destination), str(manifest_path), str(backup)
-    )
+    return backup
 
 
 def uninstall_plan(
@@ -314,8 +421,9 @@ def complete_deferred_uninstall(
     _, manifest_path, manifest, key = _load_manifest(root, security_root=security_root)
     if not _verify_signed_value(request, key):
         raise ValueError("deferred uninstall request authentication failed")
-    if request.get("kind") != "ARTIFEX_DEFERRED_UNINSTALL":
-        raise ValueError("unexpected deferred uninstall request kind")
+    kind = request.get("kind")
+    if kind not in {"ARTIFEX_DEFERRED_UNINSTALL", "ARTIFEX_DEFERRED_UPGRADE"}:
+        raise ValueError("unexpected deferred lifecycle request kind")
     if request.get("manifest_fingerprint") != _manifest_fingerprint(manifest):
         raise ValueError("deferred uninstall request is stale")
     try:
@@ -329,21 +437,58 @@ def complete_deferred_uninstall(
     deadline = time.monotonic() + wait_timeout_seconds
     while checker(parent_pid):
         if time.monotonic() >= deadline:
-            raise TimeoutError("parent process did not exit before uninstall timeout")
+            raise TimeoutError("parent process did not exit before lifecycle timeout")
         time.sleep(0.1)
     _verify_managed_checksums(root, manifest)
-    removed = _perform_uninstall(
-        root, manifest_path, manifest, security_root=security_root
-    )
+    if kind == "ARTIFEX_DEFERRED_UNINSTALL":
+        removed = _perform_uninstall(
+            root, manifest_path, manifest, security_root=security_root
+        )
+        result: dict[str, Any] = {
+            "operation": "uninstall",
+            "install_root": str(root),
+            "status": "COMPLETE",
+            "removed": removed,
+        }
+    else:
+        staged = Path(str(request.get("staged_artifact", ""))).resolve()
+        staging_root = (_security_root(security_root) / "staged-artifacts").resolve()
+        artifact_manifest = request.get("artifact_manifest")
+        artifact_fingerprint = request.get("artifact_manifest_fingerprint")
+        if (
+            staging_root not in staged.parents
+            or staged.is_symlink()
+            or not isinstance(artifact_manifest, Mapping)
+            or not isinstance(artifact_fingerprint, str)
+            or hashlib.sha256(_canonical(artifact_manifest)).hexdigest()
+            != artifact_fingerprint
+            or artifact_manifest.get("sha256") != _sha256(staged)
+        ):
+            raise ValueError("deferred upgrade staged artifact identity is invalid")
+        stage_bundle = staged.parent
+        file_entries = _request_artifact_files(stage_bundle, artifact_manifest)
+        verified = VerifiedArtifact(
+            staged,
+            stage_bundle,
+            stage_bundle / "artifex-artifact.json",
+            artifact_manifest,
+            artifact_fingerprint,
+            file_entries,
+        )
+        try:
+            backup = _perform_upgrade(root, manifest_path, manifest, key, verified)
+        finally:
+            _remove_staged_bundle(stage_bundle, staging_root)
+        result = {
+            "operation": "upgrade",
+            "install_root": str(root),
+            "status": "COMPLETE",
+            "backup": str(backup),
+        }
     request_path.unlink(missing_ok=True)
     if getattr(sys, "frozen", False):
         _schedule_helper_cleanup(Path(sys.executable).resolve())
-    return {
-        "operation": "uninstall",
-        "install_root": str(root),
-        "status": "COMPLETE",
-        "removed": removed,
-    }
+    return result
 
 
 def _perform_uninstall(
@@ -354,6 +499,8 @@ def _perform_uninstall(
     security_root: str | Path | None,
 ) -> list[str]:
     _verify_managed_checksums(root, manifest)
+    file_entries = _manifest_entries(manifest, "files", required=True)
+    backup_entries = _manifest_entries(manifest, "backups", required=False)
     targets = _manifest_files(root, manifest) + _manifest_files(
         root, manifest, field="backups", required=False
     )
@@ -379,6 +526,7 @@ def _perform_uninstall(
     key_quarantine.unlink(missing_ok=True)
     for _, quarantine in quarantined:
         quarantine.unlink(missing_ok=True)
+    _remove_manifest_paths(root, [*file_entries, *backup_entries])
     return [str(target) for target, _ in quarantined]
 
 
@@ -410,6 +558,52 @@ def _prepare_deferred_uninstall(
     return request_path
 
 
+def _prepare_deferred_upgrade(
+    root: Path,
+    manifest: dict[str, Any],
+    key: bytes,
+    verified: VerifiedArtifact,
+    *,
+    security_root: str | Path | None,
+    parent_pid: int,
+) -> Path:
+    operation_root = _security_root(security_root)
+    request_root = operation_root / "uninstall-requests"
+    staging_root = operation_root / "staged-artifacts"
+    request_root.mkdir(parents=True, exist_ok=True)
+    staging_root.mkdir(parents=True, exist_ok=True)
+    staged_bundle = staging_root / uuid.uuid4().hex
+    staged = staged_bundle / str(verified.manifest["artifact"])
+    request_path = request_root / f"{uuid.uuid4().hex}.json"
+    try:
+        staged_bundle.mkdir(parents=False, exist_ok=False)
+        _copy_verified_bundle(verified, staged_bundle)
+        _write_manifest(staged_bundle / "artifex-artifact.json", verified.manifest)
+        value = _signed_value(
+            {
+                "schema_version": "1.0",
+                "kind": "ARTIFEX_DEFERRED_UPGRADE",
+                "install_root": str(root),
+                "manifest_fingerprint": _manifest_fingerprint(manifest),
+                "staged_artifact": str(staged),
+                "artifact_manifest": dict(verified.manifest),
+                "artifact_manifest_fingerprint": verified.manifest_fingerprint,
+                "parent_pid": parent_pid,
+                "expires_at": (
+                    datetime.now(UTC) + timedelta(seconds=_DEFERRED_REQUEST_TTL_SECONDS)
+                ).isoformat(),
+            },
+            key,
+        )
+        _write_manifest(request_path, value)
+    except Exception:
+        if staged_bundle.exists():
+            shutil.rmtree(staged_bundle)
+        request_path.unlink(missing_ok=True)
+        raise
+    return request_path
+
+
 def _launch_deferred_helper(
     running_executable: Path, request_file: Path, parent_pid: int
 ) -> None:
@@ -417,6 +611,13 @@ def _launch_deferred_helper(
     helper_dir.mkdir(parents=True, exist_ok=False)
     helper = helper_dir / _native_executable_name()
     _copy_atomic(running_executable, helper)
+    runtime_root_value = getattr(sys, "_MEIPASS", None)
+    if isinstance(runtime_root_value, str):
+        runtime_root = Path(runtime_root_value).resolve()
+        running_root = running_executable.parent.resolve()
+        if running_root in runtime_root.parents:
+            relative_runtime = runtime_root.relative_to(running_root)
+            shutil.copytree(runtime_root, helper_dir / relative_runtime)
     creationflags = 0
     if os.name == "nt":
         creationflags = (
@@ -427,7 +628,7 @@ def _launch_deferred_helper(
     subprocess.Popen(
         [
             str(helper),
-            "_complete-uninstall",
+            "_complete-lifecycle",
             "--request-file",
             str(request_file),
             "--parent-pid",
@@ -461,6 +662,26 @@ def _load_manifest(
         raise ValueError("install manifest authentication failed")
     _manifest_files(root, value)
     _manifest_files(root, value, field="backups", required=False)
+    artifact_manifest = value.get("artifact_manifest")
+    artifact_fingerprint = value.get("artifact_manifest_fingerprint")
+    if not isinstance(artifact_manifest, Mapping) or not isinstance(
+        artifact_fingerprint, str
+    ):
+        raise ValueError("installed artifact identity is missing")
+    expected_fingerprint = hashlib.sha256(_canonical(artifact_manifest)).hexdigest()
+    if not hmac.compare_digest(artifact_fingerprint, expected_fingerprint):
+        raise ValueError("installed artifact manifest fingerprint is invalid")
+    file_entries = _manifest_entries(value, "files", required=True)
+    artifact_files = artifact_manifest.get("files")
+    if not isinstance(artifact_files, list) or file_entries != tuple(artifact_files):
+        raise ValueError("installed artifact identity does not match managed bundle")
+    executable = _managed_executable(root, value)
+    executable_entry = next(
+        (item for item in file_entries if item["path"] == executable.relative_to(root).as_posix()),
+        None,
+    )
+    if executable_entry is None or artifact_manifest.get("sha256") != executable_entry["sha256"]:
+        raise ValueError("installed artifact identity does not match managed executable")
     return root, path, value, key
 
 
@@ -476,7 +697,12 @@ def _manifest_entries(
             raise ValueError("invalid install manifest file entry")
         path = item.get("path")
         digest = item.get("sha256")
-        if not isinstance(path, str) or not isinstance(digest, str):
+        if (
+            not isinstance(path, str)
+            or not isinstance(digest, str)
+            or len(digest) != 64
+            or any(character not in "0123456789abcdef" for character in digest)
+        ):
             raise ValueError("invalid install manifest file entry")
         entries.append({"path": path, "sha256": digest})
     return tuple(entries)
@@ -492,22 +718,27 @@ def _manifest_files(
     targets: list[Path] = []
     seen: set[str] = set()
     for item in _manifest_entries(manifest, field, required=required):
-        relative = Path(item["path"])
-        if relative.is_absolute() or ".." in relative.parts or len(relative.parts) != 1:
-            raise ValueError("unsafe install manifest path")
-        target = (root / relative).resolve()
-        if root not in target.parents or target.name in seen:
+        relative_text = item["path"]
+        target = _safe_child(root, relative_text)
+        canonical_relative = target.relative_to(root).as_posix()
+        if canonical_relative in seen:
             raise ValueError("manifest path escapes install root or is duplicated")
-        seen.add(target.name)
+        seen.add(canonical_relative)
         targets.append(target)
     return tuple(targets)
 
 
-def _single_managed_file(root: Path, manifest: Mapping[str, Any]) -> Path:
-    files = _manifest_files(root, manifest)
-    if len(files) != 1:
-        raise ValueError("V1 lifecycle requires exactly one managed executable")
-    return files[0]
+def _managed_executable(root: Path, manifest: Mapping[str, Any]) -> Path:
+    artifact_manifest = manifest.get("artifact_manifest")
+    if not isinstance(artifact_manifest, Mapping):
+        raise ValueError("installed artifact identity is missing")
+    name = artifact_manifest.get("artifact")
+    if not isinstance(name, str):
+        raise ValueError("installed artifact executable identity is invalid")
+    executable = _safe_child(root, name)
+    if executable not in _manifest_files(root, manifest):
+        raise ValueError("installed executable is not manifest managed")
+    return executable
 
 
 def _verify_managed_checksums(root: Path, manifest: Mapping[str, Any]) -> None:
@@ -527,6 +758,93 @@ def _verify_managed_checksums(root: Path, manifest: Mapping[str, Any]) -> None:
                 raise ValueError(
                     f"managed file is missing or modified; refusing mutation: {target}"
                 )
+
+
+def _safe_child(root: Path, relative_text: str) -> Path:
+    relative = Path(relative_text)
+    if (
+        relative.is_absolute()
+        or not relative.parts
+        or ".." in relative.parts
+        or relative_text != relative.as_posix()
+    ):
+        raise ValueError("unsafe install manifest path")
+    canonical_root = root.resolve()
+    target = (canonical_root / relative).resolve()
+    if canonical_root not in target.parents:
+        raise ValueError("manifest path escapes install root")
+    cursor = canonical_root
+    for part in relative.parts[:-1]:
+        cursor /= part
+        if cursor.exists() and cursor.is_symlink():
+            raise ValueError("manifest path traverses a symlink")
+    if target.exists() and target.is_symlink():
+        raise ValueError("manifest path targets a symlink")
+    return target
+
+
+def _copy_verified_bundle(verified: VerifiedArtifact, destination_root: Path) -> None:
+    for item in verified.files:
+        source = _safe_child(verified.bundle_root, item["path"])
+        destination = _safe_child(destination_root, item["path"])
+        if not source.is_file() or _sha256(source) != item["sha256"]:
+            raise ValueError("verified artifact bundle changed before copying")
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        _copy_atomic(source, destination)
+
+
+def _remove_manifest_paths(
+    root: Path, entries: tuple[Mapping[str, str], ...] | list[dict[str, str]]
+) -> None:
+    parents: set[Path] = set()
+    for item in entries:
+        target = _safe_child(root, item["path"])
+        target.unlink(missing_ok=True)
+        cursor = target.parent
+        while cursor != root:
+            parents.add(cursor)
+            cursor = cursor.parent
+    for directory in sorted(
+        parents,
+        key=lambda path: len(path.parts),
+        reverse=True,
+    ):
+        with suppress(OSError):
+            directory.rmdir()
+
+
+def _request_artifact_files(
+    bundle_root: Path, artifact_manifest: Mapping[str, Any]
+) -> tuple[Mapping[str, str], ...]:
+    raw = artifact_manifest.get("files")
+    if not isinstance(raw, list) or not raw:
+        raise ValueError("deferred upgrade bundle inventory is invalid")
+    entries: list[Mapping[str, str]] = []
+    for item in raw:
+        if not isinstance(item, Mapping) or set(item) != {"path", "sha256"}:
+            raise ValueError("deferred upgrade bundle inventory is invalid")
+        relative = item.get("path")
+        digest = item.get("sha256")
+        if not isinstance(relative, str) or not isinstance(digest, str):
+            raise ValueError("deferred upgrade bundle inventory is invalid")
+        target = _safe_child(bundle_root, relative)
+        if not target.is_file() or not hmac.compare_digest(_sha256(target), digest):
+            raise ValueError("deferred upgrade staged bundle changed")
+        entries.append({"path": relative, "sha256": digest})
+    return tuple(entries)
+
+
+def _remove_staged_bundle(bundle: Path, staging_root: Path) -> None:
+    resolved = bundle.resolve()
+    if (
+        resolved.parent != staging_root.resolve()
+        or len(resolved.name) != 32
+        or any(character not in "0123456789abcdef" for character in resolved.name)
+        or resolved.is_symlink()
+    ):
+        raise ValueError("refusing unsafe staged bundle cleanup")
+    if resolved.exists():
+        shutil.rmtree(resolved)
 
 
 def _signed_manifest(value: Mapping[str, Any], key: bytes) -> dict[str, Any]:
