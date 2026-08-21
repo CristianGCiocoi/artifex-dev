@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import sys
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -151,9 +150,7 @@ def test_acceptance_contract_rejects_invalid_values(contract: type[AcceptanceCon
 @pytest.mark.unit
 def test_typed_validators_produce_structured_results(tmp_path: Path) -> None:
     context = _context()
-    deterministic = DeterministicValidator(
-        "VAL-CMD", "1", (sys.executable, "-c", "raise SystemExit(0)"), tmp_path, 5
-    )
+    deterministic = DeterministicValidator("VAL-CMD", "1", ("git", "--version"), tmp_path, 5)
     assert deterministic.validate(context).outcome is EvidenceOutcome.PASS
     failed = deterministic.validate(
         context, runner=lambda argv, cwd, timeout: CommandOutcome(2, "out", "err")
