@@ -1,0 +1,65 @@
+schema_version: "1.0"
+kind: EXECUTION_PACKET
+execution_contract_fingerprint: 38fd369a1775399a3af4923e3f74cc93e459ca6d8a83a82225c9e062d2b01444
+task_contract:
+  id: M11-T12
+  milestone: M11
+  changeset: CHG-SELF-RELEASE
+  objective: Converge canonical evidence persistence, traceability, V1 identity, integration compatibility, and deterministic release verification.
+context:
+  research: docs/implementation/self-host/RSR-SELF-RELEASE-001.md
+  decision: docs/architecture/adr/ADR-RELEASE-001.md
+  implementation_plan: docs/implementation/self-host/CHG-SELF-RELEASE_IMPLEMENTATION_PLAN.md
+  route: Manual fallback packet exchange with independent Codex review
+  historical_evidence_policy: preserve and classify; never silently promote or rewrite
+base_commit: 685b15a2abb7e377b6a17795c7ae087da0128e1f
+project_model_fingerprint: 2e419594554816b1e62daf2399e34db6aa76be485b63bfef3acaf4e2b3798f43
+acceptance_criteria:
+  - Evidence schema 2.0 and typed codec round-trip EvidenceEntry exactly.
+  - Canonical parsing verifies integrity, schema version, validator identity, and independence.
+  - Known old shapes classify as LEGACY_HISTORICAL and cannot become current evidence.
+  - Unknown, tampered, duplicate, spoofed, or stale evidence fails closed.
+  - Release verifier measures repository state and reports unmet final conditions without mutating state.
+  - Traceability validation requires architecture, milestone, task, evidence, and gate coverage for every requirement.
+  - Core/package/CLI/artifact identity is consistently 1.0.0.
+  - All six integrations support Core 1.0.0 and reject Core 2.0.0.
+  - CI builds locked wheel and sdist and performs isolated identity smoke.
+  - Focused/adversarial tests, Ruff, strict mypy, full tests, and at least 85 percent coverage pass.
+  - Wheel and sdist build successfully from the frozen source.
+  - Independent review passes with no Core authority escape.
+ownership:
+  paths:
+    - src/artifex/validation/evidence.py
+    - src/artifex/validation/__init__.py
+    - schemas/acceptance-evidence.schema.json
+    - scripts/validate_release.py
+    - scripts/validate_traceability.py
+    - src/artifex/_version.py
+    - src/artifex/integrations/manual.py
+    - src/artifex/integrations/hermes.py
+    - src/artifex/integrations/codex.py
+    - src/artifex/integrations/claude.py
+    - src/artifex/integrations/deepseek.py
+    - src/artifex/integrations/pandora.py
+    - pyproject.toml
+    - uv.lock
+    - .github/workflows/ci.yml
+    - tests/test_release.py
+    - tests/test_validation.py
+expected_result:
+  status: [SUCCESS]
+  artifacts: only owned changed files
+  validation:
+    focused: PASS
+    full_suite: PASS
+    coverage: ">=85%"
+    source_packages: PASS
+interfaces:
+  - ManualIntegration packet/result exchange
+  - EvidenceEntry and EvidenceLedger
+  - repository release verifier
+invariants:
+  - INV-001 Project Model is the only source of project truth.
+  - INV-006 Acceptance is owned by ARTIFEX Core.
+  - INV-007 Evidence must be fresh, bound, integrity-checked, and independently produced.
+  - INV-011 Core state changes require audited transitions.
