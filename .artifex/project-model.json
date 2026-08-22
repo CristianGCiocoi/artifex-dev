@@ -22,6 +22,26 @@
     },
     {
       "depends_on": [
+        "ART-SELF-ARCH",
+        "RSR-SELF-RELEASE-001"
+      ],
+      "fingerprint": "bcfc689a37a6c033c4bc142b20e6d91299db83f883baa1c483ced458c9ae3c8f",
+      "id": "ADR-RELEASE-001",
+      "metadata": {
+        "authority": "ARTIFEX Core",
+        "changeset": "CHG-SELF-RELEASE"
+      },
+      "path": "docs/architecture/adr/ADR-RELEASE-001.md",
+      "provenance": {
+        "commit": "b58ea51bc0cea68b8ffdf1cbe8eab595e56c7379",
+        "path": "docs/architecture/adr/ADR-RELEASE-001.md",
+        "source": "M11 release convergence governance"
+      },
+      "status": "ACCEPTED",
+      "type": "architecture-decision"
+    },
+    {
+      "depends_on": [
         "ART-SELF-CHARTER"
       ],
       "fingerprint": "14192d5887fddcb61d3b3e3ec3e59d0d2a687ecdd31045601af17d1e85553e99",
@@ -351,6 +371,26 @@
     },
     {
       "depends_on": [
+        "ADR-RELEASE-001",
+        "ART-SELF-M11"
+      ],
+      "fingerprint": "efeab4e6c0508f10ada5b96354c0e7c3e6c50bc002e532491a67e6110908eb4e",
+      "id": "ART-SELF-RELEASE-PLAN",
+      "metadata": {
+        "authority": "ARTIFEX Core",
+        "changeset": "CHG-SELF-RELEASE"
+      },
+      "path": "docs/implementation/self-host/CHG-SELF-RELEASE_IMPLEMENTATION_PLAN.md",
+      "provenance": {
+        "commit": "b58ea51bc0cea68b8ffdf1cbe8eab595e56c7379",
+        "path": "docs/implementation/self-host/CHG-SELF-RELEASE_IMPLEMENTATION_PLAN.md",
+        "source": "M11 release convergence governance"
+      },
+      "status": "ACCEPTED",
+      "type": "implementation-plan"
+    },
+    {
+      "depends_on": [
         "ART-SELF-ARCHITECTURE",
         "ART-SELF-INVARIANTS"
       ],
@@ -382,6 +422,26 @@
         "commit": "f3cceb304077c2ca139d5c039917547286b34bbd",
         "path": "docs/implementation/self-host/RSR-SELF-001.md",
         "source": "M11 self-host governance"
+      },
+      "status": "ACCEPTED",
+      "type": "research-impact"
+    },
+    {
+      "depends_on": [
+        "ART-SELF-CHARTER",
+        "ART-SELF-M11"
+      ],
+      "fingerprint": "db9b5832aa0c7d944cd3c055d40c05e2a24e79d3cce011ce5e8525f415c91a9e",
+      "id": "RSR-SELF-RELEASE-001",
+      "metadata": {
+        "authority": "ARTIFEX Core",
+        "changeset": "CHG-SELF-RELEASE"
+      },
+      "path": "docs/implementation/self-host/RSR-SELF-RELEASE-001.md",
+      "provenance": {
+        "commit": "b58ea51bc0cea68b8ffdf1cbe8eab595e56c7379",
+        "path": "docs/implementation/self-host/RSR-SELF-RELEASE-001.md",
+        "source": "M11 release convergence governance"
       },
       "status": "ACCEPTED",
       "type": "research-impact"
