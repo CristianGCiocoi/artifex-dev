@@ -1,31 +1,32 @@
 schema_version: "1.0"
 contract:
-  id: VAL-M11-RELEASE-V2
-  version: 2
+  id: VAL-M11-RELEASE-V3
+  version: 3
   milestone: M11
   changeset: CHG-SELF-RELEASE
-  state: SUPERSEDED
-  supersedes: VAL-M11-RELEASE
-  superseded_by: VAL-M11-RELEASE-V3
+  state: FROZEN
+  supersedes: VAL-M11-RELEASE-V2
   authority_source: docs/implementation/self-host/CHG-SELF-RELEASE_IMPLEMENTATION_PLAN.md
   execution_base_commit: 685b15a2abb7e377b6a17795c7ae087da0128e1f
   project_model_fingerprint: 2e419594554816b1e62daf2399e34db6aa76be485b63bfef3acaf4e2b3798f43
-  execution_contract_fingerprint: 662b3ad526b001690fec9f26e9e522768130e529769244eabac65144beca86e3
+  execution_contract_fingerprint: 19120bd116f00ab369f3134c93175dfd112758a00dcbad21334031fc89cc83df
   worker_branch: feat/m11-release-convergence
   ownership_count: 18
-  criteria_count: 12
+  criteria_count: 13
   validators:
     - packet-integrity
     - ledger-codec-convergence
-    - evidence-adversarial
-    - legacy-classification
-    - candidate-binding
-    - gate-integrity
-    - release-ordering
-    - traceability-authority
+    - historical-ledger-append
+    - historical-gate-binding
+    - aggregate-evidence-binding
+    - two-commit-candidate-authority
+    - clean-governance-delta
+    - validator-provenance
+    - artifact-content-provenance
+    - traceability-typed-authority
     - version-consistency
     - integration-compatibility
-    - source-package-build
+    - reproducible-source-build
     - ruff
     - mypy
     - pytest

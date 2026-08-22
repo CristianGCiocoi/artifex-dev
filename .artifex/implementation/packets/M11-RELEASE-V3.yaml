@@ -1,0 +1,70 @@
+schema_version: "1.0"
+kind: EXECUTION_PACKET
+execution_contract_fingerprint: 19120bd116f00ab369f3134c93175dfd112758a00dcbad21334031fc89cc83df
+task_contract:
+  id: M11-T12
+  version: 3
+  milestone: M11
+  changeset: CHG-SELF-RELEASE
+  supersedes_execution_contract: 662b3ad526b001690fec9f26e9e522768130e529769244eabac65144beca86e3
+  objective: Converge canonical evidence and enforce a mechanically satisfiable two-commit V1 candidate authority model.
+context:
+  research: docs/implementation/self-host/RSR-SELF-RELEASE-001.md
+  decision: docs/architecture/adr/ADR-RELEASE-001.md
+  implementation_plan: docs/implementation/self-host/CHG-SELF-RELEASE_IMPLEMENTATION_PLAN.md
+  revision_reason: Independent V2 review proved current-HEAD evidence binding self-referential and found fail-open historical gates, artifacts, aggregation, traceability, and build locking.
+  route: Manual fallback packet exchange with independent Codex review
+base_commit: 685b15a2abb7e377b6a17795c7ae087da0128e1f
+project_model_fingerprint: 2e419594554816b1e62daf2399e34db6aa76be485b63bfef3acaf4e2b3798f43
+acceptance_criteria:
+  - Known pre-2 ledger events are strictly historical, never current or gate-satisfying, never rewritten, and permit schema-2 append; unknown legacy fails closed.
+  - M00-M09 gates validate immutable historical gate, raw contract hash, and known legacy evidence binding without promotion; absent M10 is valid.
+  - M11 requires exactly eight current category evidence IDs and V1 requires only the aggregate; both gates are PASS, nonwaivable, and bound to the raw V1 contract hash.
+  - EVD-V1-RELEASE contains the exact evidence ID to entry-hash aggregation for all eight M11 category entries; missing, extra, duplicate, or mismatched members fail.
+  - The V1 contract names an immutable integrated source candidate S, its Project Model fingerprint, and trusted validator specifications including ID, version, allowed kind, and producer authority; evidence and independent-validation audit provenance match those fields and bind to S, the raw contract hash, and that fingerprint.
+  - The verifier runs at a clean committed governance commit G, proves S is an ancestor, proves the canonical model equals S, and restricts S..G to a frozen Core governance allowlist with no source or runtime changes.
+  - Status, contract, evidence, gates, manifest, traceability, generated documentation, and audit inputs are tracked and clean at G; only declared hashed release artifacts may remain external or ignored.
+  - Artifact path, kind, inode, and digest are unique; wheel, sdist, and native content plus embedded product, version, platform, architecture, and source-S provenance are mechanically verified.
+  - Traceability authority comes from the schema-valid typed Project Model and parsed internally consistent evidence and gate identities, never filenames, empty files, or declarations alone.
+  - Evidence schema 2.0, EvidenceLedger journal events, and typed YAML or JSON codec use one EvidenceEntry payload representation for all new writes.
+  - Core, package, CLI, and artifact identity is 1.0.0; all six integrations support 1.0.0 and reject 2.0.0.
+  - The build backend and source-package tooling are reproducibly pinned or constrained; existing nine CI jobs remain and isolated wheel plus sdist identity checks pass.
+  - Focused and adversarial tests, Ruff, strict mypy, full tests, coverage at least 85 percent, source builds, and independent review pass.
+ownership:
+  paths:
+    - src/artifex/validation/core.py
+    - src/artifex/validation/evidence.py
+    - src/artifex/validation/__init__.py
+    - schemas/acceptance-evidence.schema.json
+    - scripts/validate_release.py
+    - scripts/validate_traceability.py
+    - src/artifex/_version.py
+    - src/artifex/integrations/manual.py
+    - src/artifex/integrations/hermes.py
+    - src/artifex/integrations/codex.py
+    - src/artifex/integrations/claude.py
+    - src/artifex/integrations/deepseek.py
+    - src/artifex/integrations/pandora.py
+    - pyproject.toml
+    - uv.lock
+    - .github/workflows/ci.yml
+    - tests/test_release.py
+    - tests/test_validation.py
+expected_result:
+  status: [SUCCESS]
+  artifacts: only the 18 owned changed files
+  validation:
+    focused: PASS
+    full_suite: PASS
+    coverage: ">=85%"
+    source_packages: PASS
+interfaces:
+  - ManualIntegration packet/result exchange
+  - EvidenceEntry and EvidenceLedger
+  - canonical evidence codec
+  - repository candidate release verifier
+invariants:
+  - INV-001 Project Model is the only source of project truth.
+  - INV-006 Acceptance is owned by ARTIFEX Core.
+  - INV-007 Evidence must be fresh, bound, integrity-checked, and independently produced.
+  - INV-011 Core state changes require audited transitions.
