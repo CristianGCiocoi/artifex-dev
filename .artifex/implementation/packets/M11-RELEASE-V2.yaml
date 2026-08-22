@@ -1,0 +1,69 @@
+schema_version: "1.0"
+kind: EXECUTION_PACKET
+execution_contract_fingerprint: 662b3ad526b001690fec9f26e9e522768130e529769244eabac65144beca86e3
+task_contract:
+  id: M11-T12
+  version: 2
+  milestone: M11
+  changeset: CHG-SELF-RELEASE
+  supersedes_execution_contract: 38fd369a1775399a3af4923e3f74cc93e459ca6d8a83a82225c9e062d2b01444
+  objective: Converge the sole canonical evidence persistence path and build a non-circular fail-closed V1 candidate verifier.
+context:
+  research: docs/implementation/self-host/RSR-SELF-RELEASE-001.md
+  decision: docs/architecture/adr/ADR-RELEASE-001.md
+  implementation_plan: docs/implementation/self-host/CHG-SELF-RELEASE_IMPLEMENTATION_PLAN.md
+  revision_reason: Independent V1 review rejected duplicate unversioned EvidenceLedger persistence and release self-certification.
+  route: Manual fallback packet exchange with independent Codex review
+base_commit: 685b15a2abb7e377b6a17795c7ae087da0128e1f
+project_model_fingerprint: 2e419594554816b1e62daf2399e34db6aa76be485b63bfef3acaf4e2b3798f43
+acceptance_criteria:
+  - Evidence schema 2.0, EvidenceLedger journal events, and typed YAML/JSON codec use one EvidenceEntry payload representation.
+  - Canonical parsing verifies schema, integrity, trusted validator, independence, and exact current binding; known legacy remains historical only.
+  - Unknown, tampered, duplicate, spoofed, stale, path-escaping, or symlink evidence fails closed.
+  - Candidate verifier derives binding from actual Git HEAD, current canonical Project Model, and Core-owned V1 release contract, never from the release manifest.
+  - Candidate verifier requires M11 VALIDATING and release CANDIDATE, then permits Core promotion only after PASS.
+  - Mandatory gates are M00-M09, M11, and V1; M10 is optional and non-blocking; each mandatory gate must parse and be PASS/non-waivable/current-evidence-bound.
+  - BUILD, VALIDATION, UNDERSTANDING, CONTINUITY, PORTABILITY, PACKAGING, SELFHOST, SECURITY, and V1 aggregate evidence are individually required and PASS.
+  - Artifact paths and kinds are unique, in-root regular files with matching hashes; relabeling one file cannot satisfy multiple kinds.
+  - Traceability definitions are checked against authoritative repository artifacts and every requirement maps to architecture, milestone, task, evidence, and gate.
+  - Core/package/CLI/artifact identity is consistently 1.0.0 and all six integrations support 1.0.0 but reject 2.0.0.
+  - Existing nine CI jobs remain, locked wheel/sdist isolated identity CI is added, and source builds pass.
+  - Focused/adversarial tests, Ruff, strict mypy, full tests, coverage at least 85 percent, and independent review pass.
+ownership:
+  paths:
+    - src/artifex/validation/core.py
+    - src/artifex/validation/evidence.py
+    - src/artifex/validation/__init__.py
+    - schemas/acceptance-evidence.schema.json
+    - scripts/validate_release.py
+    - scripts/validate_traceability.py
+    - src/artifex/_version.py
+    - src/artifex/integrations/manual.py
+    - src/artifex/integrations/hermes.py
+    - src/artifex/integrations/codex.py
+    - src/artifex/integrations/claude.py
+    - src/artifex/integrations/deepseek.py
+    - src/artifex/integrations/pandora.py
+    - pyproject.toml
+    - uv.lock
+    - .github/workflows/ci.yml
+    - tests/test_release.py
+    - tests/test_validation.py
+expected_result:
+  status: [SUCCESS]
+  artifacts: only the 18 owned changed files
+  validation:
+    focused: PASS
+    full_suite: PASS
+    coverage: ">=85%"
+    source_packages: PASS
+interfaces:
+  - ManualIntegration packet/result exchange
+  - EvidenceEntry and EvidenceLedger
+  - canonical evidence codec
+  - repository candidate release verifier
+invariants:
+  - INV-001 Project Model is the only source of project truth.
+  - INV-006 Acceptance is owned by ARTIFEX Core.
+  - INV-007 Evidence must be fresh, bound, integrity-checked, and independently produced.
+  - INV-011 Core state changes require audited transitions.

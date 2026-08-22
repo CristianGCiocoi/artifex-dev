@@ -1,24 +1,27 @@
 schema_version: "1.0"
 contract:
-  id: VAL-M11-RELEASE
+  id: VAL-M11-RELEASE-V2
+  version: 2
   milestone: M11
   changeset: CHG-SELF-RELEASE
-  state: SUPERSEDED
-  superseded_by: VAL-M11-RELEASE-V2
-  supersession_reason: Independent review found EvidenceLedger core persistence outside V1 ownership and still unversioned.
+  state: FROZEN
+  supersedes: VAL-M11-RELEASE
   authority_source: docs/implementation/self-host/CHG-SELF-RELEASE_IMPLEMENTATION_PLAN.md
   execution_base_commit: 685b15a2abb7e377b6a17795c7ae087da0128e1f
   project_model_fingerprint: 2e419594554816b1e62daf2399e34db6aa76be485b63bfef3acaf4e2b3798f43
-  execution_contract_fingerprint: 38fd369a1775399a3af4923e3f74cc93e459ca6d8a83a82225c9e062d2b01444
+  execution_contract_fingerprint: 662b3ad526b001690fec9f26e9e522768130e529769244eabac65144beca86e3
   worker_branch: feat/m11-release-convergence
+  ownership_count: 18
   criteria_count: 12
   validators:
     - packet-integrity
-    - evidence-codec
+    - ledger-codec-convergence
     - evidence-adversarial
     - legacy-classification
-    - release-verifier
-    - traceability
+    - candidate-binding
+    - gate-integrity
+    - release-ordering
+    - traceability-authority
     - version-consistency
     - integration-compatibility
     - source-package-build
