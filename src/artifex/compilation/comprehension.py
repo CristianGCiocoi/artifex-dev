@@ -8,6 +8,7 @@ from typing import Any, Protocol
 
 from artifex.compilation._util import lookup, model_fingerprint, project_identity
 from artifex.compilation.freshness import generation_manifest
+from artifex.compilation.projection import project_understanding
 
 COMPREHENSION_TOPICS: tuple[str, ...] = (
     "purpose",
@@ -80,9 +81,10 @@ def build_comprehension_gate(
 
     if not 0 < pass_threshold <= 1:
         raise ValueError("pass_threshold must be greater than 0 and at most 1")
+    read_model = project_understanding(project_model)
     checks: list[dict[str, Any]] = []
     for topic in COMPREHENSION_TOPICS:
-        source = lookup(project_model, *_TOPIC_PATHS[topic])
+        source = lookup(read_model, *_TOPIC_PATHS[topic])
         if rubric is not None and topic in rubric:
             concepts = [str(item) for item in rubric[topic]]
             source_available = True
@@ -167,9 +169,10 @@ def evaluate_paper_eligibility(
 ) -> dict[str, Any]:
     """Evaluate explicit, inspectable criteria without making paper mandatory."""
 
-    identity = project_identity(project_model)
+    read_model = project_understanding(project_model)
+    identity = project_identity(read_model)
     if criteria is None:
-        paper = lookup(project_model, "paper")
+        paper = lookup(read_model, "paper")
         paper = paper if isinstance(paper, Mapping) else {}
         criteria = {
             "deep_workflow": str(identity.get("workflow_depth", "")).upper() == "DEEP",

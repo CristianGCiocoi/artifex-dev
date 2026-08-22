@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import json
 from collections.abc import Mapping
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -108,3 +110,20 @@ def test_paper_eligibility_accepts_an_explicit_policy() -> None:
     )
     assert result["eligible"] is False
     assert result["failed_criteria"] == ["architect_gate"]
+
+
+@pytest.mark.unit
+def test_artifex_self_model_has_all_nine_comprehension_sources() -> None:
+    root = Path(__file__).parents[1]
+    self_model = json.loads((root / ".artifex" / "project-model.json").read_text())
+
+    first = build_comprehension_gate(self_model)
+    second = build_comprehension_gate(self_model)
+
+    assert first == second
+    assert len(first["checks"]) == len(COMPREHENSION_TOPICS) == 9
+    assert all(check["source_available"] for check in first["checks"])
+    assert all(check["required_concepts"] for check in first["checks"])
+    assert first["project_model_fingerprint"] == compile_optional_paper(self_model)[
+        "generated_view"
+    ]["project_model_fingerprint"]

@@ -21,6 +21,7 @@ from artifex.compilation import (
     derive_dashboard_metrics,
     fingerprint_sources,
     generation_manifest,
+    project_understanding,
     render_agent_shim,
     render_human_document,
     serialize_machine_view,
@@ -245,3 +246,147 @@ def test_generation_manifest_is_source_bound(project_model: dict[str, Any]) -> N
     second = generation_manifest(project_model, sources={"one": "changed"})
     assert first["project_model_fingerprint"] == second["project_model_fingerprint"]
     assert first["source_fingerprints"] != second["source_fingerprints"]
+
+
+@pytest.mark.unit
+def test_typed_projection_uses_accepted_metadata_and_stable_entity_fallbacks() -> None:
+    typed = {
+        "schema_version": "1.0",
+        "project": {
+            "id": "DEMO",
+            "name": "Demo",
+            "description": "Fallback purpose",
+            "lifecycle": "brownfield",
+            "workflow_depth": "DEEP",
+        },
+        "git": {},
+        "artifacts": [
+            {
+                "id": "ART-Z",
+                "status": "DRAFT",
+                "metadata": {"understanding": {"purpose": "not accepted", "rogue": True}},
+            },
+            {
+                "id": "ART-A",
+                "status": "ACCEPTED",
+                "metadata": {"understanding": {"architecture": {"style": "modular"}}},
+            },
+        ],
+        "entities": [
+            {
+                "id": "INV-002",
+                "kind": "invariant",
+                "title": "Second",
+                "statement": "second",
+                "artifact_id": "ART-A",
+                "depends_on": [],
+            },
+            {
+                "id": "INV-001",
+                "kind": "invariant",
+                "title": "First",
+                "statement": "first",
+                "artifact_id": "ART-A",
+                "depends_on": [],
+            },
+        ],
+    }
+    before = deepcopy(typed)
+
+    projected = project_understanding(typed)
+
+    assert typed == before
+    assert projected["purpose"] == "Fallback purpose"
+    assert projected["architecture"] == {"style": "modular"}
+    assert [item["id"] for item in projected["invariants"]] == ["INV-001", "INV-002"]
+    assert "rogue" not in projected
+    rich = {"project": {"id": "RICH"}, "purpose": "existing"}
+    assert project_understanding(rich) == rich
+    assert project_understanding(rich) is not rich
+
+
+@pytest.mark.unit
+def test_typed_projection_fails_closed_on_unknown_and_conflicting_accepted_meaning() -> None:
+    base: dict[str, Any] = {
+        "schema_version": "1.0",
+        "project": {
+            "id": "DEMO",
+            "name": "Demo",
+            "description": "Demo",
+            "lifecycle": "brownfield",
+            "workflow_depth": "DEEP",
+        },
+        "git": {},
+        "artifacts": [],
+        "entities": [],
+    }
+    unknown = deepcopy(base)
+    unknown["artifacts"] = [
+        {
+            "id": "ART-A",
+            "status": "ACCEPTED",
+            "metadata": {"understanding": {"new_instruction_surface": "unsafe"}},
+        }
+    ]
+    with pytest.raises(ValueError, match="unknown understanding fields"):
+        project_understanding(unknown)
+
+    conflicting = deepcopy(base)
+    conflicting["artifacts"] = [
+        {
+            "id": "ART-B",
+            "status": "ACCEPTED",
+            "metadata": {"understanding": {"purpose": "second"}},
+        },
+        {
+            "id": "ART-A",
+            "status": "ACCEPTED",
+            "metadata": {"understanding": {"purpose": "first"}},
+        },
+    ]
+    with pytest.raises(ValueError, match="conflicting accepted understanding field purpose"):
+        project_understanding(conflicting)
+
+
+@pytest.mark.unit
+def test_artifex_self_model_compiles_complete_raw_bound_views() -> None:
+    root = Path(__file__).parents[1]
+    model_path = root / ".artifex" / "project-model.json"
+    before = model_path.read_bytes()
+    self_model = json.loads(before)
+    self_model_before = deepcopy(self_model)
+    schema = json.loads((root / "schemas" / "project-model.schema.json").read_text())
+    jsonschema.Draft202012Validator(schema).validate(self_model)
+    expected_fingerprint = generation_manifest(self_model)["project_model_fingerprint"]
+
+    documents = compile_human_documentation(self_model)
+    machine = compile_machine_understanding_pack(self_model)
+
+    assert documents == compile_human_documentation(self_model)
+    assert len(documents) == 15
+    assert all("_No applicable canonical content" not in content for content in documents.values())
+    assert all(expected_fingerprint in content for content in documents.values())
+    assert set(machine) == {
+        "project-manifest.json",
+        "architecture-map.json",
+        "capability-map.json",
+        "interface-map.json",
+        "invariant-map.json",
+        "validation-rules.json",
+        "context-index.json",
+        "AGENTS.md",
+        "CLAUDE.md",
+    }
+    assert all(machine[name]["values"] for name in (
+        "architecture-map.json",
+        "capability-map.json",
+        "interface-map.json",
+        "invariant-map.json",
+        "validation-rules.json",
+    ))
+    assert (
+        machine["project-manifest.json"]["generated_view"]["project_model_fingerprint"]
+        == expected_fingerprint
+    )
+    assert self_model == self_model_before
+    assert model_path.read_bytes() == before

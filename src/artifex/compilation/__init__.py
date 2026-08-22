@@ -23,6 +23,7 @@ from artifex.compilation.freshness import (
     generation_manifest,
 )
 from artifex.compilation.packets import compile_context_packet, compile_execution_packet
+from artifex.compilation.projection import UNDERSTANDING_FIELDS, project_understanding
 from artifex.compilation.renderers import (
     ADAPTIVE_HUMAN_DOCUMENTS,
     BASE_HUMAN_DOCUMENTS,
@@ -39,6 +40,7 @@ __all__ = [
     "ADAPTIVE_HUMAN_DOCUMENTS",
     "BASE_HUMAN_DOCUMENTS",
     "COMPREHENSION_TOPICS",
+    "UNDERSTANDING_FIELDS",
     "GeneratedViewState",
     "PaperCompiler",
     "build_comprehension_gate",
@@ -59,6 +61,7 @@ __all__ = [
     "fingerprint_sources",
     "generation_manifest",
     "paper_eligibility_gate",
+    "project_understanding",
     "render_agent_shim",
     "render_dashboard",
     "render_human_document",

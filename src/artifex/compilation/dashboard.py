@@ -10,6 +10,7 @@ from typing import Any
 
 from artifex.compilation._util import project_identity
 from artifex.compilation.freshness import generation_manifest
+from artifex.compilation.projection import project_understanding
 
 
 def _records(value: Any) -> list[Mapping[str, Any]]:
@@ -84,7 +85,7 @@ def compile_dashboard(
 ) -> str:
     """Render a standalone static HTML view over supplied measured state."""
 
-    identity = project_identity(project_model)
+    identity = project_identity(project_understanding(project_model))
     metrics = derive_dashboard_metrics(measured_state)
     payload = {
         "schema_version": "1.0",

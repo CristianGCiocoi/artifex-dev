@@ -7,6 +7,7 @@ from typing import Any
 
 from artifex.compilation._util import copy_json, lookup, model_fingerprint, project_identity
 from artifex.compilation.freshness import generation_manifest
+from artifex.compilation.projection import project_understanding
 
 _CONTEXT_PATHS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("purpose", ("purpose", "project.description")),
@@ -90,16 +91,17 @@ def compile_context_packet(
 
     if not isinstance(project_model, Mapping):
         raise TypeError("project_model must be a Mapping")
-    context = _select_context(project_model)
+    read_model = project_understanding(project_model)
+    context = _select_context(read_model)
     if task_id is not None:
-        task = _find_task(project_model, task_id)
+        task = _find_task(read_model, task_id)
         context["focus"] = {"task_id": task_id}
         if isinstance(task, Mapping):
             dependencies = task.get("dependencies", task.get("depends_on", ()))
             context["focus"]["dependencies"] = copy_json(dependencies)
     if relevant_ids:
         context.setdefault("focus", {})["relevant_ids"] = sorted(set(relevant_ids))
-        artifacts = _relevant_artifacts(project_model, relevant_ids)
+        artifacts = _relevant_artifacts(read_model, relevant_ids)
         if artifacts:
             context["relevant_artifacts"] = artifacts
     if additional_context:
@@ -109,7 +111,7 @@ def compile_context_packet(
         "schema_version": "1.0",
         "kind": "CONTEXT_PACKET",
         "generated_view": generation_manifest(project_model, generator="context-packet-v1"),
-        "project": project_identity(project_model),
+        "project": project_identity(read_model),
         "context": context,
         "project_model_fingerprint": model_fingerprint(project_model),
     }

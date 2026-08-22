@@ -9,6 +9,7 @@ from typing import Any
 from artifex.compilation._util import copy_json, lookup, project_identity, title
 from artifex.compilation.freshness import generation_manifest
 from artifex.compilation.packets import compile_context_packet
+from artifex.compilation.projection import project_understanding
 
 BASE_HUMAN_DOCUMENTS: tuple[str, ...] = (
     "README.md",
@@ -117,7 +118,8 @@ def render_human_document(project_model: Mapping[str, Any], filename: str) -> st
     normalized = f"{stem.upper()}.md" if separator and suffix.casefold() == "md" else filename
     if normalized not in _DOCUMENT_SOURCES:
         raise ValueError(f"unsupported human document: {filename}")
-    identity = project_identity(project_model)
+    read_model = project_understanding(project_model)
+    identity = project_identity(read_model)
     project_name = str(identity.get("name", identity.get("id", "Project")))
     document_name = (
         "Overview" if normalized == "README.md" else title(normalized.removesuffix(".MD"))
@@ -132,7 +134,7 @@ def render_human_document(project_model: Mapping[str, Any], filename: str) -> st
         f"<!-- ARTIFEX_GENERATION_MANIFEST: {manifest_json} -->",
         "",
     ]
-    data = _document_data(project_model, normalized)
+    data = _document_data(read_model, normalized)
     if data:
         lines.extend(_markdown(data))
     else:
@@ -145,7 +147,7 @@ def compile_human_documentation(
 ) -> dict[str, str]:
     """Compile the required human understanding set in stable filename order."""
 
-    identity = project_identity(project_model)
+    identity = project_identity(project_understanding(project_model))
     depth = str(identity.get("workflow_depth", "STANDARD")).upper()
     adaptive = depth in {"STANDARD", "DEEP"} if include_adaptive is None else include_adaptive
     names = BASE_HUMAN_DOCUMENTS + (ADAPTIVE_HUMAN_DOCUMENTS if adaptive else ())
@@ -158,11 +160,12 @@ def render_agent_shim(project_model: Mapping[str, Any], agent: str) -> str:
     agent_name = agent.strip().upper()
     if agent_name not in {"AGENTS", "CLAUDE"}:
         raise ValueError("agent must be AGENTS or CLAUDE")
-    identity = project_identity(project_model)
+    read_model = project_understanding(project_model)
+    identity = project_identity(read_model)
     project_name = str(identity.get("name", identity.get("id", "Project")))
     manifest = generation_manifest(project_model, generator=f"machine-shim-v1:{agent_name}")
-    authority = lookup(project_model, "authority")
-    invariants = lookup(project_model, "invariants")
+    authority = lookup(read_model, "authority")
+    invariants = lookup(read_model, "invariants")
     manifest_json = json.dumps(manifest, sort_keys=True, separators=(",", ":"))
     lines = [
         f"# {project_name} generated {agent_name} context",
@@ -187,12 +190,13 @@ def render_agent_shim(project_model: Mapping[str, Any], agent: str) -> str:
 def compile_machine_understanding_pack(project_model: Mapping[str, Any]) -> dict[str, Any]:
     """Compile stable machine maps and agent-specific generated views."""
 
+    read_model = project_understanding(project_model)
     manifest = generation_manifest(project_model, generator="machine-understanding-pack-v1")
     machine_manifest = {
         "schema_version": "1.0",
         "kind": "MACHINE_UNDERSTANDING_PACK",
         "generated_view": manifest,
-        "project": project_identity(project_model),
+        "project": project_identity(read_model),
     }
     map_paths: tuple[tuple[str, tuple[str, ...]], ...] = (
         ("architecture-map.json", ("architecture", "core_components", "components")),
@@ -206,7 +210,7 @@ def compile_machine_understanding_pack(project_model: Mapping[str, Any]) -> dict
         values = {
             path: copy_json(value)
             for path in paths
-            if (value := lookup(project_model, path)) is not None
+            if (value := lookup(read_model, path)) is not None
         }
         pack[filename] = {
             "schema_version": "1.0",
