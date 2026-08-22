@@ -282,6 +282,27 @@
     },
     {
       "depends_on": [
+        "ADR-COMPILATION-002",
+        "ART-SELF-M11"
+      ],
+      "fingerprint": "59f3cba636cde8718d47d183e546b548538e377df03be0873dbae56780a816b9",
+      "id": "ART-SELF-COMPILATION-PROJECTION",
+      "metadata": {
+        "changeset": "CHG-SELF-001",
+        "independent_validation": "PASS",
+        "worker_commit": "fac01cae6343bf01e196cff61423149cd6a6d0d8"
+      },
+      "path": "src/artifex/compilation/projection.py",
+      "provenance": {
+        "commit": "3af72170cd728ec7e5c6ed23446551c9dd341ee7",
+        "path": "src/artifex/compilation/projection.py",
+        "source": "CHG-SELF-001 independently validated implementation"
+      },
+      "status": "ACCEPTED",
+      "type": "source-module"
+    },
+    {
+      "depends_on": [
         "ART-SELF-REQUIREMENTS"
       ],
       "fingerprint": "82de9a667de6db94faaf149e395f793f5b0bafc3df2dc0a136b8beafaf49178a",
@@ -1459,7 +1480,7 @@
   "git": {
     "baseline_commit": "f3cceb304077c2ca139d5c039917547286b34bbd",
     "branch": "main",
-    "current_commit": "f3cceb304077c2ca139d5c039917547286b34bbd",
+    "current_commit": "3af72170cd728ec7e5c6ed23446551c9dd341ee7",
     "dirty": false,
     "initialized": true,
     "remote_status": "CONFIGURED",

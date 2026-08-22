@@ -12,6 +12,6 @@
   "baseline_commit": "f3cceb304077c2ca139d5c039917547286b34bbd",
   "description": "Add a deterministic Compilation Layer projection from accepted typed Project Model artifacts and entities without changing Core schema or authority.",
   "id": "CHG-SELF-001",
-  "status": "IMPLEMENTING",
+  "status": "APPLIED",
   "title": "Compile canonical Project Models into complete understanding views"
 }
