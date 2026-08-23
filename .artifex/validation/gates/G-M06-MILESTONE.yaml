@@ -1,0 +1,2 @@
+schema_version: "1.0"
+gate: {id: G-M06-MILESTONE, scope: MILESTONE, target: M06, state: PASS, contract_hash: "e97ee9b9e40c86675e0aae345bc50108c4b1a180c7e0d6dc8b67c70aae3e94f7", required_evidence: [EVD-M06-001], waiver_allowed: false}
