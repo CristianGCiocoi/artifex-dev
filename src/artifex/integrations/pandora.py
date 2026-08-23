@@ -188,7 +188,7 @@ class PandoraResearchAdapter:
             integration_id="pandora",
             name="Pandora Research",
             version="1.0.0",
-            compatibility=CompatibilityRange("0.1.0", "1.0.0"),
+            compatibility=CompatibilityRange("0.1.0", "2.0.0"),
             tested_external_versions=("filesystem-contract-v1",),
             roles=frozenset({IntegrationRole.RESEARCH_PROVIDER}),
             capabilities=frozenset({"filesystem_exchange", "source_backed_research"}),

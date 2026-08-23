@@ -28,7 +28,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            kind: native-linux-x64
+          - os: windows-latest
+            kind: native-windows-x64
+          - os: macos-latest
+            kind: native-macos-arm64
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -38,8 +44,47 @@ jobs:
           enable-cache: true
       - run: uv sync --locked --all-groups
       - run: uv run python packaging/build.py --clean --smoke
+      - run: uv run python scripts/validate_release.py finalize-native --candidate "${{ github.sha }}" --input dist/native/artifex --output dist/release --kind "${{ matrix.kind }}"
+      - run: uv build --no-build-isolation --wheel --sdist
+      - run: uv run python scripts/validate_release.py finalize-source --candidate "${{ github.sha }}" --output dist
+      - run: uv run python scripts/validate_release.py smoke-source --output dist
       - uses: actions/upload-artifact@v4
         with:
           name: artifex-onedir-${{ runner.os }}-${{ runner.arch }}
-          path: dist/native/artifex/
+          path: |
+            dist/native/artifex/
+            dist/release/*
+          if-no-files-found: error
+
+  source-package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - run: uv sync --locked --all-groups
+      - run: uv lock --check
+      - run: uv build --no-build-isolation --wheel --sdist
+      - run: uv run python scripts/validate_release.py finalize-source --candidate "${{ github.sha }}" --output dist
+      - run: uv run python scripts/validate_release.py smoke-source --output dist
+      - name: Isolated wheel identity smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          wheel=$(find dist -maxdepth 1 -name 'artifex_dev-1.0.0-*.whl' -print -quit)
+          sdist=$(find dist -maxdepth 1 -name 'artifex_dev-1.0.0.tar.gz' -print -quit)
+          test -n "$wheel"
+          test -n "$sdist"
+          uv run --isolated --no-project --with "$wheel" python -c "import artifex; assert artifex.__version__ == '1.0.0'"
+          uv run --isolated --no-project --with "$wheel" python -c "import importlib.resources, json; p=json.loads(importlib.resources.files('artifex').joinpath('schemas/acceptance-evidence.schema.json').read_text()); assert p['properties']['schema_version']['const'] == '2.0'; assert 'independent_of_executor' in p['required']"
+          uv run --isolated --no-project --with "$wheel" artifex system version | python -c "import json,sys; p=json.load(sys.stdin); assert p['ok'] is True and p['value']['version'] == '1.0.0'"
+          uv run --isolated --no-project --with "$sdist" python -c "import artifex; assert artifex.__version__ == '1.0.0'"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: artifex-source-distributions
+          path: |
+            dist/*.whl
+            dist/*.tar.gz
           if-no-files-found: error

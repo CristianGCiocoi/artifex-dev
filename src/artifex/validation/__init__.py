@@ -27,15 +27,30 @@ from artifex.validation.core import (
     ValidatorResult,
     WaiverRequest,
 )
+from artifex.validation.evidence import (
+    EVIDENCE_SCHEMA_VERSION,
+    DecodedEvidence,
+    EvidenceClassification,
+    classify_evidence_payload,
+    decode_evidence,
+    dump_evidence,
+    evidence_from_payload,
+    evidence_to_payload,
+    load_evidence,
+    validate_evidence_set,
+)
 
 __all__ = [
+    "EVIDENCE_SCHEMA_VERSION",
     "AcceptanceContract",
     "AcceptanceContractState",
     "AcceptanceCriterion",
     "ApprovedWaiver",
     "CommandOutcome",
+    "DecodedEvidence",
     "DeterministicValidator",
     "EvidenceBinding",
+    "EvidenceClassification",
     "EvidenceEntry",
     "EvidenceLedger",
     "EvidenceOutcome",
@@ -54,4 +69,11 @@ __all__ = [
     "ValidatorKind",
     "ValidatorResult",
     "WaiverRequest",
+    "classify_evidence_payload",
+    "decode_evidence",
+    "dump_evidence",
+    "evidence_from_payload",
+    "evidence_to_payload",
+    "load_evidence",
+    "validate_evidence_set",
 ]

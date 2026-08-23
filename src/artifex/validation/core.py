@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import os
+import re
 import subprocess
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field, replace
@@ -155,11 +157,19 @@ class MeasuredFact:
     value: str | int | float | bool | None
 
     def __post_init__(self) -> None:
-        if not self.name:
+        if not isinstance(self.name, str) or not self.name or len(self.name) > 200:
             raise ValidationError("measured fact names are required")
-        object.__setattr__(self, "name", scrub_secrets(self.name)[:200])
+        if scrub_secrets(self.name) != self.name:
+            raise ValidationError("measured fact names must be secret-safe")
+        if not isinstance(self.value, (str, int, float, bool, type(None))):
+            raise ValidationError("measured fact values must be finite JSON scalars")
+        if isinstance(self.value, float) and not math.isfinite(self.value):
+            raise ValidationError("measured fact numeric values must be finite")
         if isinstance(self.value, str):
-            object.__setattr__(self, "value", scrub_secrets(self.value)[:1_000])
+            if len(self.value) > 1_000:
+                raise ValidationError("measured fact string values must be at most 1000 characters")
+            if scrub_secrets(self.value) != self.value:
+                raise ValidationError("measured fact values must be secret-safe")
 
 
 @dataclass(frozen=True, slots=True)
@@ -351,6 +361,32 @@ class ManualValidator:
 
 
 _MAX_EVIDENCE_OUTPUT = 4_000
+_MAX_EVIDENCE_CLAIM = 1_000
+_IDENTITY_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,127}")
+_VERSION_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9.+_-]{0,63}")
+_EVIDENCE_ID_PATTERN = re.compile(r"EVD-[A-Z0-9][A-Z0-9-]*")
+_HASH_PATTERN = re.compile(r"[0-9a-f]{64}")
+
+
+def _strict_json_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValidationError(f"duplicate JSON key: {key}")
+        result[key] = value
+    return result
+
+
+def _strict_json_loads(value: str) -> Any:
+    return json.loads(value, object_pairs_hook=_strict_json_object)
+
+
+def _secret_safe_text(value: object, *, label: str, maximum: int) -> str:
+    if not isinstance(value, str) or not value or len(value) > maximum:
+        raise ValidationError(f"{label} is missing or exceeds its canonical length bound")
+    if scrub_secrets(value) != value:
+        raise ValidationError(f"{label} must be secret-safe")
+    return value
 
 
 @dataclass(frozen=True, slots=True)
@@ -370,8 +406,44 @@ class EvidenceEntry:
     entry_hash: str
 
     def __post_init__(self) -> None:
-        if len(self.output) > _MAX_EVIDENCE_OUTPUT or scrub_secrets(self.output) != self.output:
+        if (
+            not isinstance(self.evidence_id, str)
+            or len(self.evidence_id) > 128
+            or _EVIDENCE_ID_PATTERN.fullmatch(self.evidence_id) is None
+        ):
+            raise ValidationError("evidence IDs must use the canonical EVD- pattern")
+        for value, label, pattern in (
+            (self.validator_id, "validator ID", _IDENTITY_PATTERN),
+            (self.producer_id, "producer ID", _IDENTITY_PATTERN),
+            (self.validator_version, "validator version", _VERSION_PATTERN),
+        ):
+            if not isinstance(value, str) or pattern.fullmatch(value) is None:
+                raise ValidationError(f"invalid canonical {label}")
+            if scrub_secrets(value) != value:
+                raise ValidationError(f"canonical {label} must be secret-safe")
+        _secret_safe_text(self.claim, label="evidence claim", maximum=_MAX_EVIDENCE_CLAIM)
+        if not isinstance(self.validator_kind, ValidatorKind):
+            raise ValidationError("invalid canonical validator kind")
+        if not isinstance(self.outcome, EvidenceOutcome):
+            raise ValidationError("invalid canonical evidence outcome")
+        if not isinstance(self.facts, tuple) or any(
+            not isinstance(fact, MeasuredFact) for fact in self.facts
+        ):
+            raise ValidationError("canonical evidence facts must be measured facts")
+        if not isinstance(self.binding, EvidenceBinding):
+            raise ValidationError("invalid canonical evidence binding")
+        if (
+            not isinstance(self.output, str)
+            or len(self.output) > _MAX_EVIDENCE_OUTPUT
+            or scrub_secrets(self.output) != self.output
+        ):
             raise ValidationError("canonical evidence output must be minimized and secret-safe")
+        if not isinstance(self.recorded_at, datetime) or self.recorded_at.tzinfo is None:
+            raise ValidationError("evidence timestamps must be timezone-aware")
+        if not isinstance(self.independent_of_executor, bool):
+            raise ValidationError("evidence independence must be boolean")
+        if not isinstance(self.entry_hash, str) or _HASH_PATTERN.fullmatch(self.entry_hash) is None:
+            raise ValidationError("evidence entry hash must be canonical SHA-256")
 
     @classmethod
     def create(
@@ -458,9 +530,24 @@ class EvidenceLedger:
         self._trusted = dict(trusted_validators)
         self._entries: list[EvidenceEntry] = []
         self._invalidations: dict[str, str] = {}
+        self._historical_ids: set[str] = set()
+        self._historical_invalidations: dict[str, str] = {}
         self._journal_path = journal_path
         if journal_path is not None and journal_path.exists():
             self._load_journal()
+
+    @classmethod
+    def open_canonical(
+        cls, trusted_validators: Mapping[str, str], *, journal_root: Path
+    ) -> EvidenceLedger:
+        """Audit the read-only legacy journal, then open the schema-2 append path."""
+
+        ledger = cls(trusted_validators)
+        ledger._load_legacy_journal(journal_root / "ledger.jsonl")
+        ledger._journal_path = journal_root / "ledger-v2.jsonl"
+        if ledger._journal_path.exists():
+            ledger._load_journal()
+        return ledger
 
     @property
     def entries(self) -> tuple[EvidenceEntry, ...]:
@@ -472,20 +559,32 @@ class EvidenceLedger:
         self._entries.append(entry)
 
     def _validate_entry(self, entry: EvidenceEntry) -> None:
+        # The canonical codec is also the write boundary: a directly constructed
+        # dataclass may not bypass schema, type, or round-trip invariants.
+        decoded = self._entry_from_payload(self._entry_payload(entry))
+        if decoded != entry:
+            raise ValidationError("canonical evidence codec is not a stable round trip")
         if self._trusted.get(entry.validator_id) != entry.validator_version:
             raise ValidationError("untrusted or spoofed validator identity")
         if not entry.verify_integrity():
             raise ValidationError("evidence integrity check failed")
-        if any(item.evidence_id == entry.evidence_id for item in self._entries):
+        if entry.evidence_id in self._historical_ids or any(
+            item.evidence_id == entry.evidence_id for item in self._entries
+        ):
             raise ValidationError(f"duplicate evidence ID: {entry.evidence_id}")
 
     def invalidate(self, evidence_ids: Iterable[str], *, reason: str) -> None:
-        if not reason:
-            raise ValidationError("invalidation requires a reason")
+        _secret_safe_text(reason, label="invalidation reason", maximum=500)
         known = {entry.evidence_id for entry in self._entries}
         for evidence_id in evidence_ids:
-            if evidence_id not in known:
+            if (
+                not isinstance(evidence_id, str)
+                or _EVIDENCE_ID_PATTERN.fullmatch(evidence_id) is None
+                or evidence_id not in known
+            ):
                 raise ValidationError(f"cannot invalidate unknown evidence: {evidence_id}")
+            if evidence_id in self._invalidations:
+                raise ValidationError(f"duplicate evidence invalidation: {evidence_id}")
             self._persist({"type": "INVALIDATION", "evidence_id": evidence_id, "reason": reason})
             self._invalidations[evidence_id] = reason
 
@@ -498,7 +597,9 @@ class EvidenceLedger:
         if self._journal_path is None:
             return
         self._journal_path.parent.mkdir(parents=True, exist_ok=True)
-        encoded = json.dumps(event, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+        encoded = json.dumps(
+            event, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False
+        )
         with self._journal_path.open("a", encoding="utf-8", newline="\n") as stream:
             stream.write(encoded + "\n")
             stream.flush()
@@ -511,18 +612,33 @@ class EvidenceLedger:
             for line_number, line in enumerate(lines, start=1):
                 if not line.strip():
                     continue
-                event = json.loads(line)
+                event = _strict_json_loads(line)
+                if not isinstance(event, Mapping):
+                    raise ValidationError("evidence journal event must be an object")
                 event_type = event.get("type")
                 if event_type == "EVIDENCE":
+                    if set(event) != {"type", "entry"} or not isinstance(
+                        event.get("entry"), Mapping
+                    ):
+                        raise ValidationError("invalid evidence journal entry event")
                     entry = self._entry_from_payload(event["entry"])
                     self._validate_entry(entry)
                     self._entries.append(entry)
                 elif event_type == "INVALIDATION":
-                    evidence_id = str(event["evidence_id"])
-                    reason = str(event["reason"])
-                    if not reason or evidence_id not in {
-                        entry.evidence_id for entry in self._entries
-                    }:
+                    evidence_id = event.get("evidence_id")
+                    reason = event.get("reason")
+                    if (
+                        set(event) != {"type", "evidence_id", "reason"}
+                        or not isinstance(evidence_id, str)
+                        or _EVIDENCE_ID_PATTERN.fullmatch(evidence_id) is None
+                        or not isinstance(reason, str)
+                        or not reason
+                        or len(reason) > 500
+                        or scrub_secrets(reason) != reason
+                        or evidence_id in self._invalidations
+                        or evidence_id
+                        not in {entry.evidence_id for entry in self._entries}
+                    ):
                         raise ValidationError("invalid evidence invalidation event")
                     self._invalidations[evidence_id] = reason
                 else:
@@ -534,57 +650,193 @@ class EvidenceLedger:
 
     @staticmethod
     def _entry_payload(entry: EvidenceEntry) -> dict[str, Any]:
-        return {
-            "evidence_id": entry.evidence_id,
-            "validator_id": entry.validator_id,
-            "validator_version": entry.validator_version,
-            "validator_kind": entry.validator_kind,
-            "claim": entry.claim,
-            "outcome": entry.outcome,
-            "facts": [{"name": fact.name, "value": fact.value} for fact in entry.facts],
-            "binding": {
-                "base_commit": entry.binding.base_commit,
-                "contract_hash": entry.binding.contract_hash,
-                "project_model_fingerprints": list(entry.binding.project_model_fingerprints),
-            },
-            "output": entry.output,
-            "recorded_at": entry.recorded_at.isoformat(),
-            "producer_id": entry.producer_id,
-            "independent_of_executor": entry.independent_of_executor,
-            "entry_hash": entry.entry_hash,
+        # Lazy import avoids a core<->codec import cycle while retaining one canonical encoder.
+        from artifex.validation.evidence import evidence_to_payload
+
+        return evidence_to_payload(entry)
+
+    def _entry_from_payload(self, payload: Mapping[str, Any]) -> EvidenceEntry:
+        # Journal loading uses the same schema/integrity/identity decoder as YAML and JSON.
+        from artifex.validation.evidence import evidence_from_payload
+
+        legacy_keys = {
+            "evidence_id",
+            "validator_id",
+            "validator_version",
+            "validator_kind",
+            "claim",
+            "outcome",
+            "facts",
+            "binding",
+            "output",
+            "recorded_at",
+            "producer_id",
+            "independent_of_executor",
+            "entry_hash",
         }
+        if "schema_version" not in payload and legacy_keys <= set(payload):
+            raise ValidationError(
+                "legacy unversioned evidence journal is historical; preserve it and use "
+                "ledger-v2.jsonl"
+            )
+        try:
+            return evidence_from_payload(
+                payload,
+                trusted_validators=self._trusted,
+                require_independent=False,
+            )
+        except ValidationError as exc:
+            raise ValidationError(f"corrupt evidence journal: {exc}") from exc
+
+    def _load_legacy_journal(self, path: Path) -> None:
+        """Classify known pre-codec events without exposing them as current entries."""
+
+        if not path.exists():
+            return
+        try:
+            content = path.read_text(encoding="utf-8")
+            if content and not content.endswith("\n"):
+                raise ValidationError("corrupt legacy evidence journal: truncated final event")
+            for line_number, line in enumerate(content.splitlines(), start=1):
+                if not line.strip():
+                    continue
+                event = _strict_json_loads(line)
+                if not isinstance(event, Mapping):
+                    raise ValidationError(
+                        f"corrupt legacy evidence journal event at line {line_number}"
+                    )
+                event_type = event.get("type")
+                if event_type == "EVIDENCE" and set(event) == {"type", "entry"}:
+                    payload = event.get("entry")
+                    if not isinstance(payload, Mapping):
+                        raise ValidationError(
+                            f"corrupt legacy evidence journal event at line {line_number}"
+                        )
+                    evidence_id = self._legacy_entry_id(payload)
+                    if evidence_id in self._historical_ids or any(
+                        item.evidence_id == evidence_id for item in self._entries
+                    ):
+                        raise ValidationError(f"duplicate evidence ID: {evidence_id}")
+                    self._historical_ids.add(evidence_id)
+                elif event_type == "INVALIDATION" and set(event) == {
+                    "type",
+                    "evidence_id",
+                    "reason",
+                }:
+                    invalidated_id = event.get("evidence_id")
+                    reason_value = event.get("reason")
+                    if (
+                        not isinstance(invalidated_id, str)
+                        or invalidated_id not in self._historical_ids
+                        or not isinstance(reason_value, str)
+                        or not reason_value
+                        or invalidated_id in self._historical_invalidations
+                    ):
+                        raise ValidationError("invalid legacy evidence invalidation event")
+                    self._historical_invalidations[invalidated_id] = reason_value
+                else:
+                    raise ValidationError(
+                        f"unknown legacy evidence journal event at line {line_number}"
+                    )
+        except (OSError, KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
+            if isinstance(exc, ValidationError):
+                raise
+            raise ValidationError(f"corrupt legacy evidence journal: {exc}") from exc
 
     @staticmethod
-    def _entry_from_payload(payload: Mapping[str, Any]) -> EvidenceEntry:
-        binding_payload = payload["binding"]
-        if not isinstance(binding_payload, Mapping):
-            raise ValidationError("corrupt evidence binding")
-        facts_payload = payload["facts"]
-        if not isinstance(facts_payload, list):
-            raise ValidationError("corrupt evidence facts")
-        return EvidenceEntry(
-            evidence_id=str(payload["evidence_id"]),
-            validator_id=str(payload["validator_id"]),
-            validator_version=str(payload["validator_version"]),
-            validator_kind=ValidatorKind(str(payload["validator_kind"])),
-            claim=str(payload["claim"]),
-            outcome=EvidenceOutcome(str(payload["outcome"])),
-            facts=tuple(
-                MeasuredFact(str(fact["name"]), fact["value"])
-                for fact in facts_payload
-                if isinstance(fact, Mapping)
-            ),
-            binding=EvidenceBinding(
-                str(binding_payload["base_commit"]),
-                str(binding_payload["contract_hash"]),
-                tuple(str(item) for item in binding_payload["project_model_fingerprints"]),
-            ),
-            output=str(payload["output"]),
-            recorded_at=datetime.fromisoformat(str(payload["recorded_at"])),
-            producer_id=str(payload["producer_id"]),
-            independent_of_executor=bool(payload["independent_of_executor"]),
-            entry_hash=str(payload["entry_hash"]),
-        )
+    def _legacy_entry_id(payload: Mapping[str, Any]) -> str:
+        """Validate the one known unversioned EvidenceEntry journal representation."""
+
+        legacy_keys = {
+            "evidence_id",
+            "validator_id",
+            "validator_version",
+            "validator_kind",
+            "claim",
+            "outcome",
+            "facts",
+            "binding",
+            "output",
+            "recorded_at",
+            "producer_id",
+            "independent_of_executor",
+            "entry_hash",
+        }
+        if set(payload) != legacy_keys:
+            raise ValidationError("unknown legacy evidence journal entry representation")
+        try:
+            binding = payload["binding"]
+            facts = payload["facts"]
+            scalar_types = (str, int, float, bool, type(None))
+            if (
+                not isinstance(binding, Mapping)
+                or set(binding) != {"base_commit", "contract_hash", "project_model_fingerprints"}
+                or not isinstance(facts, list)
+                or not isinstance(payload["independent_of_executor"], bool)
+                or not isinstance(payload["evidence_id"], str)
+                or re.fullmatch(r"EVD-[A-Z0-9][A-Z0-9-]*", payload["evidence_id"]) is None
+                or not isinstance(payload["validator_id"], str)
+                or not payload["validator_id"]
+                or not isinstance(payload["validator_version"], str)
+                or not payload["validator_version"]
+                or not isinstance(payload["claim"], str)
+                or not payload["claim"]
+                or not isinstance(payload["output"], str)
+                or not isinstance(payload["producer_id"], str)
+                or not payload["producer_id"]
+                or not isinstance(payload["entry_hash"], str)
+                or re.fullmatch(r"[0-9a-f]{64}", payload["entry_hash"]) is None
+                or not isinstance(binding["base_commit"], str)
+                or re.fullmatch(r"[0-9a-f]{40}", binding["base_commit"]) is None
+                or not isinstance(binding["contract_hash"], str)
+                or re.fullmatch(r"[0-9a-f]{64}", binding["contract_hash"]) is None
+                or not isinstance(binding["project_model_fingerprints"], list)
+                or not binding["project_model_fingerprints"]
+                or any(
+                    not isinstance(item, str) or re.fullmatch(r"[0-9a-f]{64}", item) is None
+                    for item in binding["project_model_fingerprints"]
+                )
+                or any(
+                    not isinstance(item, Mapping)
+                    or set(item) != {"name", "value"}
+                    or not isinstance(item["name"], str)
+                    or not item["name"]
+                    or not isinstance(item["value"], scalar_types)
+                    or (isinstance(item["value"], float) and not math.isfinite(item["value"]))
+                    for item in facts
+                )
+            ):
+                raise ValueError("legacy evidence structure invalid")
+            recorded_at = payload["recorded_at"]
+            if not isinstance(recorded_at, str):
+                raise ValueError("legacy evidence timestamp invalid")
+            timestamp = datetime.fromisoformat(recorded_at)
+            if timestamp.tzinfo is None:
+                raise ValueError("legacy evidence timestamp must be timezone-aware")
+            entry = EvidenceEntry(
+                evidence_id=payload["evidence_id"],
+                validator_id=payload["validator_id"],
+                validator_version=payload["validator_version"],
+                validator_kind=ValidatorKind(payload["validator_kind"]),
+                claim=payload["claim"],
+                outcome=EvidenceOutcome(payload["outcome"]),
+                facts=tuple(MeasuredFact(item["name"], item["value"]) for item in facts),
+                binding=EvidenceBinding(
+                    binding["base_commit"],
+                    binding["contract_hash"],
+                    tuple(binding["project_model_fingerprints"]),
+                ),
+                output=payload["output"],
+                recorded_at=timestamp,
+                producer_id=payload["producer_id"],
+                independent_of_executor=payload["independent_of_executor"],
+                entry_hash=payload["entry_hash"],
+            )
+            if len(entry.facts) != len(facts) or not entry.verify_integrity():
+                raise ValueError("legacy evidence integrity check failed")
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValidationError(f"corrupt legacy evidence journal entry: {exc}") from exc
+        return entry.evidence_id
 
 
 @dataclass(frozen=True, slots=True)
@@ -797,5 +1049,10 @@ class GateGraph:
 
 
 def _hash_payload(payload: Mapping[str, Any]) -> str:
-    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+    try:
+        encoded = json.dumps(
+            payload, sort_keys=True, separators=(",", ":"), allow_nan=False
+        ).encode()
+    except (TypeError, ValueError) as exc:
+        raise ValidationError(f"canonical validation payload is invalid: {exc}") from exc
     return hashlib.sha256(encoded).hexdigest()

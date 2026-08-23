@@ -32,7 +32,7 @@ class ManualIntegration:
             integration_id="manual",
             name="Manual",
             version="1.0.0",
-            compatibility=CompatibilityRange("0.1.0", "1.0.0"),
+            compatibility=CompatibilityRange("0.1.0", "2.0.0"),
             tested_external_versions=("not-applicable",),
             roles=frozenset(
                 {
