@@ -1,0 +1,30 @@
+binding:
+  base_commit: 9189765d392c2e03db81056e05da64e060097652
+  contract_hash: f91fb8040768c29e276b7c55fa37543461df039a53e595c4458261ca3827beba
+  project_model_fingerprints:
+  - 82364730319cfe057f28cb6b2a6482a5e298c86b76fb4da2867e14754f43d76d
+claim: Independent build release evidence
+entry_hash: 08251dd5b0eeed9638793af40a0b893cffaa616631d9c587cc5c3fe6e1c0ed92
+evidence_id: EVD-M11-BUILD
+facts:
+- name: category
+  value: build
+- name: source_commit
+  value: 9189765d392c2e03db81056e05da64e060097652
+- name: ci_run
+  value: 32651116801
+- name: ci_jobs_passed
+  value: 10
+- name: ci_jobs_total
+  value: 10
+- name: build_report_sha256
+  value: 17fabf91b7d7ebaf539af9159c4074e3923930798f9cc9427ef85f84a93b6157
+independent_of_executor: true
+outcome: PASS
+output: Independent inspection confirmed build facts for exact candidate S.
+producer_id: codex-independent-reviewer
+recorded_at: '2026-08-23T16:55:39.019225+00:00'
+schema_version: '2.0'
+validator_id: VAL-RELEASE-INDEPENDENT
+validator_kind: INDEPENDENT_AGENT
+validator_version: 2026.08.23

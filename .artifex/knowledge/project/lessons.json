@@ -1,0 +1,48 @@
+[
+  {
+    "confidence": 1.0,
+    "id": "LES-V1-RELEASE-001",
+    "kind": "LESSON",
+    "project_id": "ARTIFEX",
+    "promoted_from": null,
+    "promotion_policy": {
+      "allowed_targets": [
+        "PROJECT"
+      ],
+      "maximum_sensitivity": "SENSITIVE",
+      "minimum_confidence": 0.9,
+      "minimum_evidence": 1,
+      "require_validation": true
+    },
+    "provenance": [
+      {
+        "artifact": null,
+        "commit": "9189765d392c2e03db81056e05da64e060097652",
+        "evidence_ids": [
+          "EVD-V1-RELEASE"
+        ],
+        "integration": null,
+        "observed_at": "2026-08-23T16:55:41.733426Z",
+        "source": "independent V1 release validation"
+      }
+    ],
+    "revisit_triggers": [
+      {
+        "kind": "CORE_VERSION_CHANGED",
+        "value": "1.0.0"
+      }
+    ],
+    "run_id": null,
+    "scope": "PROJECT",
+    "sensitivity": "INTERNAL",
+    "state": "CURRENT",
+    "statement": "Freeze source authority before generating release evidence so evidence can bind a stable candidate without self-reference.",
+    "verified_against": [
+      {
+        "artifact": ".artifex/project-model.json",
+        "fingerprint": "82364730319cfe057f28cb6b2a6482a5e298c86b76fb4da2867e14754f43d76d",
+        "verified_at": "2026-08-23T16:55:41.733426Z"
+      }
+    ]
+  }
+]

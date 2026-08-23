@@ -1,0 +1,26 @@
+[
+  {
+    "evidence": [
+      "candidate:9189765d392c2e03db81056e05da64e060097652",
+      "contract:f91fb8040768c29e276b7c55fa37543461df039a53e595c4458261ca3827beba",
+      "EVD-M11-BUILD:08251dd5b0eeed9638793af40a0b893cffaa616631d9c587cc5c3fe6e1c0ed92",
+      "EVD-M11-VALIDATION:acdc614c17ddf8b43c4698af820a928a295dd89d2d6051ccc520a2f11592759d",
+      "EVD-M11-UNDERSTANDING:1fdc39335bb093db29a95a46d95704eb78ac251fd0860bb6994f3e61d4302c1a",
+      "EVD-M11-CONTINUITY:53c6cd1e20e84239a3a72b2534b16a16fb0658654cc678e4f4f39d58747ab9d0",
+      "EVD-M11-PORTABILITY:6e17c9e9f5dd33a03f636831176f24433a2661648edded3e993ce200181ba881",
+      "EVD-M11-PACKAGING:ff299309fa4e832f89784cf3d8cb7825c56ffc8c109b10c46430b553b62a3050",
+      "EVD-M11-SELFHOST:16ab42844441aecb79025e14c25be8e505d0af6d101ddc07d2947f29725e9f2f",
+      "EVD-M11-SECURITY:e91ec6bb2df9f5a7485c74976fc83c2a64f77a9071f94542e33d8a776ddedfa7",
+      "EVD-V1-RELEASE:9b40fd1e2baec1a6b283f7f1c20c25b6deeedfc1ea6b55ab003963df3e5cb384"
+    ],
+    "expected_benefit": "Future releases preserve deterministic source, evidence, gate, and promotion boundaries.",
+    "id": "IMP-V1-RELEASE-001",
+    "lesson_ids": [
+      "LES-V1-RELEASE-001"
+    ],
+    "reason": "A stable source candidate prevents self-referential evidence and makes redownload verification reproducible.",
+    "requested_privileges": [],
+    "target": "release verifier and governance workflow",
+    "title": "Retain two-phase source and governance release authority"
+  }
+]

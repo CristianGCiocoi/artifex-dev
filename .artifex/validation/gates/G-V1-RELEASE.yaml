@@ -1,0 +1,10 @@
+schema_version: '1.0'
+gate:
+  id: G-V1-RELEASE
+  scope: RELEASE
+  target: V1
+  state: PASS
+  contract_hash: f91fb8040768c29e276b7c55fa37543461df039a53e595c4458261ca3827beba
+  required_evidence:
+  - EVD-V1-RELEASE
+  waiver_allowed: false

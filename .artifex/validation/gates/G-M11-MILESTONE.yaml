@@ -1,0 +1,17 @@
+schema_version: '1.0'
+gate:
+  id: G-M11-MILESTONE
+  scope: MILESTONE
+  target: M11
+  state: PASS
+  contract_hash: f91fb8040768c29e276b7c55fa37543461df039a53e595c4458261ca3827beba
+  required_evidence:
+  - EVD-M11-BUILD
+  - EVD-M11-VALIDATION
+  - EVD-M11-UNDERSTANDING
+  - EVD-M11-CONTINUITY
+  - EVD-M11-PORTABILITY
+  - EVD-M11-PACKAGING
+  - EVD-M11-SELFHOST
+  - EVD-M11-SECURITY
+  waiver_allowed: false

@@ -1,0 +1,46 @@
+schema_version: '1.0'
+contract:
+  id: VAL-V1-RELEASE
+  version: 1
+  state: FROZEN
+  candidate_commit: 9189765d392c2e03db81056e05da64e060097652
+  project_model_fingerprint: 82364730319cfe057f28cb6b2a6482a5e298c86b76fb4da2867e14754f43d76d
+  product_version: 1.0.0
+  evidence_categories:
+    EVD-M11-BUILD: build
+    EVD-M11-VALIDATION: validation
+    EVD-M11-UNDERSTANDING: understanding
+    EVD-M11-CONTINUITY: continuity
+    EVD-M11-PORTABILITY: portability
+    EVD-M11-PACKAGING: packaging
+    EVD-M11-SELFHOST: selfhost
+    EVD-M11-SECURITY: security
+    EVD-V1-RELEASE: release
+  artifact_kinds:
+  - native-linux-x64
+  - native-macos-arm64
+  - native-windows-x64
+  - sdist
+  - wheel
+  governance_allowlist:
+  - .artifex/audit.jsonl
+  - .artifex/generated/understanding/**
+  - .artifex/implementation/traceability.yaml
+  - .artifex/knowledge/instances/artifex-self/improvement-proposals.json
+  - .artifex/knowledge/project/lessons.json
+  - .artifex/releases/v1.0.0.yaml
+  - .artifex/status.yaml
+  - .artifex/validation/contracts/V1-RELEASE.yaml
+  - .artifex/validation/evidence/<FINAL>.yaml
+  - .artifex/validation/gates/G-M11-MILESTONE.yaml
+  - .artifex/validation/gates/G-M05..M07-MILESTONE.yaml
+  - .artifex/validation/gates/G-V1-RELEASE.yaml
+  - .artifex/validation/ledger-v2.jsonl
+  - docs/guides/**
+  - docs/implementation/dashboard/**
+  trusted_validators:
+  - id: VAL-RELEASE-INDEPENDENT
+    version: 2026.08.23
+    kind: INDEPENDENT_AGENT
+    producers:
+    - codex-independent-reviewer

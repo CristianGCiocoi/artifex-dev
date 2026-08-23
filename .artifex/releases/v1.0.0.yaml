@@ -1,0 +1,39 @@
+schema_version: '1.0'
+version: 1.0.0
+status: CANDIDATE
+binding:
+  base_commit: 9189765d392c2e03db81056e05da64e060097652
+  contract_hash: f91fb8040768c29e276b7c55fa37543461df039a53e595c4458261ca3827beba
+  project_model_fingerprints:
+  - 82364730319cfe057f28cb6b2a6482a5e298c86b76fb4da2867e14754f43d76d
+evidence:
+- .artifex/validation/evidence/EVD-M11-BUILD.yaml
+- .artifex/validation/evidence/EVD-M11-VALIDATION.yaml
+- .artifex/validation/evidence/EVD-M11-UNDERSTANDING.yaml
+- .artifex/validation/evidence/EVD-M11-CONTINUITY.yaml
+- .artifex/validation/evidence/EVD-M11-PORTABILITY.yaml
+- .artifex/validation/evidence/EVD-M11-PACKAGING.yaml
+- .artifex/validation/evidence/EVD-M11-SELFHOST.yaml
+- .artifex/validation/evidence/EVD-M11-SECURITY.yaml
+- .artifex/validation/evidence/EVD-V1-RELEASE.yaml
+artifacts:
+- kind: native-linux-x64
+  path: dist/release/artifex-1.0.0-linux-x64.tar.gz
+  sha256: a8db0af832a7885548f8b0dea5f788368f93eb7de90c154a62d1819846c078a4
+  provenance_sha256: 7b24440ffabdd2bca50700b3bcfdbad6cd704ef448ceacc9cf8b189adb0bc754
+- kind: native-macos-arm64
+  path: dist/release/artifex-1.0.0-macos-arm64.tar.gz
+  sha256: 9f9fda7347d7b89ba25799ed24426f96f0c3fa17809ef928ce80ac6f69a77c2b
+  provenance_sha256: b6d2d4883fbbb409c3a9f54f4950534d5d722d8f08815c06abb034703bb440bc
+- kind: native-windows-x64
+  path: dist/release/artifex-1.0.0-windows-x64.zip
+  sha256: 306b14380ed5e2d07baa50a0c4f88da0828eb722a2d6a45b91692b3270701f46
+  provenance_sha256: 29e43fe31806f3166f9aeb82ebe45c713823bf322e892dad3c72879b1ba874c2
+- kind: sdist
+  path: dist/release/artifex_dev-1.0.0.tar.gz
+  sha256: c3c81eb406b01949ae535771187307322bc3c8d6ad72e7fdc23378ef057ec4ae
+  provenance_sha256: 01dc03ace5a26811d06392577aa6605a5ca322460f2619d33f22f24dd83a4773
+- kind: wheel
+  path: dist/release/artifex_dev-1.0.0-py3-none-any.whl
+  sha256: 2cdb499b82182284815734f02b41919bbe1cc5c4b7c4c8cc2f022a9a4b423926
+  provenance_sha256: 060189f63a2aa8d1254a37e344ab91fe07ec9a0c196f9b9e49ce32c2ce9a3e4b

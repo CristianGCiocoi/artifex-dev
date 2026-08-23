@@ -1,0 +1,26 @@
+binding:
+  base_commit: 9189765d392c2e03db81056e05da64e060097652
+  contract_hash: f91fb8040768c29e276b7c55fa37543461df039a53e595c4458261ca3827beba
+  project_model_fingerprints:
+  - 82364730319cfe057f28cb6b2a6482a5e298c86b76fb4da2867e14754f43d76d
+claim: Independent continuity release evidence
+entry_hash: 53c6cd1e20e84239a3a72b2534b16a16fb0658654cc678e4f4f39d58747ab9d0
+evidence_id: EVD-M11-CONTINUITY
+facts:
+- name: category
+  value: continuity
+- name: integrations_passed
+  value: 6
+- name: integrations_total
+  value: 6
+- name: continuity_report_sha256
+  value: 62fa54345635a6338bca2282bf485c21df3748a0b1ad2d589218c6b4dc9dcddf
+independent_of_executor: true
+outcome: PASS
+output: Independent inspection confirmed continuity facts for exact candidate S.
+producer_id: codex-independent-reviewer
+recorded_at: '2026-08-23T16:55:39.019225+00:00'
+schema_version: '2.0'
+validator_id: VAL-RELEASE-INDEPENDENT
+validator_kind: INDEPENDENT_AGENT
+validator_version: 2026.08.23
