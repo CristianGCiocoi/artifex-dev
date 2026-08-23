@@ -11,6 +11,6 @@
   "baseline_commit": "b58ea51bc0cea68b8ffdf1cbe8eab595e56c7379",
   "description": "Align canonical EvidenceEntry persistence, add fail-closed release verification, extend traceability, and establish consistent Core 1.0.0 identity and integration compatibility.",
   "id": "CHG-SELF-RELEASE",
-  "status": "IMPLEMENTING",
+  "status": "APPLIED",
   "title": "Converge V1 evidence, traceability, version, and release verification"
 }
