@@ -1,10 +1,10 @@
 schema_version: '1.0'
-derived_at: '2026-08-23T16:55:38.722941Z'
+derived_at: '2026-08-23T17:06:42.184212Z'
 project: ARTIFEX
 implementation:
   current_milestone: M11
-  current_state: VALIDATING
-  release: CANDIDATE
+  current_state: ACCEPTED
+  release: RELEASED
 milestones:
   M00: ACCEPTED
   M01: ACCEPTED
@@ -17,7 +17,7 @@ milestones:
   M08: ACCEPTED
   M09: ACCEPTED
   M10: ACCEPTED
-  M11: VALIDATING
+  M11: ACCEPTED
 publication:
   remote: CONFIGURED
   url: https://github.com/CristianGCiocoi/artifex-dev

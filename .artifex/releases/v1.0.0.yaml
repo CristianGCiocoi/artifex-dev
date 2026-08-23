@@ -1,6 +1,6 @@
 schema_version: '1.0'
 version: 1.0.0
-status: CANDIDATE
+status: RELEASED
 binding:
   base_commit: 9189765d392c2e03db81056e05da64e060097652
   contract_hash: f91fb8040768c29e276b7c55fa37543461df039a53e595c4458261ca3827beba
