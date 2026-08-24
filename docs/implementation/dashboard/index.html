@@ -1,1 +1,68 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ARTIFEX 1.0.0 Candidate</title><style>body{font-family:system-ui;background:#0c1220;color:#e8edf7;margin:0}main{max-width:1100px;margin:auto;padding:3rem 1.5rem}.hero{border:1px solid #38506f;border-radius:18px;padding:2rem;background:#121d30}.status{color:#7ee0ad;font-weight:700}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-top:1rem}.card{background:#17243a;border-radius:14px;padding:1.2rem;border:1px solid #2d4564}code{overflow-wrap:anywhere;color:#9dc5ff}footer{margin-top:2rem;color:#9aa9bf}</style></head><body><main><section class="hero"><p class="status">CANDIDATE — NON-CANONICAL VIEW</p><h1>ARTIFEX 1.0.0 Release Governance</h1><p>This dashboard summarizes measured repository evidence. It cannot promote a release; ARTIFEX Core and the committed gates retain authority.</p><code>9189765d392c2e03db81056e05da64e060097652</code></section><section id="milestones"><h2>Milestones</h2><div class="grid"><article class="card"><h3>Source candidate</h3><p>Exact immutable commit 9189765d392c2e03db81056e05da64e060097652; version 1.0.0.</p></article><article class="card"><h3>CI matrix</h3><p>All 10 jobs passed in GitHub Actions run 32651116801.</p></article><article class="card"><h3>Traceability</h3><p>All 78 accepted requirements map through architecture, owners, tasks, evidence, and gates.</p></article><article class="card"><h3>Evidence</h3><p>Nine current schema-2 entries bind candidate, contract, and Project Model fingerprint.</p></article><article class="card"><h3>Comprehension</h3><p>Fresh-context review passed all 9 topics with independent source hashes.</p></article><article class="card"><h3>Limitations</h3><p>Native packages are provenance-attested but not publisher-signed or notarized.</p></article></div></section><section id="gates"><h2>Gates</h2><p>Twelve mandatory gates are PASS, nonwaivable, and contract-bound. Optional M10 remains informational.</p></section><section id="evidence"><h2>Evidence</h2><p>Evidence is independently produced, integrity checked, secret safe, and append-only in ledger-v2.</p></section><footer>Generated from exact candidate S and Project Model 82364730319cfe057f28cb6b2a6482a5e298c86b76fb4da2867e14754f43d76d.</footer><script id="artifex-dashboard-provenance" type="application/json">{"candidate_commit":"9189765d392c2e03db81056e05da64e060097652","canonical":false,"project_model_fingerprint":"82364730319cfe057f28cb6b2a6482a5e298c86b76fb4da2867e14754f43d76d","schema_version":"1.0","state_sha256":"234491743bb314b57ee5ce101e686a0ef698fd0815be0dd497e9d27610a3a496"}</script></main></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>ARTIFEX — Release Governance Dashboard</title>
+  <style>
+    :root{font-family:Inter,ui-sans-serif,system-ui,sans-serif;color:#edf3fa;background:#07111d;--panel:#101d2b;--panel2:#17263a;--line:#2d435d;--muted:#a1b3c8;--accent:#74d6cb;--blue:#83aeff;--ok:#70db98;--warn:#ffcf70;--bad:#ff7e88}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 85% -10%,#173d50 0,transparent 38%),#07111d;color:var(--text)}header{position:sticky;top:0;z-index:5;padding:28px max(20px,calc((100% - 1480px)/2));border-bottom:1px solid var(--line);background:#08131de8;backdrop-filter:blur(12px)}h1{margin:0;font-size:clamp(1.5rem,4vw,2.5rem);letter-spacing:.05em}h2{margin:.15rem 0 1rem;font-size:1.15rem}h3{margin:.25rem 0 .7rem;font-size:1rem}header p{margin:.35rem 0 0;color:var(--muted)}main{max-width:1480px;margin:auto;padding:20px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:14px}.card{min-width:0;margin-bottom:14px;padding:17px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(145deg,#112231,#0d1823);box-shadow:0 12px 32px #0003}.metric{font-size:1.8rem;font-weight:750;color:var(--accent);overflow-wrap:anywhere}.muted{color:var(--muted)}.status{font-weight:750}.status-ACCEPTED,.status-RELEASED,.status-PASS{color:var(--ok)}.status-WARN{color:var(--warn)}.status-FAIL,.status-BLOCKED{color:var(--bad)}.bar{height:9px;margin:.55rem 0;overflow:hidden;border-radius:99px;background:#263848}.bar span{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--accent))}.pill{display:inline-block;margin:2px;padding:3px 8px;border:1px solid #3a586e;border-radius:99px;font-size:.76rem}.flow{display:flex;gap:6px;flex-wrap:wrap}.step{padding:5px 8px;border:1px solid #345168;border-radius:7px;background:#162a39}.alert{border-left:3px solid var(--warn);padding-left:10px}.limit{border-left:3px solid var(--bad);padding-left:10px}table{width:100%;border-collapse:collapse;font-size:.88rem}th,td{padding:9px 7px;border-bottom:1px solid #243846;text-align:left;vertical-align:top}th{color:var(--muted)}code{color:#aac9ff;overflow-wrap:anywhere}.scroll{overflow:auto}details{padding:8px 0;border-bottom:1px solid #243846}summary{cursor:pointer;font-weight:650}footer{padding:32px;text-align:center;color:var(--muted)}#error{display:none;margin:0;padding:11px;background:#6b2630;color:#fff}@media(max-width:720px){header{position:static}main{padding:12px}.hide-mobile{display:none}}
+  </style>
+</head>
+<body>
+  <div id="error" role="alert"></div>
+  <header>
+    <h1>ARTIFEX</h1>
+    <p>Release governance dashboard · <span id="releaseLine">loading verified state…</span></p>
+  </header>
+  <main>
+    <section class="grid" id="executive"></section>
+    <section class="card"><h2>Milestones and acceptance</h2><div class="grid" id="milestones"></div></section>
+    <section class="grid">
+      <article class="card"><h2>Release authority</h2><div id="authority"></div></article>
+      <article class="card"><h2>Quality and traceability</h2><div id="quality"></div></article>
+      <article class="card"><h2>Gates, evidence and documentation</h2><div id="governance"></div></article>
+    </section>
+    <section class="card scroll"><h2>Release artifacts</h2><table><thead><tr><th>Kind</th><th>Path</th><th>SHA-256</th></tr></thead><tbody id="artifacts"></tbody></table></section>
+    <section class="grid">
+      <article class="card"><h2>Integration conformance</h2><div id="integrations"></div></article>
+      <article class="card"><h2>Operational limits</h2><div id="limits"></div></article>
+      <article class="card"><h2>Recent canonical activity</h2><div id="activity"></div></article>
+    </section>
+    <section class="card"><h2>How this view is governed</h2><div class="flow"><span class="step">Committed Project Model</span><span class="step">Measured evidence and gates</span><span class="step">Derived state.json</span><span class="step">Read-only dashboard</span></div><p class="muted">The dashboard presents the committed release record; it cannot alter status, evidence, gates, or publication.</p></section>
+  </main>
+  <footer>Generated operational projection. It is non-canonical display output; ARTIFEX Core artifacts retain authority.</footer>
+  <script>
+    const $=id=>document.getElementById(id);
+    const esc=value=>String(value??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+    const status=value=>`<strong class="status status-${esc(value)}">${esc(value)}</strong>`;
+    const count=(value,key)=>Number(value?.[key]??0);
+    const short=value=>esc(String(value).slice(0,12));
+    function render(s){
+      const release=s.release, traced=s.traceability, quality=s.quality;
+      $('error').style.display='none';
+      $('releaseLine').innerHTML=`${status(release.state)} · ${esc(release.version)} · tag <code>${esc(release.tag)}</code>`;
+      const accepted=s.milestones.filter(m=>m.state==='ACCEPTED').length;
+      const totalTasks=s.milestones.reduce((n,m)=>n+Number(m.total_tasks||0),0);
+      const completeTasks=s.milestones.reduce((n,m)=>n+Number(m.completed_tasks||0),0);
+      $('executive').innerHTML=`
+        <article class="card"><h2>Release</h2><div class="metric">${esc(release.version)}</div><div>${status(release.state)} · ${esc(release.tag)}</div></article>
+        <article class="card"><h2>Milestones accepted</h2><div class="metric">${accepted}/${s.milestones.length}</div><div class="bar"><span style="width:${s.milestones.length?accepted/s.milestones.length*100:0}%"></span></div></article>
+        <article class="card"><h2>Task completion</h2><div class="metric">${completeTasks}/${totalTasks}</div><div class="muted">derived from accepted milestone state</div></article>
+        <article class="card"><h2>Traceability</h2><div class="metric">${traced.requirements_traced}/${traced.requirements_total}</div><div>${traced.orphan_requirements} orphan requirements</div></article>
+        <article class="card"><h2>CI matrix</h2><div class="metric">${release.ci_jobs_passed}/${release.ci_jobs_total}</div><div class="muted">GitHub Actions run ${esc(release.ci_run)}</div></article>
+        <article class="card"><h2>Release artifacts</h2><div class="metric">${release.artifact_count}</div><div class="muted">redownload verification recorded</div></article>`;
+      $('milestones').innerHTML=s.milestones.map(m=>{const pct=m.total_tasks?Number(m.completed_tasks)/Number(m.total_tasks)*100:0;return `<article><h3>${esc(m.id)}</h3><div class="bar"><span style="width:${pct}%"></span></div><div>${m.completed_tasks}/${m.total_tasks} · ${status(m.state)}</div>${m.blockers.length?`<div class="alert">${esc(m.blockers.join(', '))}</div>`:'<div class="muted small">No active blockers</div>'}</article>`}).join('');
+      $('authority').innerHTML=`<div><strong>Immutable source candidate</strong><br><code>${esc(release.source_candidate)}</code></div><br><div><strong>Candidate governance G</strong><br><code>${esc(release.governance_commit)}</code></div><br><div><strong>Promotion-only R</strong><br><code>${esc(release.promotion_commit)}</code></div><p class="muted">S supplies the product source; G records independent evidence; R records Core acceptance and release.</p>`;
+      $('quality').innerHTML=`<div><strong>Tests</strong>: ${quality.tests_passed} passed / ${quality.tests_skipped} skipped</div><div><strong>Coverage</strong>: ${Number(quality.coverage_percent).toFixed(2)}%</div><div><strong>Ruff</strong>: ${status(quality.ruff)}</div><div><strong>Strict mypy</strong>: ${status(quality.mypy)}</div><div><strong>Source release tag</strong>: <code>${esc(s.git.tag)}</code> @ <code>${short(s.git.commit)}</code></div>`;
+      $('governance').innerHTML=`<div><strong>Mandatory gates</strong>: ${count(s.gates,'pass')} PASS · ${count(s.gates,'fail')} FAIL · ${count(s.gates,'blocked')} BLOCKED</div><div><strong>Current evidence</strong>: ${count(s.evidence,'current')} · stale ${count(s.evidence,'stale')}</div><div><strong>Documentation</strong>: ${count(s.documentation,'CURRENT')} current · ${count(s.documentation,'STALE')} stale</div><div><strong>Fresh-context comprehension</strong>: ${status(s.comprehension.state)} · ${Math.round(Number(s.comprehension.score)*100)}%</div>`;
+      $('artifacts').innerHTML=s.artifacts.map(a=>`<tr><td>${esc(a.kind)}</td><td><code>${esc(a.path)}</code></td><td><code>${esc(a.sha256)}</code></td></tr>`).join('');
+      $('integrations').innerHTML=s.integrations.map(i=>`<div><span class="pill">${esc(i.id)}</span> ${status(i.state)} · ${esc(i.version)}</div>`).join('');
+      $('limits').innerHTML=`<div class="limit"><strong>Publisher signing/notarization</strong><br>${esc(release.signing)}</div><p class="muted">Native bundles are provenance-attested. No statement here grants a new deployment, external effect, credential, or promotion authority.</p>`;
+      $('activity').innerHTML=s.recent_activity.map(a=>`<details><summary>${esc(a.event)} · ${esc(a.actor)}</summary><p class="muted">${esc(a.at)}</p></details>`).join('');
+    }
+    async function load(){try{const response=await fetch('state.json',{cache:'no-store'});if(!response.ok)throw new Error(`HTTP ${response.status}`);render(await response.json())}catch(error){$('error').textContent=`Dashboard state unavailable: ${error.message}`;$('error').style.display='block'}}
+    load();setInterval(load,30000);
+  </script>
+</body>
+</html>

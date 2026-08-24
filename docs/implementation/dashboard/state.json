@@ -1,1 +1,325 @@
-{"comprehension": {"score": 1.0, "state": "PASS"}, "documentation": [{"path": "docs/guides/USER_GUIDE.md", "state": "CURRENT"}, {"path": "docs/guides/ADMIN_GUIDE.md", "state": "CURRENT"}, {"path": "docs/guides/DEVELOPER_GUIDE.md", "state": "CURRENT"}, {"path": "docs/guides/OPERATIONS_GUIDE.md", "state": "CURRENT"}, {"path": "docs/guides/SECURITY_GUIDE.md", "state": "CURRENT"}, {"path": "docs/guides/UPGRADE_GUIDE.md", "state": "CURRENT"}, {"path": ".artifex/generated/understanding/README.md", "state": "CURRENT"}, {"path": ".artifex/generated/understanding/ARCHITECTURE.md", "state": "CURRENT"}, {"path": ".artifex/generated/understanding/INVARIANTS.md", "state": "CURRENT"}, {"path": ".artifex/generated/understanding/WORKFLOWS.md", "state": "CURRENT"}, {"path": ".artifex/generated/understanding/OPERATIONS.md", "state": "CURRENT"}, {"path": ".artifex/generated/understanding/SECURITY.md", "state": "CURRENT"}, {"path": ".artifex/generated/understanding/EXTENSIONS.md", "state": "CURRENT"}, {"path": ".artifex/generated/understanding/HISTORY.md", "state": "CURRENT"}, {"path": ".artifex/generated/understanding/LIMITATIONS.md", "state": "CURRENT"}], "evidence": {"current": 9, "stale": 0}, "gates": {"blocked": 0, "fail": 0, "pass": 12, "stale": 0, "waived": 0}, "git": {"commit": "9189765d392c2e03db81056e05da64e060097652", "dirty": false, "tag": null}, "integrations": [{"id": "manual", "state": "PASS", "version": "1.0.0"}, {"id": "hermes", "state": "PASS", "version": "1.0.0"}, {"id": "codex", "state": "PASS", "version": "1.0.0"}, {"id": "claude", "state": "PASS", "version": "1.0.0"}, {"id": "deepseek", "state": "PASS", "version": "1.0.0"}, {"id": "pandora", "state": "PASS", "version": "1.0.0"}], "milestones": [{"blockers": [], "completed_tasks": 10, "id": "M00", "state": "ACCEPTED", "total_tasks": 10}, {"blockers": [], "completed_tasks": 10, "id": "M01", "state": "ACCEPTED", "total_tasks": 10}, {"blockers": [], "completed_tasks": 12, "id": "M02", "state": "ACCEPTED", "total_tasks": 12}, {"blockers": [], "completed_tasks": 10, "id": "M03", "state": "ACCEPTED", "total_tasks": 10}, {"blockers": [], "completed_tasks": 10, "id": "M04", "state": "ACCEPTED", "total_tasks": 10}, {"blockers": [], "completed_tasks": 10, "id": "M05", "state": "ACCEPTED", "total_tasks": 10}, {"blockers": [], "completed_tasks": 10, "id": "M06", "state": "ACCEPTED", "total_tasks": 10}, {"blockers": [], "completed_tasks": 10, "id": "M07", "state": "ACCEPTED", "total_tasks": 10}, {"blockers": [], "completed_tasks": 11, "id": "M08", "state": "ACCEPTED", "total_tasks": 11}, {"blockers": [], "completed_tasks": 11, "id": "M09", "state": "ACCEPTED", "total_tasks": 11}, {"blockers": [], "completed_tasks": 12, "id": "M10", "state": "ACCEPTED", "total_tasks": 12}, {"blockers": [], "completed_tasks": 13, "id": "M11", "state": "VERIFYING", "total_tasks": 13}], "project": {"accepted_baseline": "9189765d392c2e03db81056e05da64e060097652", "architecture_version": "1.0", "current_milestone": "M11", "current_stage": "SELF_HOST", "id": "ARTIFEX", "implementation_plan_version": "1.0", "name": "ARTIFEX"}, "schema_version": "1.0", "tests": {"suites": [{"name": "ci-job-01", "state": "PASS"}, {"name": "ci-job-02", "state": "PASS"}, {"name": "ci-job-03", "state": "PASS"}, {"name": "ci-job-04", "state": "PASS"}, {"name": "ci-job-05", "state": "PASS"}, {"name": "ci-job-06", "state": "PASS"}, {"name": "ci-job-07", "state": "PASS"}, {"name": "ci-job-08", "state": "PASS"}, {"name": "ci-job-09", "state": "PASS"}, {"name": "ci-job-10", "state": "PASS"}]}, "traceability": {"orphan_requirements": 0, "requirements_total": 78, "requirements_traced": 78}}
+{
+  "artifacts": [
+    {
+      "kind": "native-linux-x64",
+      "path": "dist/release/artifex-1.0.0-linux-x64.tar.gz",
+      "sha256": "a8db0af832a7885548f8b0dea5f788368f93eb7de90c154a62d1819846c078a4"
+    },
+    {
+      "kind": "native-macos-arm64",
+      "path": "dist/release/artifex-1.0.0-macos-arm64.tar.gz",
+      "sha256": "9f9fda7347d7b89ba25799ed24426f96f0c3fa17809ef928ce80ac6f69a77c2b"
+    },
+    {
+      "kind": "native-windows-x64",
+      "path": "dist/release/artifex-1.0.0-windows-x64.zip",
+      "sha256": "306b14380ed5e2d07baa50a0c4f88da0828eb722a2d6a45b91692b3270701f46"
+    },
+    {
+      "kind": "sdist",
+      "path": "dist/release/artifex_dev-1.0.0.tar.gz",
+      "sha256": "c3c81eb406b01949ae535771187307322bc3c8d6ad72e7fdc23378ef057ec4ae"
+    },
+    {
+      "kind": "wheel",
+      "path": "dist/release/artifex_dev-1.0.0-py3-none-any.whl",
+      "sha256": "2cdb499b82182284815734f02b41919bbe1cc5c4b7c4c8cc2f022a9a4b423926"
+    }
+  ],
+  "comprehension": {
+    "score": 1.0,
+    "state": "PASS"
+  },
+  "documentation": [
+    {
+      "path": "docs/guides/USER_GUIDE.md",
+      "state": "CURRENT"
+    },
+    {
+      "path": "docs/guides/ADMIN_GUIDE.md",
+      "state": "CURRENT"
+    },
+    {
+      "path": "docs/guides/DEVELOPER_GUIDE.md",
+      "state": "CURRENT"
+    },
+    {
+      "path": "docs/guides/OPERATIONS_GUIDE.md",
+      "state": "CURRENT"
+    },
+    {
+      "path": "docs/guides/SECURITY_GUIDE.md",
+      "state": "CURRENT"
+    },
+    {
+      "path": "docs/guides/UPGRADE_GUIDE.md",
+      "state": "CURRENT"
+    },
+    {
+      "path": ".artifex/generated/understanding/README.md",
+      "state": "CURRENT"
+    },
+    {
+      "path": ".artifex/generated/understanding/ARCHITECTURE.md",
+      "state": "CURRENT"
+    },
+    {
+      "path": ".artifex/generated/understanding/INVARIANTS.md",
+      "state": "CURRENT"
+    },
+    {
+      "path": ".artifex/generated/understanding/WORKFLOWS.md",
+      "state": "CURRENT"
+    },
+    {
+      "path": ".artifex/generated/understanding/OPERATIONS.md",
+      "state": "CURRENT"
+    },
+    {
+      "path": ".artifex/generated/understanding/SECURITY.md",
+      "state": "CURRENT"
+    },
+    {
+      "path": ".artifex/generated/understanding/EXTENSIONS.md",
+      "state": "CURRENT"
+    },
+    {
+      "path": ".artifex/generated/understanding/HISTORY.md",
+      "state": "CURRENT"
+    },
+    {
+      "path": ".artifex/generated/understanding/LIMITATIONS.md",
+      "state": "CURRENT"
+    }
+  ],
+  "evidence": {
+    "current": 9,
+    "stale": 0
+  },
+  "gates": {
+    "blocked": 0,
+    "fail": 0,
+    "pass": 12,
+    "stale": 0,
+    "waived": 0
+  },
+  "git": {
+    "commit": "317ec177df8655ae4f94e24162107fd2acecceec",
+    "dirty": false,
+    "tag": "v1.0.0"
+  },
+  "integrations": [
+    {
+      "id": "manual",
+      "state": "PASS",
+      "version": "1.0.0"
+    },
+    {
+      "id": "hermes",
+      "state": "PASS",
+      "version": "1.0.0"
+    },
+    {
+      "id": "codex",
+      "state": "PASS",
+      "version": "1.0.0"
+    },
+    {
+      "id": "claude",
+      "state": "PASS",
+      "version": "1.0.0"
+    },
+    {
+      "id": "deepseek",
+      "state": "PASS",
+      "version": "1.0.0"
+    },
+    {
+      "id": "pandora",
+      "state": "PASS",
+      "version": "1.0.0"
+    }
+  ],
+  "milestones": [
+    {
+      "blockers": [],
+      "completed_tasks": 10,
+      "id": "M00",
+      "state": "ACCEPTED",
+      "total_tasks": 10
+    },
+    {
+      "blockers": [],
+      "completed_tasks": 10,
+      "id": "M01",
+      "state": "ACCEPTED",
+      "total_tasks": 10
+    },
+    {
+      "blockers": [],
+      "completed_tasks": 12,
+      "id": "M02",
+      "state": "ACCEPTED",
+      "total_tasks": 12
+    },
+    {
+      "blockers": [],
+      "completed_tasks": 10,
+      "id": "M03",
+      "state": "ACCEPTED",
+      "total_tasks": 10
+    },
+    {
+      "blockers": [],
+      "completed_tasks": 10,
+      "id": "M04",
+      "state": "ACCEPTED",
+      "total_tasks": 10
+    },
+    {
+      "blockers": [],
+      "completed_tasks": 10,
+      "id": "M05",
+      "state": "ACCEPTED",
+      "total_tasks": 10
+    },
+    {
+      "blockers": [],
+      "completed_tasks": 10,
+      "id": "M06",
+      "state": "ACCEPTED",
+      "total_tasks": 10
+    },
+    {
+      "blockers": [],
+      "completed_tasks": 10,
+      "id": "M07",
+      "state": "ACCEPTED",
+      "total_tasks": 10
+    },
+    {
+      "blockers": [],
+      "completed_tasks": 11,
+      "id": "M08",
+      "state": "ACCEPTED",
+      "total_tasks": 11
+    },
+    {
+      "blockers": [],
+      "completed_tasks": 11,
+      "id": "M09",
+      "state": "ACCEPTED",
+      "total_tasks": 11
+    },
+    {
+      "blockers": [],
+      "completed_tasks": 12,
+      "id": "M10",
+      "state": "ACCEPTED",
+      "total_tasks": 12
+    },
+    {
+      "blockers": [],
+      "completed_tasks": 13,
+      "id": "M11",
+      "state": "ACCEPTED",
+      "total_tasks": 13
+    }
+  ],
+  "project": {
+    "accepted_baseline": "9189765d392c2e03db81056e05da64e060097652",
+    "architecture_version": "1.0",
+    "current_milestone": "M11",
+    "current_stage": "RELEASED",
+    "id": "ARTIFEX",
+    "implementation_plan_version": "1.0",
+    "name": "ARTIFEX"
+  },
+  "quality": {
+    "coverage_percent": 85.8,
+    "mypy": "PASS",
+    "ruff": "PASS",
+    "tests_passed": 393,
+    "tests_skipped": 11
+  },
+  "recent_activity": [
+    {
+      "actor": "codex-independent-reviewer",
+      "at": "2026-08-23T16:55:43.788343Z",
+      "event": "RELEASE_CANDIDATE_INDEPENDENT_VALIDATION"
+    },
+    {
+      "actor": "artifex-core",
+      "at": "2026-08-23T17:07:33.207766Z",
+      "event": "MILESTONE_STATE_TRANSITION"
+    },
+    {
+      "actor": "artifex-core",
+      "at": "2026-08-23T17:07:34.207766Z",
+      "event": "RELEASE_STATE_TRANSITION"
+    }
+  ],
+  "release": {
+    "artifact_count": 5,
+    "ci_jobs_passed": 10,
+    "ci_jobs_total": 10,
+    "ci_run": 32651116801,
+    "governance_commit": "01008e65f5a0182024cf85920fd7e7c233d73cad",
+    "promotion_commit": "317ec177df8655ae4f94e24162107fd2acecceec",
+    "signing": "NOT_SIGNED_OR_NOTARIZED",
+    "source_candidate": "9189765d392c2e03db81056e05da64e060097652",
+    "state": "RELEASED",
+    "tag": "v1.0.0",
+    "version": "1.0.0"
+  },
+  "schema_version": "1.0",
+  "tests": {
+    "suites": [
+      {
+        "name": "ci-job-01",
+        "state": "PASS"
+      },
+      {
+        "name": "ci-job-02",
+        "state": "PASS"
+      },
+      {
+        "name": "ci-job-03",
+        "state": "PASS"
+      },
+      {
+        "name": "ci-job-04",
+        "state": "PASS"
+      },
+      {
+        "name": "ci-job-05",
+        "state": "PASS"
+      },
+      {
+        "name": "ci-job-06",
+        "state": "PASS"
+      },
+      {
+        "name": "ci-job-07",
+        "state": "PASS"
+      },
+      {
+        "name": "ci-job-08",
+        "state": "PASS"
+      },
+      {
+        "name": "ci-job-09",
+        "state": "PASS"
+      },
+      {
+        "name": "ci-job-10",
+        "state": "PASS"
+      }
+    ]
+  },
+  "traceability": {
+    "orphan_requirements": 0,
+    "requirements_total": 78,
+    "requirements_traced": 78
+  }
+}
