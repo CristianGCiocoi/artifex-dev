@@ -1,0 +1,223 @@
+schema_version: "1.0"
+kind: "ARTIFEX_ATLAS_FUTURE_REQUIREMENTS_DISCOVERY"
+status: "DISCOVERY_ONLY"
+generated_from:
+  project: "ARTIFEX"
+  release_baseline: "v1.0.0"
+  source_commit: "7085d47391020bfd81435ef264b8d38acefe1a12"
+authority_boundary:
+  artifex_orchestrator: "owner of ARTIFEX lifecycle, semantic state, acceptance, evidence, and integration decisions"
+  platform_integration_orchestrator: "future owner of cross-project contract assessment and integration coordination"
+  atlas: "potential capability provider; no implementation is authorized by this discovery"
+  non_goals:
+    - "No adapter, API client, transport, or ATLAS change"
+    - "No ARTIFEX architecture change to fit current ATLAS implementation"
+    - "No inferred runtime dependency or deployment coupling"
+evidence_basis:
+  - "docs/architecture/ARCHITECTURE.md"
+  - "docs/product/ROADMAP.md"
+  - "docs/product/PRODUCT_DEFINITION.md"
+  - "docs/requirements/REQUIREMENTS_BASELINE.md"
+  - "docs/architecture/INTEGRATION_CONTRACT.md"
+  - "docs/implementation/milestones/M04_INTEGRATION_FOUNDATION.md"
+  - "docs/implementation/milestones/M05_HERMES_INTEGRATION.md"
+  - "docs/implementation/milestones/M06_CODEX_STANDALONE.md"
+  - "docs/implementation/milestones/M07_CLAUDE_STANDALONE.md"
+  - "docs/implementation/milestones/M08_KNOWLEDGE_EVOLUTION.md"
+  - "docs/implementation/milestones/M10_OPTIONAL_PROVIDERS.md"
+integration_points:
+  - id: "AFR-001"
+    component: "Integration Registry and capability-based execution policy"
+    lifecycle_timing: "V2; automatic capability-based harness routing"
+    use_case: "Discover a compatible optional provider and select it by declared roles, health, compatibility, and capabilities."
+    generic_capabilities: ["capability_discovery", "provider_metadata", "health_reporting"]
+    criticality: "LIKELY_REQUIRED"
+    platform_consumption: "LIKELY_OPTIONAL"
+    inputs:
+      - "ARTIFEX Core compatibility range"
+      - "required role and capabilities"
+      - "secret-free configuration provenance"
+      - "health and policy context"
+    outputs:
+      - "compatible provider descriptors"
+      - "explicit unavailable or degraded reason"
+    interaction: "synchronous query; cached data is acceptable only with freshness metadata"
+    workload_type: "control-plane metadata lookup"
+    compute_profile: "low CPU; no GPU assumption"
+    latency_sensitivity: "interactive but not correctness-critical; bounded timeout required"
+    state_lifecycle: "provider discovery is advisory; ARTIFEX retains routing and acceptance authority"
+    artifacts_results: ["versioned capability descriptor", "health report", "compatibility decision record"]
+    failure_behavior: "Do not select the provider; preserve Manual/Codex/Claude/Hermes standalone paths."
+    observability: ["provider ID/version", "descriptor version", "compatibility result", "health freshness", "selection reason"]
+    security: ["authenticated provider identity when remote", "no secrets in descriptors", "least-privilege discovery access"]
+    confidence: "HIGH"
+    unknowns: ["platform discovery protocol", "trust bootstrap", "descriptor cache lifetime"]
+  - id: "AFR-002"
+    component: "V2 executable task DAG, workers, and durable runs"
+    lifecycle_timing: "V2; durable runs, resume points, parallel worktrees/workers"
+    use_case: "Optionally submit a bounded implementation or validation job when local execution is unsuitable or capacity-limited."
+    generic_capabilities: ["generic_workload_execution", "long_running_jobs", "cancellation", "progress", "result_retrieval"]
+    criticality: "LIKELY_OPTIONAL"
+    platform_consumption: "POSSIBLE"
+    inputs:
+      - "portable execution packet"
+      - "base commit and project-model fingerprint"
+      - "task acceptance contract"
+      - "file/surface ownership"
+      - "resource envelope when specified"
+    outputs:
+      - "terminal status"
+      - "artifact references and digests"
+      - "structured validation facts"
+      - "cancellation or failure reason"
+    interaction: "asynchronous submission with explicit polling or callback; no hidden background execution"
+    workload_type: "repository-scoped agent/harness task or deterministic validation"
+    compute_profile: "CPU-first; GPU UNKNOWN and never implied by the task"
+    latency_sensitivity: "not request-path latency sensitive; liveness, cancellation, and resume matter"
+    state_lifecycle: "queued -> admitted -> running -> terminal; ARTIFEX classifies stale results and controls acceptance"
+    artifacts_results: ["immutable result envelope", "repository artifact references", "logs/evidence references with retention metadata"]
+    failure_behavior: "Fail closed to no canonical transition; preserve resumable local workflow where possible; stale results become REBASE_REQUIRED."
+    observability: ["job ID", "attempt", "admission/queue state", "worker identity/version", "baseline fingerprint", "terminal reason", "resource use if measured"]
+    security: ["scoped repository/worktree access", "no ambient host privilege", "task-bound authority", "secret redaction", "artifact path containment"]
+    confidence: "HIGH for the ARTIFEX seam; LOW for future ATLAS consumption"
+    unknowns: ["whether ARTIFEX will externalize workers", "worker sandbox model", "capacity policy", "callback versus polling"]
+  - id: "AFR-003"
+    component: "ResearchRequest / ResearchBundle and optional provider policy"
+    lifecycle_timing: "V1 optional providers and richer V2 Pandora orchestration"
+    use_case: "Obtain optional research or decision-support material without letting a provider transition ARTIFEX state."
+    generic_capabilities: ["research_workload_execution", "artifact_exchange", "capability_discovery"]
+    criticality: "LIKELY_OPTIONAL"
+    platform_consumption: "POSSIBLE"
+    inputs:
+      - "bounded ResearchRequest"
+      - "scope, source policy, and requested depth"
+      - "correlation ID"
+    outputs:
+      - "validated ResearchBundle"
+      - "source/provenance metadata"
+      - "provider failure or unavailable result"
+    interaction: "asynchronous preferred; synchronous small requests are UNKNOWN"
+    workload_type: "external research acquisition and normalization"
+    compute_profile: "network and CPU dominated; model/GPU usage is provider-internal and UNKNOWN"
+    latency_sensitivity: "low; deadline and provenance are more important than response speed"
+    state_lifecycle: "request -> provider processing -> bundle import/validation; bundle remains non-authoritative input"
+    artifacts_results: ["ResearchBundle", "source references", "provenance", "validation report"]
+    failure_behavior: "Continue with no research or another approved provider; no Core dependency and no state transition."
+    observability: ["request ID", "provider/version", "source policy", "bundle digest", "validation outcome", "timing"]
+    security: ["external content is data, not instruction authority", "source allow/deny policy", "secret-safe requests", "provenance preservation"]
+    confidence: "HIGH"
+    unknowns: ["transport need beyond filesystem exchange", "large-result retention", "provider trust and source policy negotiation"]
+  - id: "AFR-004"
+    component: "Knowledge and controlled evolution"
+    lifecycle_timing: "V2 cross-project knowledge; V3 pattern mining and methodology evaluation"
+    use_case: "Optionally analyze provenance-bound lessons or candidate methodology variants while keeping project and instance knowledge isolated."
+    generic_capabilities: ["batch_analysis", "artifact_management", "long_running_jobs", "observability"]
+    criticality: "POSSIBLE"
+    platform_consumption: "POSSIBLE"
+    inputs:
+      - "explicitly selected, policy-approved knowledge artifacts"
+      - "scope, sensitivity, confidence, and revisit triggers"
+      - "evaluation criteria"
+    outputs:
+      - "candidate insight, proposal, or evaluation artifact"
+      - "provenance and confidence"
+      - "no implicit Core modification"
+    interaction: "asynchronous batch"
+    workload_type: "analysis/evaluation"
+    compute_profile: "CPU likely; inference/GPU UNKNOWN"
+    latency_sensitivity: "low"
+    state_lifecycle: "candidate -> independently reviewed -> accepted/rejected by ARTIFEX process"
+    artifacts_results: ["ImprovementProposal", "CandidateOverlay", "evaluation evidence"]
+    failure_behavior: "No knowledge promotion and no Core drift; retain existing project-local knowledge."
+    observability: ["input scope", "policy decision", "model/provider if any", "provenance", "evaluation version", "outcome"]
+    security: ["sensitivity labels", "cross-project isolation", "least data disclosure", "no secret promotion"]
+    confidence: "MEDIUM"
+    unknowns: ["whether cross-project data leaves ARTIFEX", "retention/deletion policy", "inference requirement", "centralized versus local evaluation"]
+  - id: "AFR-005"
+    component: "V3 optional distributed execution and server control plane"
+    lifecycle_timing: "V3 only; explicitly optional"
+    use_case: "Distribute approved workloads when an ARTIFEX deployment chooses a server/control-plane mode."
+    generic_capabilities: ["distributed_execution", "compute_resource_broker", "queues", "eventing", "cancellation", "progress", "artifact_management"]
+    criticality: "UNKNOWN"
+    platform_consumption: "POSSIBLE"
+    inputs:
+      - "future versioned job contract"
+      - "resource constraints"
+      - "routing policy"
+      - "artifact/evidence references"
+    outputs:
+      - "scheduled execution outcome"
+      - "progress and terminal events"
+      - "resource/accounting telemetry when available"
+    interaction: "asynchronous"
+    workload_type: "future distributed orchestration"
+    compute_profile: "CPU/GPU and scheduling requirements UNKNOWN"
+    latency_sensitivity: "control-plane responsiveness matters; workload latency is workload-specific"
+    state_lifecycle: "must be versioned, resumable, cancellable, and reconstructable from durable records"
+    artifacts_results: ["job/result envelopes", "event stream or pollable history", "artifact references"]
+    failure_behavior: "Not a V1/V2 dependency; local/standalone operation remains valid."
+    observability: ["correlation IDs", "state transitions", "queue/admission", "worker provenance", "failure class"]
+    security: ["tenant/project isolation", "explicit resource authorization", "no privilege expansion via scheduling"]
+    confidence: "LOW"
+    unknowns: ["all contract details; this is a roadmap seam rather than a current requirement"]
+capability_forecast:
+  capability_discovery: "NEEDED"
+  provider_metadata_and_health: "NEEDED"
+  generic_workload_execution: "PROBABLE"
+  long_running_jobs: "PROBABLE"
+  cancellation: "PROBABLE"
+  progress: "POSSIBLE"
+  artifact_management: "POSSIBLE"
+  observability: "NEEDED"
+  queues: "POSSIBLE"
+  eventing: "POSSIBLE"
+  callbacks: "UNKNOWN"
+  streaming: "UNLIKELY"
+  model_discovery: "POSSIBLE"
+  model_invocation: "POSSIBLE"
+  agent_executor: "POSSIBLE"
+  inference: "UNKNOWN"
+  gpu_cpu_scheduling: "UNKNOWN"
+  compute_resource_broker: "POSSIBLE"
+  inference_governor: "UNKNOWN"
+  distributed_execution: "POSSIBLE"
+  hermes_api_general: "POSSIBLE"
+required_contract_properties:
+  - "Capability-neutral provider selection; no vendor-name branching outside an adapter."
+  - "Standalone ARTIFEX operation remains valid when ATLAS is absent or degraded."
+  - "ARTIFEX retains semantic state, acceptance, gate, evidence, and lifecycle authority."
+  - "Execution/result envelopes bind base commit, contract fingerprint, and project-model fingerprint."
+  - "Version negotiation and additive extension without silent semantic reinterpretation."
+  - "Explicit failure, cancellation, timeout, and stale-result semantics."
+  - "Secret-safe provenance, least privilege, and scoped repository/artifact access."
+potential_architectural_conflicts:
+  - id: "PAC-001"
+    requirement: "Git/files remain ARTIFEX semantic truth; databases/services may coordinate but must not own semantic meaning."
+    reason: "A platform contract that centralizes canonical lifecycle or acceptance state would create a competing authority."
+    impact: "Broken reconstructability, ambiguous recovery, and invalid evidence ownership."
+    options:
+      - "Platform provides opaque coordination only; ARTIFEX persists canonical decisions locally."
+      - "Use exported, versioned projections with ARTIFEX-origin provenance."
+    recommendation: "Treat ARTIFEX state/evidence writes as owner-controlled imports, never platform-authoritative mutations."
+  - id: "PAC-002"
+    requirement: "Portable transcript-independent execution packets and result envelopes."
+    reason: "Opaque server-side sessions or provider-specific task state cannot be the only execution record."
+    impact: "Loss of cross-interface continuity and inability to classify stale/rebased results."
+    options:
+      - "Require portable packet/result contracts and durable correlation IDs."
+      - "Keep provider session data auxiliary and exportable."
+    recommendation: "Make provider-native session state optional metadata, not a required recovery dependency."
+  - id: "PAC-003"
+    requirement: "Standalone, no mandatory daemon/DB/network control plane in V1."
+    reason: "Mandatory ATLAS reachability, a specific gateway, or an always-on agent would violate released ARTIFEX constraints."
+    impact: "Reduced portability and blocked offline/local workflows."
+    options:
+      - "Optional capability provider with local fallbacks."
+      - "Explicit future server profile that is opt-in."
+    recommendation: "Contract consumers must negotiate optional capabilities and degrade explicitly rather than fail startup."
+acceptance_for_platform_orchestrator:
+  - "Map every PROBABLE/NEEDED ARTIFEX capability to an optional, versioned platform capability or record a deliberate non-coverage."
+  - "Verify no platform semantic-state write can bypass ARTIFEX validation/gate authority."
+  - "Verify unavailable/degraded platform behavior preserves standalone ARTIFEX paths."
+  - "Verify extension fields are ignorable or version-negotiated, never silently reinterpreted."
+  - "Do not produce an implementation handoff until a real ARTIFEX integration trigger, target, and authorization exist."
