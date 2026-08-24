@@ -4,10 +4,87 @@ ARTIFEX is an agent-neutral development control, continuity, and understanding
 layer. Repository artifacts and Git are the canonical semantic truth; agent
 conversations and native memories are auxiliary.
 
+## What ARTIFEX does
+
+ARTIFEX turns a software idea, change request, or existing repository into a
+development process that remains understandable and auditable after the
+original conversation, agent session, or implementation harness has gone
+away. It is designed for teams and agents that need to preserve the reasoning
+behind a system as carefully as the code itself.
+
+ARTIFEX provides:
+
+- a canonical Project Model for requirements, constraints, interfaces,
+  invariants, dependencies, artifacts, and lifecycle state;
+- an evidence-bound workflow from intake through research, architecture,
+  planning, execution, verification, understanding, and learning;
+- Acceptance Contracts, an Evidence Ledger, hierarchical gates, freshness, and
+  stale-result detection so executor claims are not mistaken for acceptance;
+- portable execution packets that bind work to the base commit, Project Model,
+  task contract, ownership, and expected result;
+- human and machine compilations of the same canonical project meaning,
+  including documentation, context packets, execution packets, and dashboard
+  views;
+- agent-neutral integrations: Hermes is preferred when available, while Codex,
+  Claude, and Manual operation remain first-class standalone paths; and
+- controlled lessons, improvement proposals, and candidate overlays without
+  allowing uncontrolled Core self-modification.
+
+## What ARTIFEX is not
+
+ARTIFEX is not an LLM router, coding model, generic multi-agent framework,
+research engine, CI/CD replacement, IDE, Git hosting service, RAG/vector
+platform, or mandatory server control plane. It can use external providers,
+but providers do not own ARTIFEX semantic state or acceptance.
+
+## Operating model
+
+The core lifecycle is:
+
+`INTAKE → IDEA → RESEARCH → DEFINITION → ARCHITECTURE → IMPLEMENTATION PLAN → EXECUTION → VERIFICATION → UNDERSTANDING → LEARNING`
+
+Controlled backward transitions are allowed when evidence reveals that an
+earlier decision must be revisited. Git/files retain semantic meaning;
+databases, when introduced, are for coordination, indexing, and telemetry.
+
 ARTIFEX 1.0.0 is released. M00 through M11 are accepted and the immutable
 release tag is [`v1.0.0`](https://github.com/CristianGCiocoi/artifex-dev/releases/tag/v1.0.0).
 Canonical release status is stored in `.artifex/status.yaml`; the dashboard is
 a derived view. A version string or successful build is not release authority.
+
+## Release scope and roadmap
+
+### V1 — Standardize (released)
+
+V1 establishes the portable, evidence-bound foundation: the Project Model,
+workflow and validation core, filesystem/Git authority, compilation and
+dashboard views, beginner-to-expert modes, ChangeSets, controlled knowledge,
+and standalone Hermes/Codex/Claude/Manual integration paths. Optional DeepSeek
+and Pandora providers do not block the Core release.
+
+### V2 — Automate (planned)
+
+V2 is planned to make development durable, resumable, orchestrated, and more
+cross-project aware. Candidate work includes a SQLite RunStore/index/metrics,
+an executable task DAG, durable runs and resume points, capability-based
+harness routing, parallel worktrees/workers, stronger generator/evaluator
+isolation, replay, cross-project portfolio/knowledge, overlay rebase/update
+classification, methodology import, optional Maestro execution, and richer
+Pandora orchestration.
+
+### V3 — Evolve (planned)
+
+V3 is planned to let the methodology improve within strict privilege and
+evidence boundaries. Candidate work includes dynamic composition from approved
+stage types, outcome-directed changes, dependency/integration maintenance,
+assumption and ADR monitors, methodology evaluation, validator-effectiveness
+learning, stronger Acceptance Contracts, pattern/anti-pattern mining,
+continuous comprehension/drift detection, and optional distributed execution
+or server/Postgres control-plane profiles.
+
+V2 and V3 are roadmap directions, not release commitments. Neither makes
+ATLAS, a remote provider, a GPU, a model gateway, or distributed execution a
+mandatory ARTIFEX dependency.
 
 ## Development
 
