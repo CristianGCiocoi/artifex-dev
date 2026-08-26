@@ -3,6 +3,6 @@ milestone: M0
 mode: BASELINE_CAPTURE_ONLY
 project_mutation: false
 fixture: MIGRATION/V1-RELEASE-FIXTURE.yaml
-fixture_state: CAPTURED_AND_FINGERPRINTED
+fixture_state: M0_BASELINE_ACCEPTED
 migration_execution: NOT_STARTED
 rollback: NOT_APPLICABLE_NO_MUTATION

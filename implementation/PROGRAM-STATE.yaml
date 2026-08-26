@@ -12,12 +12,12 @@ program:
   intake_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
   branch: codex/artifex-2-m0
   current_milestone: M0
-  current_status: IN_PROGRESS
-  latest_accepted_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
-  next_integration_point: M0 acceptance
+  current_status: ACCEPTED
+  latest_accepted_commit: 23fd3c77a1be402dbfbee79915da4748b98ebf84
+  next_integration_point: M1 readiness; M1 not started
   m1_started: false
   recorded_date: '2026-08-26'
-  dashboard_state: FOUNDATION_ESTABLISHED
+  dashboard_state: CURRENT
 target_system:
   overview: Persistent project-centric engineering control platform with separate
     semantic, execution, acceptance, observed-reality and projection authorities.
@@ -39,11 +39,11 @@ target_system:
     Projection: Rebuildable documentation or dashboard view, never authority
 milestone_states:
   M0:
-    state: IN_PROGRESS
+    state: ACCEPTED
     started: true
-    accepted: false
+    accepted: true
   M1:
-    state: BLOCKED_DEPENDENCY
+    state: READY
     started: false
     accepted: false
   M2:
@@ -105,16 +105,21 @@ milestone_states:
 acceptance_classes:
   DESIGN_CONFORMANCE:
     required_m0: true
-    status: PENDING
-    evidence: []
+    status: PASS
+    evidence:
+    - EVIDENCE/HANDOFF-INTEGRITY.yaml
+    - EVIDENCE/M0-VALIDATION.yaml
   COMPONENT:
     required_m0: true
-    status: PENDING
-    evidence: []
+    status: PASS
+    evidence:
+    - EVIDENCE/M0-VALIDATION.yaml
   DOMAIN_INTEGRATION:
     required_m0: true
-    status: PENDING
-    evidence: []
+    status: PASS
+    evidence:
+    - EVIDENCE/M0-VALIDATION.yaml
+    - EVIDENCE/V1-KNOWN-GAPS.yaml
   PUBLIC_COMPOSITION:
     required_m0: false
     status: NOT_APPLICABLE
@@ -125,25 +130,30 @@ acceptance_classes:
     evidence: []
   SECURITY_AUTHORITY:
     required_m0: true
-    status: PENDING
-    evidence: []
+    status: PASS
+    evidence:
+    - EVIDENCE/M0-VALIDATION.yaml
   DOCUMENTATION:
     required_m0: true
-    status: PENDING
-    evidence: []
+    status: PASS
+    evidence:
+    - CURRENT-STATE.md
   DASHBOARD:
     required_m0: true
-    status: PENDING
-    evidence: []
+    status: PASS
+    evidence:
+    - dashboard/state.json
+    - dashboard/index.html
   MIGRATION:
     required_m0: true
-    status: PENDING
-    evidence: []
+    status: PASS
+    evidence:
+    - MIGRATION/V1-RELEASE-FIXTURE.yaml
   PROVIDER_CERTIFICATION:
     required_m0: false
     status: NOT_APPLICABLE
     evidence: []
 dashboard:
-  state: FOUNDATION_ESTABLISHED
+  state: CURRENT
   projection_path: implementation/dashboard/index.html
   machine_state_path: implementation/dashboard/state.json

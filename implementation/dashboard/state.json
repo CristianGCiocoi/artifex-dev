@@ -9,34 +9,49 @@
         "status": "NOT_APPLICABLE"
       },
       "COMPONENT": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M0-VALIDATION.yaml"
+        ],
         "required_m0": true,
-        "status": "PENDING"
+        "status": "PASS"
       },
       "DASHBOARD": {
-        "evidence": [],
+        "evidence": [
+          "dashboard/state.json",
+          "dashboard/index.html"
+        ],
         "required_m0": true,
-        "status": "PENDING"
+        "status": "PASS"
       },
       "DESIGN_CONFORMANCE": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/HANDOFF-INTEGRITY.yaml",
+          "EVIDENCE/M0-VALIDATION.yaml"
+        ],
         "required_m0": true,
-        "status": "PENDING"
+        "status": "PASS"
       },
       "DOCUMENTATION": {
-        "evidence": [],
+        "evidence": [
+          "CURRENT-STATE.md"
+        ],
         "required_m0": true,
-        "status": "PENDING"
+        "status": "PASS"
       },
       "DOMAIN_INTEGRATION": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M0-VALIDATION.yaml",
+          "EVIDENCE/V1-KNOWN-GAPS.yaml"
+        ],
         "required_m0": true,
-        "status": "PENDING"
+        "status": "PASS"
       },
       "MIGRATION": {
-        "evidence": [],
+        "evidence": [
+          "MIGRATION/V1-RELEASE-FIXTURE.yaml"
+        ],
         "required_m0": true,
-        "status": "PENDING"
+        "status": "PASS"
       },
       "PROVIDER_CERTIFICATION": {
         "evidence": [],
@@ -49,22 +64,24 @@
         "status": "NOT_APPLICABLE"
       },
       "SECURITY_AUTHORITY": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M0-VALIDATION.yaml"
+        ],
         "required_m0": true,
-        "status": "PENDING"
+        "status": "PASS"
       }
     },
     "frozen_architecture_baseline": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
-    "implementation_baseline_commit": null,
+    "implementation_baseline_commit": "23fd3c77a1be402dbfbee79915da4748b98ebf84",
     "mandatory_journeys": [],
-    "mandatory_work_complete": false,
+    "mandatory_work_complete": true,
     "migration": "BASELINE_CAPTURE_ONLY",
     "milestone": "M0",
     "provider_claim_changes": [],
     "schema_version": "1.0",
     "superseded": [],
     "unresolved_contradiction": null,
-    "verdict": "IN_PROGRESS"
+    "verdict": "ACCEPTED"
   },
   "adrs": [
     {
@@ -707,9 +724,9 @@
       "sha256": "5383a8cb4178e2adb851109efce14dc111c8007f205995c622b23cba7678fbfc"
     },
     {
-      "bytes": 2861,
+      "bytes": 2934,
       "path": "implementation/EVIDENCE/M0-VALIDATION.yaml",
-      "sha256": "971cd2f33eed21f2cc66a26171807de486afe28e61eee59a68f9a9414254993f"
+      "sha256": "406f06df9f123ecaff6c8aba65ec5e4381cbc5497efc4349b4fa898eec5585a5"
     },
     {
       "bytes": 3220,
@@ -1676,7 +1693,7 @@
   ],
   "migration": {
     "fixture": "MIGRATION/V1-RELEASE-FIXTURE.yaml",
-    "fixture_state": "CAPTURED_AND_FINGERPRINTED",
+    "fixture_state": "M0_BASELINE_ACCEPTED",
     "migration_execution": "NOT_STARTED",
     "milestone": "M0",
     "mode": "BASELINE_CAPTURE_ONLY",
@@ -1686,12 +1703,12 @@
   },
   "milestones": [
     {
-      "accepted": false,
+      "accepted": true,
       "depends_on": [],
       "id": "M0",
       "mandatory_for_core_ga": true,
       "started": true,
-      "state": "IN_PROGRESS",
+      "state": "ACCEPTED",
       "title": "Preservation, Outcome Harness & Conformance Baseline"
     },
     {
@@ -1702,7 +1719,7 @@
       "id": "M1",
       "mandatory_for_core_ga": true,
       "started": false,
-      "state": "BLOCKED_DEPENDENCY",
+      "state": "READY",
       "title": "Project Authority, Catalog & Semantic Continuity"
     },
     {
@@ -1885,8 +1902,8 @@
     "architecture_status": "FROZEN",
     "branch": "codex/artifex-2-m0",
     "current_milestone": "M0",
-    "current_status": "IN_PROGRESS",
-    "dashboard_state": "FOUNDATION_ESTABLISHED",
+    "current_status": "ACCEPTED",
+    "dashboard_state": "CURRENT",
     "directory_variance": "PACKAGING_NAME_VARIANCE_ACCEPTED",
     "handoff_declared_directory": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF",
     "handoff_id": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
@@ -1895,9 +1912,9 @@
     "id": "ARTIFEX-2.0-IMPLEMENTATION",
     "implementation_plan_status": "FROZEN",
     "intake_commit": "5cc5dcfeb420a6df171a44426c04a0f08fa1e877",
-    "latest_accepted_commit": "5cc5dcfeb420a6df171a44426c04a0f08fa1e877",
+    "latest_accepted_commit": "23fd3c77a1be402dbfbee79915da4748b98ebf84",
     "m1_started": false,
-    "next_integration_point": "M0 acceptance",
+    "next_integration_point": "M1 readiness; M1 not started",
     "recorded_date": "2026-08-26",
     "target_release": "2.0.0"
   },
@@ -2168,15 +2185,17 @@
     "journey_states": {
       "NOT_STARTED": 20
     },
-    "milestones_accepted": 0,
+    "milestones_accepted": 1,
     "milestones_started": 1,
     "milestones_total": 16,
     "provider_step_states": {
       "NOT_STARTED": 95
     },
-    "ready_milestones": [],
+    "ready_milestones": [
+      "M1"
+    ],
     "workstream_states": {
-      "IN_PROGRESS": 5
+      "COMPLETE": 5
     }
   },
   "target_system": {
@@ -2226,7 +2245,7 @@
         "M0-CONTRACT",
         "FROZEN-INVARIANTS"
       ],
-      "state": "IN_PROGRESS",
+      "state": "COMPLETE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m0"
     },
     {
@@ -2242,7 +2261,7 @@
         "M0-CONTRACT",
         "FROZEN-INVARIANTS"
       ],
-      "state": "IN_PROGRESS",
+      "state": "COMPLETE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m0"
     },
     {
@@ -2258,7 +2277,7 @@
         "M0-CONTRACT",
         "FROZEN-INVARIANTS"
       ],
-      "state": "IN_PROGRESS",
+      "state": "COMPLETE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m0"
     },
     {
@@ -2274,7 +2293,7 @@
         "M0-CONTRACT",
         "FROZEN-INVARIANTS"
       ],
-      "state": "IN_PROGRESS",
+      "state": "COMPLETE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m0"
     },
     {
@@ -2290,7 +2309,7 @@
         "M0-CONTRACT",
         "FROZEN-INVARIANTS"
       ],
-      "state": "IN_PROGRESS",
+      "state": "COMPLETE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m0"
     }
   ]

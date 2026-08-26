@@ -11,7 +11,7 @@ workstreams:
   shared_contracts:
   - M0-CONTRACT
   - FROZEN-INVARIANTS
-  state: IN_PROGRESS
+  state: COMPLETE
   blockers: []
   integration_owner: ARTIFEX_2_ORCHESTRATOR
 - id: WS-M0-OUTCOMES
@@ -24,7 +24,7 @@ workstreams:
   shared_contracts:
   - M0-CONTRACT
   - FROZEN-INVARIANTS
-  state: IN_PROGRESS
+  state: COMPLETE
   blockers: []
   integration_owner: ARTIFEX_2_ORCHESTRATOR
 - id: WS-M0-CONFORMANCE
@@ -37,7 +37,7 @@ workstreams:
   shared_contracts:
   - M0-CONTRACT
   - FROZEN-INVARIANTS
-  state: IN_PROGRESS
+  state: COMPLETE
   blockers: []
   integration_owner: ARTIFEX_2_ORCHESTRATOR
 - id: WS-M0-COMPOSITION
@@ -50,7 +50,7 @@ workstreams:
   shared_contracts:
   - M0-CONTRACT
   - FROZEN-INVARIANTS
-  state: IN_PROGRESS
+  state: COMPLETE
   blockers: []
   integration_owner: ARTIFEX_2_ORCHESTRATOR
 - id: WS-M0-DASHBOARD
@@ -63,6 +63,6 @@ workstreams:
   shared_contracts:
   - M0-CONTRACT
   - FROZEN-INVARIANTS
-  state: IN_PROGRESS
+  state: COMPLETE
   blockers: []
   integration_owner: ARTIFEX_2_ORCHESTRATOR

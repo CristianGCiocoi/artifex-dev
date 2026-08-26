@@ -1,24 +1,29 @@
 schema_version: '1.0'
 milestone: M0
 contract_digest: da11399318accf59ec578bdbc04da17911cca1014dd823c17cfde92d101d2b4f
-implementation_baseline_commit: null
+implementation_baseline_commit: 23fd3c77a1be402dbfbee79915da4748b98ebf84
 frozen_architecture_baseline: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
-mandatory_work_complete: false
+mandatory_work_complete: true
 blocked: []
 superseded: []
 evidence_classes:
   DESIGN_CONFORMANCE:
     required_m0: true
-    status: PENDING
-    evidence: []
+    status: PASS
+    evidence:
+    - EVIDENCE/HANDOFF-INTEGRITY.yaml
+    - EVIDENCE/M0-VALIDATION.yaml
   COMPONENT:
     required_m0: true
-    status: PENDING
-    evidence: []
+    status: PASS
+    evidence:
+    - EVIDENCE/M0-VALIDATION.yaml
   DOMAIN_INTEGRATION:
     required_m0: true
-    status: PENDING
-    evidence: []
+    status: PASS
+    evidence:
+    - EVIDENCE/M0-VALIDATION.yaml
+    - EVIDENCE/V1-KNOWN-GAPS.yaml
   PUBLIC_COMPOSITION:
     required_m0: false
     status: NOT_APPLICABLE
@@ -29,20 +34,25 @@ evidence_classes:
     evidence: []
   SECURITY_AUTHORITY:
     required_m0: true
-    status: PENDING
-    evidence: []
+    status: PASS
+    evidence:
+    - EVIDENCE/M0-VALIDATION.yaml
   DOCUMENTATION:
     required_m0: true
-    status: PENDING
-    evidence: []
+    status: PASS
+    evidence:
+    - CURRENT-STATE.md
   DASHBOARD:
     required_m0: true
-    status: PENDING
-    evidence: []
+    status: PASS
+    evidence:
+    - dashboard/state.json
+    - dashboard/index.html
   MIGRATION:
     required_m0: true
-    status: PENDING
-    evidence: []
+    status: PASS
+    evidence:
+    - MIGRATION/V1-RELEASE-FIXTURE.yaml
   PROVIDER_CERTIFICATION:
     required_m0: false
     status: NOT_APPLICABLE
@@ -51,4 +61,4 @@ mandatory_journeys: []
 unresolved_contradiction: null
 provider_claim_changes: []
 migration: BASELINE_CAPTURE_ONLY
-verdict: IN_PROGRESS
+verdict: ACCEPTED

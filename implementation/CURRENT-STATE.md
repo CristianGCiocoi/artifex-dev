@@ -10,24 +10,24 @@
 - Intake baseline: `5cc5dcfeb420a6df171a44426c04a0f08fa1e877`
 - Branch: `codex/artifex-2-m0`
 - Current milestone: `M0`
-- Current status: `IN_PROGRESS`
-- Accepted milestones: `none`
-- Ready milestones: `none`
-- Latest accepted commit: `5cc5dcfeb420a6df171a44426c04a0f08fa1e877`
-- Next integration point: `M0 acceptance`
+- Current status: `ACCEPTED`
+- Accepted milestones: `M0`
+- Ready milestones: `M1`
+- Latest accepted commit: `23fd3c77a1be402dbfbee79915da4748b98ebf84`
+- Next integration point: `M1 readiness; M1 not started`
 - M1 started: `false`
 
 ## Work
 
-- Active workstreams: `WS-M0-FIXTURES, WS-M0-OUTCOMES, WS-M0-CONFORMANCE, WS-M0-COMPOSITION, WS-M0-DASHBOARD`
+- Active workstreams: `none`
 - Active blockers: `0`
-- Dashboard state: `FOUNDATION_ESTABLISHED`
+- Dashboard state: `CURRENT`
 - V1 regression state: `PASS`
-- Migration state: `CAPTURED_AND_FINGERPRINTED`
+- Migration state: `M0_BASELINE_ACCEPTED`
 
 ## Acceptance
 
-- M0 verdict: `IN_PROGRESS`
-- Mandatory work complete: `false`
+- M0 verdict: `ACCEPTED`
+- Mandatory work complete: `true`
 - Mandatory M0 journeys: `none`
 - M1 remains blocked unless the M0 verdict is `ACCEPTED`.

@@ -134,7 +134,8 @@ def validate(repo_root: Path, handoff_root: Path | None) -> dict[str, Any]:
     if acceptance["mandatory_journeys"]:
         raise ValueError("M0 acceptance must not claim mandatory journeys")
 
-    milestone_states = _read_yaml(implementation / "PROGRAM-STATE.yaml")["milestone_states"]
+    machine_program = _read_yaml(implementation / "PROGRAM-STATE.yaml")
+    milestone_states = machine_program["milestone_states"]
     if milestone_states["M1"]["started"] or program["m1_started"]:
         raise ValueError("M1 started before M0 acceptance")
     if acceptance["verdict"] != "ACCEPTED":
@@ -152,6 +153,13 @@ def validate(repo_root: Path, handoff_root: Path | None) -> dict[str, Any]:
             raise ValueError("accepted M0 verdict disagrees with program milestone state")
         if milestone_states["M1"]["state"] != "READY":
             raise ValueError("M1 must become READY, but remain unstarted, after M0 acceptance")
+        if machine_program["acceptance_classes"] != acceptance["evidence_classes"]:
+            raise ValueError("program and milestone acceptance evidence classes disagree")
+        workstreams = _read_yaml(implementation / "WORKSTREAM-REGISTRY.yaml")["workstreams"]
+        if any(item["state"] != "COMPLETE" for item in workstreams):
+            raise ValueError("accepted M0 has an incomplete workstream")
+        if program.get("dashboard_state") != "CURRENT":
+            raise ValueError("accepted M0 dashboard state is not CURRENT")
 
     fixture_path = implementation / "MIGRATION/V1-RELEASE-FIXTURE.yaml"
     if fixture_path.is_file():
