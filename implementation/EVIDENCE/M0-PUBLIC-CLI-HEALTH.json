@@ -1,0 +1,20 @@
+{
+  "command_sha256": "f4eae99b1fdc91562bb83abc09cc52ac37dc06d13eb9113b58906dc7ab704cf1",
+  "composition": "PUBLIC_PROCESS",
+  "cwd": ".",
+  "explicit_environment_keys": [
+    "PYTHONPATH"
+  ],
+  "failures": [],
+  "returncode": 0,
+  "scenario_id": "M0-PUBLIC-CLI-HEALTH",
+  "schema_version": "1.0",
+  "scrubbed": true,
+  "status": "PASS",
+  "stderr_excerpt": "",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_excerpt": "{\"ok\": true, \"value\": {\"core\": \"available\", \"status\": \"PASS\"}}\n",
+  "stdout_sha256": "163c8ba6e932a6577132b21085302f582eeb7e208db4dfc7a3605d4a6d14927e",
+  "timed_out": false,
+  "timeout_seconds": 30
+}

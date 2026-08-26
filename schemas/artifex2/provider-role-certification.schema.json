@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://artifex.dev/schemas/2.0/provider-role-certification.schema.json",
+  "title": "ARTIFEX 2.0 Provider Role Certification State",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "schema_validation", "ladder", "providers"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "schema_validation": {
+      "enum": ["PENDING", "PASS", "FAIL"]
+    },
+    "ladder": {
+      "type": "array",
+      "minItems": 5,
+      "uniqueItems": true,
+      "prefixItems": [
+        {"const": "ADAPTER_IMPLEMENTED"},
+        {"const": "ROLE_CONFORMANCE_VERIFIED"},
+        {"const": "PACKAGED"},
+        {"const": "PUBLIC_COMPOSITION_VERIFIED"},
+        {"const": "LIVE_ROLE_CERTIFIED"}
+      ],
+      "items": false
+    },
+    "providers": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/providerRole"}
+    }
+  },
+  "$defs": {
+    "providerRole": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "role", "requirement", "steps", "evidence"],
+      "properties": {
+        "provider": {"type": "string", "minLength": 1},
+        "role": {
+          "enum": [
+            "INTERACTION",
+            "EXECUTION_IMPLEMENTER",
+            "HARNESS",
+            "RESEARCH",
+            "INFERENCE",
+            "COMPUTE",
+            "VALIDATION"
+          ]
+        },
+        "requirement": {"type": "string", "minLength": 1},
+        "steps": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ADAPTER_IMPLEMENTED",
+            "ROLE_CONFORMANCE_VERIFIED",
+            "PACKAGED",
+            "PUBLIC_COMPOSITION_VERIFIED",
+            "LIVE_ROLE_CERTIFIED"
+          ],
+          "properties": {
+            "ADAPTER_IMPLEMENTED": {"$ref": "#/$defs/stepState"},
+            "ROLE_CONFORMANCE_VERIFIED": {"$ref": "#/$defs/stepState"},
+            "PACKAGED": {"$ref": "#/$defs/stepState"},
+            "PUBLIC_COMPOSITION_VERIFIED": {"$ref": "#/$defs/stepState"},
+            "LIVE_ROLE_CERTIFIED": {"$ref": "#/$defs/stepState"}
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "stepState": {
+      "enum": ["NOT_STARTED", "IN_PROGRESS", "PASS", "FAIL", "NOT_APPLICABLE"]
+    }
+  }
+}

@@ -1,0 +1,29 @@
+schema_version: '1.0'
+evidence_id: EVD-M0-V1-RELEASE-HARNESS-REGRESSION
+status: EXPECTED_BASELINE_FAILURE
+intake_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+source_changed_by_m0: false
+test: tests/test_release.py::test_candidate_passes_without_optional_m10_gate
+command: uv run --frozen pytest -vv -x tests/test_release.py::test_candidate_passes_without_optional_m10_gate --disable-warnings
+result:
+  exit_code: 1
+  tests_failed: 1
+  duration_seconds: 244.79
+  assertion: verify_release(tmp_path).passed was false
+  primary_blocker: dashboard fixture is missing required release property
+  additionally_missing:
+  - quality
+  - artifacts
+  - recent_activity
+classification:
+  id: V1-R01-DASHBOARD-FIXTURE-SCHEMA-DRIFT
+  kind: PRE_EXISTING_V1_TEST_HARNESS_REGRESSION
+  introduced_helper_commit: 4ac5b73a
+  tightened_schema_commit: 7085d473
+  m0_disposition: CAPTURED_NOT_PATCHED
+  rationale: M0 forbids ad-hoc V1 patching before the regression baseline is controlled.
+scope_effect:
+  v1_full_release_suite: NOT_GREEN_ON_INTAKE
+  m0_harness_acceptance: UNAFFECTED_IF_EXPLICITLY_RECORDED
+  artifex_2_runtime_claim: NONE
+

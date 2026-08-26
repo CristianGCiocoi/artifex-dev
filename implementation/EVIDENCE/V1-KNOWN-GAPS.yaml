@@ -1,0 +1,96 @@
+schema_version: '1.0'
+baseline: ARTIFEX_V1_KNOWN_GAPS
+intake_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+mutation_scope: TEMPORARY_SYNTHETIC_PROJECT_ONLY
+source_project_mutated: false
+status: PASS
+reproduced: 10
+controlled_baselines: 1
+unexpected: []
+gaps:
+- id: G-01
+  title: Default public Application registered ManualIntegration only
+  status: REPRODUCED
+  evidence:
+  - default_integration_ids: &id005
+    - manual
+  - &id001
+    path: src/artifex/application/api.py
+    sha256: 573341e5c7bc8f2940eb0abc0cc3e4c48b311a99f23125e12274408b69107528
+    needle_present: true
+- id: G-02
+  title: Persisted integration setup was not consumed by fresh runtime
+  status: REPRODUCED
+  evidence:
+  - configured_ids:
+    - codex
+    - claude
+  - fresh_application_ids: &id004
+    - manual
+  - synthetic_setup_state_sha256: 267c1d32d47878ee27afa675570503d99e70e311be1827e63cb5b1d3e72dd5d5
+  - &id003
+    path: src/artifex/distribution/setup.py
+    sha256: e43485ac839a51c5371d15c0492290616c071c44d6198759ebbd669795501b97
+    needle_present: true
+- id: G-03
+  title: Codex and Claude relied on custom compositions
+  status: REPRODUCED
+  evidence:
+  - path: src/artifex/integrations/codex.py
+    sha256: db69ae352f898271cf0eeafe929139a83ab3836cbf1b59433bcc0517ee2113d5
+    needle_present: true
+  - *id001
+- id: G-04
+  title: Public start did not provide governed persistent lifecycle
+  status: REPRODUCED
+  evidence:
+  - &id002
+    path: src/artifex/workflow/core.py
+    sha256: ecc93ae8062c61e04ea02821753a2990e41f4000b975cef955896c9d4b23b9a0
+    needle_present: true
+  - runstore_module_present: false
+    managed_service_module_present: false
+- id: G-05
+  title: Normal Projects did not automatically receive maintained documentation
+  status: REPRODUCED
+  evidence:
+  - path: src/artifex/distribution/beginner.py
+    sha256: 398f9fecb0d0169e8a195807350ce5051e4c0b853200d1d4e3a9ae633ac10637
+    automatic_documentation_compilation: false
+- id: G-06
+  title: Normal Projects did not automatically receive maintained dashboards
+  status: REPRODUCED
+  evidence:
+  - path: src/artifex/distribution/beginner.py
+    sha256: 398f9fecb0d0169e8a195807350ce5051e4c0b853200d1d4e3a9ae633ac10637
+    automatic_dashboard_compilation: false
+- id: G-07
+  title: Workflow execution authority remained in memory
+  status: REPRODUCED
+  evidence:
+  - *id002
+- id: G-08
+  title: Setup proof stopped at configuration writing
+  status: REPRODUCED
+  evidence:
+  - *id003
+  - fresh_application_ids: *id004
+- id: G-09
+  title: Fresh-machine installation was not joined to automated workflow
+  status: CONTROLLED_BASELINE_RETAINED
+  evidence:
+  - authority: 08-V1-KNOWN-GAPS-AND-FAILURES.md
+    reason: Absence of historical end-to-end evidence is retained, not fabricated
+- id: G-10
+  title: Self-host evidence coexisted with normal-project composition gaps
+  status: REPRODUCED
+  evidence:
+  - self_host_evidence_present: true
+  - default_integration_ids: *id005
+- id: G-11
+  title: Interface continuity did not establish live role certification
+  status: REPRODUCED
+  evidence:
+  - path: src/artifex/integrations/continuity.py
+    sha256: 76bb0dc7295310fdd2f85718e965fe6fcded6761778674f32ecfb24221d1595d
+    live_role_certification_present: false

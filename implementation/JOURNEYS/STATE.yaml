@@ -1,0 +1,163 @@
+schema_version: '1.0'
+m0_mandatory: []
+journeys:
+- id: J01
+  title: J01 — Fresh Machine + Codex
+  status: NOT_STARTED
+  environment: null
+  public_shipping_composition: null
+  evidence: []
+  last_run: null
+  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+- id: J02
+  title: J02 — Fresh Machine + Claude
+  status: NOT_STARTED
+  environment: null
+  public_shipping_composition: null
+  evidence: []
+  last_run: null
+  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+- id: J03
+  title: J03 — Project Continuity
+  status: NOT_STARTED
+  environment: null
+  public_shipping_composition: null
+  evidence: []
+  last_run: null
+  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+- id: J04
+  title: J04 — Multi-session
+  status: NOT_STARTED
+  environment: null
+  public_shipping_composition: null
+  evidence: []
+  last_run: null
+  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+- id: J05
+  title: J05 — Persistent Execution
+  status: NOT_STARTED
+  environment: null
+  public_shipping_composition: null
+  evidence: []
+  last_run: null
+  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+- id: J06
+  title: J06 — Material Decision
+  status: NOT_STARTED
+  environment: null
+  public_shipping_composition: null
+  evidence: []
+  last_run: null
+  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+- id: J07
+  title: J07 — Safe Pause / Recovery
+  status: NOT_STARTED
+  environment: null
+  public_shipping_composition: null
+  evidence: []
+  last_run: null
+  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+- id: J08
+  title: J08 — Documentation / Dashboard
+  status: NOT_STARTED
+  environment: null
+  public_shipping_composition: null
+  evidence: []
+  last_run: null
+  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+- id: J09
+  title: J09 — V1 Migration
+  status: NOT_STARTED
+  environment: null
+  public_shipping_composition: null
+  evidence: []
+  last_run: null
+  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+- id: J10
+  title: J10 — No Automated Provider
+  status: NOT_STARTED
+  environment: null
+  public_shipping_composition: null
+  evidence: []
+  last_run: null
+  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+- id: J11
+  title: J11 — Cross-provider Continuity
+  status: NOT_STARTED
+  environment: null
+  public_shipping_composition: null
+  evidence: []
+  last_run: null
+  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+- id: J12
+  title: J12 — Organizational Knowledge
+  status: NOT_STARTED
+  environment: null
+  public_shipping_composition: null
+  evidence: []
+  last_run: null
+  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+- id: J13
+  title: J13 — Pandora Research
+  status: NOT_STARTED
+  environment: null
+  public_shipping_composition: null
+  evidence: []
+  last_run: null
+  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+- id: J14
+  title: J14 — External Reality Drift
+  status: NOT_STARTED
+  environment: null
+  public_shipping_composition: null
+  evidence: []
+  last_run: null
+  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+- id: J15
+  title: J15 — Promotion Conflict
+  status: NOT_STARTED
+  environment: null
+  public_shipping_composition: null
+  evidence: []
+  last_run: null
+  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+- id: J16
+  title: J16 — Provider Setup Persistence
+  status: NOT_STARTED
+  environment: null
+  public_shipping_composition: null
+  evidence: []
+  last_run: null
+  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+- id: J17
+  title: J17 — ATLAS Governed Execution
+  status: NOT_STARTED
+  environment: null
+  public_shipping_composition: null
+  evidence: []
+  last_run: null
+  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+- id: J18
+  title: J18 — UNKNOWN External Outcome
+  status: NOT_STARTED
+  environment: null
+  public_shipping_composition: null
+  evidence: []
+  last_run: null
+  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+- id: J19
+  title: J19 — IDEA → APPROVED PLAN
+  status: NOT_STARTED
+  environment: null
+  public_shipping_composition: null
+  evidence: []
+  last_run: null
+  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+- id: J20
+  title: J20 — FULL ARTIFEX PROJECT LIFECYCLE
+  status: NOT_STARTED
+  environment: null
+  public_shipping_composition: null
+  evidence: []
+  last_run: null
+  blocker: M0 has no mandatory journeys; milestone dependencies not accepted

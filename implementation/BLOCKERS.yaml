@@ -1,0 +1,10 @@
+schema_version: '1.0'
+blockers: []
+observations:
+- id: OBS-PACKAGE-DIRECTORY-NAME
+  scope: BOOTSTRAP
+  state: RESOLVED_ROUTINE_IMPLEMENTATION_CHOICE
+  evidence:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  required_authority: ORCHESTRATOR
+  unrelated_work_may_continue: true

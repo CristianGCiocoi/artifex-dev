@@ -1,0 +1,320 @@
+schema_version: '1.0'
+target_release: 2.0.0
+mandatory_dependency_spine:
+- M0
+- M1
+- M2
+- M3
+core_ga_convergence:
+- M0
+- M1
+- M2
+- M3
+- M4
+- M5
+- M6A
+- M7
+- M8A
+- M9
+- M12
+milestones:
+- id: M0
+  title: Preservation, Outcome Harness & Conformance Baseline
+  depends_on: []
+  blocks:
+  - M1
+  mandatory_for_core_ga: true
+  mandatory_if_claimed: []
+  parallelizable_with: []
+  primary_outcomes:
+  - V1 baseline preserved
+  - Known V1 failures captured in controlled regression/outcome harness
+  acceptance_contract: MILESTONES/M0.md
+- id: M1
+  title: Project Authority, Catalog & Semantic Continuity
+  depends_on:
+  - M0
+  blocks:
+  - M2
+  mandatory_for_core_ga: true
+  mandatory_if_claimed: []
+  parallelizable_with: []
+  primary_outcomes:
+  - Project Authority
+  - Project Catalog
+  - semantic revisions
+  - Project bootstrap
+  acceptance_contract: MILESTONES/M1.md
+- id: M2
+  title: Durable Runtime, Coordinator Fencing, Workspace & Acceptance
+  depends_on:
+  - M1
+  blocks:
+  - M3
+  mandatory_for_core_ga: true
+  mandatory_if_claimed: []
+  parallelizable_with: []
+  primary_outcomes:
+  - SQLite RunStore
+  - managed service
+  - single coordinator fencing
+  - workspace/acceptance
+  acceptance_contract: MILESTONES/M2.md
+- id: M3
+  title: Capability Composition + Codex Productization
+  depends_on:
+  - M2
+  blocks:
+  - M4
+  - M5
+  - M6A
+  - M6B
+  - M8A
+  - M8B
+  - M8C
+  mandatory_for_core_ga: true
+  mandatory_if_claimed: []
+  parallelizable_with: []
+  primary_outcomes:
+  - Capability Graph
+  - Codex Interaction+Execution certified
+  - first automated public slice
+  acceptance_contract: MILESTONES/M3.md
+- id: M4
+  title: Collaborative Lifecycle, Interaction, Governance & Operational Control
+  depends_on:
+  - M3
+  blocks:
+  - M7
+  - M8A
+  - M10
+  mandatory_for_core_ga: true
+  mandatory_if_claimed: []
+  parallelizable_with:
+  - M5
+  - M6A
+  - M6B
+  - M8B
+  - M8C
+  primary_outcomes:
+  - J19 Idea→Approved Plan
+  - multi-session
+  - materiality
+  - Safe Pause
+  acceptance_contract: MILESTONES/M4.md
+- id: M5
+  title: Reality, Documentation & Dashboard Operational Composition
+  depends_on:
+  - M3
+  blocks:
+  - M7
+  - M9
+  - M11
+  mandatory_for_core_ga: true
+  mandatory_if_claimed: []
+  parallelizable_with:
+  - M4
+  - M6A
+  - M6B
+  - M8A
+  - M8B
+  - M8C
+  - M10
+  primary_outcomes:
+  - Reality reconciliation
+  - docs lifecycle
+  - Platform+Project dashboards
+  acceptance_contract: MILESTONES/M5.md
+- id: M6A
+  title: Claude Productization & Certification
+  depends_on:
+  - M3
+  blocks:
+  - M7
+  mandatory_for_core_ga: true
+  mandatory_if_claimed: []
+  parallelizable_with:
+  - M4
+  - M5
+  - M6B
+  - M8A
+  - M8B
+  - M8C
+  - M10
+  primary_outcomes:
+  - Claude Interaction certified
+  - Claude Execution certified
+  acceptance_contract: MILESTONES/M6A.md
+- id: M6B
+  title: Hermes Productization & Certification
+  depends_on:
+  - M3
+  blocks: []
+  mandatory_for_core_ga: false
+  mandatory_if_claimed:
+  - hermes
+  parallelizable_with:
+  - M4
+  - M5
+  - M6A
+  - M7
+  - M8A
+  - M8B
+  - M8C
+  - M10
+  primary_outcomes:
+  - Claimed Hermes roles certified
+  acceptance_contract: MILESTONES/M6B.md
+- id: M7
+  title: Fresh-Machine Installation & Bootstrap
+  depends_on:
+  - M4
+  - M5
+  - M6A
+  blocks:
+  - M9
+  - M12
+  mandatory_for_core_ga: true
+  mandatory_if_claimed: []
+  parallelizable_with:
+  - M8A
+  - M8B
+  - M8C
+  - M10
+  primary_outcomes:
+  - Fresh Codex
+  - Fresh Claude
+  - deliberate Manual fallback
+  acceptance_contract: MILESTONES/M7.md
+- id: M8A
+  title: Organizational Knowledge
+  depends_on:
+  - M4
+  blocks:
+  - M12
+  mandatory_for_core_ga: true
+  mandatory_if_claimed: []
+  parallelizable_with:
+  - M5
+  - M6A
+  - M6B
+  - M7
+  - M8B
+  - M8C
+  - M10
+  primary_outcomes:
+  - Cross-project advisory knowledge
+  - explicit adoption
+  acceptance_contract: MILESTONES/M8A.md
+- id: M8B
+  title: Pandora Productization
+  depends_on:
+  - M4
+  blocks: []
+  mandatory_for_core_ga: false
+  mandatory_if_claimed:
+  - pandora
+  parallelizable_with:
+  - M5
+  - M6A
+  - M6B
+  - M7
+  - M8A
+  - M8C
+  - M10
+  primary_outcomes:
+  - Pandora RESEARCH role certified if claimed
+  acceptance_contract: MILESTONES/M8B.md
+- id: M8C
+  title: DeepSeek Productization / Experimental Certification
+  depends_on:
+  - M4
+  blocks: []
+  mandatory_for_core_ga: false
+  mandatory_if_claimed:
+  - deepseek
+  parallelizable_with:
+  - M5
+  - M6A
+  - M6B
+  - M7
+  - M8A
+  - M8B
+  - M10
+  primary_outcomes:
+  - Only truthful current DeepSeek role claims
+  acceptance_contract: MILESTONES/M8C.md
+- id: M9
+  title: Final V1 Migration / Upgrade Acceptance
+  depends_on:
+  - M7
+  - M5
+  blocks:
+  - M12
+  mandatory_for_core_ga: true
+  mandatory_if_claimed: []
+  parallelizable_with:
+  - M8A
+  - M8B
+  - M8C
+  - M10
+  primary_outcomes:
+  - Shipping-path V1 migration
+  - semantic preservation
+  - first new 2.0 Run
+  acceptance_contract: MILESTONES/M9.md
+- id: M10
+  title: ATLAS Integration Readiness / Current Handoff
+  depends_on:
+  - M4
+  blocks:
+  - M11
+  mandatory_for_core_ga: false
+  mandatory_if_claimed:
+  - atlas_readiness
+  parallelizable_with:
+  - M5
+  - M6A
+  - M6B
+  - M7
+  - M8A
+  - M8B
+  - M8C
+  - M9
+  primary_outcomes:
+  - Current cross-platform handoff qualified
+  - No runtime integration
+  acceptance_contract: MILESTONES/M10.md
+- id: M11
+  title: Optional ATLAS Governed Runtime Integration
+  depends_on:
+  - M10
+  - M5
+  blocks: []
+  mandatory_for_core_ga: false
+  mandatory_if_claimed:
+  - atlas_runtime
+  parallelizable_with:
+  - M8B
+  - M8C
+  primary_outcomes:
+  - Governed ATLAS path without bypass/authority violation
+  acceptance_contract: MILESTONES/M11.md
+- id: M12
+  title: ARTIFEX 2.0 Product Outcome Certification & GA
+  depends_on:
+  - M4
+  - M5
+  - M6A
+  - M7
+  - M8A
+  - M9
+  blocks:
+  - ARTIFEX_2_0_GA
+  mandatory_for_core_ga: true
+  mandatory_if_claimed: []
+  parallelizable_with: []
+  primary_outcomes:
+  - J20 full lifecycle
+  - shipping composition certified
+  acceptance_contract: MILESTONES/M12.md

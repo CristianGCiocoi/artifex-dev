@@ -1,0 +1,1180 @@
+schema_version: '1.0'
+registry_id: ARTIFEX-2.0-CONTRACT-REGISTRY
+contracts:
+- id: PRODUCT-DEFINITION
+  title: ARTIFEX 2.0 — Canonical Product Definition
+  type: FROZEN_PRODUCT
+  digest: ed8d5c6730aa7a3376662f814babe69aafe08ba2d5aba73d2e25373a9b44b9fb
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 01-PRODUCT-DEFINITION.md
+  acceptance_criteria:
+  - Digest and authority boundary remain unchanged
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: TARGET-ARCHITECTURE
+  title: ARTIFEX TARGET ARCHITECTURE — FROZEN v1
+  type: FROZEN_ARCHITECTURE
+  digest: 6edbd1a3927283d259758d47b655d8f94f999eca43cc4070fb1f494fd6adf885
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 02-TARGET-ARCHITECTURE-FROZEN-v1.md
+  acceptance_criteria:
+  - Digest and authority boundary remain unchanged
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: AUTHORITY-MATRIX
+  title: ARTIFEX 2.0 — Frozen Authority Matrix
+  type: FROZEN_AUTHORITY
+  digest: 42c8af6541fb66206c8dd104cf8aa1927ab010a7008f262eec4e15ee8e42381e
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 03-AUTHORITY-MATRIX.md
+  acceptance_criteria:
+  - Digest and authority boundary remain unchanged
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: FROZEN-INVARIANTS
+  title: ARTIFEX 2.0 — Frozen Invariants
+  type: FROZEN_INVARIANT_SET
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Digest and authority boundary remain unchanged
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: IMPLEMENTATION-PLAN
+  title: ARTIFEX TARGET IMPLEMENTATION PLAN — FROZEN v1
+  type: FROZEN_PLAN
+  digest: 2d6a34f6971b214c040c89c797a39886ebea7d89d4ad644a3b2cec8d384fc25a
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 05-TARGET-IMPLEMENTATION-PLAN-FROZEN-v1.md
+  acceptance_criteria:
+  - Digest and authority boundary remain unchanged
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: ORCHESTRATOR-GOVERNANCE
+  title: ARTIFEX 2.0 — Orchestrator Governance
+  type: EXECUTION_GOVERNANCE
+  digest: e942da2160b9705a7796dd8de518881b382a52882c364ee000404f21de10e062
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 06-ORCHESTRATOR-GOVERNANCE.md
+  acceptance_criteria:
+  - Digest and authority boundary remain unchanged
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: M0-CONTRACT
+  title: M0 — Preservation, Outcome Harness & Conformance Baseline
+  type: MILESTONE_CONTRACT
+  digest: da11399318accf59ec578bdbc04da17911cca1014dd823c17cfde92d101d2b4f
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - MILESTONES/M0.md
+  acceptance_criteria:
+  - Digest and authority boundary remain unchanged
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+adrs:
+- id: ADR-T001
+  title: ADR-T001 — Project Authority vs Portable Semantic Representation
+  type: FROZEN_ADR
+  digest: 5ed6082663b7800b5f7c3de0483e57845f1bb19f0747072f0815625a6c1cb420
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies:
+  - M1 Project Authority
+  - M9 migration
+  authority_sources:
+  - ADR/ADR-T001-Project-Authority-vs-Portable-Semantic-Representation.md
+  acceptance_criteria:
+  - Preserve the authority boundary above.
+  - Add tests that detect the primary forbidden interpretation.
+  - Any implementation need to alter this decision is an Architect escalation.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: ADR-T002
+  title: ADR-T002 — Standalone RunStore
+  type: FROZEN_ADR
+  digest: f22b38279f4252fa865b1187123772cf923ffd71c5a1b804f24c89f71db9a7a9
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies:
+  - M2 runtime
+  authority_sources:
+  - ADR/ADR-T002-Standalone-RunStore.md
+  acceptance_criteria:
+  - Preserve the authority boundary above.
+  - Add tests that detect the primary forbidden interpretation.
+  - Any implementation need to alter this decision is an Architect escalation.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: ADR-T003
+  title: ADR-T003 — Persistent Runtime Hosting
+  type: FROZEN_ADR
+  digest: fecfcc52031a2161a25da47d9bd8d798a3790482267a3cd7d5fad4ec9f290506
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies:
+  - M2 service
+  - M7 install
+  authority_sources:
+  - ADR/ADR-T003-Persistent-Runtime-Hosting.md
+  acceptance_criteria:
+  - Preserve the authority boundary above.
+  - Add tests that detect the primary forbidden interpretation.
+  - Any implementation need to alter this decision is an Architect escalation.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: ADR-T004
+  title: ADR-T004 — Runtime Execution Hierarchy
+  type: FROZEN_ADR
+  digest: e69dcc44487636a43ffb1209a2661a91c459b5a35e729d740c64006286473199
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies:
+  - M2 runtime
+  authority_sources:
+  - ADR/ADR-T004-Runtime-Execution-Hierarchy.md
+  acceptance_criteria:
+  - Preserve the authority boundary above.
+  - Add tests that detect the primary forbidden interpretation.
+  - Any implementation need to alter this decision is an Architect escalation.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: ADR-T005
+  title: ADR-T005 — Interaction Session Model
+  type: FROZEN_ADR
+  digest: 8d328c2d10c861e284737c353f909f39474483e1c56eba3267017045b00543b0
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies:
+  - M4 interaction
+  - M6 provider interaction
+  authority_sources:
+  - ADR/ADR-T005-Interaction-Session-Model.md
+  acceptance_criteria:
+  - Preserve the authority boundary above.
+  - Add tests that detect the primary forbidden interpretation.
+  - Any implementation need to alter this decision is an Architect escalation.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: ADR-T006
+  title: ADR-T006 — Concurrency Model
+  type: FROZEN_ADR
+  digest: ed0ef5d879444f77831e190bf0ab855018ddca8006685bdb61169918e46fb2a7
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies:
+  - M1 revisioning
+  - M2 leases
+  - M4 multi-session
+  authority_sources:
+  - ADR/ADR-T006-Concurrency-Model.md
+  acceptance_criteria:
+  - Preserve the authority boundary above.
+  - Add tests that detect the primary forbidden interpretation.
+  - Any implementation need to alter this decision is an Architect escalation.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: ADR-T007
+  title: ADR-T007 — Contextual Capability Graph
+  type: FROZEN_ADR
+  digest: 3b8b4c5952f9bcc6490bf0bb73b4f1df3bc30c0d97e56242ee321b0482e3a4ed
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies:
+  - M3 Capability Graph
+  - M10/M11 ATLAS
+  authority_sources:
+  - ADR/ADR-T007-Contextual-Capability-Graph.md
+  acceptance_criteria:
+  - Preserve the authority boundary above.
+  - Add tests that detect the primary forbidden interpretation.
+  - Any implementation need to alter this decision is an Architect escalation.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: ADR-T008
+  title: ADR-T008 — Execution Envelope
+  type: FROZEN_ADR
+  digest: 6e622f86b131032b6d8c708dd7c560987819978c48fd41a374c29f8900509de5
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies:
+  - M2 minimum
+  - M4 governance
+  authority_sources:
+  - ADR/ADR-T008-Execution-Envelope.md
+  acceptance_criteria:
+  - Preserve the authority boundary above.
+  - Add tests that detect the primary forbidden interpretation.
+  - Any implementation need to alter this decision is an Architect escalation.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: ADR-T009
+  title: ADR-T009 — Materiality & Supervision
+  type: FROZEN_ADR
+  digest: 21eafd5c75ee06ee02acc9b4abe4f5d3c095222542d88b98e5391c814d4f32e5
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies:
+  - M4 governance
+  - J19/J20
+  authority_sources:
+  - ADR/ADR-T009-Materiality-Supervision.md
+  acceptance_criteria:
+  - Preserve the authority boundary above.
+  - Add tests that detect the primary forbidden interpretation.
+  - Any implementation need to alter this decision is an Architect escalation.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: ADR-T010
+  title: ADR-T010 — Operational Control State & Global Safe Pause
+  type: FROZEN_ADR
+  digest: b433f851199f4f58ca6077abbe454793210d4ced61769745e6c75216a1f7a77f
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies:
+  - M4 control
+  - J7
+  authority_sources:
+  - ADR/ADR-T010-Operational-Control-State-Global-Safe-Pause.md
+  acceptance_criteria:
+  - Preserve the authority boundary above.
+  - Add tests that detect the primary forbidden interpretation.
+  - Any implementation need to alter this decision is an Architect escalation.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: ADR-T011
+  title: ADR-T011 — Reality Observation & Reconciliation
+  type: FROZEN_ADR
+  digest: d62a902157abb745c3793e3ce0aba7143e688b4e2f3fb68a55a0dc1faa63f2a9
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies:
+  - M5
+  - J14
+  authority_sources:
+  - ADR/ADR-T011-Reality-Observation-Reconciliation.md
+  acceptance_criteria:
+  - Preserve the authority boundary above.
+  - Add tests that detect the primary forbidden interpretation.
+  - Any implementation need to alter this decision is an Architect escalation.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: ADR-T012
+  title: ADR-T012 — Knowledge Authority
+  type: FROZEN_ADR
+  digest: c2366448568e75ce2461880f59478d56cb8cba7d3673a2c5aeddc9b818b19704
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies:
+  - M8A
+  authority_sources:
+  - ADR/ADR-T012-Knowledge-Authority.md
+  acceptance_criteria:
+  - Preserve the authority boundary above.
+  - Add tests that detect the primary forbidden interpretation.
+  - Any implementation need to alter this decision is an Architect escalation.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: ADR-T013
+  title: ADR-T013 — Project Documentation Lifecycle
+  type: FROZEN_ADR
+  digest: 04ee5ca587c397fdae6a12d32546410ad5cb4809620ae00d118e5bdfbb163417
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies:
+  - M1 baseline
+  - M5 lifecycle
+  authority_sources:
+  - ADR/ADR-T013-Project-Documentation-Lifecycle.md
+  acceptance_criteria:
+  - Preserve the authority boundary above.
+  - Add tests that detect the primary forbidden interpretation.
+  - Any implementation need to alter this decision is an Architect escalation.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: ADR-T014
+  title: ADR-T014 — Unified Dashboard Framework
+  type: FROZEN_ADR
+  digest: 0ab7070a18ea46c6ff2fd8101ff9a724552587a999f27de237d0826aab6c63a0
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies:
+  - M1 baseline
+  - M5 dashboards
+  authority_sources:
+  - ADR/ADR-T014-Unified-Dashboard-Framework.md
+  acceptance_criteria:
+  - Preserve the authority boundary above.
+  - Add tests that detect the primary forbidden interpretation.
+  - Any implementation need to alter this decision is an Architect escalation.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: ADR-T015
+  title: ADR-T015 — Provider Composition at Bootstrap
+  type: FROZEN_ADR
+  digest: 82b60d3fff4fe64383834ce90a012c78eb936c34eb7b71b6e6b8b36da8c247b4
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies:
+  - M3 composition
+  - M7 install
+  - M10/M11
+  authority_sources:
+  - ADR/ADR-T015-Provider-Composition-at-Bootstrap.md
+  acceptance_criteria:
+  - Preserve the authority boundary above.
+  - Add tests that detect the primary forbidden interpretation.
+  - Any implementation need to alter this decision is an Architect escalation.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: ADR-T016
+  title: ADR-T016 — Control-plane RunStore Scaling
+  type: FROZEN_ADR
+  digest: 8119bd152a21c085d4a204663ffb9407e9a42d2e4c9dbfaa58955a14e1a16016
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies:
+  - M2
+  - future HA
+  authority_sources:
+  - ADR/ADR-T016-Control-plane-RunStore-Scaling.md
+  acceptance_criteria:
+  - Preserve the authority boundary above.
+  - Add tests that detect the primary forbidden interpretation.
+  - Any implementation need to alter this decision is an Architect escalation.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: ADR-T017
+  title: ADR-T017 — ARTIFEX ↔ ATLAS Authority Boundary
+  type: FROZEN_ADR
+  digest: 2e6d9c7126fb4d33be82e68baaa31e662a6d31f21b783f7aab2e4f25ffe4c5f6
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies:
+  - M10
+  - M11
+  authority_sources:
+  - ADR/ADR-T017-ARTIFEX-ATLAS-Authority-Boundary.md
+  acceptance_criteria:
+  - Preserve the authority boundary above.
+  - Add tests that detect the primary forbidden interpretation.
+  - Any implementation need to alter this decision is an Architect escalation.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: ADR-T018
+  title: ADR-T018 — Outcome Acceptance
+  type: FROZEN_ADR
+  digest: f6768ad0bf88975ccb0a875f3b4fb610b387401acccfa12a60088151f2e91dda
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies:
+  - All milestones
+  - M12
+  authority_sources:
+  - ADR/ADR-T018-Outcome-Acceptance.md
+  acceptance_criteria:
+  - Preserve the authority boundary above.
+  - Add tests that detect the primary forbidden interpretation.
+  - Any implementation need to alter this decision is an Architect escalation.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: ADR-T019
+  title: ADR-T019 — V1 Project Migration
+  type: FROZEN_ADR
+  digest: b0257cb3cdec6445f532d188ecf5c442ac8370c0c2b41cca3831824376de8e85
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies:
+  - M1
+  - M9
+  authority_sources:
+  - ADR/ADR-T019-V1-Project-Migration.md
+  acceptance_criteria:
+  - Preserve the authority boundary above.
+  - Add tests that detect the primary forbidden interpretation.
+  - Any implementation need to alter this decision is an Architect escalation.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: ADR-T020
+  title: ADR-T020 — Project Catalog & Discovery
+  type: FROZEN_ADR
+  digest: ff29fedd3c98423a4500add688203d9d6dc8b79ec49ab225162a59cc2bd68115
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies:
+  - M1
+  - J3
+  authority_sources:
+  - ADR/ADR-T020-Project-Catalog-Discovery.md
+  acceptance_criteria:
+  - Preserve the authority boundary above.
+  - Add tests that detect the primary forbidden interpretation.
+  - Any implementation need to alter this decision is an Architect escalation.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: ADR-T021
+  title: ADR-T021 — Execution Workspace & Result Promotion
+  type: FROZEN_ADR
+  digest: c1a5c0992709412447356b224e21903ab542ca68e849539201b61f26485caad3
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies:
+  - M2
+  - M3+
+  authority_sources:
+  - ADR/ADR-T021-Execution-Workspace-Result-Promotion.md
+  acceptance_criteria:
+  - Preserve the authority boundary above.
+  - Add tests that detect the primary forbidden interpretation.
+  - Any implementation need to alter this decision is an Architect escalation.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: ADR-T022
+  title: ADR-T022 — Acceptance Authority Boundary
+  type: FROZEN_ADR
+  digest: 0e39dd96296a5ba430c74414cf23e1f7e93bfe29e536a8864465bb844266e623
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies:
+  - M2
+  - M3
+  authority_sources:
+  - ADR/ADR-T022-Acceptance-Authority-Boundary.md
+  acceptance_criteria:
+  - Preserve the authority boundary above.
+  - Add tests that detect the primary forbidden interpretation.
+  - Any implementation need to alter this decision is an Architect escalation.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: ADR-T023
+  title: ADR-T023 — Actor Identity, Trust & Credential Handling
+  type: FROZEN_ADR
+  digest: 6aabc0df9056f07a8e540f00214f49484c8d485ec9bfba2d4f2714730129c628
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies:
+  - M2 actor minimum
+  - M3 credentials
+  - M10/M11
+  authority_sources:
+  - ADR/ADR-T023-Actor-Identity-Trust-Credential-Handling.md
+  acceptance_criteria:
+  - Preserve the authority boundary above.
+  - Add tests that detect the primary forbidden interpretation.
+  - Any implementation need to alter this decision is an Architect escalation.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+- id: ADR-T024
+  title: ADR-T024 — Provider Claim & Capability Certification
+  type: FROZEN_ADR
+  digest: c1cdb8212decea556103c38f2088310c5d9d1ad2ea63c7e4f5bc4f4d0ef9d972
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies:
+  - M3
+  - M6A/B
+  - M8B/C
+  - M11
+  authority_sources:
+  - ADR/ADR-T024-Provider-Claim-Capability-Certification.md
+  acceptance_criteria:
+  - Preserve the authority boundary above.
+  - Add tests that detect the primary forbidden interpretation.
+  - Any implementation need to alter this decision is an Architect escalation.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+invariants:
+- id: INV-F01
+  title: Project-centricity
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Creating Project execution state without Project ownership is rejected.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: The Project is ARTIFEX's fundamental durable engineering unit.
+- id: INV-F02
+  title: Singular semantic authority
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Direct client/provider/file mutation cannot create an accepted semantic revision.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: Only Project Authority may accept a semantic Project mutation.
+- id: INV-F03
+  title: Portable accepted representation
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - External Git edit becomes Observation/Proposal, not automatic acceptance.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: Git/files are durable portable representations of accepted semantic Project
+    truth but do not independently confer authority.
+- id: INV-F04
+  title: External mutation is proposal/observation
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - External edit produces divergence/proposal.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: Direct repository, frontend and provider outputs require reconciliation/acceptance.
+- id: INV-F05
+  title: No database-only semantic truth
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Rebuild runtime state without losing accepted semantic Project decisions.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: Accepted semantic decisions may not exist only in RunStore/cache/provider
+    state.
+- id: INV-F06
+  title: Conversation independence
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Close clients and later Continue X successfully.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: Conversation history is never required for Project continuity.
+- id: INV-F07
+  title: Frontend neutrality
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Client claim cannot bypass Project Authority.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: Interaction clients are not Project authority.
+- id: INV-F08
+  title: Provider neutrality
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Project remains open/usable with optional providers absent.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: No current provider is structurally mandatory to Project semantics.
+- id: INV-F09
+  title: Standalone operation
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Fresh-machine Codex/Claude works with ATLAS absent.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: ARTIFEX Core works without ATLAS or advanced developer infrastructure.
+- id: INV-F10
+  title: Persistent supervised autonomy
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Close frontend during Run; state/work continues as authorized.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: Authorized execution survives interaction-client lifecycle.
+- id: INV-F11
+  title: Bounded autonomy
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Autonomous dispatch without Envelope is rejected.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: Every autonomous Run references an approved Execution Envelope.
+- id: INV-F12
+  title: Workspace isolation
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Two attempts use isolated workspaces and promotion controls.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: Modifying Attempts execute in controlled isolated workspaces.
+- id: INV-F13
+  title: Completion is not acceptance
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Provider success alone cannot mark ProjectJob accepted.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: Attempt FINISHED never equals Project acceptance.
+- id: INV-F14
+  title: Infrastructure success is not Project acceptance
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - ATLAS/provider success remains unaccepted until gate evaluation.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: External execution success cannot directly accept Project result.
+- id: INV-F15
+  title: No unlimited autonomy
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Unlimited autonomy configuration is invalid.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: There is no unbounded autonomy level.
+- id: INV-F16
+  title: Materiality governs escalation
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Material architecture change cannot execute before approval.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: Strategic/material decisions require approval.
+- id: INV-F17
+  title: Dependency-local blocking
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Independent workstream continues while blocked branch waits.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: A blocked material decision pauses only affected work where safe.
+- id: INV-F18
+  title: Autonomous but observable
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Reconnect and observe active authorized Run.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: Persistent execution is inspectable and controllable.
+- id: INV-F19
+  title: Global Safe Pause
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - PAUSED blocks dispatch while control/read access remains.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: Platform can stop new autonomous dispatch while preserving recoverability.
+- id: INV-F20
+  title: Provider readiness explicit
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Detected-only provider cannot dispatch.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: Detected/configured/authenticated/healthy/registered/available are distinct.
+- id: INV-F21
+  title: Contextual provider eligibility
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Healthy but policy-ineligible provider is excluded.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: Globally available does not imply eligibility for every ProjectJob.
+- id: INV-F22
+  title: UI and provider authority distinct
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Interaction-only client cannot execute/approve beyond delegation.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: Interaction role does not grant execution or approval authority.
+- id: INV-F23
+  title: Secret exclusion
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Secret scanning finds no values in semantic/docs/evidence artifacts.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: Secrets are external to Project Git/docs/general context.
+- id: INV-F24
+  title: Observed reality cannot silently redefine intent
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Runtime/config drift cannot rewrite architecture automatically.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: Observations create divergence/proposals.
+- id: INV-F25
+  title: Organizational Knowledge advisory
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Recommendation leaves target Project unchanged until adoption.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: Cross-project knowledge remains advisory until Project adoption.
+- id: INV-F26
+  title: Projections non-authoritative
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Delete/rebuild projections with no semantic loss.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: Docs/dashboards/indexes never own Project truth.
+- id: INV-F27
+  title: Docs/dashboard baseline at Project creation
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - New Project has baseline before execution.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: Every Project immediately has documentation/dashboard state.
+- id: INV-F28
+  title: ARTIFEX Project authority
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Provider success cannot mutate accepted semantic revision directly.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: ARTIFEX owns Project semantics and Project acceptance.
+- id: INV-F29
+  title: ATLAS infrastructure authority
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - No direct access to governed resource path.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: ATLAS owns assigned governed infrastructure/resource authority.
+- id: INV-F30
+  title: ATLAS non-bypass
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Direct private path is ineligible.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: ATLAS-governed resources cannot be bypassed without authorized governance
+    transition.
+- id: INV-F31
+  title: Cross-platform identity separation
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Schema/conformance rejects ID conflation.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: ProjectJob/Attempt IDs are distinct from ATLAS ExecutionJob IDs.
+- id: INV-F32
+  title: No competing ComputeLease
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Lease lifecycle authority remains ATLAS.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: ARTIFEX Core does not create canonical ATLAS ComputeLease state.
+- id: INV-F33
+  title: Component evidence not delivery
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Unit-only adapter cannot be marked delivered.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: Component implementation does not equal delivered capability.
+- id: INV-F34
+  title: Black-box release acceptance
+  type: FROZEN_INVARIANT
+  digest: b1b5661e52fb2097b12fbd9641862b009dacd800c578d535ac87ac87a55e26ac
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  dependencies: []
+  authority_sources:
+  - 04-FROZEN-INVARIANTS.md
+  acceptance_criteria:
+  - Custom internal composition cannot satisfy release Journey.
+  evidence_references:
+  - EVIDENCE/HANDOFF-INTEGRITY.yaml
+  implementation_state: NOT_STARTED
+  m0_baseline_state: CAPTURED
+  statement: Release-critical claims require actual shipping-composition outcomes.

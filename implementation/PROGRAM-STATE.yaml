@@ -1,0 +1,149 @@
+schema_version: '1.0'
+program:
+  id: ARTIFEX-2.0-IMPLEMENTATION
+  handoff_id: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  handoff_manifest_sha256: 7f1124ac3e5f3d835d23f5f5cad13abb26eae8a8669e18b824a9045f59c500df
+  handoff_declared_directory: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF
+  handoff_observed_directory: ARTIFEX-2.0-CANONICAL-IMPLEMENTATION-HANDOFF
+  directory_variance: PACKAGING_NAME_VARIANCE_ACCEPTED
+  target_release: 2.0.0
+  architecture_status: FROZEN
+  implementation_plan_status: FROZEN
+  intake_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  branch: codex/artifex-2-m0
+  current_milestone: M0
+  current_status: IN_PROGRESS
+  latest_accepted_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+  next_integration_point: M0 acceptance
+  m1_started: false
+  recorded_date: '2026-08-26'
+  dashboard_state: FOUNDATION_ESTABLISHED
+target_system:
+  overview: Persistent project-centric engineering control platform with separate
+    semantic, execution, acceptance, observed-reality and projection authorities.
+  standalone_baseline:
+  - ARTIFEX managed service
+  - SQLite RunStore
+  - Git/files Project repositories
+  - Project Catalog
+  - Unified Platform and Project dashboard framework
+  - At least one supported provider
+  glossary:
+    Project Authority: Only authority that accepts Project semantic mutations
+    ExecutionCoordinator: Owner of durable runtime transitions, never Project acceptance
+    Acceptance Authority: Interprets validation evidence and decides result acceptance
+    ProjectJob: Qualified ARTIFEX cross-platform execution unit
+    Execution Envelope: Approved versioned boundary for autonomous Runs
+    Observed Reality: Sourced facts that may create divergence, never silently rewrite
+      intent
+    Projection: Rebuildable documentation or dashboard view, never authority
+milestone_states:
+  M0:
+    state: IN_PROGRESS
+    started: true
+    accepted: false
+  M1:
+    state: BLOCKED_DEPENDENCY
+    started: false
+    accepted: false
+  M2:
+    state: BLOCKED_DEPENDENCY
+    started: false
+    accepted: false
+  M3:
+    state: BLOCKED_DEPENDENCY
+    started: false
+    accepted: false
+  M4:
+    state: BLOCKED_DEPENDENCY
+    started: false
+    accepted: false
+  M5:
+    state: BLOCKED_DEPENDENCY
+    started: false
+    accepted: false
+  M6A:
+    state: BLOCKED_DEPENDENCY
+    started: false
+    accepted: false
+  M6B:
+    state: BLOCKED_DEPENDENCY
+    started: false
+    accepted: false
+  M7:
+    state: BLOCKED_DEPENDENCY
+    started: false
+    accepted: false
+  M8A:
+    state: BLOCKED_DEPENDENCY
+    started: false
+    accepted: false
+  M8B:
+    state: BLOCKED_DEPENDENCY
+    started: false
+    accepted: false
+  M8C:
+    state: BLOCKED_DEPENDENCY
+    started: false
+    accepted: false
+  M9:
+    state: BLOCKED_DEPENDENCY
+    started: false
+    accepted: false
+  M10:
+    state: BLOCKED_DEPENDENCY
+    started: false
+    accepted: false
+  M11:
+    state: BLOCKED_DEPENDENCY
+    started: false
+    accepted: false
+  M12:
+    state: BLOCKED_DEPENDENCY
+    started: false
+    accepted: false
+acceptance_classes:
+  DESIGN_CONFORMANCE:
+    required_m0: true
+    status: PENDING
+    evidence: []
+  COMPONENT:
+    required_m0: true
+    status: PENDING
+    evidence: []
+  DOMAIN_INTEGRATION:
+    required_m0: true
+    status: PENDING
+    evidence: []
+  PUBLIC_COMPOSITION:
+    required_m0: false
+    status: NOT_APPLICABLE
+    evidence: []
+  BLACK_BOX_OUTCOME:
+    required_m0: false
+    status: NOT_APPLICABLE
+    evidence: []
+  SECURITY_AUTHORITY:
+    required_m0: true
+    status: PENDING
+    evidence: []
+  DOCUMENTATION:
+    required_m0: true
+    status: PENDING
+    evidence: []
+  DASHBOARD:
+    required_m0: true
+    status: PENDING
+    evidence: []
+  MIGRATION:
+    required_m0: true
+    status: PENDING
+    evidence: []
+  PROVIDER_CERTIFICATION:
+    required_m0: false
+    status: NOT_APPLICABLE
+    evidence: []
+dashboard:
+  state: FOUNDATION_ESTABLISHED
+  projection_path: implementation/dashboard/index.html
+  machine_state_path: implementation/dashboard/state.json

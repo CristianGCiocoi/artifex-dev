@@ -1,0 +1,20 @@
+schema_version: '1.0'
+id: M0-PUBLIC-CLI-HEALTH
+composition: PUBLIC_PROCESS
+command:
+- ${PYTHON}
+- -m
+- artifex.cli
+- system
+- health
+cwd: .
+timeout_seconds: 30
+environment:
+  PYTHONPATH: ${REPO}/src
+expect:
+  exit_code: 0
+  stdout_json:
+    ok: true
+    value.status: PASS
+    value.core: available
+

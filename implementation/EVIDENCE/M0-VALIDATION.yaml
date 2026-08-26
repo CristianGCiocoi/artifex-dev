@@ -1,0 +1,92 @@
+schema_version: '1.0'
+evidence_id: EVD-M0-VALIDATION
+milestone: M0
+intake_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+recorded_date: '2026-08-27'
+status: PASS_WITH_CONTROLLED_V1_BASELINE_FAILURE
+checks:
+- id: HANDOFF-INTEGRITY
+  status: PASS
+  measured:
+    manifest_entries: 84
+    sha256sums_entries: 85
+    frozen_adrs: 24
+    frozen_invariants: 34
+    milestones: 16
+    journeys: 20
+  evidence: implementation/EVIDENCE/HANDOFF-INTEGRITY.yaml
+- id: V1-IMMUTABLE-FIXTURE
+  status: PASS
+  measured:
+    source_ref: v1.0.0
+    source_commit: 317ec177df8655ae4f94e24162107fd2acecceec
+    files: 322
+    aggregate_sha256: fe77ab2be651a88262db842bff537f7e8ba64f788b0d6fdc9ade960ab9d12b9b
+  evidence: implementation/MIGRATION/V1-RELEASE-FIXTURE.yaml
+- id: V1-KNOWN-GAPS
+  status: PASS
+  measured:
+    reproduced: 10
+    controlled_baselines: 1
+    unexpected: 0
+  evidence: implementation/EVIDENCE/V1-KNOWN-GAPS.yaml
+- id: M0-FOCUSED
+  status: PASS
+  command: uv run --frozen pytest -q tests/artifex2_m0 --disable-warnings
+  measured:
+    passed: 10
+    failed: 0
+    duration_seconds: 13.74
+- id: V1-FUNCTIONAL-REGRESSION
+  status: PASS
+  command: uv run --frozen pytest -q tests --ignore=tests/test_release.py --disable-warnings
+  measured:
+    passed: 326
+    skipped_windows_symlink: 7
+    failed: 0
+    duration_seconds: 299.41
+- id: V1-RELEASE-HARNESS
+  status: EXPECTED_BASELINE_FAILURE
+  measured:
+    focused_failure_reproduced: 1
+    failure_id: V1-R01-DASHBOARD-FIXTURE-SCHEMA-DRIFT
+    source_changed_by_m0: false
+  evidence: implementation/EVIDENCE/V1-RELEASE-HARNESS-REGRESSION.yaml
+- id: PUBLIC-PROCESS-OUTCOME-RUNNER
+  status: PASS
+  measured:
+    scenario: M0-PUBLIC-CLI-HEALTH
+    composition: PUBLIC_PROCESS
+    returncode: 0
+    timed_out: false
+  evidence: implementation/EVIDENCE/M0-PUBLIC-CLI-HEALTH.json
+- id: STATIC-QUALITY
+  status: PASS
+  commands:
+  - uv run --frozen ruff check .
+  - uv run --frozen mypy src
+  - uv run --frozen python scripts/validate_traceability.py
+  measured:
+    ruff: PASS
+    mypy_source_files: 61
+    traceability_requirements: 78
+    traceability_complete: 78
+- id: SECURITY-AUTHORITY
+  status: PASS
+  measured:
+    target_runtime_files_changed: 0
+    explicit_secret_environment_keys_allowed: 0
+    evidence_scrubbed: true
+    m1_started: false
+- id: CONTROL-PLANE
+  status: PASS
+  command: uv run --frozen python -m tools.artifex2.validate_m0 --repo-root . --handoff-root <validated-handoff-root>
+  measured:
+    dashboard_deterministic: true
+    provider_schema_valid: true
+    milestone_dag_acyclic: true
+    active_blockers: 0
+limitations:
+- The V1 release test file was not run to completion after the controlled baseline failure;
+  its exact first failure was rerun and captured independently.
+- M0 makes no ARTIFEX 2.0 runtime, provider certification, public delivery or black-box Journey claim.
