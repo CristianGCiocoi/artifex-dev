@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 from collections.abc import Sequence
 from pathlib import Path
 from time import time
@@ -50,7 +51,7 @@ def _provider_loader() -> ProviderCompositionLoader:
         return subprocess.CompletedProcess(arguments, 0, "Logged in\n", "")
 
     return ProviderCompositionLoader(
-        which=lambda executable: executable,
+        which=lambda _: sys.executable,
         runner=probe,
         certified_roles={"codex": CODEX_DISPATCH_AUTHORIZED_ROLES},
     )
@@ -220,6 +221,7 @@ def test_public_provider_execution_is_bound_evidenced_and_not_accepted(
     monkeypatch: Any,
 ) -> None:
     monkeypatch.setenv("ARTIFEX_LOCAL_STATE_ROOT", str(tmp_path / "local-state"))
+    monkeypatch.setenv("ARTIFEX_SHIPPING_ARTIFACT_SHA256", "b" * 64)
     common, project_root = _bootstrap_and_workspace(tmp_path)
     assert (tmp_path / "workspaces" / "workspace-public-provider" / ".git").is_dir()
     observed_commands: list[list[str]] = []
@@ -333,7 +335,7 @@ def test_public_provider_execution_is_bound_evidenced_and_not_accepted(
     assert accepted.ok, accepted.to_dict()
     model = json.loads((project_root / ".artifex" / "project-model.json").read_text())
     model["project"]["description"] = "accepted provider execution"
-    promoted = Application().dispatch(
+    promoted = application.dispatch(
         OperationRequest(
             "runtime.workspace.promote",
             {
@@ -354,7 +356,7 @@ def test_public_provider_execution_is_bound_evidenced_and_not_accepted(
     receipt = promoted.value["provider_certification_receipt"]
     assert receipt["role"] == "EXECUTION_IMPLEMENTER"
     assert receipt["acceptance_decision_id"] == accepted.value["decision"]["decision_id"]
-    certifications = Application().dispatch(
+    certifications = application.dispatch(
         OperationRequest(
             "providers.certifications",
             {"project_id": "project-public-provider"},

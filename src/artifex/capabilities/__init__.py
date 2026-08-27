@@ -17,6 +17,7 @@ from artifex.capabilities.evidence import (
     CapabilityReceipt,
     default_capability_evidence_path,
     record_execution_implementer_evidence,
+    shipping_artifact_sha256,
 )
 from artifex.capabilities.interaction import ProviderInteractionService, RepositoryBaseline
 from artifex.capabilities.models import (
@@ -68,4 +69,5 @@ __all__ = [
     "default_capability_evidence_path",
     "provider_certification_projection",
     "record_execution_implementer_evidence",
+    "shipping_artifact_sha256",
 ]

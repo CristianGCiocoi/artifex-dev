@@ -21,11 +21,13 @@ from artifex.capabilities import (
     CapabilityResolver,
     DataClassification,
     ProviderCompositionLoader,
+    ProviderInstance,
     ProviderInteractionService,
     ProviderRole,
     claude_certification_projection,
     codex_certification_projection,
     record_execution_implementer_evidence,
+    shipping_artifact_sha256,
 )
 from artifex.distribution import (
     ExperienceMode,
@@ -394,7 +396,9 @@ class Application:
         evidence: dict[ProviderRole, tuple[str, ...]] = {}
         for role in authorized_roles:
             role_receipts = tuple(
-                f"capability-receipt:{item.receipt_id}" for item in receipts if item.role is role
+                f"capability-receipt:{item.receipt_id}"
+                for item in receipts
+                if item.role is role and item.live_role_eligible
             )
             if role_receipts:
                 evidence[role] = role_receipts
@@ -1055,8 +1059,7 @@ class Application:
         )
         return OperationResult(ok=True, value={"workspace_root": str(path), "isolated": True})
 
-    @staticmethod
-    def _runtime_workspace_promote(request: OperationRequest) -> OperationResult:
+    def _runtime_workspace_promote(self, request: OperationRequest) -> OperationResult:
         service = _runtime_service(request)
         project_job_id = _required_string(request.arguments, "project_job_id")
         workspace_id = _required_string(request.arguments, "workspace_id")
@@ -1078,6 +1081,7 @@ class Application:
             workspace_id=workspace_id,
             project_job_id=project_job_id,
             revision=revision,
+            provider_loader=self._provider_loader,
         )
         value: dict[str, Any] = {"semantic_revision": revision}
         if receipt is not None:
@@ -1155,6 +1159,15 @@ class Application:
             service.workspaces.assert_allowed_path(
                 workspace_id, path, permission="WRITE", actor_id=dispatch_actor
             )
+        filesystem_permissions = _string_sequence_or_default(
+            request.arguments, "filesystem_permissions", envelope.filesystem_permissions
+        )
+        network_permissions = _string_sequence_or_default(
+            request.arguments, "network_permissions", envelope.network_permissions
+        )
+        tool_permissions = _string_sequence_or_default(
+            request.arguments, "tool_permissions", envelope.tool_permissions
+        )
         credential_ids = _string_sequence(request.arguments, "credential_reference_ids")
         singular_credential = _optional_string(request.arguments, "credential_reference_id")
         if singular_credential is not None:
@@ -1175,6 +1188,10 @@ class Application:
                 "execution_envelope_version": envelope.version,
                 "execution_envelope_fingerprint": envelope.fingerprint,
                 "workspace_id": workspace_id,
+                "authorized_capabilities": list(capabilities),
+                "filesystem_permissions": list(filesystem_permissions),
+                "network_permissions": list(network_permissions),
+                "tool_permissions": list(tool_permissions),
             },
             base_commit=_required_envelope_commit(envelope),
             project_model_fingerprint=_required_envelope_fingerprint(envelope),
@@ -1237,17 +1254,9 @@ class Application:
             provider_id=provider_id,
             provider_role=role.value,
             requested_capabilities=capabilities,
-            filesystem_permissions=_string_sequence_or_default(
-                request.arguments,
-                "filesystem_permissions",
-                envelope.filesystem_permissions,
-            ),
-            network_permissions=_string_sequence_or_default(
-                request.arguments, "network_permissions", envelope.network_permissions
-            ),
-            tool_permissions=_string_sequence_or_default(
-                request.arguments, "tool_permissions", envelope.tool_permissions
-            ),
+            filesystem_permissions=filesystem_permissions,
+            network_permissions=network_permissions,
+            tool_permissions=tool_permissions,
             credential_reference_ids=credential_ids,
             actor=dispatch_actor,
             correlation_id=request.context.correlation_id,
@@ -1917,6 +1926,7 @@ def _record_promoted_provider_certification(
     workspace_id: str,
     project_job_id: str,
     revision: int,
+    provider_loader: ProviderCompositionLoader,
 ) -> dict[str, object] | None:
     """Certify supported provider execution only after acceptance and promotion."""
 
@@ -1931,6 +1941,9 @@ def _record_promoted_provider_certification(
         or str(dispatch["provider_role"]) != ProviderRole.EXECUTION_IMPLEMENTER.value
     ):
         return None
+    provider = provider_loader.load(str(workspace["project_root"])).provider(provider_id)
+    if provider is None:
+        raise ValueError("promoted provider is absent from the persisted public composition")
     decision = service.store.acceptance(project_job_id)
     if decision is None:
         raise ValueError("promoted provider ProjectJob has no persisted acceptance")
@@ -1962,6 +1975,9 @@ def _record_promoted_provider_certification(
     promoted = ProjectAuthority(str(workspace["project_root"])).current()
     if promoted.number != revision:
         raise ValueError("provider certification revision does not match Project Authority")
+    provider_version, executable_hash, auth_hash, artifact_hash = (
+        _provider_certification_binding(provider)
+    )
     receipt = record_execution_implementer_evidence(
         project_id=promoted.project_id,
         project_job_id=project_job_id,
@@ -1970,5 +1986,21 @@ def _record_promoted_provider_certification(
         acceptance_decision_id=str(decision["decision_id"]),
         promotion_revision=revision,
         provider_id=provider_id,
+        provider_version=provider_version,
+        provider_executable_sha256=executable_hash,
+        auth_probe_sha256=auth_hash,
+        shipping_artifact_sha256=artifact_hash,
     )
     return receipt.to_dict()
+
+
+def _provider_certification_binding(
+    provider: ProviderInstance,
+) -> tuple[str | None, str | None, str | None, str | None]:
+    values = (
+        provider.readiness.version,
+        provider.readiness.executable_sha256,
+        provider.readiness.auth_probe_sha256,
+        shipping_artifact_sha256(),
+    )
+    return values if all(isinstance(item, str) and item for item in values) else (None,) * 4

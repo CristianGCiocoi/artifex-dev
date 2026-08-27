@@ -116,8 +116,11 @@ def _provider() -> ProviderInstance:
 
 
 def _live_runner(observed: list[tuple[str, ...]], response: str = "Safe response"):
-    def run(arguments: Sequence[str], root: Path) -> subprocess.CompletedProcess[str]:
+    def run(
+        arguments: Sequence[str], root: Path, stdin_prompt: str | None
+    ) -> subprocess.CompletedProcess[str]:
         assert root.is_dir()
+        assert stdin_prompt is None
         observed.append(tuple(arguments))
         events = (
             {"type": "thread.started", "thread_id": "thread-1"},
@@ -175,7 +178,9 @@ def test_interaction_fails_closed_on_multiple_messages_or_baseline_change(
     root = _project(tmp_path)
     store = CapabilityEvidenceStore(tmp_path / "state" / "evidence.sqlite3")
 
-    def multiple(_: Sequence[str], __: Path) -> subprocess.CompletedProcess[str]:
+    def multiple(
+        _: Sequence[str], __: Path, ___: str | None
+    ) -> subprocess.CompletedProcess[str]:
         events = [
             {"type": "item.completed", "item": {"type": "agent_message", "text": "one"}},
             {"type": "item.completed", "item": {"type": "agent_message", "text": "two"}},
@@ -192,7 +197,9 @@ def test_interaction_fails_closed_on_multiple_messages_or_baseline_change(
             prompt="read only",
         )
 
-    def mutating(_: Sequence[str], project_root: Path) -> subprocess.CompletedProcess[str]:
+    def mutating(
+        _: Sequence[str], project_root: Path, __: str | None
+    ) -> subprocess.CompletedProcess[str]:
         (project_root / ".artifex" / "project-model.json").write_text("{}\n", encoding="utf-8")
         events = [
             {"type": "thread.started", "thread_id": "thread-1"},
@@ -233,7 +240,7 @@ def test_interaction_uses_only_the_last_message_before_the_completed_turn() -> N
 
 
 def test_public_application_loads_setup_resolves_context_and_certifies_by_role(
-    tmp_path: Path,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     root = _project(tmp_path)
     store = CapabilityEvidenceStore(tmp_path / "machine-state" / "evidence.sqlite3")
@@ -244,8 +251,11 @@ def test_public_application_loads_setup_resolves_context_and_certifies_by_role(
             return subprocess.CompletedProcess(list(arguments), 0, "codex-cli 0.150.1\n", "")
         return subprocess.CompletedProcess(list(arguments), 0, "Logged in\n", "")
 
+    executable = tmp_path / "codex.exe"
+    executable.write_bytes(b"fixture codex executable")
+    monkeypatch.setenv("ARTIFEX_SHIPPING_ARTIFACT_SHA256", "b" * 64)
     loader = ProviderCompositionLoader(
-        which=lambda _: "codex",
+        which=lambda _: str(executable),
         runner=probe,
         certified_roles={"codex": CODEX_DISPATCH_AUTHORIZED_ROLES},
     )
@@ -284,6 +294,10 @@ def test_public_application_loads_setup_resolves_context_and_certifies_by_role(
         promoted_baseline_sha256="b" * 64,
         acceptance_decision_id="DEC-1",
         promotion_revision=2,
+        provider_version="0.150.1",
+        provider_executable_sha256="c" * 64,
+        auth_probe_sha256="d" * 64,
+        shipping_artifact_sha256="b" * 64,
         store=store,
     )
     promoted = application.dispatch(

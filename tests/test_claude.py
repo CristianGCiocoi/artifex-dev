@@ -13,6 +13,7 @@ from artifex.integrations.claude import (
     ClaudeDetection,
     ClaudeIntegration,
     ContinuitySnapshot,
+    _claude_execution_result_schema,
     detect_claude,
 )
 from artifex.integrations.conformance import ConformanceSuite
@@ -41,7 +42,13 @@ def _packet(
 ) -> ExecutionPacket:
     return adapter.prepare_execution(
         task_contract={"id": task_id, "stage": "implementation"},
-        context={"requirements": ["REQ-F-044"]},
+        context={
+            "requirements": ["REQ-F-044"],
+            "authorized_capabilities": ["repository_read", "repository_write"],
+            "filesystem_permissions": ["READ", "WRITE"],
+            "network_permissions": [],
+            "tool_permissions": [],
+        },
         base_commit=base_commit,
         project_model_fingerprint=model_fingerprint_value,
         acceptance_criteria=("standalone pass",),
@@ -67,6 +74,11 @@ def _raw_result(
         "artifacts": artifacts,
         "validation": {} if validation is None else validation,
     }
+
+
+def test_claude_internal_result_schema_retains_draft_2020_12_dialect() -> None:
+    schema = _claude_execution_result_schema(_packet(_available()))
+    assert schema["$schema"] == "https://json-schema.org/draft/2020-12/schema"
 
 
 def _git(root: Path, *arguments: str) -> str:

@@ -233,12 +233,18 @@ class ClaudeProcessRunner:
         root = Path(plan.worktree_root).resolve()
         if not root.is_dir():
             raise ClaudeProcessError("bound Git workspace is unavailable")
-        expected = _claude_execution_command(self.command, root, plan.prompt)
+        expected = _claude_execution_command(self.command, root, plan.prompt, plan.packet)
         if plan.command != expected:
             raise ClaudeProcessError("prepared command does not match the bound execution plan")
         schema = _claude_execution_result_schema(plan.packet)
+        cli_schema = dict(schema)
+        # Claude Code 2.1.x validates the supplied schema with its bundled
+        # registry, which does not resolve the Draft 2020-12 meta-schema URI.
+        # The dialect declaration is unnecessary for this closed schema and
+        # ARTIFEX still validates the returned value with Draft202012Validator.
+        cli_schema.pop("$schema", None)
         arguments = [
-            json.dumps(schema, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+            json.dumps(cli_schema, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
             if item == _CLAUDE_OUTPUT_SCHEMA
             else item
             for item in plan.command
@@ -269,7 +275,12 @@ class ClaudeProcessRunner:
         ):
             raise ClaudeProcessError("process diagnostics exceeded the configured bound")
         if completed.returncode != 0:
-            raise ClaudeProcessError(f"process exited non-zero (code {completed.returncode})")
+            category = _claude_failure_category(stdout, stderr)
+            raise ClaudeProcessError(
+                f"process exited non-zero (code {completed.returncode}; "
+                f"category={category}; stdout_sha256={_sha256_text(stdout)}; "
+                f"stderr_sha256={_sha256_text(stderr)})"
+            )
         try:
             value = json.loads(stdout, object_pairs_hook=_unique_json_object)
         except json.JSONDecodeError:
@@ -489,7 +500,7 @@ class ClaudeIntegration:
         prefix = _validate_claude_command_prefix(
             (self.detection.executable,) if command_prefix is None else command_prefix
         )
-        command = _claude_execution_command(prefix, worktree, prompt)
+        command = _claude_execution_command(prefix, worktree, prompt, packet)
         return ClaudeExecutionPlan(packet, str(project), str(worktree), command, prompt)
 
     prepare_stage_execution = plan_stage_execution
@@ -999,6 +1010,37 @@ def _file_fingerprint(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _sha256_text(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8", errors="replace")).hexdigest()
+
+
+def _claude_failure_category(stdout: str, stderr: str) -> str:
+    combined = f"{stderr}\n{stdout}".casefold()
+    categories = (
+        ("input must be provided", "INPUT_MISSING"),
+        ("json schema", "STRUCTURED_OUTPUT_SCHEMA"),
+        ("permission", "PERMISSION_DENIED"),
+        ("not allowed", "TOOL_NOT_ALLOWED"),
+        ("authentication", "AUTHENTICATION"),
+        ("rate limit", "RATE_LIMIT"),
+        ("overloaded", "PROVIDER_OVERLOADED"),
+    )
+    for marker, category in categories:
+        if marker in combined:
+            return category
+    try:
+        value = json.loads(stdout)
+    except json.JSONDecodeError:
+        value = None
+    if isinstance(value, Mapping):
+        subtype = value.get("subtype")
+        if isinstance(subtype, str) and re.fullmatch(r"[A-Za-z0-9_.-]{1,64}", subtype):
+            return f"CLAUDE_{subtype.upper()}"
+        if value.get("is_error") is True:
+            return "CLAUDE_REPORTED_ERROR"
+    return "UNCLASSIFIED_PROVIDER_EXIT"
+
+
 def _is_ephemeral_state_path(relative: str) -> bool:
     parts = tuple(part.casefold() for part in Path(relative).parts)
     filename = parts[-1]
@@ -1073,11 +1115,15 @@ def _validate_claude_command_prefix(command: Sequence[str]) -> tuple[str, ...]:
 
 
 def _claude_execution_command(
-    command_prefix: Sequence[str], root: Path, prompt: str
+    command_prefix: Sequence[str],
+    root: Path,
+    prompt: str,
+    packet: ExecutionPacket,
 ) -> tuple[str, ...]:
     prefix = _validate_claude_command_prefix(command_prefix)
     del root  # cwd is bound by ClaudeProcessRunner; no second workspace path is accepted.
     del prompt  # the bounded prompt is supplied over stdin, never shell interpolation.
+    tools = _claude_execution_tools(packet)
     return (
         *prefix,
         "--print",
@@ -1087,10 +1133,36 @@ def _claude_execution_command(
         "acceptEdits",
         "--strict-mcp-config",
         "--tools",
-        "Read,Write,Edit,Glob,Grep,Bash",
+        ",".join(tools),
         "--output-format",
         "json",
     )
+
+
+def _claude_execution_tools(packet: ExecutionPacket) -> tuple[str, ...]:
+    context = packet.context
+    capabilities = set(_string_context_sequence(context, "authorized_capabilities"))
+    filesystem = set(_string_context_sequence(context, "filesystem_permissions"))
+    permissions = set(_string_context_sequence(context, "tool_permissions"))
+    tools: list[str] = []
+    if "repository_read" in capabilities and "READ" in filesystem:
+        tools.extend(("Read", "Glob", "Grep"))
+    if "repository_write" in capabilities and "WRITE" in filesystem:
+        tools.extend(("Write", "Edit"))
+    if "test_execution" in capabilities and "claude.bash" in permissions:
+        tools.append("Bash")
+    if not tools:
+        raise IntegrationError("Claude execution Envelope authorizes no provider tools")
+    return tuple(tools)
+
+
+def _string_context_sequence(value: Mapping[str, Any], name: str) -> tuple[str, ...]:
+    observed = value.get(name)
+    if not isinstance(observed, Sequence) or isinstance(observed, (str, bytes, bytearray)):
+        raise IntegrationError(f"Claude execution context {name} must be an array")
+    if any(not isinstance(item, str) or not item for item in observed):
+        raise IntegrationError(f"Claude execution context {name} contains invalid values")
+    return tuple(observed)
 
 
 def _claude_prefix_from_execution_command(command: Sequence[str]) -> tuple[str, ...]:

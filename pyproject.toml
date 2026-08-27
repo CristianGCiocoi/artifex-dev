@@ -38,6 +38,7 @@ packages = ["src/artifex"]
 "schemas/acceptance-evidence.schema.json" = "artifex/schemas/acceptance-evidence.schema.json"
 "schemas/artifex2/provider-role-certification.schema.json" = "artifex/schemas/artifex2/provider-role-certification.schema.json"
 "interface_packs/codex" = "artifex/interface_packs/codex"
+"interface_packs/claude" = "artifex/interface_packs/claude"
 
 [tool.pytest.ini_options]
 addopts = "--strict-markers --strict-config -ra"

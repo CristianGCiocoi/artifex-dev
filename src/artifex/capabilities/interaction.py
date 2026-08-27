@@ -12,10 +12,16 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from artifex.capabilities.evidence import CapabilityEvidenceStore, CapabilityReceipt
+from artifex.capabilities.evidence import (
+    CapabilityEvidenceStore,
+    CapabilityReceipt,
+    shipping_artifact_sha256,
+)
 from artifex.capabilities.models import ProviderInstance, ProviderRole
 
-InteractionRunner = Callable[[Sequence[str], Path], subprocess.CompletedProcess[str]]
+InteractionRunner = Callable[
+    [Sequence[str], Path, str | None], subprocess.CompletedProcess[str]
+]
 _MAX_RESPONSE_BYTES = 64 * 1024
 _ANSI = re.compile(r"\x1b(?:\[[0-?]*[ -/]*[@-~]|\][^\x07]*(?:\x07|\x1b\\))")
 _SECRETS = (
@@ -79,7 +85,11 @@ class ProviderInteractionService:
         baseline = _capture_baseline(root)
         command = _interaction_command(provider, root, prompt)
         try:
-            completed = self.runner(command, root)
+            completed = self.runner(
+                command,
+                root,
+                prompt if provider.provider_id == "claude" else None,
+            )
         except (OSError, subprocess.SubprocessError) as exc:
             raise ValueError(
                 f"{provider.provider_id} interaction failed: {type(exc).__name__}"
@@ -99,6 +109,9 @@ class ProviderInteractionService:
                 f"{provider.provider_id} read-only interaction changed the Git or Project baseline"
             )
         sanitized, truncated = _sanitize_response(response)
+        provider_version, executable_hash, auth_hash, artifact_hash = (
+            _live_certification_binding(provider)
+        )
         receipt = CapabilityReceipt.issue(
             provider_id=provider.provider_id,
             role=ProviderRole.INTERACTION,
@@ -107,6 +120,10 @@ class ProviderInteractionService:
             input_sha256=_sha256_text(prompt),
             output_sha256=_sha256_text(sanitized),
             baseline_sha256=baseline.fingerprint,
+            provider_version=provider_version,
+            provider_executable_sha256=executable_hash,
+            auth_probe_sha256=auth_hash,
+            shipping_artifact_sha256=artifact_hash,
         )
         self.store.append(receipt)
         return {
@@ -128,7 +145,9 @@ class ProviderInteractionService:
             return
         raise ValueError("capability evidence store must remain outside Project Git")
 
-    def _run(self, arguments: Sequence[str], root: Path) -> subprocess.CompletedProcess[str]:
+    def _run(
+        self, arguments: Sequence[str], root: Path, stdin_prompt: str | None
+    ) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
             list(arguments),
             cwd=root,
@@ -137,6 +156,7 @@ class ProviderInteractionService:
             text=True,
             encoding="utf-8",
             errors="replace",
+            input=stdin_prompt,
             timeout=self.timeout_seconds,
         )
 
@@ -155,7 +175,6 @@ def _interaction_command(provider: ProviderInstance, root: Path, prompt: str) ->
             "--strict-mcp-config",
             "--tools",
             "Read,Glob,Grep",
-            prompt,
         )
     prefix = _validated_codex_prefix(command)
     return (
@@ -367,6 +386,18 @@ def _sha256_json(value: object) -> str:
         value, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False
     ).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
+
+
+def _live_certification_binding(
+    provider: ProviderInstance,
+) -> tuple[str | None, str | None, str | None, str | None]:
+    values = (
+        provider.readiness.version,
+        provider.readiness.executable_sha256,
+        provider.readiness.auth_probe_sha256,
+        shipping_artifact_sha256(),
+    )
+    return values if all(isinstance(item, str) and item for item in values) else (None,) * 4
 
 
 __all__ = ["ProviderInteractionService", "RepositoryBaseline"]

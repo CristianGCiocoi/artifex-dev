@@ -63,15 +63,21 @@ def _persist_claude_setup(root: Path) -> None:
     )
 
 
-def _claude_loader(*, authenticated: bool = True) -> ProviderCompositionLoader:
+def _claude_loader(
+    *, authenticated: bool = True, executable: str = "C:/fixture/claude.exe"
+) -> ProviderCompositionLoader:
     def probe(arguments: Sequence[str]) -> subprocess.CompletedProcess[str]:
         if arguments[-1] == "--version":
             return _completed(arguments, stdout="Claude Code 2.1.3\n")
         assert tuple(arguments[-2:]) == ("auth", "status")
-        return _completed(arguments, returncode=0 if authenticated else 1)
+        return _completed(
+            arguments,
+            returncode=0 if authenticated else 1,
+            stdout=json.dumps({"loggedIn": authenticated}),
+        )
 
     return ProviderCompositionLoader(
-        which=lambda executable: "C:/fixture/claude.exe" if executable == "claude" else None,
+        which=lambda requested: executable if requested == "claude" else None,
         runner=probe,
         certified_roles={"claude": CLAUDE_DISPATCH_AUTHORIZED_ROLES},
     )
@@ -316,6 +322,29 @@ def test_claude_setup_discovery_auth_and_readiness_are_distinct(tmp_path: Path) 
     assert migrated.configuration.credential_reference.broker == "claude-native-session"
 
 
+def test_unsupported_claude_version_never_becomes_available(tmp_path: Path) -> None:
+    _persist_claude_setup(tmp_path)
+    auth_probed = False
+
+    def probe(arguments: Sequence[str]) -> subprocess.CompletedProcess[str]:
+        nonlocal auth_probed
+        if arguments[-1] == "--version":
+            return _completed(arguments, stdout="Claude Code 3.0.0\n")
+        auth_probed = True
+        return _completed(arguments, stdout=json.dumps({"loggedIn": True}))
+
+    provider = ProviderCompositionLoader(
+        which=lambda _: "C:/fixture/claude.exe",
+        runner=probe,
+        certified_roles={"claude": CLAUDE_DISPATCH_AUTHORIZED_ROLES},
+    ).load(tmp_path).provider("claude")
+    assert provider is not None
+    assert provider.readiness.state is ReadinessState.CONFIGURED
+    assert provider.readiness.checks["supported_version"] is False
+    assert provider.globally_available is False
+    assert auth_probed is False
+
+
 def test_public_claude_interaction_preserves_project_identity_and_baseline(
     tmp_path: Path,
 ) -> None:
@@ -326,7 +355,14 @@ def test_public_claude_interaction_preserves_project_identity_and_baseline(
         if arguments[-1] == "--version":
             output = "codex-cli 0.150.1\n" if "codex" in arguments[0] else "Claude Code 2.1.3\n"
             return _completed(arguments, stdout=output)
-        return _completed(arguments, stdout="authenticated\n")
+        return _completed(
+            arguments,
+            stdout=(
+                json.dumps({"loggedIn": True})
+                if "claude" in arguments[0]
+                else "authenticated\n"
+            ),
+        )
 
     loader = ProviderCompositionLoader(
         which=lambda executable: executable,
@@ -338,10 +374,11 @@ def test_public_claude_interaction_preserves_project_identity_and_baseline(
     )
 
     def interaction(
-        arguments: Sequence[str], observed_root: Path
+        arguments: Sequence[str], observed_root: Path, stdin_prompt: str | None
     ) -> subprocess.CompletedProcess[str]:
         assert observed_root == root.resolve()
         if "codex" in arguments[0]:
+            assert stdin_prompt is None
             events = (
                 {"type": "thread.started", "thread_id": "m6a-thread"},
                 {"type": "turn.started"},
@@ -353,6 +390,8 @@ def test_public_claude_interaction_preserves_project_identity_and_baseline(
             )
             return _completed(arguments, stdout="\n".join(map(json.dumps, events)) + "\n")
         assert arguments[arguments.index("--permission-mode") + 1] == "plan"
+        assert "Read the durable project identity and revision." not in arguments
+        assert stdin_prompt == "Read the durable project identity and revision."
         return _completed(
             arguments,
             stdout=json.dumps(
@@ -418,17 +457,21 @@ def test_public_claude_execution_uses_isolated_workspace_and_separate_acceptance
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setenv("ARTIFEX_LOCAL_STATE_ROOT", str(tmp_path / "local-state"))
+    monkeypatch.setenv("ARTIFEX_SHIPPING_ARTIFACT_SHA256", "b" * 64)
     common, project_root = _bootstrap(tmp_path)
     observed: dict[str, Any] = {}
 
     def process(arguments: list[str], **options: Any) -> subprocess.CompletedProcess[str]:
         workspace = Path(options["cwd"])
         observed.update({"arguments": arguments, "cwd": workspace, "prompt": options["input"]})
+        assert arguments[arguments.index("--tools") + 1] == "Write,Edit"
+        assert "Bash" not in arguments[arguments.index("--tools") + 1]
         assert workspace != project_root
         artifact = workspace / "deliverables" / "claude.txt"
         artifact.parent.mkdir(parents=True)
         artifact.write_text("bounded Claude result\n", encoding="utf-8")
         schema = json.loads(arguments[arguments.index("--json-schema") + 1])
+        assert "$schema" not in schema
         result = {
             "status": "SUCCESS",
             "base_commit": schema["properties"]["base_commit"]["const"],
@@ -452,8 +495,10 @@ def test_public_claude_execution_uses_isolated_workspace_and_separate_acceptance
             ),
         )
 
+    executable = tmp_path / "claude.exe"
+    executable.write_bytes(b"fixture claude executable")
     app = Application(
-        provider_loader=_claude_loader(),
+        provider_loader=_claude_loader(executable=str(executable)),
         claude_runner_factory=lambda command: ClaudeProcessRunner(
             command=command, process_runner=process
         ),
@@ -489,7 +534,7 @@ def test_public_claude_execution_uses_isolated_workspace_and_separate_acceptance
     assert accepted.ok, accepted.to_dict()
     model = json.loads((project_root / ".artifex" / "project-model.json").read_text())
     model["project"]["description"] = "accepted Claude result"
-    promoted = Application().dispatch(
+    promoted = app.dispatch(
         OperationRequest(
             "runtime.workspace.promote",
             {
@@ -503,7 +548,7 @@ def test_public_claude_execution_uses_isolated_workspace_and_separate_acceptance
     )
     assert promoted.ok, promoted.to_dict()
     assert promoted.value["provider_certification_receipt"]["provider_id"] == "claude"
-    certifications = Application().dispatch(
+    certifications = app.dispatch(
         OperationRequest(
             "providers.certifications",
             {"provider_id": "claude", "project_id": "m6a-project"},

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import shutil
@@ -27,6 +28,8 @@ from artifex.integrations.codex import CODEX_CAPABILITIES, CodexDetection
 
 CommandRunner = Callable[[Sequence[str]], subprocess.CompletedProcess[str]]
 _VERSION = re.compile(r"(?<!\d)(\d+(?:\.\d+){1,3}(?:[-+][A-Za-z0-9.-]+)?)")
+_CLAUDE_MINIMUM = (2, 1, 3)
+_CLAUDE_MAXIMUM_EXCLUSIVE = (3, 0, 0)
 
 
 class ProviderSetupError(ValueError):
@@ -212,6 +215,7 @@ class ProviderCompositionLoader:
         }
         state = ReadinessState.NOT_DETECTED
         detail = detection.error or "Codex was not detected"
+        assertion = AuthenticationAssertion(False, "not-probed", detail)
         if detection.available:
             state = ReadinessState.DETECTED
             state = ReadinessState.CONFIGURED
@@ -226,6 +230,14 @@ class ProviderCompositionLoader:
                 state = ReadinessState.REGISTERED
                 checks["available"] = True
                 state = ReadinessState.AVAILABLE
+        auth_probe_sha256 = _sha256_json(
+            {
+                "provider_id": "codex",
+                "version": detection.version,
+                "authenticated": assertion.authenticated,
+                "method": assertion.method,
+            }
+        )
         readiness = ProviderReadiness(
             "codex",
             state,
@@ -234,6 +246,8 @@ class ProviderCompositionLoader:
             command,
             detection.version,
             detail,
+            auth_probe_sha256,
+            _file_sha256(detection.executable),
         )
         certified = self.certified_roles.get("codex", frozenset())
         return ProviderInstance(
@@ -249,6 +263,7 @@ class ProviderCompositionLoader:
         checks = {
             "detected": detection.installed,
             "configured": configuration.enabled,
+            "supported_version": False,
             "authenticated": False,
             "healthy": False,
             "registered": False,
@@ -258,12 +273,31 @@ class ProviderCompositionLoader:
         detail = detection.detail or "Claude was not detected"
         if detection.installed:
             state = ReadinessState.CONFIGURED
-            assertion = self._authenticate_claude(configuration, detection)
-            checks["authenticated"] = assertion.authenticated
-            detail = assertion.detail
-            if assertion.authenticated:
-                state = ReadinessState.AVAILABLE
-                checks.update({"healthy": True, "registered": True, "available": True})
+            if _supported_claude_version(detection.version):
+                checks["supported_version"] = True
+                assertion = self._authenticate_claude(configuration, detection)
+                checks["authenticated"] = assertion.authenticated
+                detail = assertion.detail
+                if assertion.authenticated:
+                    state = ReadinessState.AVAILABLE
+                    checks.update({"healthy": True, "registered": True, "available": True})
+            else:
+                detail = (
+                    "Claude version is outside the certified range >=2.1.3,<3: "
+                    f"{detection.version or 'unknown'}"
+                )
+                assertion = AuthenticationAssertion(False, "not-probed", detail)
+        else:
+            assertion = AuthenticationAssertion(False, "not-probed", detail)
+        auth_probe_sha256 = _sha256_json(
+            {
+                "provider_id": "claude",
+                "version": detection.version,
+                "authenticated": assertion.authenticated,
+                "method": assertion.method,
+                "supported_version": checks["supported_version"],
+            }
+        )
         readiness = ProviderReadiness(
             "claude",
             state,
@@ -272,6 +306,8 @@ class ProviderCompositionLoader:
             command,
             detection.version,
             detail,
+            auth_probe_sha256,
+            _file_sha256(detection.executable),
         )
         certified = self.certified_roles.get("claude", frozenset())
         return ProviderInstance(
@@ -337,12 +373,19 @@ class ProviderCompositionLoader:
                 "claude-native-session",
                 f"authentication probe failed: {type(exc).__name__}",
             )
+        authenticated = False
+        if completed.returncode == 0:
+            try:
+                status = json.loads(completed.stdout)
+            except json.JSONDecodeError:
+                status = None
+            authenticated = isinstance(status, Mapping) and status.get("loggedIn") is True
         return AuthenticationAssertion(
-            completed.returncode == 0,
+            authenticated,
             "claude-native-session",
             (
                 "native Claude session authenticated"
-                if completed.returncode == 0
+                if authenticated
                 else "native Claude session unavailable"
             ),
         )
@@ -442,3 +485,29 @@ class ProviderCompositionLoader:
         ):
             raise ProviderSetupError(f"{name} must be an array of non-empty strings")
         return tuple(value)
+
+
+def _supported_claude_version(version: str | None) -> bool:
+    if version is None:
+        return False
+    match = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)(?:[-+][A-Za-z0-9.-]+)?", version)
+    if match is None:
+        return False
+    observed = tuple(int(item) for item in match.groups())
+    return _CLAUDE_MINIMUM <= observed < _CLAUDE_MAXIMUM_EXCLUSIVE
+
+
+def _sha256_json(value: object) -> str:
+    encoded = json.dumps(
+        value, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _file_sha256(path: str | None) -> str | None:
+    if path is None:
+        return None
+    try:
+        return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+    except OSError:
+        return None

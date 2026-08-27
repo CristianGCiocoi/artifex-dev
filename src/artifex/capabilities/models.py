@@ -109,6 +109,8 @@ class ProviderReadiness:
     command: tuple[str, ...] = ()
     version: str | None = None
     detail: str = ""
+    auth_probe_sha256: str | None = None
+    executable_sha256: str | None = None
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -119,6 +121,8 @@ class ProviderReadiness:
             "command": list(self.command),
             "version": self.version,
             "detail": self.detail,
+            "auth_probe_sha256": self.auth_probe_sha256,
+            "executable_sha256": self.executable_sha256,
         }
 
 
