@@ -225,6 +225,10 @@ def test_public_provider_execution_is_bound_evidenced_and_not_accepted(
 
     def process_runner(arguments: list[str], **options: Any) -> subprocess.CompletedProcess[str]:
         observed_commands.append(arguments)
+        prompt = arguments[-1]
+        assert '"acceptance_criteria":["gate:validation"]' in prompt
+        assert "gate:acceptance" not in prompt
+        assert "gate:project-authority" not in prompt
         root = Path(options["cwd"])
         artifact = root / "deliverables" / "result.txt"
         artifact.parent.mkdir(parents=True, exist_ok=True)

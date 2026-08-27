@@ -753,7 +753,7 @@ class Application:
             acceptance_criteria=(
                 tuple(_required_sequence(request.arguments, "acceptance_criteria"))
                 if "acceptance_criteria" in request.arguments
-                else tuple(f"gate:{gate}" for gate in envelope.required_gates)
+                else _provider_execution_criteria(envelope)
             ),
             ownership={"paths": list(owned_paths)},
             expected_result={
@@ -1410,6 +1410,18 @@ def _record_required_evidence(
         service.record_evidence(record, actor=actor, correlation_id=correlation_id)
         records.append(record)
     return tuple(records)
+
+
+def _provider_execution_criteria(envelope: ExecutionEnvelope) -> tuple[str, ...]:
+    """Keep Acceptance Authority gates out of an implementer's task contract."""
+
+    authority_gates = {"acceptance", "acceptance-authority", "project-authority"}
+    criteria = tuple(
+        f"gate:{gate}"
+        for gate in envelope.required_gates
+        if gate.casefold() not in authority_gates
+    )
+    return criteria or ("executor-result-bound-to-envelope",)
 
 
 def _record_promoted_provider_certification(
