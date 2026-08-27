@@ -87,6 +87,6 @@ def test_m0_validator_passes_current_repository_state() -> None:
     state = validate(ROOT, None)
 
     assert state["milestones"][0]["state"] == "ACCEPTED"
-    assert state["acceptance"]["acceptance_commit"] == (
+    assert state["m0_acceptance"]["acceptance_commit"] == (
         "f476d40e7a721913b9c94c4a60b78f0500f0e85f"
     )

@@ -1,83 +1,85 @@
 {
   "acceptance": {
-    "acceptance_commit": "f476d40e7a721913b9c94c4a60b78f0500f0e85f",
     "blocked": [],
-    "contract_digest": "da11399318accf59ec578bdbc04da17911cca1014dd823c17cfde92d101d2b4f",
+    "contract_digest": "42c6d252e97380e841bff8eabadf673d6f69140ce9660c59f805aff38d71299d",
     "evidence_classes": {
       "BLACK_BOX_OUTCOME": {
-        "evidence": [],
-        "required_m0": false,
-        "status": "NOT_APPLICABLE"
+        "evidence": [
+          "EVIDENCE/M1-VALIDATION.yaml"
+        ],
+        "required_m1": true,
+        "status": "PASS"
       },
       "COMPONENT": {
         "evidence": [
-          "EVIDENCE/M0-VALIDATION.yaml"
+          "EVIDENCE/M1-VALIDATION.yaml"
         ],
-        "required_m0": true,
+        "required_m1": true,
         "status": "PASS"
       },
       "DASHBOARD": {
         "evidence": [
-          "dashboard/state.json",
-          "dashboard/index.html"
+          "EVIDENCE/M1-VALIDATION.yaml"
         ],
-        "required_m0": true,
+        "required_m1": true,
         "status": "PASS"
       },
       "DESIGN_CONFORMANCE": {
         "evidence": [
-          "EVIDENCE/HANDOFF-INTEGRITY.yaml",
-          "EVIDENCE/M0-VALIDATION.yaml"
+          "EVIDENCE/M1-VALIDATION.yaml"
         ],
-        "required_m0": true,
+        "required_m1": true,
         "status": "PASS"
       },
       "DOCUMENTATION": {
         "evidence": [
-          "CURRENT-STATE.md"
+          "EVIDENCE/M1-VALIDATION.yaml"
         ],
-        "required_m0": true,
+        "required_m1": true,
         "status": "PASS"
       },
       "DOMAIN_INTEGRATION": {
         "evidence": [
-          "EVIDENCE/M0-VALIDATION.yaml",
-          "EVIDENCE/V1-KNOWN-GAPS.yaml"
+          "EVIDENCE/M1-VALIDATION.yaml"
         ],
-        "required_m0": true,
+        "required_m1": true,
         "status": "PASS"
       },
       "MIGRATION": {
         "evidence": [
-          "MIGRATION/V1-RELEASE-FIXTURE.yaml"
+          "EVIDENCE/M1-VALIDATION.yaml"
         ],
-        "required_m0": true,
+        "required_m1": true,
         "status": "PASS"
       },
       "PROVIDER_CERTIFICATION": {
         "evidence": [],
-        "required_m0": false,
+        "required_m1": false,
         "status": "NOT_APPLICABLE"
       },
       "PUBLIC_COMPOSITION": {
-        "evidence": [],
-        "required_m0": false,
-        "status": "NOT_APPLICABLE"
+        "evidence": [
+          "EVIDENCE/M1-VALIDATION.yaml"
+        ],
+        "required_m1": true,
+        "status": "PASS"
       },
       "SECURITY_AUTHORITY": {
         "evidence": [
-          "EVIDENCE/M0-VALIDATION.yaml"
+          "EVIDENCE/M1-VALIDATION.yaml"
         ],
-        "required_m0": true,
+        "required_m1": true,
         "status": "PASS"
       }
     },
     "frozen_architecture_baseline": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
-    "implementation_baseline_commit": "23fd3c77a1be402dbfbee79915da4748b98ebf84",
-    "mandatory_journeys": [],
+    "implementation_baseline_commit": "94c42c4e6c494beda32db40d37f34e6c7659cbe2",
+    "mandatory_journeys": [
+      "J03"
+    ],
     "mandatory_work_complete": true,
-    "migration": "BASELINE_CAPTURE_ONLY",
-    "milestone": "M0",
+    "migration": "V1_MODEL_ADAPTER_BASELINE_QUALIFIED",
+    "milestone": "M1",
     "provider_claim_changes": [],
     "schema_version": "1.0",
     "superseded": [],
@@ -106,7 +108,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "ADR-T001",
-      "implementation_state": "IMPLEMENTED_M1_PENDING_ACCEPTANCE",
+      "implementation_state": "M1_ACCEPTED",
       "m0_baseline_state": "CAPTURED",
       "title": "ADR-T001 — Project Authority vs Portable Semantic Representation",
       "type": "FROZEN_ADR"
@@ -416,7 +418,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "ADR-T013",
-      "implementation_state": "M1_BASELINE_IMPLEMENTED",
+      "implementation_state": "M1_BASELINE_ACCEPTED",
       "m0_baseline_state": "CAPTURED",
       "title": "ADR-T013 — Project Documentation Lifecycle",
       "type": "FROZEN_ADR"
@@ -442,7 +444,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "ADR-T014",
-      "implementation_state": "M1_BASELINE_IMPLEMENTED",
+      "implementation_state": "M1_BASELINE_ACCEPTED",
       "m0_baseline_state": "CAPTURED",
       "title": "ADR-T014 — Unified Dashboard Framework",
       "type": "FROZEN_ADR"
@@ -573,7 +575,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "ADR-T019",
-      "implementation_state": "M1_ADAPTER_IMPLEMENTED_M9_ACCEPTANCE_PENDING",
+      "implementation_state": "M1_ADAPTER_ACCEPTED_M9_FINAL_ACCEPTANCE_PENDING",
       "m0_baseline_state": "CAPTURED",
       "title": "ADR-T019 — V1 Project Migration",
       "type": "FROZEN_ADR"
@@ -599,7 +601,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "ADR-T020",
-      "implementation_state": "IMPLEMENTED_M1_PENDING_ACCEPTANCE",
+      "implementation_state": "M1_ACCEPTED",
       "m0_baseline_state": "CAPTURED",
       "title": "ADR-T020 — Project Catalog & Discovery",
       "type": "FROZEN_ADR"
@@ -728,6 +730,11 @@
       "bytes": 2934,
       "path": "implementation/EVIDENCE/M0-VALIDATION.yaml",
       "sha256": "406f06df9f123ecaff6c8aba65ec5e4381cbc5497efc4349b4fa898eec5585a5"
+    },
+    {
+      "bytes": 2519,
+      "path": "implementation/EVIDENCE/M1-VALIDATION.yaml",
+      "sha256": "4903ad094844d6ea09917fc64e80bf0bd5bf23869f9da0820fdd9534f684b44c"
     },
     {
       "bytes": 3220,
@@ -1512,13 +1519,15 @@
       "title": "J02 — Fresh Machine + Claude"
     },
     {
-      "blocker": "M1 implementation active; public continuity composition not yet qualified",
-      "environment": null,
-      "evidence": [],
+      "blocker": null,
+      "environment": "CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS",
+      "evidence": [
+        "EVIDENCE/M1-VALIDATION.yaml"
+      ],
       "id": "J03",
-      "last_run": null,
-      "public_shipping_composition": null,
-      "status": "NOT_STARTED",
+      "last_run": "2026-08-27",
+      "public_shipping_composition": "INSTALLED_WHEEL_CLI_TWO_PROCESS",
+      "status": "PASS",
       "title": "J03 — Project Continuity"
     },
     {
@@ -1692,14 +1701,99 @@
       "title": "J20 — FULL ARTIFEX PROJECT LIFECYCLE"
     }
   ],
+  "m0_acceptance": {
+    "acceptance_commit": "f476d40e7a721913b9c94c4a60b78f0500f0e85f",
+    "blocked": [],
+    "contract_digest": "da11399318accf59ec578bdbc04da17911cca1014dd823c17cfde92d101d2b4f",
+    "evidence_classes": {
+      "BLACK_BOX_OUTCOME": {
+        "evidence": [],
+        "required_m0": false,
+        "status": "NOT_APPLICABLE"
+      },
+      "COMPONENT": {
+        "evidence": [
+          "EVIDENCE/M0-VALIDATION.yaml"
+        ],
+        "required_m0": true,
+        "status": "PASS"
+      },
+      "DASHBOARD": {
+        "evidence": [
+          "dashboard/state.json",
+          "dashboard/index.html"
+        ],
+        "required_m0": true,
+        "status": "PASS"
+      },
+      "DESIGN_CONFORMANCE": {
+        "evidence": [
+          "EVIDENCE/HANDOFF-INTEGRITY.yaml",
+          "EVIDENCE/M0-VALIDATION.yaml"
+        ],
+        "required_m0": true,
+        "status": "PASS"
+      },
+      "DOCUMENTATION": {
+        "evidence": [
+          "CURRENT-STATE.md"
+        ],
+        "required_m0": true,
+        "status": "PASS"
+      },
+      "DOMAIN_INTEGRATION": {
+        "evidence": [
+          "EVIDENCE/M0-VALIDATION.yaml",
+          "EVIDENCE/V1-KNOWN-GAPS.yaml"
+        ],
+        "required_m0": true,
+        "status": "PASS"
+      },
+      "MIGRATION": {
+        "evidence": [
+          "MIGRATION/V1-RELEASE-FIXTURE.yaml"
+        ],
+        "required_m0": true,
+        "status": "PASS"
+      },
+      "PROVIDER_CERTIFICATION": {
+        "evidence": [],
+        "required_m0": false,
+        "status": "NOT_APPLICABLE"
+      },
+      "PUBLIC_COMPOSITION": {
+        "evidence": [],
+        "required_m0": false,
+        "status": "NOT_APPLICABLE"
+      },
+      "SECURITY_AUTHORITY": {
+        "evidence": [
+          "EVIDENCE/M0-VALIDATION.yaml"
+        ],
+        "required_m0": true,
+        "status": "PASS"
+      }
+    },
+    "frozen_architecture_baseline": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
+    "implementation_baseline_commit": "23fd3c77a1be402dbfbee79915da4748b98ebf84",
+    "mandatory_journeys": [],
+    "mandatory_work_complete": true,
+    "migration": "BASELINE_CAPTURE_ONLY",
+    "milestone": "M0",
+    "provider_claim_changes": [],
+    "schema_version": "1.0",
+    "superseded": [],
+    "unresolved_contradiction": null,
+    "verdict": "ACCEPTED"
+  },
   "migration": {
     "fixture": "MIGRATION/V1-RELEASE-FIXTURE.yaml",
     "fixture_state": "M0_BASELINE_ACCEPTED",
-    "migration_execution": "ENGINEERING_ACTIVE",
+    "migration_execution": "V1_MODEL_ADAPTER_BASELINE_QUALIFIED",
     "milestone": "M1",
     "mode": "NON_DESTRUCTIVE_V1_ADAPTER_ENGINEERING",
     "project_mutation": false,
-    "rollback": "NOT_APPLICABLE_NO_MUTATION",
+    "rollback": "NOT_APPLICABLE_NON_DESTRUCTIVE_ADOPTION",
     "schema_version": "1.0"
   },
   "milestones": [
@@ -1713,14 +1807,14 @@
       "title": "Preservation, Outcome Harness & Conformance Baseline"
     },
     {
-      "accepted": false,
+      "accepted": true,
       "depends_on": [
         "M0"
       ],
       "id": "M1",
       "mandatory_for_core_ga": true,
       "started": true,
-      "state": "ACTIVE",
+      "state": "ACCEPTED",
       "title": "Project Authority, Catalog & Semantic Continuity"
     },
     {
@@ -1731,7 +1825,7 @@
       "id": "M2",
       "mandatory_for_core_ga": true,
       "started": false,
-      "state": "BLOCKED_DEPENDENCY",
+      "state": "READY",
       "title": "Durable Runtime, Coordinator Fencing, Workspace & Acceptance"
     },
     {
@@ -1903,7 +1997,7 @@
     "architecture_status": "FROZEN",
     "branch": "codex/artifex-2-m1",
     "current_milestone": "M1",
-    "current_status": "ACTIVE",
+    "current_status": "ACCEPTED",
     "dashboard_state": "CURRENT",
     "directory_variance": "PACKAGING_NAME_VARIANCE_ACCEPTED",
     "handoff_declared_directory": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF",
@@ -1913,9 +2007,9 @@
     "id": "ARTIFEX-2.0-IMPLEMENTATION",
     "implementation_plan_status": "FROZEN",
     "intake_commit": "5cc5dcfeb420a6df171a44426c04a0f08fa1e877",
-    "latest_accepted_commit": "f476d40e7a721913b9c94c4a60b78f0500f0e85f",
+    "latest_accepted_commit": "94c42c4e6c494beda32db40d37f34e6c7659cbe2",
     "m1_started": true,
-    "next_integration_point": "M1 public-composition and J03 acceptance gates",
+    "next_integration_point": "M2 readiness; M2 not started",
     "recorded_date": "2026-08-27",
     "target_release": "2.0.0"
   },
@@ -2181,21 +2275,23 @@
     "active_blockers": 0,
     "adr_count": 24,
     "current_milestone": "M1",
-    "evidence_items": 5,
+    "evidence_items": 6,
     "invariant_count": 34,
     "journey_states": {
-      "NOT_STARTED": 20
+      "NOT_STARTED": 19,
+      "PASS": 1
     },
-    "milestones_accepted": 1,
+    "milestones_accepted": 2,
     "milestones_started": 2,
     "milestones_total": 16,
     "provider_step_states": {
       "NOT_STARTED": 95
     },
-    "ready_milestones": [],
+    "ready_milestones": [
+      "M2"
+    ],
     "workstream_states": {
-      "COMPLETE": 5,
-      "IN_PROGRESS": 1
+      "COMPLETE": 6
     }
   },
   "target_system": {
@@ -2330,7 +2426,7 @@
         "ADR-T019",
         "ADR-T020"
       ],
-      "state": "IN_PROGRESS",
+      "state": "COMPLETE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m1"
     }
   ]

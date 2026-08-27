@@ -12,9 +12,9 @@ program:
   intake_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
   branch: codex/artifex-2-m1
   current_milestone: M1
-  current_status: ACTIVE
-  latest_accepted_commit: f476d40e7a721913b9c94c4a60b78f0500f0e85f
-  next_integration_point: M1 public-composition and J03 acceptance gates
+  current_status: ACCEPTED
+  latest_accepted_commit: 94c42c4e6c494beda32db40d37f34e6c7659cbe2
+  next_integration_point: M2 readiness; M2 not started
   m1_started: true
   recorded_date: '2026-08-27'
   dashboard_state: CURRENT
@@ -43,11 +43,11 @@ milestone_states:
     started: true
     accepted: true
   M1:
-    state: ACTIVE
+    state: ACCEPTED
     started: true
-    accepted: false
+    accepted: true
   M2:
-    state: BLOCKED_DEPENDENCY
+    state: READY
     started: false
     accepted: false
   M3:

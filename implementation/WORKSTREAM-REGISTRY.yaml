@@ -81,6 +81,6 @@ workstreams:
   - ADR-T014
   - ADR-T019
   - ADR-T020
-  state: IN_PROGRESS
+  state: COMPLETE
   blockers: []
   integration_owner: ARTIFEX_2_ORCHESTRATOR

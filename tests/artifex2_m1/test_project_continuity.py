@@ -9,6 +9,7 @@ import pytest
 
 from artifex.application import Application, OperationContext, OperationRequest
 from artifex.project import ProjectCatalog, ProjectControlService, ProjectRepository
+from tools.artifex2.validate_m1 import validate as validate_m1
 
 
 @pytest.mark.integration
@@ -152,6 +153,15 @@ def test_j03_black_box_continue_by_name_survives_process_restart(tmp_path: Path)
     assert continued_value["project"]["id"] == "restartable-id"
     assert continued_value["semantic_fingerprint"] == created_value["semantic_fingerprint"]
     assert str(root) not in continued.args[1:]
+
+
+def test_m1_control_plane_acceptance_is_self_consistent() -> None:
+    state = validate_m1(Path(__file__).parents[2])
+
+    assert state["program"]["current_status"] == "ACCEPTED"
+    m2 = next(item for item in state["milestones"] if item["id"] == "M2")
+    assert m2["state"] == "READY"
+    assert m2["started"] is False
 
 
 def _cli(*arguments: str) -> subprocess.CompletedProcess[str]:

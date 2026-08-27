@@ -19,12 +19,13 @@ journeys:
   blocker: M0 has no mandatory journeys; milestone dependencies not accepted
 - id: J03
   title: J03 — Project Continuity
-  status: NOT_STARTED
-  environment: null
-  public_shipping_composition: null
-  evidence: []
-  last_run: null
-  blocker: M1 implementation active; public continuity composition not yet qualified
+  status: PASS
+  environment: CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS
+  public_shipping_composition: INSTALLED_WHEEL_CLI_TWO_PROCESS
+  evidence:
+  - EVIDENCE/M1-VALIDATION.yaml
+  last_run: '2026-08-27'
+  blocker: null
 - id: J04
   title: J04 — Multi-session
   status: NOT_STARTED

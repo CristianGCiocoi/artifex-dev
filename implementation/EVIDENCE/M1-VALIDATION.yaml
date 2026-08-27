@@ -1,0 +1,75 @@
+schema_version: '1.0'
+evidence_id: EVD-M1-VALIDATION
+milestone: M1
+status: PASS
+recorded_date: '2026-08-27'
+canonical_m0_acceptance_commit: f476d40e7a721913b9c94c4a60b78f0500f0e85f
+canonical_m0_integration_commit: dc153819d11134315d60acc0ccea7bab0473194f
+m1_implementation_baseline_commit: 94c42c4e6c494beda32db40d37f34e6c7659cbe2
+m1_contract_digest: 42c6d252e97380e841bff8eabadf673d6f69140ce9660c59f805aff38d71299d
+source_quality:
+  ruff: PASS
+  mypy_strict: PASS
+component:
+  command: uv run --frozen pytest tests/artifex2_m1 -q
+  result: PASS
+  passed: 10
+domain_integration:
+  command: uv run --frozen pytest tests --ignore=tests/test_release.py -q
+  result: PASS
+  passed: 337
+  skipped: 7
+  skip_reason: Windows symlink creation unavailable
+public_composition:
+  artifact: artifex_dev-1.0.0-py3-none-any.whl
+  artifact_sha256: 92d4c8c63f1c4d6de2fe020435a3bc8be430a173bc62e4d8c6e69d158f2d5048
+  environment: CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS
+  create_process: PASS
+  restart_boundary: NEW_PROCESS
+  continue_process: PASS
+  project_id_preserved: wheel-project
+  semantic_fingerprint_preserved: true
+  continued_without_project_path: true
+black_box_outcome:
+  journey: J03
+  result: PASS
+  public_entry_surface: installed artifex CLI
+  hard_coded_path_after_creation: false
+security_authority:
+  direct_model_write_accepted: false
+  external_edit_disposition: SEMANTIC_PROPOSAL
+  optimistic_conflict: REJECTED_FAIL_CLOSED
+  catalog_contains_project_semantics: false
+documentation:
+  baseline_at_project_creation: PASS
+  state: CURRENT
+  authority: PROJECTION_ONLY
+dashboard:
+  project_baseline_at_creation: PASS
+  platform_scope: PASS
+  project_scope: PASS
+  authoritative: false
+migration:
+  v1_model_fingerprint_preserved: true
+  git_head_preserved: true
+  fabricated_runtime_history: false
+  final_migration_acceptance: DEFERRED_TO_M9
+manual_fallback:
+  registered: true
+  mode: DELIBERATE
+  automated_scheduler: false
+  automated_codex_execution: false
+v1_release_harness_regression:
+  test: tests/test_release.py::test_candidate_passes_without_optional_m10_gate
+  result: EXPECTED_BASELINE_FAILURE
+  duration_seconds: 204.64
+  assertion: verify_release(tmp_path).passed was false
+  classification: V1-R01-DASHBOARD-FIXTURE-SCHEMA-DRIFT
+  signature_matches_m0: true
+  source_repaired_by_m1: false
+  evidence: EVIDENCE/V1-RELEASE-HARNESS-REGRESSION.yaml
+full_v1_release_file:
+  status: NOT_M1_ACCEPTANCE_GATE
+  disposition: BOUNDED_TO_FINGERPRINTED_REGRESSION
+provider_claim_changes: []
+unexpected_failures: []

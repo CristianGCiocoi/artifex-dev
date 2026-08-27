@@ -131,7 +131,7 @@ contracts:
   - Documentation and Project Dashboard baselines exist at creation
   evidence_references:
   - EVIDENCE/M1-VALIDATION.yaml
-  implementation_state: ACTIVE
+  implementation_state: ACCEPTED
   m0_baseline_state: NOT_APPLICABLE
 adrs:
 - id: ADR-T001
@@ -152,7 +152,7 @@ adrs:
   - Any implementation need to alter this decision is an Architect escalation.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: IMPLEMENTED_M1_PENDING_ACCEPTANCE
+  implementation_state: M1_ACCEPTED
   m0_baseline_state: CAPTURED
 - id: ADR-T002
   title: ADR-T002 — Standalone RunStore
@@ -390,7 +390,7 @@ adrs:
   - Any implementation need to alter this decision is an Architect escalation.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: M1_BASELINE_IMPLEMENTED
+  implementation_state: M1_BASELINE_ACCEPTED
   m0_baseline_state: CAPTURED
 - id: ADR-T014
   title: ADR-T014 — Unified Dashboard Framework
@@ -410,7 +410,7 @@ adrs:
   - Any implementation need to alter this decision is an Architect escalation.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: M1_BASELINE_IMPLEMENTED
+  implementation_state: M1_BASELINE_ACCEPTED
   m0_baseline_state: CAPTURED
 - id: ADR-T015
   title: ADR-T015 — Provider Composition at Bootstrap
@@ -511,7 +511,7 @@ adrs:
   - Any implementation need to alter this decision is an Architect escalation.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: M1_ADAPTER_IMPLEMENTED_M9_ACCEPTANCE_PENDING
+  implementation_state: M1_ADAPTER_ACCEPTED_M9_FINAL_ACCEPTANCE_PENDING
   m0_baseline_state: CAPTURED
 - id: ADR-T020
   title: ADR-T020 — Project Catalog & Discovery
@@ -531,7 +531,7 @@ adrs:
   - Any implementation need to alter this decision is an Architect escalation.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: IMPLEMENTED_M1_PENDING_ACCEPTANCE
+  implementation_state: M1_ACCEPTED
   m0_baseline_state: CAPTURED
 - id: ADR-T021
   title: ADR-T021 — Execution Workspace & Result Promotion

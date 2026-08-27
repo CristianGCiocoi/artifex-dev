@@ -1,0 +1,54 @@
+schema_version: '1.0'
+milestone: M1
+contract_digest: 42c6d252e97380e841bff8eabadf673d6f69140ce9660c59f805aff38d71299d
+implementation_baseline_commit: 94c42c4e6c494beda32db40d37f34e6c7659cbe2
+frozen_architecture_baseline: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+mandatory_work_complete: true
+blocked: []
+superseded: []
+evidence_classes:
+  DESIGN_CONFORMANCE:
+    required_m1: true
+    status: PASS
+    evidence: [EVIDENCE/M1-VALIDATION.yaml]
+  COMPONENT:
+    required_m1: true
+    status: PASS
+    evidence: [EVIDENCE/M1-VALIDATION.yaml]
+  DOMAIN_INTEGRATION:
+    required_m1: true
+    status: PASS
+    evidence: [EVIDENCE/M1-VALIDATION.yaml]
+  PUBLIC_COMPOSITION:
+    required_m1: true
+    status: PASS
+    evidence: [EVIDENCE/M1-VALIDATION.yaml]
+  BLACK_BOX_OUTCOME:
+    required_m1: true
+    status: PASS
+    evidence: [EVIDENCE/M1-VALIDATION.yaml]
+  SECURITY_AUTHORITY:
+    required_m1: true
+    status: PASS
+    evidence: [EVIDENCE/M1-VALIDATION.yaml]
+  DOCUMENTATION:
+    required_m1: true
+    status: PASS
+    evidence: [EVIDENCE/M1-VALIDATION.yaml]
+  DASHBOARD:
+    required_m1: true
+    status: PASS
+    evidence: [EVIDENCE/M1-VALIDATION.yaml]
+  MIGRATION:
+    required_m1: true
+    status: PASS
+    evidence: [EVIDENCE/M1-VALIDATION.yaml]
+  PROVIDER_CERTIFICATION:
+    required_m1: false
+    status: NOT_APPLICABLE
+    evidence: []
+mandatory_journeys: [J03]
+unresolved_contradiction: null
+provider_claim_changes: []
+migration: V1_MODEL_ADAPTER_BASELINE_QUALIFIED
+verdict: ACCEPTED

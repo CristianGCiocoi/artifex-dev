@@ -63,7 +63,13 @@ def derive(repo_root: Path) -> dict[str, Any]:
     journey_registry = _read_yaml(implementation / "JOURNEYS/STATE.yaml")
     migration = _read_yaml(implementation / "MIGRATION/STATE.yaml")
     provider_registry = _read_yaml(implementation / "PROVIDERS/ROLE-CERTIFICATION.yaml")
-    acceptance = _read_yaml(implementation / "ACCEPTANCE/M0.yaml")
+    current_acceptance_path = implementation / f"ACCEPTANCE/{program['current_milestone']}.yaml"
+    acceptance = _read_yaml(
+        current_acceptance_path
+        if current_acceptance_path.is_file()
+        else implementation / "ACCEPTANCE/M0.yaml"
+    )
+    m0_acceptance = _read_yaml(implementation / "ACCEPTANCE/M0.yaml")
 
     milestone_states = program_state["milestone_states"]
     milestones = []
@@ -157,6 +163,7 @@ def derive(repo_root: Path) -> dict[str, Any]:
         },
         "journeys": journeys,
         "acceptance": acceptance,
+        "m0_acceptance": m0_acceptance,
         "migration": migration,
         "v1_release_fixture": (
             {
@@ -210,10 +217,12 @@ def render_current_state(state: dict[str, Any]) -> str:
         "",
         "## Acceptance",
         "",
-        f"- M0 verdict: `{state['acceptance']['verdict']}`",
+        f"- {program['current_milestone']} verdict: `{state['acceptance']['verdict']}`",
         f"- Mandatory work complete: `{str(state['acceptance']['mandatory_work_complete']).lower()}`",
-        "- Mandatory M0 journeys: `none`",
-        "- M1 remains blocked unless the M0 verdict is `ACCEPTED`.",
+        "- Mandatory journeys: `"
+        + (", ".join(state["acceptance"]["mandatory_journeys"]) or "none")
+        + "`",
+        f"- Next integration point: `{program['next_integration_point']}`",
         "",
     ]
     return "\n".join(lines)
@@ -284,9 +293,19 @@ def render_html(state: dict[str, Any]) -> str:
         ],
     )
     acceptance = _table(
-        ["Evidence class", "Required in M0", "Status", "Evidence"],
         [
-            [name, value["required_m0"], value["status"], ", ".join(value["evidence"]) or "none"]
+            "Evidence class",
+            f"Required in {program['current_milestone']}",
+            "Status",
+            "Evidence",
+        ],
+        [
+            [
+                name,
+                value.get(f"required_{program['current_milestone'].lower()}", False),
+                value["status"],
+                ", ".join(value["evidence"]) or "none",
+            ]
             for name, value in state["acceptance"]["evidence_classes"].items()
         ],
     )
@@ -328,7 +347,7 @@ header,main{{max-width:1500px;margin:auto;padding:24px}}header{{border-bottom:1p
 <section id="contracts"><h2>Frozen ADR state</h2>{adrs}<h2>Invariant conformance baseline</h2>{invariants}</section>
 <section id="providers"><h2>Provider role certification</h2><p>Schema validation: <code>{state["providers"]["schema_validation"]}</code></p>{providers}</section>
 <section id="journeys"><h2>Outcome journeys J01-J20</h2>{journeys}</section>
-<section id="acceptance"><h2>M0 acceptance evidence classes</h2>{acceptance}</section>
+<section id="acceptance"><h2>{html.escape(program['current_milestone'])} acceptance evidence classes</h2>{acceptance}</section>
 <section id="migration"><h2>Migration and V1 regression</h2><pre>{html.escape(json.dumps({"migration": state["migration"], "fixture": state["v1_release_fixture"], "regression": state["v1_regression"]}, indent=2, sort_keys=True))}</pre></section>
 <section id="evidence"><h2>Evidence links and fingerprints</h2>{evidence}</section>
 <p class="meta">Baseline <code>{program["intake_commit"]}</code> · release target <code>{program["target_release"]}</code></p>
