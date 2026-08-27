@@ -13,7 +13,7 @@ program:
   branch: codex/artifex-2-m3
   current_milestone: M3
   current_status: ACCEPTED
-  latest_accepted_commit: b7efb7b08fee418715a8f05faa450649b121f6f6
+  latest_accepted_commit: d3a57311e069a887e69e4037969170f554026cc4
   next_integration_point: Canonicalize M3, then activate mandatory-ready M4, M5 and M6A
   m1_started: true
   m2_started: true

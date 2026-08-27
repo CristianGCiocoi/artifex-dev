@@ -13,7 +13,7 @@
 - Current status: `ACCEPTED`
 - Accepted milestones: `M0, M1, M2, M3`
 - Ready milestones: `M4, M5, M6A`
-- Latest accepted commit: `b7efb7b08fee418715a8f05faa450649b121f6f6`
+- Latest accepted commit: `d3a57311e069a887e69e4037969170f554026cc4`
 - Next integration point: `Canonicalize M3, then activate mandatory-ready M4, M5 and M6A`
 - M3 started: `true`
 

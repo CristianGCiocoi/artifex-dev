@@ -1,6 +1,6 @@
 {
   "acceptance": {
-    "acceptance_commit": null,
+    "acceptance_commit": "d3a57311e069a887e69e4037969170f554026cc4",
     "blocked": [],
     "contract_digest": "4c715b81581f4688f3b38d34829a967760e7f862f8408a477f37245f886d07eb",
     "evidence_classes": {
@@ -755,9 +755,9 @@
       "sha256": "1094aa180705359ea108e16823236e52cd9945eae01b9551f3142f1e310117d5"
     },
     {
-      "bytes": 2593,
+      "bytes": 2629,
       "path": "implementation/EVIDENCE/M3-VALIDATION.yaml",
-      "sha256": "a7e1f891049b147cd7816a148fda7ce26cd721be91e0e0290c049f446de5d3b1"
+      "sha256": "556a546d1d58e37af5c132338ef8b7e1fb6bb0707c40086c34633c77fefa280e"
     },
     {
       "bytes": 3220,
@@ -2041,7 +2041,7 @@
     "id": "ARTIFEX-2.0-IMPLEMENTATION",
     "implementation_plan_status": "FROZEN",
     "intake_commit": "5cc5dcfeb420a6df171a44426c04a0f08fa1e877",
-    "latest_accepted_commit": "b7efb7b08fee418715a8f05faa450649b121f6f6",
+    "latest_accepted_commit": "d3a57311e069a887e69e4037969170f554026cc4",
     "m1_started": true,
     "m2_started": true,
     "m3_started": true,
