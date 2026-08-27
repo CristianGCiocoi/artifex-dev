@@ -84,3 +84,23 @@ workstreams:
   state: COMPLETE
   blockers: []
   integration_owner: ARTIFEX_2_ORCHESTRATOR
+- id: WS-M2-DURABLE-RUNTIME
+  milestone: M2
+  purpose: Implement durable runtime, coordinator fencing, workspaces and acceptance separation
+  owner_subagent: ARTIFEX_2_ORCHESTRATOR
+  worktree: C:\aidev\artifex-worktrees\artifex-2-m2
+  branch: codex/artifex-2-m2
+  base_commit: 0b77fd4fb0c6ed93b943917fb511e809ecc06740
+  shared_contracts:
+  - M2-CONTRACT
+  - ADR-T002
+  - ADR-T003
+  - ADR-T004
+  - ADR-T006
+  - ADR-T008
+  - ADR-T021
+  - ADR-T022
+  - ADR-T023
+  state: IN_PROGRESS
+  blockers: []
+  integration_owner: ARTIFEX_2_ORCHESTRATOR

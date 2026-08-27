@@ -184,6 +184,9 @@ def derive(repo_root: Path) -> dict[str, Any]:
 def render_current_state(state: dict[str, Any]) -> str:
     program = state["program"]
     summary = state["summary"]
+    current = next(
+        item for item in state["milestones"] if item["id"] == program["current_milestone"]
+    )
     accepted = [item["id"] for item in state["milestones"] if item["accepted"]]
     ready = summary["ready_milestones"]
     active = [item["id"] for item in state["workstreams"] if item["state"] == "IN_PROGRESS"]
@@ -205,7 +208,7 @@ def render_current_state(state: dict[str, Any]) -> str:
         f"- Ready milestones: `{', '.join(ready) if ready else 'none'}`",
         f"- Latest accepted commit: `{program['latest_accepted_commit']}`",
         f"- Next integration point: `{program['next_integration_point']}`",
-        f"- M1 started: `{str(program['m1_started']).lower()}`",
+        f"- {program['current_milestone']} started: `{str(current['started']).lower()}`",
         "",
         "## Work",
         "",

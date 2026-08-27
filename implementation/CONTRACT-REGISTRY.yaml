@@ -133,6 +133,27 @@ contracts:
   - EVIDENCE/M1-VALIDATION.yaml
   implementation_state: ACCEPTED
   m0_baseline_state: NOT_APPLICABLE
+- id: M2-CONTRACT
+  title: M2 — Durable Runtime, Coordinator Fencing, Workspace & Acceptance
+  type: MILESTONE_CONTRACT
+  digest: 2165c197747cf55f9b7a8aebc3c2dc29e1a6f59a9390d4a0db5d6769ba6a8401
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 0b77fd4fb0c6ed93b943917fb511e809ecc06740
+  dependencies:
+  - M1-CONTRACT
+  authority_sources:
+  - MILESTONES/M2.md
+  acceptance_criteria:
+  - Second coordinator cannot silently schedule the standalone instance
+  - Restart loses no committed runtime transition
+  - Attempt FINISHED cannot self-accept
+  - Promotion conflicts are protected
+  - UNKNOWN never blindly retries
+  evidence_references:
+  - EVIDENCE/M2-VALIDATION.yaml
+  implementation_state: ACTIVE
+  m0_baseline_state: NOT_APPLICABLE
 adrs:
 - id: ADR-T001
   title: ADR-T001 — Project Authority vs Portable Semantic Representation
@@ -171,7 +192,7 @@ adrs:
   - Any implementation need to alter this decision is an Architect escalation.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: NOT_STARTED
+  implementation_state: ACTIVE_M2
   m0_baseline_state: CAPTURED
 - id: ADR-T003
   title: ADR-T003 — Persistent Runtime Hosting
@@ -191,7 +212,7 @@ adrs:
   - Any implementation need to alter this decision is an Architect escalation.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: NOT_STARTED
+  implementation_state: ACTIVE_M2
   m0_baseline_state: CAPTURED
 - id: ADR-T004
   title: ADR-T004 — Runtime Execution Hierarchy
@@ -210,7 +231,7 @@ adrs:
   - Any implementation need to alter this decision is an Architect escalation.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: NOT_STARTED
+  implementation_state: ACTIVE_M2
   m0_baseline_state: CAPTURED
 - id: ADR-T005
   title: ADR-T005 — Interaction Session Model
@@ -251,7 +272,7 @@ adrs:
   - Any implementation need to alter this decision is an Architect escalation.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: PARTIAL_M1_SEMANTIC_REVISIONING
+  implementation_state: ACTIVE_M2_LEASES_AND_FENCING
   m0_baseline_state: CAPTURED
 - id: ADR-T007
   title: ADR-T007 — Contextual Capability Graph
@@ -291,7 +312,7 @@ adrs:
   - Any implementation need to alter this decision is an Architect escalation.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: NOT_STARTED
+  implementation_state: ACTIVE_M2_MINIMUM
   m0_baseline_state: CAPTURED
 - id: ADR-T009
   title: ADR-T009 — Materiality & Supervision
@@ -551,7 +572,7 @@ adrs:
   - Any implementation need to alter this decision is an Architect escalation.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: NOT_STARTED
+  implementation_state: ACTIVE_M2
   m0_baseline_state: CAPTURED
 - id: ADR-T022
   title: ADR-T022 — Acceptance Authority Boundary
@@ -571,7 +592,7 @@ adrs:
   - Any implementation need to alter this decision is an Architect escalation.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: NOT_STARTED
+  implementation_state: ACTIVE_M2
   m0_baseline_state: CAPTURED
 - id: ADR-T023
   title: ADR-T023 — Actor Identity, Trust & Credential Handling
@@ -592,7 +613,7 @@ adrs:
   - Any implementation need to alter this decision is an Architect escalation.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: NOT_STARTED
+  implementation_state: ACTIVE_M2_MINIMUM
   m0_baseline_state: CAPTURED
 - id: ADR-T024
   title: ADR-T024 — Provider Claim & Capability Certification

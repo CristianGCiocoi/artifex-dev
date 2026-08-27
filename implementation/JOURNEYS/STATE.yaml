@@ -41,7 +41,7 @@ journeys:
   public_shipping_composition: null
   evidence: []
   last_run: null
-  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+  blocker: M2 implementation active; persistent runtime composition not yet qualified
 - id: J06
   title: J06 — Material Decision
   status: NOT_STARTED
@@ -121,7 +121,7 @@ journeys:
   public_shipping_composition: null
   evidence: []
   last_run: null
-  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+  blocker: M2 implementation active; promotion-conflict composition not yet qualified
 - id: J16
   title: J16 — Provider Setup Persistence
   status: NOT_STARTED
@@ -145,7 +145,7 @@ journeys:
   public_shipping_composition: null
   evidence: []
   last_run: null
-  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+  blocker: M2 implementation active; UNKNOWN recovery composition not yet qualified
 - id: J19
   title: J19 — IDEA → APPROVED PLAN
   status: NOT_STARTED

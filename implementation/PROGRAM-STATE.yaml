@@ -10,12 +10,13 @@ program:
   architecture_status: FROZEN
   implementation_plan_status: FROZEN
   intake_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
-  branch: main
-  current_milestone: M1
-  current_status: ACCEPTED
+  branch: codex/artifex-2-m2
+  current_milestone: M2
+  current_status: ACTIVE
   latest_accepted_commit: cdb83f69dca72a691363dcbcb5d9eb7b085b65f0
-  next_integration_point: M2 readiness; M2 not started
+  next_integration_point: M2 public-composition and J05/J15/J18 acceptance gates
   m1_started: true
+  m2_started: true
   recorded_date: '2026-08-27'
   dashboard_state: CURRENT
 target_system:
@@ -47,8 +48,8 @@ milestone_states:
     started: true
     accepted: true
   M2:
-    state: READY
-    started: false
+    state: ACTIVE
+    started: true
     accepted: false
   M3:
     state: BLOCKED_DEPENDENCY
