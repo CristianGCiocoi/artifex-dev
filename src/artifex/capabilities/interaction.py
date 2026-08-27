@@ -236,7 +236,10 @@ def _git_head(root: Path) -> str:
 
 def _final_agent_response(output: str) -> str:
     responses: list[str] = []
-    turn_completed = False
+    thread_started = 0
+    turn_started = 0
+    turn_completed = 0
+    terminal = False
     for line in output.splitlines():
         if not line.strip():
             raise ValueError("Codex JSONL contained an empty record")
@@ -247,10 +250,17 @@ def _final_agent_response(output: str) -> str:
         if not isinstance(event, Mapping):
             raise ValueError("Codex JSONL records must be objects")
         event_type = event.get("type")
+        if terminal:
+            raise ValueError("Codex JSONL continued after the completed turn")
         if event_type in {"turn.failed", "error"}:
             raise ValueError("Codex interaction reported a failed turn")
+        if event_type == "thread.started":
+            thread_started += 1
+        if event_type == "turn.started":
+            turn_started += 1
         if event_type == "turn.completed":
-            turn_completed = True
+            turn_completed += 1
+            terminal = True
         if event_type != "item.completed":
             continue
         item = event.get("item")
@@ -260,9 +270,12 @@ def _final_agent_response(output: str) -> str:
         if not isinstance(text, str) or not text.strip():
             raise ValueError("Codex final agent response was empty")
         responses.append(text)
-    if not turn_completed or len(responses) != 1:
+    if (thread_started, turn_started, turn_completed) != (1, 1, 1) or not responses:
         raise ValueError("Codex interaction requires exactly one final agent response")
-    return responses[0]
+    # Codex may emit user-visible progress messages as agent_message items. The
+    # last one immediately preceding the sole turn.completed event is the one
+    # final response; earlier messages are not final authority.
+    return responses[-1]
 
 
 def _sanitize_response(value: str) -> tuple[str, bool]:

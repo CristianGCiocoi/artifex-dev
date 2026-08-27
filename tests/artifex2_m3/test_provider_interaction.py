@@ -195,6 +195,8 @@ def test_interaction_fails_closed_on_multiple_messages_or_baseline_change(
     def mutating(_: Sequence[str], project_root: Path) -> subprocess.CompletedProcess[str]:
         (project_root / ".artifex" / "project-model.json").write_text("{}\n", encoding="utf-8")
         events = [
+            {"type": "thread.started", "thread_id": "thread-1"},
+            {"type": "turn.started"},
             {"type": "item.completed", "item": {"type": "agent_message", "text": "done"}},
             {"type": "turn.completed"},
         ]
@@ -209,6 +211,25 @@ def test_interaction_fails_closed_on_multiple_messages_or_baseline_change(
             prompt="read only",
         )
     assert store.valid_receipts(provider_id="codex") == ()
+
+
+def test_interaction_uses_only_the_last_message_before_the_completed_turn() -> None:
+    events = [
+        {"type": "thread.started", "thread_id": "thread-1"},
+        {"type": "turn.started"},
+        {
+            "type": "item.completed",
+            "item": {"id": "progress", "type": "agent_message", "text": "Working."},
+        },
+        {
+            "type": "item.completed",
+            "item": {"id": "final", "type": "agent_message", "text": "Final answer."},
+        },
+        {"type": "turn.completed"},
+    ]
+    from artifex.capabilities.interaction import _final_agent_response
+
+    assert _final_agent_response("\n".join(map(json.dumps, events))) == "Final answer."
 
 
 def test_public_application_loads_setup_resolves_context_and_certifies_by_role(
