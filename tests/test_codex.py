@@ -292,7 +292,8 @@ def test_m06_t02_interface_pack_has_all_portable_agent_skills() -> None:
     root = Path(__file__).parents[1] / "interface_packs" / "codex"
     manifest = yaml.safe_load((root / "pack.yaml").read_text(encoding="utf-8"))
     assert manifest["id"] == "codex"
-    assert set(manifest["roles"]) == {"interface", "harness", "implementer"}
+    assert set(manifest["roles"]) == {"INTERACTION", "EXECUTION_IMPLEMENTER"}
+    assert "HARNESS" not in manifest["roles"]
     assert manifest["authority"]["native_memory"] == "auxiliary_only"
     expected = {
         "router",
