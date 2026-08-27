@@ -23,6 +23,7 @@ from artifex.capabilities import (
     ProviderInteractionService,
     ProviderRole,
     codex_certification_projection,
+    record_execution_implementer_evidence,
 )
 from artifex.distribution import (
     ExperienceMode,
@@ -55,7 +56,12 @@ from artifex.integrations import (
     select_integration,
 )
 from artifex.integrations.codex import CodexIntegration, CodexProcessRunner
-from artifex.project import ProjectControlService, ProjectModel, default_catalog_path
+from artifex.project import (
+    ProjectAuthority,
+    ProjectControlService,
+    ProjectModel,
+    default_catalog_path,
+)
 from artifex.runtime import (
     ActorPrincipal,
     ActorType,
@@ -625,6 +631,7 @@ class Application:
     def _runtime_workspace_promote(request: OperationRequest) -> OperationResult:
         service = _runtime_service(request)
         project_job_id = _required_string(request.arguments, "project_job_id")
+        workspace_id = _required_string(request.arguments, "workspace_id")
         actor = _runtime_actor(
             service,
             request,
@@ -633,12 +640,21 @@ class Application:
             action="workspace promotion",
         )
         revision = service.promote_accepted_workspace(
-            _required_string(request.arguments, "workspace_id"),
+            workspace_id,
             ProjectModel.from_dict(_required_mapping(request.arguments, "model")),
             project_job_id,
             actor_id=actor,
         )
-        return OperationResult(ok=True, value={"semantic_revision": revision})
+        receipt = _record_promoted_provider_certification(
+            service,
+            workspace_id=workspace_id,
+            project_job_id=project_job_id,
+            revision=revision,
+        )
+        value: dict[str, Any] = {"semantic_revision": revision}
+        if receipt is not None:
+            value["provider_certification_receipt"] = receipt
+        return OperationResult(ok=True, value=value)
 
     def _runtime_provider_execute(self, request: OperationRequest) -> OperationResult:
         service = _runtime_service(request)
@@ -1394,3 +1410,65 @@ def _record_required_evidence(
         service.record_evidence(record, actor=actor, correlation_id=correlation_id)
         records.append(record)
     return tuple(records)
+
+
+def _record_promoted_provider_certification(
+    service: ManagedRuntimeService,
+    *,
+    workspace_id: str,
+    project_job_id: str,
+    revision: int,
+) -> dict[str, object] | None:
+    """Certify Codex execution only after acceptance and semantic promotion."""
+
+    workspace = service.store.get("workspaces", "workspace_id", workspace_id)
+    if workspace is None:
+        raise ValueError("promoted Execution Workspace is missing")
+    attempt_id = str(workspace["attempt_id"])
+    dispatch = service.store.dispatch_authorization(attempt_id)
+    if dispatch is None or (
+        str(dispatch["provider_id"]) != "codex"
+        or str(dispatch["provider_role"]) != ProviderRole.EXECUTION_IMPLEMENTER.value
+    ):
+        return None
+    decision = service.store.acceptance(project_job_id)
+    if decision is None:
+        raise ValueError("promoted provider ProjectJob has no persisted acceptance")
+    raw_evidence_ids = decision.get("evidence_ids", "[]")
+    if isinstance(raw_evidence_ids, str):
+        parsed_evidence_ids = json.loads(raw_evidence_ids)
+    else:
+        parsed_evidence_ids = raw_evidence_ids
+    if not isinstance(parsed_evidence_ids, list) or not parsed_evidence_ids:
+        raise ValueError("promoted provider ProjectJob has no bound evidence")
+    evidence_ids = tuple(str(item) for item in parsed_evidence_ids)
+    records = service.store.evidence(evidence_ids)
+    if len(records) != len(evidence_ids) or not all(bool(item["passed"]) for item in records):
+        raise ValueError("promoted provider ProjectJob evidence is incomplete")
+    accepted_result_sha256 = hashlib.sha256(
+        json.dumps(
+            [
+                {
+                    "evidence_id": item["evidence_id"],
+                    "artifact_digest": item["artifact_digest"],
+                    "gate": item["gate"],
+                }
+                for item in records
+            ],
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+    promoted = ProjectAuthority(str(workspace["project_root"])).current()
+    if promoted.number != revision:
+        raise ValueError("provider certification revision does not match Project Authority")
+    receipt = record_execution_implementer_evidence(
+        project_id=promoted.project_id,
+        project_job_id=project_job_id,
+        accepted_result_sha256=accepted_result_sha256,
+        promoted_baseline_sha256=promoted.fingerprint,
+        acceptance_decision_id=str(decision["decision_id"]),
+        promotion_revision=revision,
+        provider_id="codex",
+    )
+    return receipt.to_dict()

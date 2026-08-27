@@ -217,7 +217,9 @@ def _execution_arguments(common: dict[str, Any]) -> dict[str, Any]:
 
 def test_public_provider_execution_is_bound_evidenced_and_not_accepted(
     tmp_path: Path,
+    monkeypatch: Any,
 ) -> None:
+    monkeypatch.setenv("ARTIFEX_LOCAL_STATE_ROOT", str(tmp_path / "local-state"))
     common, project_root = _bootstrap_and_workspace(tmp_path)
     observed_commands: list[list[str]] = []
 
@@ -344,6 +346,19 @@ def test_public_provider_execution_is_bound_evidenced_and_not_accepted(
     )
     assert promoted.ok, promoted.to_dict()
     assert promoted.value["semantic_revision"] == 2
+    receipt = promoted.value["provider_certification_receipt"]
+    assert receipt["role"] == "EXECUTION_IMPLEMENTER"
+    assert receipt["acceptance_decision_id"] == accepted.value["decision"]["decision_id"]
+    certifications = Application().dispatch(
+        OperationRequest(
+            "providers.certifications",
+            {"project_id": "project-public-provider"},
+        )
+    )
+    assert certifications.ok
+    roles = certifications.value["certifications"]["roles"]
+    execution_role = next(item for item in roles if item["role"] == "EXECUTION_IMPLEMENTER")
+    assert execution_role["state"] == "LIVE_ROLE_CERTIFIED"
 
 
 def test_public_provider_timeout_is_durably_unknown(tmp_path: Path) -> None:
