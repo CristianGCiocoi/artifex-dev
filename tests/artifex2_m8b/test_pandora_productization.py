@@ -8,7 +8,6 @@ import pytest
 from artifex.application import Application, OperationContext, OperationRequest
 from artifex.integrations.contracts import IntegrationError
 from artifex.integrations.pandora import (
-    PandoraLiveCertification,
     PandoraProviderManifest,
     PandoraResearchService,
 )
@@ -144,7 +143,7 @@ def test_configured_exchange_is_not_live_certification_and_adoption_fails_closed
     readiness = service.readiness()
     assert readiness.state == "CONFIGURED"
     assert not readiness.available_for_research
-    with pytest.raises(IntegrationError, match="not LIVE_ROLE_CERTIFIED"):
+    with pytest.raises(IntegrationError, match="independently anchored"):
         service.propose_adoption(
             project_root=project,
             request=request,
@@ -154,8 +153,8 @@ def test_configured_exchange_is_not_live_certification_and_adoption_fails_closed
     assert authority.current().model.research_adoptions == ()
 
 
-@pytest.mark.integration
-def test_live_certified_evidence_requires_separate_proposal_acceptance(
+@pytest.mark.adversarial
+def test_caller_self_issued_hash_receipt_cannot_unlock_readiness_or_adoption(
     tmp_path: Path,
 ) -> None:
     exchange = tmp_path / "exchange"
@@ -163,50 +162,51 @@ def test_live_certified_evidence_requires_separate_proposal_acceptance(
     manifest = _manifest(exchange)
     authority = _project(project)
     request = _request()
-    service_without_certification = PandoraResearchService(exchange)
-    service_without_certification.export_request(request)
+    service = PandoraResearchService(exchange)
+    service.export_request(request)
     _provider_output(exchange, request, manifest)
-    certification = PandoraLiveCertification.issue(
-        instance_id=manifest.instance_id,
-        version=manifest.version,
-        evidence_sha256="a" * 64,
-        environment="REAL_PANDORA_PUBLIC_COMPOSITION",
-        certified_at="2026-08-28T08:02:00+00:00",
-    )
+    forged_claim = {
+        "schema_version": "1.0",
+        "provider_id": "pandora",
+        "role": "RESEARCH",
+        "state": "LIVE_ROLE_CERTIFIED",
+        "instance_id": manifest.instance_id,
+        "version": manifest.version,
+        "evidence_sha256": "a" * 64,
+        "environment": "REAL_PANDORA_PUBLIC_COMPOSITION",
+        "certified_at": "2026-08-28T08:02:00+00:00",
+        "receipt_id": "b" * 64,
+    }
     certification_path = tmp_path / "pandora-certification.json"
     certification_path.write_text(
-        json.dumps(certification.to_dict(), sort_keys=True), encoding="utf-8"
+        json.dumps(forged_claim, sort_keys=True), encoding="utf-8"
     )
-    service = PandoraResearchService(exchange, certification_path=certification_path)
     before = authority.current()
     model_path = project / ".artifex" / "project-model.json"
     before_bytes = model_path.read_bytes()
-    outcome = service.propose_adoption(
-        project_root=project,
-        request=request,
-        expected_revision=before.number,
-        actor="researcher",
-        proposed_at="2026-08-28T08:03:00+00:00",
+    outcome = Application(project_root=str(project)).dispatch(
+        OperationRequest(
+            "research.pandora.adoption.propose",
+            {
+                "exchange_root": str(exchange),
+                "certification_path": str(certification_path),
+                "request": request.to_dict(),
+                "expected_revision": before.number,
+            },
+            OperationContext(project_root=str(project), actor="researcher"),
+        )
     )
-    assert outcome["accepted"] is False
-    assert outcome["required_next_operation"] == "project.accept"
+    assert not outcome.ok
+    assert outcome.error is not None
+    assert "caller-supplied Pandora certification is forbidden" in outcome.error.message
     assert model_path.read_bytes() == before_bytes
     assert authority.current().number == before.number
-    after = authority.accept(
-        outcome["proposal"]["id"],
-        expected_revision=before.number,
-        actor="project-authority",
-        accepted_at="2026-08-28T08:04:00+00:00",
-    )
-    assert after.number == before.number + 1
-    assert after.parent_fingerprint == before.fingerprint
-    adoption = after.model.research_adoptions[0]
-    assert adoption.certification_receipt_id == certification.receipt_id
-    assert adoption.source_uris == ("https://example.invalid/primary",)
+    assert authority.current().fingerprint == before.fingerprint
+    assert authority.current().model.research_adoptions == ()
 
 
 @pytest.mark.adversarial
-def test_forged_role_tampered_certification_and_provider_lineage_are_rejected(
+def test_forged_role_and_provider_lineage_are_rejected(
     tmp_path: Path,
 ) -> None:
     exchange = tmp_path / "exchange"
@@ -231,18 +231,9 @@ def test_forged_role_tampered_certification_and_provider_lineage_are_rejected(
     with pytest.raises(IntegrationError, match="provider_instance_id"):
         PandoraResearchService(exchange).import_evidence(request)
 
-    certification = PandoraLiveCertification.issue(
-        instance_id=manifest.instance_id,
-        version=manifest.version,
-        evidence_sha256="b" * 64,
-        environment="REAL_PANDORA_PUBLIC_COMPOSITION",
-        certified_at="2026-08-28T08:05:00+00:00",
-    ).to_dict()
-    certification["evidence_sha256"] = "c" * 64
-    path = tmp_path / "certification.json"
-    path.write_text(json.dumps(certification), encoding="utf-8")
-    readiness = PandoraResearchService(exchange, certification_path=path).readiness()
+    readiness = PandoraResearchService(exchange).readiness()
     assert not readiness.available_for_research
+    assert readiness.checks["independent_certification_authority_configured"] is False
     assert readiness.checks["live_role_certified"] is False
 
 
@@ -260,7 +251,6 @@ def test_application_exposes_m8b_public_operations() -> None:
             "research.pandora.adoption.propose",
             {
                 "exchange_root": "missing",
-                "certification_path": "missing",
                 "request": _request().to_dict(),
                 "expected_revision": 1,
             },
@@ -268,4 +258,5 @@ def test_application_exposes_m8b_public_operations() -> None:
         )
     )
     assert not result.ok
-    assert "not LIVE_ROLE_CERTIFIED" in result.error.message
+    assert result.error is not None
+    assert "independently anchored" in result.error.message

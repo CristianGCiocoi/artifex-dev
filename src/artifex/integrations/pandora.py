@@ -5,11 +5,10 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-import re
 import uuid
 from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime
 from enum import StrEnum
 from pathlib import Path
 from typing import Any, Protocol
@@ -26,12 +25,10 @@ from artifex.integrations.contracts import (
     IntegrationRole,
 )
 from artifex.integrations.research import ResearchBundle, ResearchRequest
-from artifex.project import ProjectAuthority, ProjectModel, ProjectResearchAdoption
 from artifex.project.model import WorkflowDepth
 
 _MAX_BUNDLE_BYTES = 16 * 1024 * 1024
 _MAX_REPORT_BYTES = 16 * 1024 * 1024
-_SHA256 = re.compile(r"[0-9a-f]{64}")
 _PROVIDER_MANIFEST = "pandora-provider.json"
 
 
@@ -101,110 +98,10 @@ class PandoraProviderManifest:
 
 
 @dataclass(frozen=True, slots=True)
-class PandoraLiveCertification:
-    """Hash-bound acceptance input created by an independent live qualification gate."""
-
-    receipt_id: str
-    instance_id: str
-    version: str
-    evidence_sha256: str
-    environment: str
-    certified_at: str
-    schema_version: str = "1.0"
-
-    @classmethod
-    def issue(
-        cls,
-        *,
-        instance_id: str,
-        version: str,
-        evidence_sha256: str,
-        environment: str,
-        certified_at: str | None = None,
-    ) -> PandoraLiveCertification:
-        timestamp = certified_at or datetime.now(UTC).isoformat()
-        payload = {
-            "schema_version": "1.0",
-            "provider_id": "pandora",
-            "role": "RESEARCH",
-            "state": "LIVE_ROLE_CERTIFIED",
-            "instance_id": instance_id,
-            "version": version,
-            "evidence_sha256": evidence_sha256,
-            "environment": environment,
-            "certified_at": timestamp,
-        }
-        return cls(
-            _canonical_sha256(payload),
-            instance_id,
-            version,
-            evidence_sha256,
-            environment,
-            timestamp,
-        )
-
-    def __post_init__(self) -> None:
-        if self.schema_version != "1.0":
-            raise IntegrationError("unsupported Pandora certification schema")
-        if not all(
-            item.strip()
-            for item in (self.instance_id, self.version, self.environment, self.certified_at)
-        ):
-            raise IntegrationError("Pandora live certification identity is incomplete")
-        if self.environment != "REAL_PANDORA_PUBLIC_COMPOSITION":
-            raise IntegrationError("synthetic Pandora evidence cannot certify a live role")
-        if _SHA256.fullmatch(self.evidence_sha256) is None:
-            raise IntegrationError("Pandora certification evidence digest is invalid")
-        try:
-            parsed = datetime.fromisoformat(self.certified_at.replace("Z", "+00:00"))
-        except ValueError as exc:
-            raise IntegrationError("Pandora certification timestamp is invalid") from exc
-        if parsed.tzinfo is None:
-            raise IntegrationError("Pandora certification timestamp must be timezone-aware")
-        if self.receipt_id != _canonical_sha256(self._unsigned()):
-            raise IntegrationError("Pandora live certification receipt is tampered")
-
-    def _unsigned(self) -> dict[str, str]:
-        return {
-            "schema_version": self.schema_version,
-            "provider_id": "pandora",
-            "role": "RESEARCH",
-            "state": "LIVE_ROLE_CERTIFIED",
-            "instance_id": self.instance_id,
-            "version": self.version,
-            "evidence_sha256": self.evidence_sha256,
-            "environment": self.environment,
-            "certified_at": self.certified_at,
-        }
-
-    def to_dict(self) -> dict[str, str]:
-        return {"receipt_id": self.receipt_id, **self._unsigned()}
-
-    @classmethod
-    def from_dict(cls, value: Mapping[str, Any]) -> PandoraLiveCertification:
-        if (
-            value.get("provider_id") != "pandora"
-            or value.get("role") != "RESEARCH"
-            or value.get("state") != "LIVE_ROLE_CERTIFIED"
-        ):
-            raise IntegrationError("certification does not authorize Pandora RESEARCH")
-        return cls(
-            receipt_id=str(value.get("receipt_id", "")),
-            instance_id=str(value.get("instance_id", "")),
-            version=str(value.get("version", "")),
-            evidence_sha256=str(value.get("evidence_sha256", "")),
-            environment=str(value.get("environment", "")),
-            certified_at=str(value.get("certified_at", "")),
-            schema_version=str(value.get("schema_version", "")),
-        )
-
-
-@dataclass(frozen=True, slots=True)
 class PandoraReadiness:
     state: str
     checks: Mapping[str, bool]
     manifest: PandoraProviderManifest | None
-    certification: PandoraLiveCertification | None
     detail: str
 
     @property
@@ -220,7 +117,8 @@ class PandoraReadiness:
             "globally_available": self.available_for_research,
             "available_for": "RESEARCH" if self.available_for_research else None,
             "manifest": self.manifest.to_dict() if self.manifest else None,
-            "certification": self.certification.to_dict() if self.certification else None,
+            "certification": None,
+            "certification_authority": "UNAVAILABLE",
             "detail": self.detail,
         }
 
@@ -448,60 +346,33 @@ class PandoraResearchService:
     def __init__(
         self,
         exchange_root: str | Path,
-        *,
-        certification_path: str | Path | None = None,
     ) -> None:
         self.transport = FilesystemResearchTransport(exchange_root)
         self.adapter = PandoraResearchAdapter(self.transport)
-        self.certification_path = (
-            Path(certification_path).expanduser().resolve()
-            if certification_path is not None
-            else None
-        )
 
     def readiness(self) -> PandoraReadiness:
         root = self.transport.exchange_root
         checks = {
             "exchange_root_safe": root.is_dir() and not root.is_symlink(),
             "provider_manifest_valid": False,
+            "independent_certification_authority_configured": False,
             "live_role_certified": False,
-            "identity_binding_valid": False,
         }
         manifest: PandoraProviderManifest | None = None
-        certification: PandoraLiveCertification | None = None
         if checks["exchange_root_safe"]:
             try:
                 manifest = _read_provider_manifest(root)
                 checks["provider_manifest_valid"] = True
             except IntegrationError:
                 manifest = None
-        if self.certification_path is not None and self.certification_path.is_file():
-            try:
-                certification = _read_live_certification(self.certification_path)
-                checks["live_role_certified"] = True
-            except IntegrationError:
-                certification = None
-        if manifest is not None and certification is not None:
-            checks["identity_binding_valid"] = (
-                manifest.instance_id == certification.instance_id
-                and manifest.version == certification.version
-            )
-        if all(checks.values()):
-            return PandoraReadiness(
-                "AVAILABLE",
-                checks,
-                manifest,
-                certification,
-                "Pandora is live-role certified and available for RESEARCH",
-            )
         state = "CONFIGURED" if checks["exchange_root_safe"] else "NOT_DETECTED"
         detail = (
-            "Pandora filesystem contract is configured but LIVE_ROLE_CERTIFIED evidence "
-            "is absent or does not match provider identity"
+            "Pandora filesystem contract is configured, but no independently anchored "
+            "certification authority is available; caller-supplied receipts are forbidden"
             if state == "CONFIGURED"
             else "Pandora exchange root is unavailable"
         )
-        return PandoraReadiness(state, checks, manifest, certification, detail)
+        return PandoraReadiness(state, checks, manifest, detail)
 
     def export_request(self, request: ResearchRequest) -> dict[str, Any]:
         manifest = _read_provider_manifest(self.transport.exchange_root)
@@ -543,62 +414,11 @@ class PandoraResearchService:
         readiness = self.readiness()
         if not readiness.available_for_research:
             raise IntegrationError(
-                "Pandora is not LIVE_ROLE_CERTIFIED and cannot supply an adoption proposal"
+                "Pandora lacks independently anchored LIVE_ROLE_CERTIFIED authority and "
+                "cannot supply an adoption proposal"
             )
         assert readiness.manifest is not None
-        assert readiness.certification is not None
-        imported = self.adapter.import_bundle(request)
-        _validate_provider_generation(imported.bundle, readiness.manifest)
-        authority = ProjectAuthority(project_root)
-        current = authority.current()
-        if current.number != expected_revision:
-            raise IntegrationError(
-                "semantic revision conflict: "
-                f"expected {expected_revision}, current {current.number}"
-            )
-        timestamp = proposed_at or datetime.now(UTC).isoformat()
-        adoption = ProjectResearchAdoption(
-            provider_id="pandora",
-            provider_role="RESEARCH",
-            provider_instance_id=readiness.manifest.instance_id,
-            provider_version=readiness.manifest.version,
-            certification_receipt_id=readiness.certification.receipt_id,
-            request_id=request.request_id,
-            bundle_id=imported.bundle.bundle_id,
-            request_sha256=_canonical_sha256(request.to_dict()),
-            bundle_sha256=imported.bundle_sha256,
-            report_sha256=imported.report_sha256,
-            source_manifest_sha256=_canonical_sha256(
-                [source.to_dict() for source in imported.bundle.source_manifest]
-            ),
-            findings=imported.bundle.findings,
-            source_uris=tuple(source.uri for source in imported.bundle.source_manifest),
-            proposed_by=actor,
-            proposed_at=timestamp,
-        )
-        model = ProjectModel(
-            project=current.model.project,
-            git=current.model.git,
-            artifacts=current.model.artifacts,
-            entities=current.model.entities,
-            governance=current.model.governance,
-            knowledge_adoptions=current.model.knowledge_adoptions,
-            research_adoptions=(*current.model.research_adoptions, adoption),
-            schema_version=current.model.schema_version,
-        )
-        proposal = authority.propose(
-            model,
-            expected_revision=expected_revision,
-            actor=actor,
-            source="PANDORA_RESEARCH_ADOPTION",
-        )
-        return {
-            "proposal": proposal.to_dict(),
-            "adoption": adoption.to_dict(),
-            "accepted": False,
-            "acceptance_authority": "PROJECT_AUTHORITY",
-            "required_next_operation": "project.accept",
-        }
+        raise AssertionError("unreachable until an independent certification authority exists")
 
 
 def _read_provider_manifest(root: Path) -> PandoraProviderManifest:
@@ -611,17 +431,6 @@ def _read_provider_manifest(root: Path) -> PandoraProviderManifest:
     if not isinstance(value, Mapping):
         raise IntegrationError("Pandora provider manifest must be an object")
     return PandoraProviderManifest.from_dict(value)
-
-
-def _read_live_certification(path: Path) -> PandoraLiveCertification:
-    raw = _read_regular_file(path, maximum=64 * 1024)
-    try:
-        value = json.loads(raw.decode("utf-8"))
-    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-        raise IntegrationError("Pandora certification must be UTF-8 JSON") from exc
-    if not isinstance(value, Mapping):
-        raise IntegrationError("Pandora certification must be an object")
-    return PandoraLiveCertification.from_dict(value)
 
 
 def _validate_provider_generation(
@@ -737,7 +546,6 @@ def _read_regular_file(path: Path, *, maximum: int) -> bytes:
 __all__ = [
     "FilesystemResearchTransport",
     "ImportedResearch",
-    "PandoraLiveCertification",
     "PandoraProviderManifest",
     "PandoraReadiness",
     "PandoraResearchAdapter",

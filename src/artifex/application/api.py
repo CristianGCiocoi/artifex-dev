@@ -1385,12 +1385,12 @@ class Application:
     @staticmethod
     def _pandora_service(request: OperationRequest) -> PandoraResearchService:
         certification_path = request.arguments.get("certification_path")
-        if certification_path is not None and not isinstance(certification_path, str):
-            raise TypeError("certification_path must be a string")
-        return PandoraResearchService(
-            _required_string(request.arguments, "exchange_root"),
-            certification_path=certification_path,
-        )
+        if certification_path is not None:
+            raise ValueError(
+                "caller-supplied Pandora certification is forbidden; an independent "
+                "certification authority is not configured"
+            )
+        return PandoraResearchService(_required_string(request.arguments, "exchange_root"))
 
     @classmethod
     def _pandora_readiness(cls, request: OperationRequest) -> OperationResult:

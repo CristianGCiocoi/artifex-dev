@@ -488,12 +488,10 @@ def research_bundle_validate(bundle_file: Path) -> None:
 @pandora_app.command("readiness")
 def pandora_readiness(
     exchange_root: str = typer.Option(..., "--exchange-root"),
-    certification_path: str | None = typer.Option(None, "--certification"),
 ) -> None:
     """Report contract identity separately from live RESEARCH certification."""
 
-    arguments = {"exchange_root": exchange_root, "certification_path": certification_path}
-    _emit("research.pandora.readiness", arguments)
+    _emit("research.pandora.readiness", {"exchange_root": exchange_root})
 
 
 @pandora_app.command("request")
@@ -527,7 +525,6 @@ def pandora_propose_adoption(
     request_file: Path,
     project_root: str = typer.Option(..., "--project-root"),
     exchange_root: str = typer.Option(..., "--exchange-root"),
-    certification_path: str = typer.Option(..., "--certification"),
     expected_revision: int = typer.Option(..., "--expected-revision"),
 ) -> None:
     """Create a Project Authority proposal; acceptance remains a separate command."""
@@ -536,7 +533,6 @@ def pandora_propose_adoption(
         "research.pandora.adoption.propose",
         {
             "exchange_root": exchange_root,
-            "certification_path": certification_path,
             "request": _load_object(request_file),
             "expected_revision": expected_revision,
         },

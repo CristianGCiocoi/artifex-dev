@@ -70,11 +70,11 @@ Application API as `research.pandora.*`.
 
 The exchange root must contain a provider-written `pandora-provider.json`. It may
 declare only provider `pandora`, role `RESEARCH`, and `filesystem-contract-v1`.
-A valid manifest establishes contract identity, not live availability. ARTIFEX
-reports the provider as `AVAILABLE` only when a separate, hash-bound
-`LIVE_ROLE_CERTIFIED` receipt from a real Pandora public-composition qualification
-matches the manifest instance and version. A fixture or an existing directory is
-therefore never silently promoted to provider readiness.
+A valid manifest establishes contract identity, not live availability. M8B has no
+independently anchored certification authority, so the shipping composition never
+reports Pandora as `AVAILABLE`. Caller-supplied certification paths and hash-only
+receipts are rejected explicitly; neither a fixture, a matching instance/version,
+nor a locally self-issued digest can unlock readiness.
 
 Request export and bundle import are non-canonical. Import validates path safety,
 bundle/report digests, request identity, source lineage, provider instance, provider
@@ -83,13 +83,14 @@ revision, or fingerprint.
 
 Adoption is deliberately two-step:
 
-1. `research.pandora.adoption.propose` requires matching live role certification and
-   creates a semantic proposal containing the complete research lineage.
+1. `research.pandora.adoption.propose` remains fail-closed until a future milestone
+   supplies an independently anchored verifier; only then may it create a semantic
+   proposal containing the complete research lineage.
 2. `project.accept` performs a separate optimistic-revision acceptance through
    Project Authority.
 
-The proposal step cannot accept itself. A stale revision, forged role, mismatched
-provider identity, tampered certification receipt, unsafe path, or missing live
+The proposal step cannot accept itself. A caller-self-issued receipt, stale revision,
+forged role, mismatched provider identity, unsafe path, or missing independent live
 certification fails closed. Pandora never receives an execution role and no secret
 material belongs in the Project repository or the provider manifest.
 

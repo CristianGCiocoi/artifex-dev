@@ -181,6 +181,34 @@ def qualify(python: Path) -> dict[str, Any]:
             project_root=project,
             expect_ok=False,
         )
+        caller_receipt = root / "caller-self-issued-certification.json"
+        caller_receipt.write_text(
+            json.dumps(
+                {
+                    "provider_id": "pandora",
+                    "role": "RESEARCH",
+                    "state": "LIVE_ROLE_CERTIFIED",
+                    "instance_id": instance_id,
+                    "version": "0.1.0.dev0",
+                    "evidence_sha256": "a" * 64,
+                    "receipt_id": "b" * 64,
+                },
+                sort_keys=True,
+            ),
+            encoding="utf-8",
+        )
+        self_issued = _call(
+            python,
+            "research.pandora.adoption.propose",
+            {
+                "exchange_root": str(exchange),
+                "certification_path": str(caller_receipt),
+                "request": request,
+                "expected_revision": before["revision"],
+            },
+            project_root=project,
+            expect_ok=False,
+        )
         forged = _bundle("forged-instance")
         (request_directory / "research-bundle.json").write_text(
             json.dumps(forged, sort_keys=True), encoding="utf-8"
@@ -221,6 +249,7 @@ def qualify(python: Path) -> dict[str, Any]:
                     "project_bytes_unchanged": True,
                     "project_revision_unchanged": True,
                     "explicit_adoption_blocked_without_live_certification": not blocked["ok"],
+                    "caller_self_issued_hash_receipt_rejected": not self_issued["ok"],
                     "forged_provider_lineage_rejected": not tampered["ok"],
                 }
             },
