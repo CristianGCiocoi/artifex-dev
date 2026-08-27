@@ -558,7 +558,11 @@ def _vertical_slice(cli: PublicCLI, root: Path, context: dict[str, Any]) -> dict
                 "provider_id": "codex",
                 "project_id": project_id,
                 "role": "INTERACTION",
-                "prompt": "Report the ARTIFEX Project id and accepted semantic revision read-only.",
+                "prompt": (
+                    "Return exactly: ARTIFEX_INTERACTION "
+                    "project_id=m3-codex-project semantic_revision=1. "
+                    "Do not call tools and do not modify files."
+                ),
             },
             timeout=600,
         ),
@@ -566,6 +570,10 @@ def _vertical_slice(cli: PublicCLI, root: Path, context: dict[str, Any]) -> dict
     )
     if interaction.get("provider_id") != "codex" or interaction.get("live") is not True:
         raise AssertionError("Codex INTERACTION did not execute live")
+    if interaction.get("response") != (
+        "ARTIFEX_INTERACTION project_id=m3-codex-project semantic_revision=1"
+    ):
+        raise AssertionError("Codex INTERACTION did not return the bounded live response")
 
     cli.call(
         "runtime.bootstrap",
