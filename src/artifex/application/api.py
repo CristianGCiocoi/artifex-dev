@@ -2,8 +2,13 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 from collections.abc import Callable, Mapping, Sequence
+from contextlib import suppress
 from dataclasses import dataclass, field
+from pathlib import Path
+from time import time
 from typing import Any
 
 from artifex import __version__
@@ -49,9 +54,25 @@ from artifex.integrations import (
     run_doctor,
     select_integration,
 )
+from artifex.integrations.codex import CodexIntegration, CodexProcessRunner
 from artifex.project import ProjectControlService, ProjectModel, default_catalog_path
-from artifex.runtime import ExecutionEnvelope, ManagedRuntimeService, ReconciliationOutcome
-from artifex.workflow import ExecutionBaseline
+from artifex.runtime import (
+    ActorPrincipal,
+    ActorType,
+    DelegationGrant,
+    EvidenceRecord,
+    ExecutionEnvelope,
+    ManagedRuntimeService,
+    Materiality,
+    ReconciliationOutcome,
+    SupervisionLevel,
+)
+from artifex.runtime import (
+    CredentialReference as RuntimeCredentialReference,
+)
+from artifex.workflow import ExecutionBaseline, ExecutionStatus
+
+CodexRunnerFactory = Callable[[tuple[str, ...]], CodexProcessRunner]
 
 
 @dataclass(frozen=True, slots=True)
@@ -105,6 +126,7 @@ class Application:
         project_root: str | None = None,
         provider_loader: ProviderCompositionLoader | None = None,
         provider_interaction: ProviderInteractionService | None = None,
+        codex_runner_factory: CodexRunnerFactory | None = None,
     ) -> None:
         self._operations: dict[str, Operation] = {}
         self._project_root = project_root
@@ -112,6 +134,7 @@ class Application:
             certified_roles={"codex": CODEX_DISPATCH_AUTHORIZED_ROLES}
         )
         self._provider_interaction = provider_interaction or ProviderInteractionService()
+        self._codex_runner_factory = codex_runner_factory or _codex_process_runner
         self.registry = (
             IntegrationRegistry((ManualIntegration(),)) if registry is None else registry
         )
@@ -146,6 +169,7 @@ class Application:
         self.register("runtime.accept", self._runtime_accept)
         self.register("runtime.workspace.create", self._runtime_workspace_create)
         self.register("runtime.workspace.promote", self._runtime_workspace_promote)
+        self.register("runtime.provider.execute", self._runtime_provider_execute)
         self.register("manual.packet.create", self._manual_packet_create)
         self.register("manual.result.submit", self._manual_result_submit)
         self.register("research.request.validate", self._research_request_validate)
@@ -481,21 +505,10 @@ class Application:
     @staticmethod
     def _runtime_bootstrap(request: OperationRequest) -> OperationResult:
         envelope_value = _required_mapping(request.arguments, "envelope")
-        envelope = ExecutionEnvelope(
-            envelope_id=_required_string(envelope_value, "envelope_id"),
-            version=_required_int(envelope_value, "version"),
-            project_id=_required_string(envelope_value, "project_id"),
-            objective=_required_string(envelope_value, "objective"),
-            baseline_revision=_required_int(envelope_value, "baseline_revision"),
-            actor_id=_required_string(envelope_value, "actor_id"),
-            allowed_paths=_string_sequence(envelope_value, "allowed_paths"),
-            allowed_capabilities=_string_sequence(envelope_value, "allowed_capabilities"),
-            required_gates=_string_sequence(envelope_value, "required_gates"),
-            max_attempts=_required_int(envelope_value, "max_attempts"),
-            recovery_policy=_required_string(envelope_value, "recovery_policy"),
-            stop_on_unknown=_optional_bool(envelope_value, "stop_on_unknown", True),
-            approved=_optional_bool(envelope_value, "approved", True),
-        )
+        envelope = _execution_envelope(envelope_value)
+        automated = bool(envelope.allowed_providers)
+        actor = _required_actor(request.arguments, "actor") if automated else request.context.actor
+        approval_actor = _required_actor(request.arguments, "approval_actor") if automated else None
         value = _runtime_service(request).bootstrap_run(
             envelope,
             workstream_id=_required_string(request.arguments, "workstream_id"),
@@ -503,7 +516,9 @@ class Application:
             project_job_id=_required_string(request.arguments, "project_job_id"),
             attempt_id=_required_string(request.arguments, "attempt_id"),
             purpose=_required_string(request.arguments, "purpose"),
-            actor_id=request.context.actor,
+            actor_id=actor,
+            approval_actor=approval_actor,
+            correlation_id=request.context.correlation_id,
         )
         return OperationResult(ok=True, value=value)
 
@@ -567,34 +582,256 @@ class Application:
 
     @staticmethod
     def _runtime_accept(request: OperationRequest) -> OperationResult:
-        decision = _runtime_service(request).accept(
-            _required_string(request.arguments, "project_job_id"),
+        service = _runtime_service(request)
+        project_job_id = _required_string(request.arguments, "project_job_id")
+        actor = _runtime_actor(
+            service,
+            request,
+            entity="project_job",
+            entity_id=project_job_id,
+            action="acceptance",
+        )
+        decision = service.accept(
+            project_job_id,
             evidence_valid=_optional_bool(request.arguments, "evidence_valid", False),
-            actor_id=request.context.actor,
+            evidence_ids=_string_sequence(request.arguments, "evidence_ids"),
+            actor_id=actor,
             reason=_required_string(request.arguments, "reason"),
+            correlation_id=request.context.correlation_id,
         )
         return OperationResult(ok=True, value={"decision": decision.to_dict()})
 
     @staticmethod
     def _runtime_workspace_create(request: OperationRequest) -> OperationResult:
-        path = _runtime_service(request).create_workspace(
+        service = _runtime_service(request)
+        attempt_id = _required_string(request.arguments, "attempt_id")
+        actor = _runtime_actor(
+            service,
+            request,
+            entity="attempt",
+            entity_id=attempt_id,
+            action="workspace creation",
+        )
+        path = service.create_workspace(
             _required_string(request.arguments, "workspace_id"),
-            _required_string(request.arguments, "attempt_id"),
+            attempt_id,
             _required_string(request.arguments, "project_root"),
             _required_int(request.arguments, "baseline_revision"),
-            actor_id=request.context.actor,
+            actor_id=actor,
         )
         return OperationResult(ok=True, value={"workspace_root": str(path), "isolated": True})
 
     @staticmethod
     def _runtime_workspace_promote(request: OperationRequest) -> OperationResult:
-        revision = _runtime_service(request).promote_accepted_workspace(
+        service = _runtime_service(request)
+        project_job_id = _required_string(request.arguments, "project_job_id")
+        actor = _runtime_actor(
+            service,
+            request,
+            entity="project_job",
+            entity_id=project_job_id,
+            action="workspace promotion",
+        )
+        revision = service.promote_accepted_workspace(
             _required_string(request.arguments, "workspace_id"),
             ProjectModel.from_dict(_required_mapping(request.arguments, "model")),
-            _required_string(request.arguments, "project_job_id"),
-            actor_id=request.context.actor,
+            project_job_id,
+            actor_id=actor,
         )
         return OperationResult(ok=True, value={"semantic_revision": revision})
+
+    def _runtime_provider_execute(self, request: OperationRequest) -> OperationResult:
+        service = _runtime_service(request)
+        attempt_id = _required_string(request.arguments, "attempt_id")
+        project_job_id = _required_string(request.arguments, "project_job_id")
+        run_id = _required_string(request.arguments, "run_id")
+        workspace_id = _required_string(request.arguments, "workspace_id")
+        provider_id = _required_string(request.arguments, "provider_id")
+        role = ProviderRole(_required_string(request.arguments, "role"))
+        if role is not ProviderRole.EXECUTION_IMPLEMENTER:
+            raise ValueError("runtime.provider.execute requires EXECUTION_IMPLEMENTER role")
+
+        _, _, _, workspace, envelope = _bound_runtime_execution(
+            service,
+            attempt_id=attempt_id,
+            project_job_id=project_job_id,
+            run_id=run_id,
+            workspace_id=workspace_id,
+        )
+        dispatch_actor = _required_actor(request.arguments, "actor")
+        provider_actor = _required_actor(request.arguments, "provider_actor")
+        evidence_actor = _required_actor(request.arguments, "evidence_actor")
+        _validate_execution_actors(dispatch_actor, provider_actor, evidence_actor)
+
+        capabilities = _string_sequence(request.arguments, "capabilities")
+        if not capabilities:
+            capabilities = tuple(
+                capability
+                for capability in envelope.allowed_capabilities
+                if capability in {"repository_read", "repository_write", "test_execution"}
+            )
+        if not capabilities:
+            raise ValueError("provider execution requires explicit provider capabilities")
+        project_policy = _optional_mapping(request.arguments, "project_policy")
+        graph = self._load_provider_graph(request)
+        decision = CapabilityResolver().resolve(
+            graph,
+            CapabilityRequest(
+                project_id=envelope.project_id,
+                project_job_id=project_job_id,
+                role=role,
+                capabilities=frozenset(capabilities),
+                allowed_providers=frozenset(envelope.allowed_providers),
+                envelope_capabilities=frozenset(envelope.allowed_capabilities),
+                actor=ActorContext(
+                    actor_id=dispatch_actor.actor_id,
+                    actor_type=dispatch_actor.actor_type.value,
+                    delegated_roles=frozenset({role}),
+                ),
+                data_classification=DataClassification(envelope.data_classification),
+                preferred_provider=provider_id,
+                project_allowed_providers=frozenset(
+                    _string_sequence(project_policy, "allowed_providers")
+                ),
+                project_allowed_roles=frozenset(
+                    ProviderRole(item) for item in _string_sequence(project_policy, "allowed_roles")
+                ),
+            ),
+        )
+        if not decision.eligible or decision.provider_id != provider_id:
+            raise ValueError("provider is not contextually eligible: " + ",".join(decision.reasons))
+        provider = graph.provider(provider_id)
+        if provider is None:
+            raise ValueError(f"provider is not registered: {provider_id}")
+
+        owned_paths = _string_sequence(request.arguments, "owned_paths")
+        if not owned_paths:
+            raise ValueError("owned_paths must contain at least one path")
+        for path in owned_paths:
+            service.workspaces.assert_allowed_path(
+                workspace_id, path, permission="WRITE", actor_id=dispatch_actor
+            )
+        credential_ids = _string_sequence(request.arguments, "credential_reference_ids")
+        singular_credential = _optional_string(request.arguments, "credential_reference_id")
+        if singular_credential is not None:
+            if credential_ids:
+                raise ValueError(
+                    "credential_reference_id and credential_reference_ids are mutually exclusive"
+                )
+            credential_ids = (singular_credential,)
+        packet = CodexIntegration().prepare_execution(
+            task_contract={
+                "id": project_job_id,
+                "objective": _required_string(request.arguments, "objective"),
+                "run_id": run_id,
+                "attempt_id": attempt_id,
+            },
+            context={
+                "execution_envelope_id": envelope.envelope_id,
+                "execution_envelope_version": envelope.version,
+                "execution_envelope_fingerprint": envelope.fingerprint,
+                "workspace_id": workspace_id,
+            },
+            base_commit=_required_envelope_commit(envelope),
+            project_model_fingerprint=_required_envelope_fingerprint(envelope),
+            acceptance_criteria=(
+                tuple(_required_sequence(request.arguments, "acceptance_criteria"))
+                if "acceptance_criteria" in request.arguments
+                else tuple(f"gate:{gate}" for gate in envelope.required_gates)
+            ),
+            ownership={"paths": list(owned_paths)},
+            expected_result={
+                "status": "SUCCESS",
+                "artifacts": [{"path": path} for path in owned_paths],
+                "canonical_acceptance": False,
+            },
+            interfaces=_string_sequence(request.arguments, "interfaces"),
+            invariants=_string_sequence(request.arguments, "invariants"),
+        )
+        workspace_root = Path(str(workspace["workspace_root"])).resolve()
+        integration = CodexIntegration()
+        plan = integration.prepare_stage(
+            packet,
+            workspace_root,
+            require_clean=True,
+            command_prefix=provider.configuration.command,
+        )
+        authorization = service.authorize_dispatch(
+            attempt_id,
+            provider_id=provider_id,
+            provider_role=role.value,
+            requested_capabilities=capabilities,
+            filesystem_permissions=_string_sequence_or_default(
+                request.arguments,
+                "filesystem_permissions",
+                envelope.filesystem_permissions,
+            ),
+            network_permissions=_string_sequence_or_default(
+                request.arguments, "network_permissions", envelope.network_permissions
+            ),
+            tool_permissions=_string_sequence_or_default(
+                request.arguments, "tool_permissions", envelope.tool_permissions
+            ),
+            credential_reference_ids=credential_ids,
+            actor=dispatch_actor,
+            correlation_id=request.context.correlation_id,
+        )
+        try:
+            result = integration.execute_stage(
+                plan,
+                self._codex_runner_factory(provider.configuration.command),
+            )
+            manifest, manifest_digest = _validate_owned_artifacts(
+                service,
+                workspace_id=workspace_id,
+                workspace_root=workspace_root,
+                owned_paths=owned_paths,
+                result=result,
+                actor=evidence_actor,
+            )
+            passed = result.status is ExecutionStatus.SUCCESS
+            evidence = _record_required_evidence(
+                service,
+                envelope=envelope,
+                project_job_id=project_job_id,
+                attempt_id=attempt_id,
+                workspace_id=workspace_id,
+                manifest_digest=manifest_digest,
+                passed=passed,
+                actor=evidence_actor,
+                correlation_id=request.context.correlation_id,
+            )
+            service.finish(
+                attempt_id,
+                f"provider={provider_id}; status={result.status.value}; "
+                f"owned_artifacts_sha256={manifest_digest}",
+                actor_id=provider_actor,
+                correlation_id=request.context.correlation_id,
+            )
+        except Exception:
+            with suppress(Exception):
+                service.mark_unknown(attempt_id, actor_id=provider_actor)
+            raise
+
+        return OperationResult(
+            ok=True,
+            value={
+                "execution": {
+                    "provider_id": provider_id,
+                    "provider_role": role.value,
+                    "live": True,
+                    "status": result.status.value,
+                    "result": result.to_dict(),
+                    "packet_fingerprint": packet.contract_fingerprint,
+                    "dispatch_authorization": authorization.to_dict(),
+                    "owned_artifacts": manifest,
+                    "owned_artifacts_sha256": manifest_digest,
+                    "evidence": [record.to_dict() for record in evidence],
+                    "accepted": False,
+                    "promoted": False,
+                }
+            },
+        )
 
     def _manual_packet_create(self, request: OperationRequest) -> OperationResult:
         manual = self.registry.get("manual")
@@ -833,6 +1070,13 @@ def _optional_string(arguments: Mapping[str, Any], name: str) -> str | None:
     return value
 
 
+def _optional_int(arguments: Mapping[str, Any], name: str) -> int | None:
+    value = arguments.get(name)
+    if value is not None and (not isinstance(value, int) or isinstance(value, bool)):
+        raise TypeError(f"{name} must be an integer")
+    return value
+
+
 def _required_int(arguments: Mapping[str, Any], name: str) -> int:
     value = arguments.get(name)
     if not isinstance(value, int) or isinstance(value, bool):
@@ -861,3 +1105,292 @@ def _runtime_service(request: OperationRequest) -> ManagedRuntimeService:
     service_id = str(request.arguments.get("service_id", "artifex-managed-service"))
     workspace_root = _optional_string(request.arguments, "workspace_root")
     return ManagedRuntimeService(store_path, service_id=service_id, workspace_root=workspace_root)
+
+
+def _codex_process_runner(command: tuple[str, ...]) -> CodexProcessRunner:
+    return CodexProcessRunner(command=command)
+
+
+def _execution_envelope(value: Mapping[str, Any]) -> ExecutionEnvelope:
+    budget = _optional_mapping(value, "resource_budget")
+    resource_budget: list[tuple[str, int]] = []
+    for key, item in sorted(budget.items()):
+        if not isinstance(key, str) or not key.strip():
+            raise TypeError("resource_budget keys must be non-empty strings")
+        if not isinstance(item, int) or isinstance(item, bool):
+            raise TypeError("resource_budget values must be integers")
+        resource_budget.append((key, item))
+    credentials = tuple(
+        RuntimeCredentialReference(
+            reference_id=_required_string(item, "reference_id"),
+            provider_id=_required_string(item, "provider_id"),
+            role=_required_string(item, "role"),
+            project_id=_required_string(item, "project_id"),
+            expires_at=_optional_int(item, "expires_at"),
+            revoked=_optional_bool(item, "revoked", False),
+        )
+        for item in _mapping_sequence(value, "credential_references")
+    )
+    return ExecutionEnvelope(
+        envelope_id=_required_string(value, "envelope_id"),
+        version=_required_int(value, "version"),
+        project_id=_required_string(value, "project_id"),
+        objective=_required_string(value, "objective"),
+        baseline_revision=_required_int(value, "baseline_revision"),
+        actor_id=_required_string(value, "actor_id"),
+        allowed_paths=_string_sequence(value, "allowed_paths"),
+        allowed_capabilities=_string_sequence(value, "allowed_capabilities"),
+        required_gates=_string_sequence(value, "required_gates"),
+        max_attempts=_required_int(value, "max_attempts"),
+        recovery_policy=_required_string(value, "recovery_policy"),
+        stop_on_unknown=_optional_bool(value, "stop_on_unknown", True),
+        approved=_optional_bool(value, "approved", True),
+        supervision_level=SupervisionLevel(
+            str(value.get("supervision_level", SupervisionLevel.L2.value))
+        ),
+        materiality=Materiality(str(value.get("materiality", Materiality.TACTICAL.value))),
+        allowed_workstreams=_string_sequence(value, "allowed_workstreams"),
+        allowed_providers=_string_sequence(value, "allowed_providers"),
+        allowed_provider_roles=_string_sequence(value, "allowed_provider_roles"),
+        filesystem_permissions=_string_sequence_or_default(
+            value, "filesystem_permissions", ("READ", "WRITE")
+        ),
+        network_permissions=_string_sequence(value, "network_permissions"),
+        tool_permissions=_string_sequence(value, "tool_permissions"),
+        data_classification=_string_or_default(value, "data_classification", "INTERNAL"),
+        credential_references=credentials,
+        resource_budget=tuple(resource_budget),
+        deadline_at=_optional_int(value, "deadline_at"),
+        stop_conditions=_string_sequence_or_default(
+            value, "stop_conditions", ("MAX_ATTEMPTS", "UNKNOWN_OUTCOME")
+        ),
+        require_durable_evidence=_optional_bool(value, "require_durable_evidence", False),
+        baseline_fingerprint=_optional_string(value, "baseline_fingerprint"),
+        baseline_commit=_optional_string(value, "baseline_commit"),
+    )
+
+
+def _required_actor(arguments: Mapping[str, Any], name: str) -> ActorPrincipal:
+    value = _required_mapping(arguments, name)
+    delegation_value = value.get("delegation")
+    delegation = None
+    if delegation_value is not None:
+        grant = _mapping(delegation_value, f"{name}.delegation")
+        delegation = DelegationGrant(
+            grant_id=_required_string(grant, "grant_id"),
+            delegator_id=_required_string(grant, "delegator_id"),
+            delegate_id=_required_string(grant, "delegate_id"),
+            project_id=_required_string(grant, "project_id"),
+            allowed_actions=_string_sequence(grant, "allowed_actions"),
+            issued_at=_required_int(grant, "issued_at"),
+            expires_at=_optional_int(grant, "expires_at"),
+        )
+    return ActorPrincipal(
+        actor_id=_required_string(value, "actor_id"),
+        actor_type=ActorType(_required_string(value, "actor_type")),
+        authenticated=_optional_bool(value, "authenticated", False),
+        authentication_method=_required_string(value, "authentication_method"),
+        direct_permissions=_string_sequence(value, "direct_permissions"),
+        delegation=delegation,
+    )
+
+
+def _string_sequence_or_default(
+    arguments: Mapping[str, Any], name: str, default: tuple[str, ...]
+) -> tuple[str, ...]:
+    if name not in arguments:
+        return default
+    return _string_sequence(arguments, name)
+
+
+def _string_or_default(arguments: Mapping[str, Any], name: str, default: str) -> str:
+    if name not in arguments:
+        return default
+    return _required_string(arguments, name)
+
+
+def _run_for_job(service: ManagedRuntimeService, project_job_id: str) -> dict[str, Any]:
+    job = service.store.get("project_jobs", "project_job_id", project_job_id)
+    if job is None:
+        raise ValueError(f"unknown ProjectJob: {project_job_id}")
+    run = service.store.get("runs", "run_id", str(job["run_id"]))
+    if run is None:
+        raise ValueError(f"ProjectJob Run is missing: {project_job_id}")
+    return run
+
+
+def _run_for_attempt(service: ManagedRuntimeService, attempt_id: str) -> dict[str, Any]:
+    attempt = service.store.get("attempts", "attempt_id", attempt_id)
+    if attempt is None:
+        raise ValueError(f"unknown Attempt: {attempt_id}")
+    return _run_for_job(service, str(attempt["project_job_id"]))
+
+
+def _envelope_for_run(service: ManagedRuntimeService, run: Mapping[str, Any]) -> ExecutionEnvelope:
+    value = service.store.envelope(str(run["envelope_id"]), int(run["envelope_version"]))
+    if value is None:
+        raise ValueError(f"Run Execution Envelope is missing: {run['run_id']}")
+    return _execution_envelope(value)
+
+
+def _runtime_actor(
+    service: ManagedRuntimeService,
+    request: OperationRequest,
+    *,
+    entity: str,
+    entity_id: str,
+    action: str,
+) -> str | ActorPrincipal:
+    run = (
+        _run_for_attempt(service, entity_id)
+        if entity == "attempt"
+        else _run_for_job(service, entity_id)
+    )
+    envelope = _envelope_for_run(service, run)
+    if not envelope.allowed_providers:
+        return request.context.actor
+    if "actor" not in request.arguments:
+        raise ValueError(f"automated provider {action} requires an explicit actor object")
+    return _required_actor(request.arguments, "actor")
+
+
+def _bound_runtime_execution(
+    service: ManagedRuntimeService,
+    *,
+    attempt_id: str,
+    project_job_id: str,
+    run_id: str,
+    workspace_id: str,
+) -> tuple[
+    dict[str, Any],
+    dict[str, Any],
+    dict[str, Any],
+    dict[str, Any],
+    ExecutionEnvelope,
+]:
+    attempt = service.store.get("attempts", "attempt_id", attempt_id)
+    job = service.store.get("project_jobs", "project_job_id", project_job_id)
+    run = service.store.get("runs", "run_id", run_id)
+    workspace = service.store.get("workspaces", "workspace_id", workspace_id)
+    if any(value is None for value in (attempt, job, run, workspace)):
+        raise ValueError(
+            "provider execution requires an existing Run, ProjectJob, Attempt, and workspace"
+        )
+    assert attempt is not None and job is not None and run is not None and workspace is not None
+    if str(attempt["project_job_id"]) != project_job_id:
+        raise ValueError("Attempt is not bound to the requested ProjectJob")
+    if str(job["run_id"]) != run_id:
+        raise ValueError("ProjectJob is not bound to the requested Run")
+    if str(workspace["attempt_id"]) != attempt_id:
+        raise ValueError("Execution Workspace is not bound to the requested Attempt")
+    if str(attempt["state"]) != "PENDING" or str(workspace["state"]) != "ACTIVE":
+        raise ValueError("provider execution requires a PENDING Attempt and ACTIVE workspace")
+    envelope = _envelope_for_run(service, run)
+    if not envelope.allowed_providers:
+        raise ValueError("Run Execution Envelope does not authorize automated providers")
+    if int(workspace["baseline_revision"]) != envelope.baseline_revision:
+        raise ValueError("Execution Workspace baseline is not bound to the Envelope")
+    return attempt, job, run, workspace, envelope
+
+
+def _validate_execution_actors(
+    dispatch_actor: ActorPrincipal,
+    provider_actor: ActorPrincipal,
+    evidence_actor: ActorPrincipal,
+) -> None:
+    if provider_actor.actor_type is not ActorType.PROVIDER:
+        raise ValueError("provider_actor must have PROVIDER actor type")
+    if evidence_actor.actor_type is not ActorType.ARTIFEX_SERVICE:
+        raise ValueError("evidence_actor must have ARTIFEX_SERVICE actor type")
+    if len({dispatch_actor.actor_id, provider_actor.actor_id, evidence_actor.actor_id}) != 3:
+        raise ValueError("dispatch, provider-result, and evidence actors must be distinct")
+
+
+def _required_envelope_commit(envelope: ExecutionEnvelope) -> str:
+    if envelope.baseline_commit is None:
+        raise ValueError("provider Execution Envelope is missing baseline_commit")
+    return envelope.baseline_commit
+
+
+def _required_envelope_fingerprint(envelope: ExecutionEnvelope) -> str:
+    if envelope.baseline_fingerprint is None:
+        raise ValueError("provider Execution Envelope is missing baseline_fingerprint")
+    return envelope.baseline_fingerprint
+
+
+def _validate_owned_artifacts(
+    service: ManagedRuntimeService,
+    *,
+    workspace_id: str,
+    workspace_root: Path,
+    owned_paths: tuple[str, ...],
+    result: ExecutionResult,
+    actor: ActorPrincipal,
+) -> tuple[list[dict[str, str]], str]:
+    manifest: dict[str, str] = {}
+    for owned_path in owned_paths:
+        target = service.workspaces.assert_allowed_path(
+            workspace_id, owned_path, permission="READ", actor_id=actor
+        )
+        candidates = [target] if target.is_file() else sorted(target.rglob("*"))
+        owned_files = 0
+        for candidate in candidates:
+            if not candidate.is_file() or candidate.is_symlink():
+                continue
+            resolved = candidate.resolve()
+            try:
+                relative = resolved.relative_to(workspace_root).as_posix()
+            except ValueError as exc:
+                raise ValueError("owned artifact escapes the Execution Workspace") from exc
+            manifest[relative] = hashlib.sha256(resolved.read_bytes()).hexdigest()
+            owned_files += 1
+        if owned_files == 0:
+            raise ValueError(f"owned artifact was not produced: {owned_path}")
+    claimed = {
+        _required_string(artifact, "path").replace("\\", "/").removeprefix("./")
+        for artifact in result.artifacts
+    }
+    if result.status is ExecutionStatus.SUCCESS and not claimed.issubset(manifest):
+        raise ValueError("provider claimed an artifact outside the independently hashed manifest")
+    values = [{"path": path, "sha256": manifest[path]} for path in sorted(manifest)]
+    encoded = json.dumps(values, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return values, hashlib.sha256(encoded).hexdigest()
+
+
+def _record_required_evidence(
+    service: ManagedRuntimeService,
+    *,
+    envelope: ExecutionEnvelope,
+    project_job_id: str,
+    attempt_id: str,
+    workspace_id: str,
+    manifest_digest: str,
+    passed: bool,
+    actor: ActorPrincipal,
+    correlation_id: str | None,
+) -> tuple[EvidenceRecord, ...]:
+    authority_gates = {"acceptance", "acceptance-authority", "project-authority"}
+    recorded_at = int(time())
+    records: list[EvidenceRecord] = []
+    for gate in envelope.required_gates:
+        if gate.casefold() in authority_gates:
+            continue
+        identity = hashlib.sha256(f"{attempt_id}\0{gate}\0{manifest_digest}".encode()).hexdigest()[
+            :24
+        ]
+        record = EvidenceRecord(
+            evidence_id=f"evidence-{identity}",
+            project_job_id=project_job_id,
+            attempt_id=attempt_id,
+            gate=gate,
+            passed=passed,
+            envelope_fingerprint=envelope.fingerprint,
+            baseline_revision=envelope.baseline_revision,
+            artifact_ref=f"workspace://{workspace_id}/owned-artifacts",
+            artifact_digest=manifest_digest,
+            actor_id=actor.actor_id,
+            recorded_at=recorded_at,
+        )
+        service.record_evidence(record, actor=actor, correlation_id=correlation_id)
+        records.append(record)
+    return tuple(records)
