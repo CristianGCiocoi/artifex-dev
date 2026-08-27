@@ -4,7 +4,7 @@ milestone: M8B
 status: BLOCKED_EXTERNAL_PREREQUISITE
 recorded_date: '2026-08-28'
 canonical_base_commit: 77aeb189e3359f8a54ff1f4056dd3c8409747ef7
-m8b_implementation_commit: 608945100863af47eec6dc28527a91b150a33dcf
+m8b_implementation_commit: 332ee5d640a4a4509273d4897daab6278bbb80e9
 m8b_acceptance_commit: null
 m8b_contract_digest: 3ef2cefbdbce0e0d14f3484fb2dc3683be93ccc7f0980d12c643dd353392d7f9
 authority_inputs:
@@ -46,11 +46,19 @@ security_authority:
   provider_role_limited_to_research: PASS
   provider_can_mutate_project_truth: false
   request_and_import_change_project_revision: false
-  project_authority_proposal_required: PASS
-  separate_project_accept_required: PASS
+  caller_self_issued_hash_receipt_rejected: PASS
+  adoption_unreachable_without_independent_certification_authority: PASS
+  project_authority_proposal_path: DESIGNED_NOT_LIVE_QUALIFIED
+  separate_project_accept_path: DESIGNED_NOT_LIVE_QUALIFIED
   unsafe_paths_fail_closed: PASS
   forged_provider_lineage_fails_closed: PASS
-  tampered_live_receipt_fails_closed: PASS
+independent_audit_remediation:
+  finding: CALLER_SELF_ISSUED_HASH_ONLY_CERTIFICATION_COULD_UNLOCK_ADOPTION
+  disposition: FIXED_FAIL_CLOSED
+  local_receipt_issuer_present: false
+  caller_supplied_certification_path_accepted: false
+  independent_certification_authority_configured: false
+  adoption_unlockable: false
 migration:
   existing_configuration_reused_without_revalidation: false
   real_readiness_revalidation: BLOCKED_EXTERNAL_PREREQUISITE

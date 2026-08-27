@@ -9,6 +9,7 @@
   "custom_application_factory_used": false,
   "journeys": {
     "J13": {
+      "caller_self_issued_hash_receipt_rejected": true,
       "evidence_imported": true,
       "explicit_adoption_blocked_without_live_certification": true,
       "forged_provider_lineage_rejected": true,
