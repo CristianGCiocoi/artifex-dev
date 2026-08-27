@@ -7,6 +7,15 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from artifex import __version__
+from artifex.capabilities import (
+    ActorContext,
+    CapabilityGraph,
+    CapabilityRequest,
+    CapabilityResolver,
+    DataClassification,
+    ProviderCompositionLoader,
+    ProviderRole,
+)
 from artifex.distribution import (
     ExperienceMode,
     apply_integration_setup,
@@ -86,8 +95,16 @@ Operation = Callable[[OperationRequest], OperationResult]
 class Application:
     """The single semantic API used by CLI, MCP, and interface packs."""
 
-    def __init__(self, registry: IntegrationRegistry | None = None) -> None:
+    def __init__(
+        self,
+        registry: IntegrationRegistry | None = None,
+        *,
+        project_root: str | None = None,
+        provider_loader: ProviderCompositionLoader | None = None,
+    ) -> None:
         self._operations: dict[str, Operation] = {}
+        self._project_root = project_root
+        self._provider_loader = provider_loader or ProviderCompositionLoader()
         self.registry = (
             IntegrationRegistry((ManualIntegration(),)) if registry is None else registry
         )
@@ -99,6 +116,9 @@ class Application:
         self.register("integrations.health", self._integration_health)
         self.register("integrations.select", self._integration_select)
         self.register("integrations.conformance", self._integration_conformance)
+        self.register("providers.graph", self._providers_graph)
+        self.register("providers.readiness", self._providers_readiness)
+        self.register("providers.resolve", self._providers_resolve)
         self.register("project.status", self._project_status)
         self.register("project.create", self._project_create)
         self.register("project.adopt", self._project_adopt)
@@ -225,6 +245,62 @@ class Application:
             integration  # type: ignore[arg-type]
         )
         return OperationResult(ok=report.status.value == "PASS", value=report.to_dict())
+
+    def _providers_graph(self, request: OperationRequest) -> OperationResult:
+        graph = self._load_provider_graph(request)
+        return OperationResult(ok=True, value={"graph": graph.to_dict()})
+
+    def _providers_readiness(self, request: OperationRequest) -> OperationResult:
+        provider_id = _required_string(request.arguments, "provider_id")
+        provider = self._load_provider_graph(request).provider(provider_id)
+        if provider is None:
+            raise ValueError(f"provider is not registered: {provider_id}")
+        return OperationResult(ok=True, value={"readiness": provider.readiness.to_dict()})
+
+    def _providers_resolve(self, request: OperationRequest) -> OperationResult:
+        envelope = _required_mapping(request.arguments, "envelope")
+        actor_value = _required_mapping(request.arguments, "actor")
+        project_policy = _optional_mapping(request.arguments, "project_policy")
+        role = ProviderRole(_required_string(request.arguments, "role"))
+        request_value = CapabilityRequest(
+            project_id=_required_string(request.arguments, "project_id"),
+            project_job_id=_required_string(request.arguments, "project_job_id"),
+            role=role,
+            capabilities=frozenset(_string_sequence(request.arguments, "capabilities")),
+            allowed_providers=frozenset(_string_sequence(envelope, "allowed_providers")),
+            envelope_capabilities=frozenset(
+                _string_sequence(envelope, "allowed_capabilities")
+            ),
+            actor=ActorContext(
+                actor_id=_required_string(actor_value, "actor_id"),
+                actor_type=_required_string(actor_value, "actor_type"),
+                delegated_roles=frozenset(
+                    ProviderRole(item)
+                    for item in _string_sequence(actor_value, "delegated_roles")
+                ),
+            ),
+            data_classification=DataClassification(
+                _required_string(request.arguments, "data_classification")
+            ),
+            preferred_provider=_optional_string(request.arguments, "provider_id"),
+            project_allowed_providers=frozenset(
+                _string_sequence(project_policy, "allowed_providers")
+            ),
+            project_allowed_roles=frozenset(
+                ProviderRole(item)
+                for item in _string_sequence(project_policy, "allowed_roles")
+            ),
+        )
+        decision = CapabilityResolver().resolve(self._load_provider_graph(request), request_value)
+        return OperationResult(ok=True, value={"decision": decision.to_dict()})
+
+    def _load_provider_graph(self, request: OperationRequest) -> CapabilityGraph:
+        root = request.arguments.get("project_root", request.context.project_root)
+        if root is None:
+            root = self._project_root
+        if not isinstance(root, str) or not root:
+            raise ValueError("project_root is required for provider composition")
+        return self._provider_loader.load(root)
 
     def _project_status(self, request: OperationRequest) -> OperationResult:
         root = request.arguments.get("project_root", request.context.project_root)
@@ -489,7 +565,12 @@ class Application:
     def _distribution_setup_plan(request: OperationRequest) -> OperationResult:
         root = _project_root(request)
         identifiers = _string_sequence(request.arguments, "integration_ids")
-        plan = plan_integration_setup(root, identifiers)
+        provider_specs = _mapping_sequence(request.arguments, "provider_specs")
+        plan = (
+            plan_integration_setup(root, identifiers, provider_specs=provider_specs)
+            if provider_specs
+            else plan_integration_setup(root, identifiers)
+        )
         return OperationResult(ok=True, value=plan.to_dict())
 
     @staticmethod
@@ -499,7 +580,17 @@ class Application:
         token = request.arguments.get("confirmation_token")
         if token is not None and not isinstance(token, str):
             raise TypeError("confirmation_token must be a string")
-        plan = plan_integration_setup(root, identifiers, issue_token=False)
+        provider_specs = _mapping_sequence(request.arguments, "provider_specs")
+        plan = (
+            plan_integration_setup(
+                root,
+                identifiers,
+                provider_specs=provider_specs,
+                issue_token=False,
+            )
+            if provider_specs
+            else plan_integration_setup(root, identifiers, issue_token=False)
+        )
         return OperationResult(
             ok=True,
             value=apply_integration_setup(plan, confirmation_token=token).to_dict(),
@@ -613,6 +704,17 @@ def _string_sequence(arguments: Mapping[str, Any], name: str) -> tuple[str, ...]
     if not all(isinstance(item, str) and item for item in value):
         raise TypeError(f"{name} must contain strings")
     return tuple(value)
+
+
+def _mapping_sequence(
+    arguments: Mapping[str, Any], name: str
+) -> tuple[Mapping[str, Any], ...]:
+    value = arguments.get(name, ())
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
+        raise TypeError(f"{name} must be an array")
+    if any(not isinstance(item, Mapping) for item in value):
+        raise TypeError(f"{name} entries must be objects")
+    return tuple(item for item in value if isinstance(item, Mapping))
 
 
 def _optional_bool(arguments: Mapping[str, Any], name: str, default: bool) -> bool:

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any
@@ -107,13 +108,19 @@ class SetupAction:
     state_path: str
     effect: str
     vendor_configuration_mutated: bool = False
+    provider_configuration: Mapping[str, Any] | None = None
 
-    def to_dict(self) -> dict[str, str | bool]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "integration_id": self.integration_id,
             "state_path": self.state_path,
             "effect": self.effect,
             "vendor_configuration_mutated": self.vendor_configuration_mutated,
+            "provider_configuration": (
+                dict(self.provider_configuration)
+                if self.provider_configuration is not None
+                else None
+            ),
         }
 
 
