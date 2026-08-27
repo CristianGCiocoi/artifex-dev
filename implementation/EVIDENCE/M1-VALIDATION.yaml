@@ -6,6 +6,8 @@ recorded_date: '2026-08-27'
 canonical_m0_acceptance_commit: f476d40e7a721913b9c94c4a60b78f0500f0e85f
 canonical_m0_integration_commit: dc153819d11134315d60acc0ccea7bab0473194f
 m1_implementation_baseline_commit: 94c42c4e6c494beda32db40d37f34e6c7659cbe2
+m1_acceptance_commit: cdb83f69dca72a691363dcbcb5d9eb7b085b65f0
+canonical_integration_branch: main
 m1_contract_digest: 42c6d252e97380e841bff8eabadf673d6f69140ce9660c59f805aff38d71299d
 source_quality:
   ruff: PASS
