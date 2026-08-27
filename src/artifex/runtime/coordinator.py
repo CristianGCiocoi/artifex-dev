@@ -232,9 +232,7 @@ class ExecutionCoordinator:
             ActorType.AUTOMATION_SYSTEM_ACTOR,
         }:
             raise RuntimeAuthorizationError("actor type cannot dispatch autonomous execution")
-        envelope = self.store.envelope(
-            str(run["envelope_id"]), int(str(run["envelope_version"]))
-        )
+        envelope = self.store.envelope(str(run["envelope_id"]), int(str(run["envelope_version"])))
         if envelope is None:
             raise RuntimeTransitionError("Run Execution Envelope is missing")
         if provider_id not in tuple(envelope.get("allowed_providers", ())):
@@ -320,9 +318,7 @@ class ExecutionCoordinator:
             raise RuntimeTransitionError("evidence ProjectJob does not match Attempt")
         job = self._require("project_jobs", "project_job_id", evidence.project_job_id)
         run = self._require("runs", "run_id", str(job["run_id"]))
-        envelope = self.store.envelope(
-            str(run["envelope_id"]), int(str(run["envelope_version"]))
-        )
+        envelope = self.store.envelope(str(run["envelope_id"]), int(str(run["envelope_version"])))
         if envelope is None or evidence.envelope_fingerprint != envelope["fingerprint"]:
             raise RuntimeTransitionError("evidence does not match the Run Execution Envelope")
         if evidence.baseline_revision != int(envelope["baseline_revision"]):
@@ -344,9 +340,7 @@ class ExecutionCoordinator:
         job = self._require("project_jobs", "project_job_id", str(attempt["project_job_id"]))
         run = self._require("runs", "run_id", str(job["run_id"]))
         workstream = self._require("workstreams", "workstream_id", str(run["workstream_id"]))
-        envelope = self.store.envelope(
-            str(run["envelope_id"]), int(str(run["envelope_version"]))
-        )
+        envelope = self.store.envelope(str(run["envelope_id"]), int(str(run["envelope_version"])))
         if envelope is None:
             raise RuntimeTransitionError("Run Execution Envelope is missing")
         if (
@@ -412,9 +406,7 @@ class ExecutionCoordinator:
         now = self.clock()
         dispatch = self.store.dispatch_authorization(attempt_id)
         if dispatch is not None:
-            job = self._require(
-                "project_jobs", "project_job_id", str(attempt["project_job_id"])
-            )
+            job = self._require("project_jobs", "project_job_id", str(attempt["project_job_id"]))
             run = self._require("runs", "run_id", str(job["run_id"]))
             principal = actor_principal(actor_id)
             principal.require("result:submit", str(run["project_id"]), now=now)
@@ -460,6 +452,19 @@ class ExecutionCoordinator:
             ),
             actor_id,
             now,
+        )
+        self.store.record_event(
+            "ATTEMPT_FINISHED",
+            "attempts",
+            attempt_id,
+            {
+                "project_job_id": str(attempt["project_job_id"]),
+                "result_claim": safe_claim,
+            },
+            self.token,
+            now=now,
+            actor=actor_id,
+            correlation_id=correlation_id,
         )
 
     def cancel_attempt(self, attempt_id: str, *, actor_id: ActorLike) -> None:
@@ -646,9 +651,7 @@ class ExecutionCoordinator:
         ):
             return
         now = self.clock()
-        workstream = self._require(
-            "workstreams", "workstream_id", str(run["workstream_id"])
-        )
+        workstream = self._require("workstreams", "workstream_id", str(run["workstream_id"]))
         changes = [
             self._change(
                 "runs",

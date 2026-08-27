@@ -364,6 +364,11 @@ def test_public_provider_execution_is_bound_evidenced_and_not_accepted(
     roles = certifications.value["certifications"]["roles"]
     execution_role = next(item for item in roles if item["role"] == "EXECUTION_IMPLEMENTER")
     assert execution_role["state"] == "LIVE_ROLE_CERTIFIED"
+    final_status = Application().dispatch(
+        OperationRequest("runtime.status", {**common, "run_id": "run-public-provider"})
+    )
+    event_types = {item["event_type"] for item in final_status.value["audit"]}
+    assert {"ATTEMPT_FINISHED", "WORKSPACE_PROMOTED"}.issubset(event_types)
 
 
 def test_public_provider_timeout_is_durably_unknown(tmp_path: Path) -> None:

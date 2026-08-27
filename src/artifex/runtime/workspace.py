@@ -309,6 +309,20 @@ class WorkspaceManager:
             now=now,
             actor_id=principal,
         )
+        self.store.record_event(
+            "WORKSPACE_PROMOTED",
+            "workspaces",
+            workspace_id,
+            {
+                "project_job_id": job_id,
+                "baseline_revision": baseline,
+                "promoted_revision": revision.number,
+                "proposal_id": proposal.id,
+            },
+            self.token,
+            now=now,
+            actor=principal,
+        )
         return revision.number
 
     def _run_for_workspace(self, workspace: dict[str, object]) -> dict[str, object]:
