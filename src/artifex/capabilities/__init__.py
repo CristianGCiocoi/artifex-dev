@@ -8,6 +8,13 @@ from artifex.capabilities.certification import (
 )
 from artifex.capabilities.composition import ProviderCompositionLoader, ProviderSetupError
 from artifex.capabilities.credentials import AuthenticationAssertion, CredentialBroker
+from artifex.capabilities.evidence import (
+    CapabilityEvidenceStore,
+    CapabilityReceipt,
+    default_capability_evidence_path,
+    record_execution_implementer_evidence,
+)
+from artifex.capabilities.interaction import ProviderInteractionService, RepositoryBaseline
 from artifex.capabilities.models import (
     ActorContext,
     CapabilityRequest,
@@ -30,7 +37,9 @@ __all__ = [
     "CODEX_SUPPORTED_VERSION_RANGE",
     "ActorContext",
     "AuthenticationAssertion",
+    "CapabilityEvidenceStore",
     "CapabilityGraph",
+    "CapabilityReceipt",
     "CapabilityRegistry",
     "CapabilityRequest",
     "CapabilityResolver",
@@ -42,9 +51,13 @@ __all__ = [
     "ProviderCompositionLoader",
     "ProviderConfiguration",
     "ProviderInstance",
+    "ProviderInteractionService",
     "ProviderReadiness",
     "ProviderRole",
     "ProviderSetupError",
     "ReadinessState",
+    "RepositoryBaseline",
     "codex_certification_projection",
+    "default_capability_evidence_path",
+    "record_execution_implementer_evidence",
 ]

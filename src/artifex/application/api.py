@@ -15,7 +15,9 @@ from artifex.capabilities import (
     CapabilityResolver,
     DataClassification,
     ProviderCompositionLoader,
+    ProviderInteractionService,
     ProviderRole,
+    codex_certification_projection,
 )
 from artifex.distribution import (
     ExperienceMode,
@@ -102,12 +104,14 @@ class Application:
         *,
         project_root: str | None = None,
         provider_loader: ProviderCompositionLoader | None = None,
+        provider_interaction: ProviderInteractionService | None = None,
     ) -> None:
         self._operations: dict[str, Operation] = {}
         self._project_root = project_root
         self._provider_loader = provider_loader or ProviderCompositionLoader(
             certified_roles={"codex": CODEX_DISPATCH_AUTHORIZED_ROLES}
         )
+        self._provider_interaction = provider_interaction or ProviderInteractionService()
         self.registry = (
             IntegrationRegistry((ManualIntegration(),)) if registry is None else registry
         )
@@ -122,6 +126,8 @@ class Application:
         self.register("providers.graph", self._providers_graph)
         self.register("providers.readiness", self._providers_readiness)
         self.register("providers.resolve", self._providers_resolve)
+        self.register("providers.interact", self._providers_interact)
+        self.register("providers.certifications", self._providers_certifications)
         self.register("project.status", self._project_status)
         self.register("project.create", self._project_create)
         self.register("project.adopt", self._project_adopt)
@@ -261,25 +267,78 @@ class Application:
         return OperationResult(ok=True, value={"readiness": provider.readiness.to_dict()})
 
     def _providers_resolve(self, request: OperationRequest) -> OperationResult:
+        role = ProviderRole(_required_string(request.arguments, "role"))
+        request_value = self._provider_capability_request(request, role)
+        decision = CapabilityResolver().resolve(self._load_provider_graph(request), request_value)
+        return OperationResult(ok=True, value={"decision": decision.to_dict()})
+
+    def _providers_interact(self, request: OperationRequest) -> OperationResult:
+        request_value = self._provider_interaction_request(request)
+        graph = self._load_provider_graph(request)
+        decision = CapabilityResolver().resolve(graph, request_value)
+        if not decision.eligible or decision.provider_id is None:
+            raise ValueError(
+                "provider is not contextually eligible for INTERACTION: "
+                + ", ".join(decision.reasons)
+            )
+        provider = graph.provider(decision.provider_id)
+        if provider is None:
+            raise ValueError("resolved provider disappeared from the Capability Graph")
+        root = request.arguments.get("project_root", request.context.project_root)
+        if root is None:
+            root = self._project_root
+        if not isinstance(root, str) or not root:
+            raise ValueError("project_root is required for provider interaction")
+        value = self._provider_interaction.interact(
+            provider=provider,
+            project_root=root,
+            project_id=request_value.project_id,
+            project_job_id=request_value.project_job_id,
+            prompt=_required_string(request.arguments, "prompt"),
+        )
+        return OperationResult(ok=True, value={"interaction": value})
+
+    def _providers_certifications(self, request: OperationRequest) -> OperationResult:
+        project_id = _optional_string(request.arguments, "project_id")
+        receipts = self._provider_interaction.store.valid_receipts(
+            provider_id="codex", project_id=project_id
+        )
+        evidence: dict[ProviderRole, tuple[str, ...]] = {}
+        for role in CODEX_DISPATCH_AUTHORIZED_ROLES:
+            role_receipts = tuple(
+                f"capability-receipt:{item.receipt_id}" for item in receipts if item.role is role
+            )
+            if role_receipts:
+                evidence[role] = role_receipts
+        projection = codex_certification_projection(evidence)
+        return OperationResult(
+            ok=True,
+            value={
+                "certifications": projection,
+                "authority": "LOCAL_CAPABILITY_EVIDENCE_STORE",
+                "project_id": project_id,
+            },
+        )
+
+    @staticmethod
+    def _provider_capability_request(
+        request: OperationRequest, role: ProviderRole
+    ) -> CapabilityRequest:
         envelope = _required_mapping(request.arguments, "envelope")
         actor_value = _required_mapping(request.arguments, "actor")
         project_policy = _optional_mapping(request.arguments, "project_policy")
-        role = ProviderRole(_required_string(request.arguments, "role"))
-        request_value = CapabilityRequest(
+        return CapabilityRequest(
             project_id=_required_string(request.arguments, "project_id"),
             project_job_id=_required_string(request.arguments, "project_job_id"),
             role=role,
             capabilities=frozenset(_string_sequence(request.arguments, "capabilities")),
             allowed_providers=frozenset(_string_sequence(envelope, "allowed_providers")),
-            envelope_capabilities=frozenset(
-                _string_sequence(envelope, "allowed_capabilities")
-            ),
+            envelope_capabilities=frozenset(_string_sequence(envelope, "allowed_capabilities")),
             actor=ActorContext(
                 actor_id=_required_string(actor_value, "actor_id"),
                 actor_type=_required_string(actor_value, "actor_type"),
                 delegated_roles=frozenset(
-                    ProviderRole(item)
-                    for item in _string_sequence(actor_value, "delegated_roles")
+                    ProviderRole(item) for item in _string_sequence(actor_value, "delegated_roles")
                 ),
             ),
             data_classification=DataClassification(
@@ -290,12 +349,54 @@ class Application:
                 _string_sequence(project_policy, "allowed_providers")
             ),
             project_allowed_roles=frozenset(
-                ProviderRole(item)
-                for item in _string_sequence(project_policy, "allowed_roles")
+                ProviderRole(item) for item in _string_sequence(project_policy, "allowed_roles")
             ),
         )
-        decision = CapabilityResolver().resolve(self._load_provider_graph(request), request_value)
-        return OperationResult(ok=True, value={"decision": decision.to_dict()})
+
+    @staticmethod
+    def _provider_interaction_request(request: OperationRequest) -> CapabilityRequest:
+        project_id = _required_string(request.arguments, "project_id")
+        provider_id = _optional_string(request.arguments, "provider_id")
+        capabilities = frozenset(_string_sequence(request.arguments, "capabilities"))
+        if not capabilities:
+            capabilities = frozenset({"repository_read"})
+        envelope = _optional_mapping(request.arguments, "envelope")
+        allowed_providers = frozenset(_string_sequence(envelope, "allowed_providers"))
+        if not allowed_providers and provider_id is not None:
+            allowed_providers = frozenset({provider_id})
+        allowed_capabilities = frozenset(_string_sequence(envelope, "allowed_capabilities"))
+        if not allowed_capabilities:
+            allowed_capabilities = capabilities
+        actor_value = _optional_mapping(request.arguments, "actor")
+        actor_id = _optional_string(actor_value, "actor_id") or request.context.actor
+        actor_type = _optional_string(actor_value, "actor_type") or "CLIENT"
+        delegated = frozenset(
+            ProviderRole(item) for item in _string_sequence(actor_value, "delegated_roles")
+        )
+        if not delegated:
+            delegated = frozenset({ProviderRole.INTERACTION})
+        project_policy = _optional_mapping(request.arguments, "project_policy")
+        return CapabilityRequest(
+            project_id=project_id,
+            project_job_id=(
+                _optional_string(request.arguments, "project_job_id") or f"{project_id}:interaction"
+            ),
+            role=ProviderRole.INTERACTION,
+            capabilities=capabilities,
+            allowed_providers=allowed_providers,
+            envelope_capabilities=allowed_capabilities,
+            actor=ActorContext(actor_id, actor_type, delegated),
+            data_classification=DataClassification(
+                str(request.arguments.get("data_classification", "INTERNAL"))
+            ),
+            preferred_provider=provider_id,
+            project_allowed_providers=frozenset(
+                _string_sequence(project_policy, "allowed_providers")
+            ),
+            project_allowed_roles=frozenset(
+                ProviderRole(item) for item in _string_sequence(project_policy, "allowed_roles")
+            ),
+        )
 
     def _load_provider_graph(self, request: OperationRequest) -> CapabilityGraph:
         root = request.arguments.get("project_root", request.context.project_root)
@@ -709,9 +810,7 @@ def _string_sequence(arguments: Mapping[str, Any], name: str) -> tuple[str, ...]
     return tuple(value)
 
 
-def _mapping_sequence(
-    arguments: Mapping[str, Any], name: str
-) -> tuple[Mapping[str, Any], ...]:
+def _mapping_sequence(arguments: Mapping[str, Any], name: str) -> tuple[Mapping[str, Any], ...]:
     value = arguments.get(name, ())
     if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
         raise TypeError(f"{name} must be an array")
