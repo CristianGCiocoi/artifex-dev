@@ -13,7 +13,7 @@
 - Current status: `ACCEPTED`
 - Accepted milestones: `M0, M1, M2, M3, M4, M5, M6A, M8A`
 - Ready milestones: `M7`
-- Latest accepted commit: `270806d1d22fc49c52bf37216027d56c11031542`
+- Latest accepted commit: `d7fa3c4ad419bd97e401ad765128dc3560484d90`
 - Next integration point: `Reconcile fail-closed M8B/M8C provider branches on the accepted M6A baseline, then activate M7 platform-neutral foundation`
 - M6A started: `true`
 

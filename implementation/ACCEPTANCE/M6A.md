@@ -4,6 +4,7 @@
 
 - Canonical base: `77aeb189e3359f8a54ff1f4056dd3c8409747ef7`
 - Implementation candidate: `99415edfc200f1288f1f3e046fb89f8c80dabd06`
+- Canonical acceptance commit: `d7fa3c4ad419bd97e401ad765128dc3560484d90`
 - Contract digest: `e7c7a02ee61e64bfda4b3a18660b460967b8d167fa0734723907ca64316c82f5`
 
 ## Qualified outcome

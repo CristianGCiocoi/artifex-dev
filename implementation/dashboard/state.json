@@ -1,6 +1,6 @@
 {
   "acceptance": {
-    "acceptance_commit": null,
+    "acceptance_commit": "d7fa3c4ad419bd97e401ad765128dc3560484d90",
     "blocked": [],
     "contract_digest": "e7c7a02ee61e64bfda4b3a18660b460967b8d167fa0734723907ca64316c82f5",
     "evidence_classes": {
@@ -792,9 +792,9 @@
       "sha256": "bbe2ba84030bc27d78bddae11c92bb1518266417f4b4be6265fcd7a5ae7286cb"
     },
     {
-      "bytes": 3268,
+      "bytes": 3304,
       "path": "implementation/EVIDENCE/M6A-VALIDATION.yaml",
-      "sha256": "72ffed0249674fd6d764eeac8f5dd630a4892ac62ad09d4c72de63aaca3eaca7"
+      "sha256": "768167e32f511cb7b4cbff79719c8ca7754e202e50689fd1446a91265f9f61f1"
     },
     {
       "bytes": 952,
@@ -2137,7 +2137,7 @@
     "id": "ARTIFEX-2.0-IMPLEMENTATION",
     "implementation_plan_status": "FROZEN",
     "intake_commit": "5cc5dcfeb420a6df171a44426c04a0f08fa1e877",
-    "latest_accepted_commit": "270806d1d22fc49c52bf37216027d56c11031542",
+    "latest_accepted_commit": "d7fa3c4ad419bd97e401ad765128dc3560484d90",
     "m1_started": true,
     "m2_started": true,
     "m3_started": true,

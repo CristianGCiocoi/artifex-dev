@@ -13,7 +13,7 @@ program:
   branch: codex/artifex-2-m6a-live
   current_milestone: M6A
   current_status: ACCEPTED
-  latest_accepted_commit: 270806d1d22fc49c52bf37216027d56c11031542
+  latest_accepted_commit: d7fa3c4ad419bd97e401ad765128dc3560484d90
   next_integration_point: Reconcile fail-closed M8B/M8C provider branches on the accepted M6A baseline, then activate M7 platform-neutral foundation
   m1_started: true
   m2_started: true
