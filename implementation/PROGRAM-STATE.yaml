@@ -13,7 +13,7 @@ program:
   branch: codex/artifex-2-wave4
   current_milestone: M6A
   current_status: ACTIVE_PARALLEL_WAVE
-  latest_accepted_commit: 41b1767585912a792953a81cbae3efc253b8f377
+  latest_accepted_commit: df886820a99de84876c4bb9151e53d6322248c59
   next_integration_point: Integrate and independently gate M4, M5 and M6A; preserve M6B as READY_UNCLAIMED
   m1_started: true
   m2_started: true

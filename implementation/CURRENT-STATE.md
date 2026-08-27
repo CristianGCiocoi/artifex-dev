@@ -13,7 +13,7 @@
 - Current status: `ACTIVE_PARALLEL_WAVE`
 - Accepted milestones: `M0, M1, M2, M3, M4, M5`
 - Ready milestones: `none`
-- Latest accepted commit: `41b1767585912a792953a81cbae3efc253b8f377`
+- Latest accepted commit: `df886820a99de84876c4bb9151e53d6322248c59`
 - Next integration point: `Integrate and independently gate M4, M5 and M6A; preserve M6B as READY_UNCLAIMED`
 - M6A started: `true`
 

@@ -750,9 +750,9 @@
       "sha256": "be8fe9ce733de63a05bbbdfbd2c83f991011bc0e676b1037387476b694aa221c"
     },
     {
-      "bytes": 2031,
+      "bytes": 2067,
       "path": "implementation/EVIDENCE/M5-VALIDATION.yaml",
-      "sha256": "ad7868d8f3852288abc45a0eaea8b82e01f49893eff3b9a0157fa566b09423ea"
+      "sha256": "cf9d4b91b61ad6dc0ba78848803867e50ffc500c18e3a8f742be423678f8c764"
     },
     {
       "bytes": 3220,
@@ -2057,7 +2057,7 @@
     "id": "ARTIFEX-2.0-IMPLEMENTATION",
     "implementation_plan_status": "FROZEN",
     "intake_commit": "5cc5dcfeb420a6df171a44426c04a0f08fa1e877",
-    "latest_accepted_commit": "41b1767585912a792953a81cbae3efc253b8f377",
+    "latest_accepted_commit": "df886820a99de84876c4bb9151e53d6322248c59",
     "m1_started": true,
     "m2_started": true,
     "m3_started": true,
