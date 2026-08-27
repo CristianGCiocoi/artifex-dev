@@ -1,0 +1,225 @@
+{
+  "composition": "CLEAN_INSTALLED_WHEEL_PUBLIC_CLI_REAL_CODEX_MULTI_PROCESS",
+  "custom_application_factory_used": false,
+  "installed_package": {
+    "origin": "C:\\Users\\Crugger\\AppData\\Local\\Temp\\artifex-m3-final3-6565f88f50cc4c1abfb1e3808aba1bed\\venv\\Lib\\site-packages\\artifex\\__init__.py",
+    "origin_sha256": "aaea8d0d489f8510fdced5332167a7e890daeb95ba2dab415b01469216fab9b8",
+    "prefix": "C:\\Users\\Crugger\\AppData\\Local\\Temp\\artifex-m3-final3-6565f88f50cc4c1abfb1e3808aba1bed\\venv"
+  },
+  "j01_interpretation": {
+    "full_journey_status": "NOT_CLAIMED",
+    "primary_proving_milestone": "M7",
+    "reason": "M3 proves the installed-wheel Codex public vertical slice; the clean-machine installer and managed-service Journey remains an M7 acceptance claim.",
+    "status": "M3_VERTICAL_SLICE_ONLY"
+  },
+  "journeys": {
+    "J01": {
+      "full_journey_status": "NOT_CLAIMED",
+      "primary_proving_milestone": "M7",
+      "reason": "M3 proves the installed-wheel Codex public vertical slice; the clean-machine installer and managed-service Journey remains an M7 acceptance claim.",
+      "status": "M3_VERTICAL_SLICE_ONLY"
+    },
+    "J16": {
+      "eligible_context_passed": true,
+      "fresh_process_consumed_setup": true,
+      "healthy_but_ineligible_excluded": true,
+      "provider_registered": true,
+      "readiness_state": "AVAILABLE",
+      "setup_sha256": "f0217f38d861d9ade757aefc9db1f12272924752acfc4ae6632303fffc1e1823",
+      "status": "PASS"
+    },
+    "M3_CODEX_VERTICAL_SLICE": {
+      "audit_event_types": [
+        "COORDINATOR_ACQUIRED",
+        "ENVELOPE_APPROVED",
+        "WORKSTREAM_CREATED",
+        "RUN_CREATED",
+        "PROJECT_JOB_CREATED",
+        "ATTEMPT_CREATED",
+        "COORDINATOR_ACQUIRED",
+        "WORKSPACE_CREATED",
+        "COORDINATOR_ACQUIRED",
+        "ATTEMPT_DISPATCH_AUTHORIZED",
+        "WORKSTREAMS_TRANSITION",
+        "RUNS_TRANSITION",
+        "PROJECT_JOBS_TRANSITION",
+        "ATTEMPTS_TRANSITION",
+        "EVIDENCE_RECORDED",
+        "PROVIDER_RESULT_RECORDED",
+        "ATTEMPTS_TRANSITION",
+        "PROJECT_JOBS_TRANSITION",
+        "ATTEMPT_FINISHED",
+        "COORDINATOR_ACQUIRED",
+        "COORDINATOR_ACQUIRED",
+        "ACCEPTANCE_DECIDED",
+        "PROJECT_JOBS_TRANSITION",
+        "RUNS_TRANSITION",
+        "WORKSTREAMS_TRANSITION",
+        "COORDINATOR_ACQUIRED",
+        "WORKSPACE_TRANSITION",
+        "WORKSPACE_PROMOTED",
+        "COORDINATOR_ACQUIRED"
+      ],
+      "frontend_process_reconnect": true,
+      "interaction": {
+        "live": true,
+        "role": "INTERACTION"
+      },
+      "provider_execution": {
+        "live": true,
+        "provider_id": "codex",
+        "role": "EXECUTION_IMPLEMENTER",
+        "simulated": false
+      },
+      "provider_result_self_accepted": false,
+      "role_certifications": {
+        "EXECUTION_IMPLEMENTER": "LIVE_ROLE_CERTIFIED",
+        "INTERACTION": "LIVE_ROLE_CERTIFIED"
+      },
+      "semantic_revision": 2,
+      "status": "PASS",
+      "workspace": {
+        "isolated": true,
+        "workspace_root_sha256": "e1e02d8fee204644cb8081f996c340cc5bf7f9d04e7b51e02e0b2c7c9a4805c7"
+      }
+    }
+  },
+  "live_gate": {
+    "blockers": [],
+    "codex_probe": {
+      "auth_exit_code": 0,
+      "auth_mode_sha256": "345b7b618c1de4ab8cd0c42a100874c69fb3007f835502622ab4e2245a3456f0",
+      "command": [
+        "C:\\Users\\Crugger\\AppData\\Local\\hermes\\node\\npx.CMD",
+        "--yes",
+        "@openai/codex@0.150.1"
+      ],
+      "command_sha256": "5e456aa4954adbd0d70e48c6f29247279de9d4150eafbafbf8a4fbd99855770f",
+      "credential_material_read": false,
+      "status": "PASS",
+      "version": "0.150.1",
+      "version_exit_code": 0
+    },
+    "status": "PASS"
+  },
+  "provider_injection_used": false,
+  "public_process_calls": [
+    {
+      "ok": true,
+      "operation": "project.create",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "195f09a1fa6fe832fd1988551b41b5786106684b985a4124bb17b7566e04b552"
+    },
+    {
+      "ok": true,
+      "operation": "distribution.setup.plan",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "96c2f19b6c0d106bf4c5aa6cd4f9deb2f9f52932441dfae258b4d5ff7a66c961"
+    },
+    {
+      "ok": true,
+      "operation": "distribution.setup.apply",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "31e1c58d9e76748189d0138236cabce0a6f90d334269d8375fdc3f704260c159"
+    },
+    {
+      "ok": true,
+      "operation": "providers.graph",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "a6edb8ca16b178e0af0db22c411c40e7380378e96c06c35e7cfdeab533e5e39f"
+    },
+    {
+      "ok": true,
+      "operation": "providers.readiness",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "8de83bd6c742c899979717d07577f6a23a542690997dd39572d1b80fedcb9d65"
+    },
+    {
+      "ok": true,
+      "operation": "providers.resolve",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "9c0fa17d08641d8398f1deed1488a57527e0ab008e4b260f755f8ac0ce1704a6"
+    },
+    {
+      "ok": true,
+      "operation": "providers.resolve",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "8d52e847274c2d6d79e05f3aafeff17f7090941f09f881063a7621d50ef88d96"
+    },
+    {
+      "ok": true,
+      "operation": "providers.interact",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "7a5a5b96b6199c1010b6286192eef775e388f480055c0f51368196e8239759bf"
+    },
+    {
+      "ok": true,
+      "operation": "runtime.bootstrap",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "2520903e45320a0669b37166d52e693a5118ac0c329f5bbdf3329f0f4180a5cd"
+    },
+    {
+      "ok": true,
+      "operation": "runtime.workspace.create",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "730952289744a44586a2939863fc906bd51570a3359024cf6df1607948b2bd7d"
+    },
+    {
+      "ok": true,
+      "operation": "runtime.provider.execute",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "07548807bfd99265cbf10442566084e21ae37c642a869c2e37effc261a3c29f5"
+    },
+    {
+      "ok": true,
+      "operation": "runtime.status",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "7826f49fa9cc4d3659c283707656f835672cb7e36417d668d25851ffc9e8676a"
+    },
+    {
+      "ok": true,
+      "operation": "runtime.accept",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "f09e53be5e9e08fa1a9136dbdd00afeee58207fbcd218943e7124d75aff038ab"
+    },
+    {
+      "ok": true,
+      "operation": "runtime.workspace.promote",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "06e37c5584232f005bd83dc179b76eea165b365271ef3d136fca5609b3aa6f90"
+    },
+    {
+      "ok": true,
+      "operation": "providers.certifications",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "b13e245d25c164882ce725ce6b69a93e36466f9008cba9e912368a78c15baf28"
+    },
+    {
+      "ok": true,
+      "operation": "runtime.status",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "58118ffa9fa2e0e69f4cfb0fb576359d9acbc825f3ab42ec9641e0746441fded"
+    }
+  ],
+  "schema_version": "1.0",
+  "shipping_artifact": "INSTALLED_WHEEL",
+  "simulated_provider": false,
+  "source_tree_imported": false,
+  "status": "PASS"
+}
