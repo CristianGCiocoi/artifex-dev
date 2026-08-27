@@ -7,3 +7,8 @@ fixture_state: M0_BASELINE_ACCEPTED
 migration_execution: M2_ACCEPTED_EMPTY_RUNSTORE
 provider_setup_migration: M3_ACCEPTED_SECRET_FREE_PROVIDER_SETUP_SCHEMA
 rollback: REMOVE_NEW_PROVIDER_SETUP_STATE_ONLY; accepted M2 RunStore and Project semantics remain authoritative
+active_parallel_wave: [M4, M5, M6A]
+active_wave_migration_policy: ADDITIVE_ONLY_PENDING_INDEPENDENT_ACCEPTANCE
+m4_target_interaction_governance_state: PENDING
+m5_docs_dashboard_classification: PENDING
+m6a_v1_claude_setup_revalidation: PENDING

@@ -1,98 +1,75 @@
 {
   "acceptance": {
-    "acceptance_commit": "d3a57311e069a887e69e4037969170f554026cc4",
+    "acceptance_commit": null,
     "blocked": [],
-    "contract_digest": "4c715b81581f4688f3b38d34829a967760e7f862f8408a477f37245f886d07eb",
+    "contract_digest": "ad8c5126ca025a81b0e70aa25f6cc88445e7c2a127b6b0b1ce6493b96bee5772",
     "evidence_classes": {
       "BLACK_BOX_OUTCOME": {
-        "evidence": [
-          "EVIDENCE/M3-PUBLIC-OUTCOME.json"
-        ],
-        "required_m3": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m4": true,
+        "status": "PENDING"
       },
       "COMPONENT": {
-        "evidence": [
-          "EVIDENCE/M3-VALIDATION.yaml"
-        ],
-        "required_m3": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m4": true,
+        "status": "PENDING"
       },
       "DASHBOARD": {
-        "evidence": [
-          "EVIDENCE/M3-VALIDATION.yaml"
-        ],
-        "required_m3": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m4": true,
+        "status": "PENDING"
       },
       "DESIGN_CONFORMANCE": {
-        "evidence": [
-          "EVIDENCE/M3-VALIDATION.yaml"
-        ],
-        "required_m3": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m4": true,
+        "status": "PENDING"
       },
       "DOCUMENTATION": {
-        "evidence": [
-          "EVIDENCE/M3-VALIDATION.yaml"
-        ],
-        "required_m3": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m4": true,
+        "status": "PENDING"
       },
       "DOMAIN_INTEGRATION": {
-        "evidence": [
-          "EVIDENCE/M3-VALIDATION.yaml"
-        ],
-        "required_m3": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m4": true,
+        "status": "PENDING"
       },
       "MIGRATION": {
-        "evidence": [
-          "EVIDENCE/M3-VALIDATION.yaml"
-        ],
-        "required_m3": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m4": false,
+        "status": "NOT_APPLICABLE"
       },
       "PROVIDER_CERTIFICATION": {
-        "evidence": [
-          "EVIDENCE/M3-PUBLIC-OUTCOME.json",
-          "PROVIDERS/ROLE-CERTIFICATION.yaml"
-        ],
-        "required_m3": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m4": false,
+        "status": "NOT_APPLICABLE"
       },
       "PUBLIC_COMPOSITION": {
-        "evidence": [
-          "EVIDENCE/M3-PUBLIC-OUTCOME.json"
-        ],
-        "required_m3": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m4": true,
+        "status": "PENDING"
       },
       "SECURITY_AUTHORITY": {
-        "evidence": [
-          "EVIDENCE/M3-VALIDATION.yaml"
-        ],
-        "required_m3": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m4": true,
+        "status": "PENDING"
       }
     },
     "frozen_architecture_baseline": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
-    "implementation_baseline_commit": "b7efb7b08fee418715a8f05faa450649b121f6f6",
+    "implementation_baseline_commit": null,
     "mandatory_journeys": [
-      "J01",
-      "J16"
+      "J04",
+      "J06",
+      "J07",
+      "J19"
     ],
-    "mandatory_work_complete": true,
-    "migration": "M3_ACCEPTED_PROVIDER_SETUP_SCHEMA",
-    "milestone": "M3",
-    "provider_claim_changes": [
-      "codex/INTERACTION",
-      "codex/EXECUTION_IMPLEMENTER"
-    ],
+    "mandatory_work_complete": false,
+    "migration": "ADDITIVE_TARGET_INTERACTION_GOVERNANCE_STATE_PENDING",
+    "milestone": "M4",
     "schema_version": "1.0",
     "superseded": [],
     "unresolved_contradiction": null,
-    "verdict": "ACCEPTED"
+    "verdict": "IN_PROGRESS"
   },
   "adrs": [
     {
@@ -1820,8 +1797,17 @@
     "verdict": "ACCEPTED"
   },
   "migration": {
+    "active_parallel_wave": [
+      "M4",
+      "M5",
+      "M6A"
+    ],
+    "active_wave_migration_policy": "ADDITIVE_ONLY_PENDING_INDEPENDENT_ACCEPTANCE",
     "fixture": "MIGRATION/V1-RELEASE-FIXTURE.yaml",
     "fixture_state": "M0_BASELINE_ACCEPTED",
+    "m4_target_interaction_governance_state": "PENDING",
+    "m5_docs_dashboard_classification": "PENDING",
+    "m6a_v1_claude_setup_revalidation": "PENDING",
     "migration_execution": "M2_ACCEPTED_EMPTY_RUNSTORE",
     "milestone": "M3",
     "mode": "M3_ACCEPTED_PROVIDER_SETUP_SCHEMA",
@@ -1880,8 +1866,8 @@
       ],
       "id": "M4",
       "mandatory_for_core_ga": true,
-      "started": false,
-      "state": "READY",
+      "started": true,
+      "state": "ACTIVE",
       "title": "Collaborative Lifecycle, Interaction, Governance & Operational Control"
     },
     {
@@ -1891,8 +1877,8 @@
       ],
       "id": "M5",
       "mandatory_for_core_ga": true,
-      "started": false,
-      "state": "READY",
+      "started": true,
+      "state": "ACTIVE",
       "title": "Reality, Documentation & Dashboard Operational Composition"
     },
     {
@@ -1902,8 +1888,8 @@
       ],
       "id": "M6A",
       "mandatory_for_core_ga": true,
-      "started": false,
-      "state": "READY",
+      "started": true,
+      "state": "ACTIVE",
       "title": "Claude Productization & Certification"
     },
     {
@@ -2029,9 +2015,9 @@
   ],
   "program": {
     "architecture_status": "FROZEN",
-    "branch": "codex/artifex-2-m3",
-    "current_milestone": "M3",
-    "current_status": "ACCEPTED",
+    "branch": "codex/artifex-2-wave4",
+    "current_milestone": "M4",
+    "current_status": "ACTIVE_PARALLEL_WAVE",
     "dashboard_state": "CURRENT",
     "directory_variance": "PACKAGING_NAME_VARIANCE_ACCEPTED",
     "handoff_declared_directory": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF",
@@ -2045,7 +2031,10 @@
     "m1_started": true,
     "m2_started": true,
     "m3_started": true,
-    "next_integration_point": "Canonicalize M3, then activate mandatory-ready M4, M5 and M6A",
+    "m4_started": true,
+    "m5_started": true,
+    "m6a_started": true,
+    "next_integration_point": "Integrate and independently gate M4, M5 and M6A; preserve M6B as READY_UNCLAIMED",
     "recorded_date": "2026-08-27",
     "target_release": "2.0.0"
   },
@@ -2316,7 +2305,7 @@
   "summary": {
     "active_blockers": 0,
     "adr_count": 24,
-    "current_milestone": "M3",
+    "current_milestone": "M4",
     "evidence_items": 9,
     "invariant_count": 34,
     "journey_states": {
@@ -2325,18 +2314,15 @@
       "PASS": 5
     },
     "milestones_accepted": 4,
-    "milestones_started": 4,
+    "milestones_started": 7,
     "milestones_total": 16,
     "provider_step_states": {
       "NOT_STARTED": 85,
       "PASS": 10
     },
-    "ready_milestones": [
-      "M4",
-      "M5",
-      "M6A"
-    ],
+    "ready_milestones": [],
     "workstream_states": {
+      "ACTIVE": 4,
       "COMPLETE": 11
     }
   },
@@ -2569,6 +2555,72 @@
       ],
       "state": "COMPLETE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m3"
+    },
+    {
+      "base_commit": "6e46c426786d2f3b1be10e483518197b4b5d06ce",
+      "blockers": [],
+      "branch": "codex/artifex-2-m4",
+      "id": "WS-M4-LIFECYCLE-CONTROL",
+      "integration_owner": "ARTIFEX_2_ORCHESTRATOR",
+      "milestone": "M4",
+      "owner_subagent": "m4_lifecycle",
+      "purpose": "Implement collaborative lifecycle, multi-session governance and operational control",
+      "shared_contracts": [
+        "M4-CONTRACT",
+        "FROZEN-INVARIANTS"
+      ],
+      "state": "ACTIVE",
+      "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m4"
+    },
+    {
+      "base_commit": "6e46c426786d2f3b1be10e483518197b4b5d06ce",
+      "blockers": [],
+      "branch": "codex/artifex-2-m5",
+      "id": "WS-M5-REALITY-DOCS-DASHBOARDS",
+      "integration_owner": "ARTIFEX_2_ORCHESTRATOR",
+      "milestone": "M5",
+      "owner_subagent": "m5_reality_docs",
+      "purpose": "Implement observed-reality reconciliation, selective documentation and authoritative dashboards",
+      "shared_contracts": [
+        "M5-CONTRACT",
+        "FROZEN-INVARIANTS"
+      ],
+      "state": "ACTIVE",
+      "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m5"
+    },
+    {
+      "base_commit": "6e46c426786d2f3b1be10e483518197b4b5d06ce",
+      "blockers": [],
+      "branch": "codex/artifex-2-m6a",
+      "id": "WS-M6A-CLAUDE-PRODUCTIZATION",
+      "integration_owner": "ARTIFEX_2_ORCHESTRATOR",
+      "milestone": "M6A",
+      "owner_subagent": "m6a_claude",
+      "purpose": "Productize and independently certify Claude interaction and execution roles",
+      "shared_contracts": [
+        "M6A-CONTRACT",
+        "FROZEN-INVARIANTS"
+      ],
+      "state": "ACTIVE",
+      "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m6a"
+    },
+    {
+      "base_commit": "6e46c426786d2f3b1be10e483518197b4b5d06ce",
+      "blockers": [],
+      "branch": "codex/artifex-2-wave4",
+      "id": "WS-WAVE4-INTEGRATION",
+      "integration_owner": "ARTIFEX_2_ORCHESTRATOR",
+      "milestone": "M4+M5+M6A",
+      "owner_subagent": "ARTIFEX_2_ORCHESTRATOR",
+      "purpose": "Reconcile shared authority-sensitive changes and run independent milestone acceptance gates",
+      "shared_contracts": [
+        "M4-CONTRACT",
+        "M5-CONTRACT",
+        "M6A-CONTRACT",
+        "FROZEN-INVARIANTS"
+      ],
+      "state": "ACTIVE",
+      "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-wave4"
     }
   ]
 }

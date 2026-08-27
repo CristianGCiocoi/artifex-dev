@@ -148,3 +148,47 @@ workstreams:
   state: COMPLETE
   blockers: []
   integration_owner: ARTIFEX_2_ORCHESTRATOR
+- id: WS-M4-LIFECYCLE-CONTROL
+  milestone: M4
+  purpose: Implement collaborative lifecycle, multi-session governance and operational control
+  owner_subagent: m4_lifecycle
+  worktree: C:\aidev\artifex-worktrees\artifex-2-m4
+  branch: codex/artifex-2-m4
+  base_commit: 6e46c426786d2f3b1be10e483518197b4b5d06ce
+  shared_contracts: [M4-CONTRACT, FROZEN-INVARIANTS]
+  state: ACTIVE
+  blockers: []
+  integration_owner: ARTIFEX_2_ORCHESTRATOR
+- id: WS-M5-REALITY-DOCS-DASHBOARDS
+  milestone: M5
+  purpose: Implement observed-reality reconciliation, selective documentation and authoritative dashboards
+  owner_subagent: m5_reality_docs
+  worktree: C:\aidev\artifex-worktrees\artifex-2-m5
+  branch: codex/artifex-2-m5
+  base_commit: 6e46c426786d2f3b1be10e483518197b4b5d06ce
+  shared_contracts: [M5-CONTRACT, FROZEN-INVARIANTS]
+  state: ACTIVE
+  blockers: []
+  integration_owner: ARTIFEX_2_ORCHESTRATOR
+- id: WS-M6A-CLAUDE-PRODUCTIZATION
+  milestone: M6A
+  purpose: Productize and independently certify Claude interaction and execution roles
+  owner_subagent: m6a_claude
+  worktree: C:\aidev\artifex-worktrees\artifex-2-m6a
+  branch: codex/artifex-2-m6a
+  base_commit: 6e46c426786d2f3b1be10e483518197b4b5d06ce
+  shared_contracts: [M6A-CONTRACT, FROZEN-INVARIANTS]
+  state: ACTIVE
+  blockers: []
+  integration_owner: ARTIFEX_2_ORCHESTRATOR
+- id: WS-WAVE4-INTEGRATION
+  milestone: M4+M5+M6A
+  purpose: Reconcile shared authority-sensitive changes and run independent milestone acceptance gates
+  owner_subagent: ARTIFEX_2_ORCHESTRATOR
+  worktree: C:\aidev\artifex-worktrees\artifex-2-wave4
+  branch: codex/artifex-2-wave4
+  base_commit: 6e46c426786d2f3b1be10e483518197b4b5d06ce
+  shared_contracts: [M4-CONTRACT, M5-CONTRACT, M6A-CONTRACT, FROZEN-INVARIANTS]
+  state: ACTIVE
+  blockers: []
+  integration_owner: ARTIFEX_2_ORCHESTRATOR

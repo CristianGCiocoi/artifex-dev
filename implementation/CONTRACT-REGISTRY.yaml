@@ -176,6 +176,61 @@ contracts:
   - EVIDENCE/M3-VALIDATION.yaml
   implementation_state: ACCEPTED
   m0_baseline_state: NOT_APPLICABLE
+- id: M4-CONTRACT
+  title: M4 — Collaborative Lifecycle, Interaction, Governance & Operational Control
+  type: MILESTONE_CONTRACT
+  digest: ad8c5126ca025a81b0e70aa25f6cc88445e7c2a127b6b0b1ce6493b96bee5772
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 6e46c426786d2f3b1be10e483518197b4b5d06ce
+  dependencies:
+  - M3-CONTRACT
+  authority_sources:
+  - MILESTONES/M4.md
+  acceptance_criteria:
+  - J19 passes
+  - Multi-session operation is conflict-safe
+  - Material blocking remains dependency-local
+  - Global Safe Pause and recovery work
+  evidence_references: []
+  implementation_state: ACTIVE
+  m0_baseline_state: NOT_APPLICABLE
+- id: M5-CONTRACT
+  title: M5 — Reality, Documentation & Dashboard Operational Composition
+  type: MILESTONE_CONTRACT
+  digest: adb7e103ce1ca7424f3f62cb9866fdd50886fd0a57bb5f897797487f2da375b7
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 6e46c426786d2f3b1be10e483518197b4b5d06ce
+  dependencies:
+  - M3-CONTRACT
+  authority_sources:
+  - MILESTONES/M5.md
+  acceptance_criteria:
+  - External drift becomes a divergence or proposal and never silently rewrites intent
+  - Documentation selective lifecycle passes
+  - Platform and Project dashboards match authoritative APIs and stores
+  evidence_references: []
+  implementation_state: ACTIVE
+  m0_baseline_state: NOT_APPLICABLE
+- id: M6A-CONTRACT
+  title: M6A — Claude Productization & Certification
+  type: MILESTONE_CONTRACT
+  digest: e7c7a02ee61e64bfda4b3a18660b460967b8d167fa0734723907ca64316c82f5
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 6e46c426786d2f3b1be10e483518197b4b5d06ce
+  dependencies:
+  - M3-CONTRACT
+  authority_sources:
+  - MILESTONES/M6A.md
+  acceptance_criteria:
+  - Claude INTERACTION is live-role certified
+  - Claude EXECUTION_IMPLEMENTER is live-role certified
+  - Codex to Claude continuity passes
+  evidence_references: []
+  implementation_state: ACTIVE
+  m0_baseline_state: NOT_APPLICABLE
 adrs:
 - id: ADR-T001
   title: ADR-T001 — Project Authority vs Portable Semantic Representation
