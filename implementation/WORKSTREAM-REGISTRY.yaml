@@ -167,7 +167,7 @@ workstreams:
   branch: codex/artifex-2-m5
   base_commit: 6e46c426786d2f3b1be10e483518197b4b5d06ce
   shared_contracts: [M5-CONTRACT, FROZEN-INVARIANTS]
-  state: ACTIVE
+  state: COMPLETE
   blockers: []
   integration_owner: ARTIFEX_2_ORCHESTRATOR
 - id: WS-M6A-CLAUDE-PRODUCTIZATION

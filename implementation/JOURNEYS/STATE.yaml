@@ -65,12 +65,13 @@ journeys:
   blocker: null
 - id: J08
   title: J08 — Documentation / Dashboard
-  status: NOT_STARTED
-  environment: null
-  public_shipping_composition: null
-  evidence: []
-  last_run: null
-  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+  status: PASS
+  environment: CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS
+  public_shipping_composition: INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS
+  evidence:
+  - EVIDENCE/M5-PUBLIC-OUTCOME.json
+  last_run: '2026-08-27'
+  blocker: null
 - id: J09
   title: J09 — V1 Migration
   status: NOT_STARTED
@@ -113,12 +114,13 @@ journeys:
   blocker: M0 has no mandatory journeys; milestone dependencies not accepted
 - id: J14
   title: J14 — External Reality Drift
-  status: NOT_STARTED
-  environment: null
-  public_shipping_composition: null
-  evidence: []
-  last_run: null
-  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+  status: PASS
+  environment: CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS
+  public_shipping_composition: INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS
+  evidence:
+  - EVIDENCE/M5-PUBLIC-OUTCOME.json
+  last_run: '2026-08-27'
+  blocker: null
 - id: J15
   title: J15 — Promotion Conflict
   status: PASS

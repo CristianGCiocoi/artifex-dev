@@ -1,0 +1,25 @@
+{
+  "composition": "CLEAN_INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS",
+  "custom_application_factory_used": false,
+  "journeys": {
+    "J08": {
+      "automatic_baseline": true,
+      "platform_dashboard_catalog_parity": true,
+      "project_dashboard_store_parity": true,
+      "selective_regeneration": true,
+      "status": "PASS",
+      "tamper_classified_stale": true
+    },
+    "J14": {
+      "accepted_semantic_revision": 2,
+      "divergence_closed_after_acceptance": true,
+      "explicit_proposal": true,
+      "external_change_detected": true,
+      "semantic_revision_before_acceptance": 1,
+      "status": "PASS"
+    }
+  },
+  "schema_version": "1.0",
+  "source_tree_imported": false,
+  "status": "PASS"
+}

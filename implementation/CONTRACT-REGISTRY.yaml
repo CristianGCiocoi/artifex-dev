@@ -212,8 +212,10 @@ contracts:
   - External drift becomes a divergence or proposal and never silently rewrites intent
   - Documentation selective lifecycle passes
   - Platform and Project dashboards match authoritative APIs and stores
-  evidence_references: []
-  implementation_state: ACTIVE
+  evidence_references:
+  - EVIDENCE/M5-VALIDATION.yaml
+  - EVIDENCE/M5-PUBLIC-OUTCOME.json
+  implementation_state: ACCEPTED
   m0_baseline_state: NOT_APPLICABLE
 - id: M6A-CONTRACT
   title: M6A — Claude Productization & Certification

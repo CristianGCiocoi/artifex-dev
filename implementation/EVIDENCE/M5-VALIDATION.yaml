@@ -1,0 +1,57 @@
+schema_version: '1.0'
+evidence_id: EVD-M5-VALIDATION
+milestone: M5
+status: PASS
+recorded_date: '2026-08-27'
+canonical_m3_baseline_commit: 6e46c426786d2f3b1be10e483518197b4b5d06ce
+m5_implementation_baseline_commit: 8645cb103f8956143d477114b2842d14347f35a1
+m5_acceptance_commit: null
+m5_contract_digest: adb7e103ce1ca7424f3f62cb9866fdd50886fd0a57bb5f897797487f2da375b7
+source_quality:
+  ruff: PASS
+  mypy_strict: PASS
+  mypy_files: 88
+integrated_focused_validation:
+  command: uv run pytest tests/artifex2_m4 tests/artifex2_m5 tests/artifex2_m6a -q
+  result: PASS
+  passed: 25
+  failed: 0
+domain_integration:
+  command: uv run pytest tests --ignore=tests/test_release.py --deselect=tests/artifex2_m0/test_m0_control_plane.py::test_dashboard_and_current_state_are_deterministic_projections -q
+  result: PASS
+  passed: 413
+  skipped: 7
+  deselected_preserved_baseline: 1
+  failed: 0
+  duration_seconds: 568.40
+public_composition:
+  artifact: artifex_dev-1.0.0-py3-none-any.whl
+  artifact_sha256: 9a960e62fbd864c6016d46f5932006ae2f52ad252c5b55fe3b90d96b923332c1
+  artifact_bytes: 253440
+  composition: CLEAN_INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS
+  evidence: EVIDENCE/M5-PUBLIC-OUTCOME.json
+  status: PASS
+security_authority:
+  observations_accept_semantics: false
+  divergences_accept_semantics: false
+  explicit_project_authority_acceptance_required: PASS
+  secret_bearing_source_references_rejected: PASS
+  documentation_authoritative: false
+  dashboards_authoritative: false
+documentation:
+  architecture: docs/architecture/REALITY_DOCUMENTATION_DASHBOARDS.md
+  automatic_baseline: PASS
+  selective_regeneration: PASS
+  tamper_detection: PASS
+dashboard:
+  project_store_parity: PASS
+  platform_catalog_parity: PASS
+  authoritative: false
+migration:
+  mode: M5_ACCEPTED_ADDITIVE_DOC_DASHBOARD_CLASSIFICATION
+  destructive_project_mutation: false
+v1_release_harness_regression:
+  classification: V1-R01-DASHBOARD-FIXTURE-SCHEMA-DRIFT
+  disposition: PRESERVED_BASELINE_EVIDENCE
+  source_repaired_by_m5: false
+unexpected_failures: []

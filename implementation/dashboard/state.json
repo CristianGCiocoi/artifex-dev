@@ -2,68 +2,68 @@
   "acceptance": {
     "acceptance_commit": null,
     "blocked": [],
-    "contract_digest": "adb7e103ce1ca7424f3f62cb9866fdd50886fd0a57bb5f897797487f2da375b7",
+    "contract_digest": "e7c7a02ee61e64bfda4b3a18660b460967b8d167fa0734723907ca64316c82f5",
     "evidence_classes": {
       "BLACK_BOX_OUTCOME": {
         "evidence": [],
-        "required_m5": true,
+        "required_m6a": true,
         "status": "PENDING"
       },
       "COMPONENT": {
         "evidence": [],
-        "required_m5": true,
+        "required_m6a": true,
         "status": "PENDING"
       },
       "DASHBOARD": {
         "evidence": [],
-        "required_m5": true,
+        "required_m6a": true,
         "status": "PENDING"
       },
       "DESIGN_CONFORMANCE": {
         "evidence": [],
-        "required_m5": true,
+        "required_m6a": true,
         "status": "PENDING"
       },
       "DOCUMENTATION": {
         "evidence": [],
-        "required_m5": true,
+        "required_m6a": true,
         "status": "PENDING"
       },
       "DOMAIN_INTEGRATION": {
         "evidence": [],
-        "required_m5": true,
+        "required_m6a": true,
         "status": "PENDING"
       },
       "MIGRATION": {
         "evidence": [],
-        "required_m5": false,
-        "status": "NOT_APPLICABLE"
+        "required_m6a": true,
+        "status": "PENDING"
       },
       "PROVIDER_CERTIFICATION": {
         "evidence": [],
-        "required_m5": false,
-        "status": "NOT_APPLICABLE"
+        "required_m6a": true,
+        "status": "PENDING"
       },
       "PUBLIC_COMPOSITION": {
         "evidence": [],
-        "required_m5": true,
+        "required_m6a": true,
         "status": "PENDING"
       },
       "SECURITY_AUTHORITY": {
         "evidence": [],
-        "required_m5": true,
+        "required_m6a": true,
         "status": "PENDING"
       }
     },
     "frozen_architecture_baseline": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
     "implementation_baseline_commit": null,
     "mandatory_journeys": [
-      "J08",
-      "J14"
+      "J02",
+      "J11"
     ],
     "mandatory_work_complete": false,
-    "migration": "ADDITIVE_DOC_DASHBOARD_CLASSIFICATION_PENDING",
-    "milestone": "M5",
+    "migration": "V1_CLAUDE_SETUP_REVALIDATION_PENDING",
+    "milestone": "M6A",
     "schema_version": "1.0",
     "superseded": [],
     "unresolved_contradiction": null,
@@ -743,6 +743,16 @@
       "bytes": 2042,
       "path": "implementation/EVIDENCE/M4-VALIDATION.yaml",
       "sha256": "c710d0296479daf31af0c449962e770993cda6f419a1d1086b1b0976e10d5965"
+    },
+    {
+      "bytes": 716,
+      "path": "implementation/EVIDENCE/M5-PUBLIC-OUTCOME.json",
+      "sha256": "be8fe9ce733de63a05bbbdfbd2c83f991011bc0e676b1037387476b694aa221c"
+    },
+    {
+      "bytes": 2031,
+      "path": "implementation/EVIDENCE/M5-VALIDATION.yaml",
+      "sha256": "ad7868d8f3852288abc45a0eaea8b82e01f49893eff3b9a0157fa566b09423ea"
     },
     {
       "bytes": 3220,
@@ -1589,13 +1599,15 @@
       "title": "J07 — Safe Pause / Recovery"
     },
     {
-      "blocker": "M0 has no mandatory journeys; milestone dependencies not accepted",
-      "environment": null,
-      "evidence": [],
+      "blocker": null,
+      "environment": "CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS",
+      "evidence": [
+        "EVIDENCE/M5-PUBLIC-OUTCOME.json"
+      ],
       "id": "J08",
-      "last_run": null,
-      "public_shipping_composition": null,
-      "status": "NOT_STARTED",
+      "last_run": "2026-08-27",
+      "public_shipping_composition": "INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS",
+      "status": "PASS",
       "title": "J08 — Documentation / Dashboard"
     },
     {
@@ -1649,13 +1661,15 @@
       "title": "J13 — Pandora Research"
     },
     {
-      "blocker": "M0 has no mandatory journeys; milestone dependencies not accepted",
-      "environment": null,
-      "evidence": [],
+      "blocker": null,
+      "environment": "CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS",
+      "evidence": [
+        "EVIDENCE/M5-PUBLIC-OUTCOME.json"
+      ],
       "id": "J14",
-      "last_run": null,
-      "public_shipping_composition": null,
-      "status": "NOT_STARTED",
+      "last_run": "2026-08-27",
+      "public_shipping_composition": "INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS",
+      "status": "PASS",
       "title": "J14 — External Reality Drift"
     },
     {
@@ -1822,7 +1836,7 @@
     "fixture": "MIGRATION/V1-RELEASE-FIXTURE.yaml",
     "fixture_state": "M0_BASELINE_ACCEPTED",
     "m4_target_interaction_governance_state": "M4_ACCEPTED_ADDITIVE_STATE",
-    "m5_docs_dashboard_classification": "PENDING",
+    "m5_docs_dashboard_classification": "M5_ACCEPTED_CURRENT_STALE_MISSING_CLASSIFICATION",
     "m6a_v1_claude_setup_revalidation": "PENDING",
     "migration_execution": "M2_ACCEPTED_EMPTY_RUNSTORE",
     "milestone": "M3",
@@ -1887,14 +1901,14 @@
       "title": "Collaborative Lifecycle, Interaction, Governance & Operational Control"
     },
     {
-      "accepted": false,
+      "accepted": true,
       "depends_on": [
         "M3"
       ],
       "id": "M5",
       "mandatory_for_core_ga": true,
       "started": true,
-      "state": "ACTIVE",
+      "state": "ACCEPTED",
       "title": "Reality, Documentation & Dashboard Operational Composition"
     },
     {
@@ -2032,7 +2046,7 @@
   "program": {
     "architecture_status": "FROZEN",
     "branch": "codex/artifex-2-wave4",
-    "current_milestone": "M5",
+    "current_milestone": "M6A",
     "current_status": "ACTIVE_PARALLEL_WAVE",
     "dashboard_state": "CURRENT",
     "directory_variance": "PACKAGING_NAME_VARIANCE_ACCEPTED",
@@ -2321,15 +2335,15 @@
   "summary": {
     "active_blockers": 0,
     "adr_count": 24,
-    "current_milestone": "M5",
-    "evidence_items": 11,
+    "current_milestone": "M6A",
+    "evidence_items": 13,
     "invariant_count": 34,
     "journey_states": {
       "M3_VERTICAL_SLICE_ONLY": 1,
-      "NOT_STARTED": 10,
-      "PASS": 9
+      "NOT_STARTED": 8,
+      "PASS": 11
     },
-    "milestones_accepted": 5,
+    "milestones_accepted": 6,
     "milestones_started": 7,
     "milestones_total": 16,
     "provider_step_states": {
@@ -2338,8 +2352,8 @@
     },
     "ready_milestones": [],
     "workstream_states": {
-      "ACTIVE": 3,
-      "COMPLETE": 12
+      "ACTIVE": 2,
+      "COMPLETE": 13
     }
   },
   "target_system": {
@@ -2601,7 +2615,7 @@
         "M5-CONTRACT",
         "FROZEN-INVARIANTS"
       ],
-      "state": "ACTIVE",
+      "state": "COMPLETE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m5"
     },
     {
