@@ -39,16 +39,16 @@ def test_known_v1_gaps_are_reproduced_without_source_mutation() -> None:
     assert result["unexpected"] == []
 
 
-def test_control_plane_covers_frozen_contracts_and_m1_is_unstarted() -> None:
+def test_control_plane_covers_frozen_contracts_and_preserves_m0_gate() -> None:
     state = derive(ROOT)
 
     assert state["summary"]["milestones_total"] == 16
     assert state["summary"]["adr_count"] == 24
     assert state["summary"]["invariant_count"] == 34
     assert len(state["journeys"]) == 20
-    assert state["program"]["m1_started"] is False
+    assert state["milestones"][0]["state"] == "ACCEPTED"
     m1 = next(item for item in state["milestones"] if item["id"] == "M1")
-    assert m1["started"] is False
+    assert m1["state"] in {"READY", "ACTIVE", "ACCEPTED"}
 
 
 def test_provider_certification_schema_is_role_specific() -> None:
@@ -86,5 +86,7 @@ def test_evidence_fingerprint_is_checkout_line_ending_independent(tmp_path: Path
 def test_m0_validator_passes_current_repository_state() -> None:
     state = validate(ROOT, None)
 
-    assert state["program"]["current_milestone"] == "M0"
-    assert state["program"]["m1_started"] is False
+    assert state["milestones"][0]["state"] == "ACCEPTED"
+    assert state["acceptance"]["acceptance_commit"] == (
+        "f476d40e7a721913b9c94c4a60b78f0500f0e85f"
+    )

@@ -136,9 +136,9 @@ def validate(repo_root: Path, handoff_root: Path | None) -> dict[str, Any]:
 
     machine_program = _read_yaml(implementation / "PROGRAM-STATE.yaml")
     milestone_states = machine_program["milestone_states"]
-    if milestone_states["M1"]["started"] or program["m1_started"]:
-        raise ValueError("M1 started before M0 acceptance")
     if acceptance["verdict"] != "ACCEPTED":
+        if milestone_states["M1"]["started"] or program["m1_started"]:
+            raise ValueError("M1 started before M0 acceptance")
         if milestone_states["M1"]["state"] != "BLOCKED_DEPENDENCY":
             raise ValueError("M1 must remain dependency-blocked before M0 acceptance")
     else:
@@ -151,12 +151,23 @@ def validate(repo_root: Path, handoff_root: Path | None) -> dict[str, Any]:
             raise ValueError(f"accepted M0 has incomplete evidence classes: {required_statuses}")
         if milestone_states["M0"]["state"] != "ACCEPTED":
             raise ValueError("accepted M0 verdict disagrees with program milestone state")
-        if milestone_states["M1"]["state"] != "READY":
-            raise ValueError("M1 must become READY, but remain unstarted, after M0 acceptance")
+        if milestone_states["M1"]["state"] not in {"READY", "ACTIVE", "ACCEPTED"}:
+            raise ValueError("M1 state is incompatible with accepted M0 dependency")
+        if milestone_states["M1"]["started"] != program["m1_started"]:
+            raise ValueError("M1 start state disagrees with the program projection")
+        acceptance_commit = str(acceptance.get("acceptance_commit", ""))
+        if program["m1_started"]:
+            if not acceptance_commit:
+                raise ValueError("started M1 is missing the accepted M0 commit")
+            try:
+                _git(root, "merge-base", "--is-ancestor", acceptance_commit, "HEAD")
+            except subprocess.CalledProcessError as exc:
+                raise ValueError("M1 did not start from the accepted M0 baseline") from exc
         if machine_program["acceptance_classes"] != acceptance["evidence_classes"]:
             raise ValueError("program and milestone acceptance evidence classes disagree")
         workstreams = _read_yaml(implementation / "WORKSTREAM-REGISTRY.yaml")["workstreams"]
-        if any(item["state"] != "COMPLETE" for item in workstreams):
+        m0_workstreams = [item for item in workstreams if item["milestone"] == "M0"]
+        if any(item["state"] != "COMPLETE" for item in m0_workstreams):
             raise ValueError("accepted M0 has an incomplete workstream")
         if program.get("dashboard_state") != "CURRENT":
             raise ValueError("accepted M0 dashboard state is not CURRENT")
@@ -179,8 +190,17 @@ def validate(repo_root: Path, handoff_root: Path | None) -> dict[str, Any]:
         if outcome["status"] != "PASS" or outcome["composition"] != "PUBLIC_PROCESS":
             raise ValueError("public-process Outcome Runner evidence is not PASS")
 
+    m0_end = str(
+        acceptance.get("acceptance_commit") or acceptance["implementation_baseline_commit"]
+    )
     changed_runtime = _git(
-        root, "diff", "--name-only", program["intake_commit"], "--", "src/artifex"
+        root,
+        "diff",
+        "--name-only",
+        program["intake_commit"],
+        m0_end,
+        "--",
+        "src/artifex",
     )
     if changed_runtime:
         raise ValueError(f"M0 changed target runtime/provider implementation: {changed_runtime}")

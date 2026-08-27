@@ -111,8 +111,28 @@ contracts:
   - Digest and authority boundary remain unchanged
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: NOT_STARTED
+  implementation_state: ACCEPTED
   m0_baseline_state: CAPTURED
+- id: M1-CONTRACT
+  title: M1 — Project Authority, Catalog & Semantic Continuity
+  type: MILESTONE_CONTRACT
+  digest: 42c6d252e97380e841bff8eabadf673d6f69140ce9660c59f805aff38d71299d
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: dc153819d11134315d60acc0ccea7bab0473194f
+  dependencies:
+  - M0-CONTRACT
+  authority_sources:
+  - MILESTONES/M1.md
+  acceptance_criteria:
+  - Only Project Authority accepts semantics
+  - Continue-by-name survives restart
+  - Revision conflict prevents lost updates
+  - Documentation and Project Dashboard baselines exist at creation
+  evidence_references:
+  - EVIDENCE/M1-VALIDATION.yaml
+  implementation_state: ACTIVE
+  m0_baseline_state: NOT_APPLICABLE
 adrs:
 - id: ADR-T001
   title: ADR-T001 — Project Authority vs Portable Semantic Representation
@@ -132,7 +152,7 @@ adrs:
   - Any implementation need to alter this decision is an Architect escalation.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: NOT_STARTED
+  implementation_state: IMPLEMENTED_M1_PENDING_ACCEPTANCE
   m0_baseline_state: CAPTURED
 - id: ADR-T002
   title: ADR-T002 — Standalone RunStore
@@ -231,7 +251,7 @@ adrs:
   - Any implementation need to alter this decision is an Architect escalation.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: NOT_STARTED
+  implementation_state: PARTIAL_M1_SEMANTIC_REVISIONING
   m0_baseline_state: CAPTURED
 - id: ADR-T007
   title: ADR-T007 — Contextual Capability Graph
@@ -370,7 +390,7 @@ adrs:
   - Any implementation need to alter this decision is an Architect escalation.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: NOT_STARTED
+  implementation_state: M1_BASELINE_IMPLEMENTED
   m0_baseline_state: CAPTURED
 - id: ADR-T014
   title: ADR-T014 — Unified Dashboard Framework
@@ -390,7 +410,7 @@ adrs:
   - Any implementation need to alter this decision is an Architect escalation.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: NOT_STARTED
+  implementation_state: M1_BASELINE_IMPLEMENTED
   m0_baseline_state: CAPTURED
 - id: ADR-T015
   title: ADR-T015 — Provider Composition at Bootstrap
@@ -491,7 +511,7 @@ adrs:
   - Any implementation need to alter this decision is an Architect escalation.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: NOT_STARTED
+  implementation_state: M1_ADAPTER_IMPLEMENTED_M9_ACCEPTANCE_PENDING
   m0_baseline_state: CAPTURED
 - id: ADR-T020
   title: ADR-T020 — Project Catalog & Discovery
@@ -511,7 +531,7 @@ adrs:
   - Any implementation need to alter this decision is an Architect escalation.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: NOT_STARTED
+  implementation_state: IMPLEMENTED_M1_PENDING_ACCEPTANCE
   m0_baseline_state: CAPTURED
 - id: ADR-T021
   title: ADR-T021 — Execution Workspace & Result Promotion

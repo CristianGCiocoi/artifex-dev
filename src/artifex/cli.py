@@ -285,6 +285,107 @@ def project_status(
     )
 
 
+@project_app.command("create")
+def project_create(
+    name: str,
+    project_root: str = typer.Option(..., "--project-root"),
+    catalog_path: str | None = typer.Option(None, "--catalog"),
+    project_id: str | None = typer.Option(None, "--project-id"),
+    description: str = typer.Option("", "--description"),
+) -> None:
+    """Create and catalog a Project with its first accepted semantic revision."""
+
+    arguments: dict[str, Any] = {
+        "name": name,
+        "project_id": project_id,
+        "description": description,
+    }
+    if catalog_path is not None:
+        arguments["catalog_path"] = catalog_path
+    _emit("project.create", arguments, project_root=project_root)
+
+
+@project_app.command("adopt")
+def project_adopt(
+    project_root: str = typer.Option(..., "--project-root"),
+    name: str | None = typer.Option(None, "--name"),
+    catalog_path: str | None = typer.Option(None, "--catalog"),
+    project_id: str | None = typer.Option(None, "--project-id"),
+) -> None:
+    """Non-destructively adopt a V1 or brownfield Project into the Catalog."""
+
+    arguments: dict[str, Any] = {"name": name, "project_id": project_id}
+    if catalog_path is not None:
+        arguments["catalog_path"] = catalog_path
+    _emit("project.adopt", arguments, project_root=project_root)
+
+
+@project_app.command("continue")
+def project_continue(
+    name: str,
+    catalog_path: str | None = typer.Option(None, "--catalog"),
+) -> None:
+    """Continue a cataloged Project by name without supplying its path."""
+
+    arguments = {"name": name}
+    if catalog_path is not None:
+        arguments["catalog_path"] = catalog_path
+    _emit("project.continue", arguments)
+
+
+@project_app.command("propose")
+def project_propose(
+    name: str,
+    model_file: Path,
+    expected_revision: int = typer.Option(..., "--expected-revision"),
+    catalog_path: str | None = typer.Option(None, "--catalog"),
+    source: str = typer.Option("CLIENT", "--source"),
+) -> None:
+    """Create a semantic proposal without accepting it."""
+
+    arguments: dict[str, Any] = {
+        "name": name,
+        "model": _load_object(model_file),
+        "expected_revision": expected_revision,
+        "source": source,
+    }
+    if catalog_path is not None:
+        arguments["catalog_path"] = catalog_path
+    _emit("project.propose", arguments)
+
+
+@project_app.command("accept")
+def project_accept(
+    name: str,
+    proposal_id: str,
+    expected_revision: int = typer.Option(..., "--expected-revision"),
+    catalog_path: str | None = typer.Option(None, "--catalog"),
+) -> None:
+    """Accept a proposal through Project Authority with optimistic revision checking."""
+
+    arguments: dict[str, Any] = {
+        "name": name,
+        "proposal_id": proposal_id,
+        "expected_revision": expected_revision,
+    }
+    if catalog_path is not None:
+        arguments["catalog_path"] = catalog_path
+    _emit("project.accept", arguments)
+
+
+@project_app.command("observe")
+def project_observe(
+    name: str,
+    catalog_path: str | None = typer.Option(None, "--catalog"),
+) -> None:
+    """Record external repository mutation as a proposal, never acceptance."""
+
+    arguments = {"name": name}
+    if catalog_path is not None:
+        arguments["catalog_path"] = catalog_path
+    _emit("project.observe", arguments)
+
+
 @manual_app.command("packet-create")
 def manual_packet_create(arguments_file: Path) -> None:
     """Create a portable execution packet from a JSON argument object."""

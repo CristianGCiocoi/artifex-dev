@@ -37,6 +37,7 @@ from artifex.integrations import (
     run_doctor,
     select_integration,
 )
+from artifex.project import ProjectControlService, default_catalog_path
 from artifex.workflow import ExecutionBaseline
 
 
@@ -98,6 +99,13 @@ class Application:
         self.register("integrations.select", self._integration_select)
         self.register("integrations.conformance", self._integration_conformance)
         self.register("project.status", self._project_status)
+        self.register("project.create", self._project_create)
+        self.register("project.adopt", self._project_adopt)
+        self.register("project.continue", self._project_continue)
+        self.register("project.propose", self._project_propose)
+        self.register("project.accept", self._project_accept)
+        self.register("project.observe", self._project_observe)
+        self.register("dashboard.platform", self._platform_dashboard)
         self.register("manual.packet.create", self._manual_packet_create)
         self.register("manual.result.submit", self._manual_result_submit)
         self.register("research.request.validate", self._research_request_validate)
@@ -217,6 +225,67 @@ class Application:
         if not callable(reader):
             raise ValueError(f"integration does not support project status read: {identifier}")
         return OperationResult(ok=True, value=dict(reader(root)))
+
+    @staticmethod
+    def _project_create(request: OperationRequest) -> OperationResult:
+        result = _project_service(request).create(
+            _project_root(request),
+            name=_required_string(request.arguments, "name"),
+            description=str(request.arguments.get("description", "")),
+            project_id=_optional_string(request.arguments, "project_id"),
+            actor=request.context.actor,
+        )
+        return OperationResult(ok=True, value=result)
+
+    @staticmethod
+    def _project_adopt(request: OperationRequest) -> OperationResult:
+        result = _project_service(request).adopt(
+            _project_root(request),
+            name=_optional_string(request.arguments, "name"),
+            description=str(request.arguments.get("description", "")),
+            project_id=_optional_string(request.arguments, "project_id"),
+            actor=request.context.actor,
+        )
+        return OperationResult(ok=True, value=result)
+
+    @staticmethod
+    def _project_continue(request: OperationRequest) -> OperationResult:
+        result = _project_service(request).continue_by_name(
+            _required_string(request.arguments, "name")
+        )
+        return OperationResult(ok=True, value=result)
+
+    @staticmethod
+    def _project_propose(request: OperationRequest) -> OperationResult:
+        proposal = _project_service(request).propose(
+            _required_string(request.arguments, "name"),
+            _required_mapping(request.arguments, "model"),
+            expected_revision=_required_int(request.arguments, "expected_revision"),
+            actor=request.context.actor,
+            source=str(request.arguments.get("source", "CLIENT")),
+        )
+        return OperationResult(ok=True, value={"proposal": proposal.to_dict()})
+
+    @staticmethod
+    def _project_accept(request: OperationRequest) -> OperationResult:
+        result = _project_service(request).accept(
+            _required_string(request.arguments, "name"),
+            _required_string(request.arguments, "proposal_id"),
+            expected_revision=_required_int(request.arguments, "expected_revision"),
+            actor=request.context.actor,
+        )
+        return OperationResult(ok=True, value=result)
+
+    @staticmethod
+    def _project_observe(request: OperationRequest) -> OperationResult:
+        result = _project_service(request).observe_external(
+            _required_string(request.arguments, "name"), actor=request.context.actor
+        )
+        return OperationResult(ok=True, value=result)
+
+    @staticmethod
+    def _platform_dashboard(request: OperationRequest) -> OperationResult:
+        return OperationResult(ok=True, value=_project_service(request).platform_dashboard())
 
     def _manual_packet_create(self, request: OperationRequest) -> OperationResult:
         manual = self.registry.get("manual")
@@ -431,8 +500,24 @@ def _optional_string(arguments: Mapping[str, Any], name: str) -> str | None:
     return value
 
 
+def _required_int(arguments: Mapping[str, Any], name: str) -> int:
+    value = arguments.get(name)
+    if not isinstance(value, int) or isinstance(value, bool):
+        raise TypeError(f"{name} must be an integer")
+    return value
+
+
 def _project_root(request: OperationRequest) -> str:
     root = request.arguments.get("project_root", request.context.project_root)
     if not isinstance(root, str) or not root:
         raise ValueError("project_root is required")
     return root
+
+
+def _project_service(request: OperationRequest) -> ProjectControlService:
+    catalog = request.arguments.get("catalog_path")
+    if catalog is None:
+        catalog = str(default_catalog_path())
+    if not isinstance(catalog, str) or not catalog:
+        raise TypeError("catalog_path must be a string")
+    return ProjectControlService(catalog)

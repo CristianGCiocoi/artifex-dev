@@ -106,7 +106,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "ADR-T001",
-      "implementation_state": "NOT_STARTED",
+      "implementation_state": "IMPLEMENTED_M1_PENDING_ACCEPTANCE",
       "m0_baseline_state": "CAPTURED",
       "title": "ADR-T001 — Project Authority vs Portable Semantic Representation",
       "type": "FROZEN_ADR"
@@ -235,7 +235,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "ADR-T006",
-      "implementation_state": "NOT_STARTED",
+      "implementation_state": "PARTIAL_M1_SEMANTIC_REVISIONING",
       "m0_baseline_state": "CAPTURED",
       "title": "ADR-T006 — Concurrency Model",
       "type": "FROZEN_ADR"
@@ -416,7 +416,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "ADR-T013",
-      "implementation_state": "NOT_STARTED",
+      "implementation_state": "M1_BASELINE_IMPLEMENTED",
       "m0_baseline_state": "CAPTURED",
       "title": "ADR-T013 — Project Documentation Lifecycle",
       "type": "FROZEN_ADR"
@@ -442,7 +442,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "ADR-T014",
-      "implementation_state": "NOT_STARTED",
+      "implementation_state": "M1_BASELINE_IMPLEMENTED",
       "m0_baseline_state": "CAPTURED",
       "title": "ADR-T014 — Unified Dashboard Framework",
       "type": "FROZEN_ADR"
@@ -573,7 +573,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "ADR-T019",
-      "implementation_state": "NOT_STARTED",
+      "implementation_state": "M1_ADAPTER_IMPLEMENTED_M9_ACCEPTANCE_PENDING",
       "m0_baseline_state": "CAPTURED",
       "title": "ADR-T019 — V1 Project Migration",
       "type": "FROZEN_ADR"
@@ -599,7 +599,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "ADR-T020",
-      "implementation_state": "NOT_STARTED",
+      "implementation_state": "IMPLEMENTED_M1_PENDING_ACCEPTANCE",
       "m0_baseline_state": "CAPTURED",
       "title": "ADR-T020 — Project Catalog & Discovery",
       "type": "FROZEN_ADR"
