@@ -18,6 +18,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+import jsonschema  # type: ignore[import-untyped]
 import yaml  # type: ignore[import-untyped]
 
 from artifex.compilation._util import model_fingerprint
@@ -86,6 +87,22 @@ _EPHEMERAL_STATE_DIRECTORIES = frozenset(
 )
 _CLAUDE_VALIDATOR_ID = "VAL-CLAUDE-STANDARD"
 _CLAUDE_VALIDATOR_VERSION = "1"
+CLAUDE_INTEGRATION_VERSION = "2.0.0"
+CLAUDE_CAPABILITIES = frozenset(
+    {
+        Capability.INTERACTIVE.value,
+        Capability.HEADLESS.value,
+        Capability.SKILLS.value,
+        Capability.WORKTREES.value,
+        Capability.STRUCTURED_OUTPUT.value,
+        Capability.REPOSITORY_READ.value,
+        Capability.REPOSITORY_WRITE.value,
+        Capability.TEST_EXECUTION.value,
+    }
+)
+_CLAUDE_OUTPUT_SCHEMA = "<ARTIFEX_CLAUDE_OUTPUT_SCHEMA>"
+_MAX_CLAUDE_TIMEOUT_SECONDS = 3600.0
+_DEFAULT_CLAUDE_OUTPUT_BYTES = 2 * 1024 * 1024
 _STATUS_ALIASES = {
     "success": ExecutionStatus.SUCCESS,
     "succeeded": ExecutionStatus.SUCCESS,
@@ -186,6 +203,85 @@ class ClaudeExecutionPlan:
 ClaudeHarnessRunner = Callable[[ClaudeExecutionPlan], Mapping[str, Any] | str | None]
 
 
+class ClaudeProcessError(IntegrationError):
+    """A live Claude process whose external outcome cannot be trusted."""
+
+    def __init__(self, reason: str) -> None:
+        super().__init__(f"Claude execution outcome is UNKNOWN: {reason}")
+
+
+@dataclass(slots=True)
+class ClaudeProcessRunner:
+    """Bounded, fail-closed runner for one Claude Code process."""
+
+    command: tuple[str, ...]
+    timeout_seconds: float = 900.0
+    max_output_bytes: int = _DEFAULT_CLAUDE_OUTPUT_BYTES
+    process_runner: Callable[..., subprocess.CompletedProcess[str]] = subprocess.run
+
+    def __post_init__(self) -> None:
+        _validate_claude_command_prefix(self.command)
+        if not 0 < self.timeout_seconds <= _MAX_CLAUDE_TIMEOUT_SECONDS:
+            raise IntegrationError(
+                "Claude timeout must be greater than zero and at most "
+                f"{int(_MAX_CLAUDE_TIMEOUT_SECONDS)} seconds"
+            )
+        if not 1024 <= self.max_output_bytes <= 16 * 1024 * 1024:
+            raise IntegrationError("Claude output bound must be between 1024 and 16777216 bytes")
+
+    def __call__(self, plan: ClaudeExecutionPlan) -> Mapping[str, Any]:
+        root = Path(plan.worktree_root).resolve()
+        if not root.is_dir():
+            raise ClaudeProcessError("bound Git workspace is unavailable")
+        expected = _claude_execution_command(self.command, root, plan.prompt)
+        if plan.command != expected:
+            raise ClaudeProcessError("prepared command does not match the bound execution plan")
+        schema = _claude_execution_result_schema(plan.packet)
+        arguments = [
+            json.dumps(schema, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+            if item == _CLAUDE_OUTPUT_SCHEMA
+            else item
+            for item in plan.command
+        ]
+        try:
+            completed = self.process_runner(
+                arguments,
+                cwd=root,
+                check=False,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                input=plan.prompt,
+                timeout=self.timeout_seconds,
+            )
+        except subprocess.TimeoutExpired:
+            raise ClaudeProcessError("process timed out before a trustworthy result") from None
+        except (OSError, subprocess.SubprocessError) as exc:
+            raise ClaudeProcessError(
+                f"process could not be observed ({type(exc).__name__})"
+            ) from None
+        stdout = completed.stdout or ""
+        stderr = completed.stderr or ""
+        if (
+            len(stdout.encode("utf-8", errors="replace")) > self.max_output_bytes
+            or len(stderr.encode("utf-8", errors="replace")) > self.max_output_bytes
+        ):
+            raise ClaudeProcessError("process diagnostics exceeded the configured bound")
+        if completed.returncode != 0:
+            raise ClaudeProcessError(f"process exited non-zero (code {completed.returncode})")
+        try:
+            value = json.loads(stdout, object_pairs_hook=_unique_json_object)
+        except json.JSONDecodeError:
+            raise ClaudeProcessError("structured result was malformed or ambiguous") from None
+        result = _extract_claude_structured_result(value)
+        try:
+            jsonschema.Draft202012Validator(schema).validate(result)
+        except jsonschema.ValidationError:
+            raise ClaudeProcessError("structured result did not match its bound schema") from None
+        return result
+
+
 @dataclass(frozen=True, slots=True)
 class ClaudeWorkflowOutcome:
     """Core-classified outcome of one adapter-led STANDARD workflow."""
@@ -274,22 +370,13 @@ class ClaudeIntegration:
 
     @property
     def metadata(self) -> IntegrationMetadata:
-        capabilities = {
-            Capability.INTERACTIVE.value,
-            Capability.HEADLESS.value,
-            Capability.SKILLS.value,
-            Capability.WORKTREES.value,
-            Capability.STRUCTURED_OUTPUT.value,
-            Capability.REPOSITORY_READ.value,
-            Capability.REPOSITORY_WRITE.value,
-            Capability.TEST_EXECUTION.value,
-        }
+        capabilities = set(CLAUDE_CAPABILITIES)
         if self.detection.supports_mcp:
             capabilities.add(Capability.MCP.value)
         return IntegrationMetadata(
             integration_id="claude",
             name="Claude",
-            version="1.0.0",
+            version=CLAUDE_INTEGRATION_VERSION,
             compatibility=CompatibilityRange("0.1.0", "2.0.0"),
             tested_external_versions=(self.detection.version or "not-detected",),
             roles=frozenset(
@@ -360,6 +447,8 @@ class ClaudeIntegration:
         *,
         project_root: str | Path,
         worktree_root: str | Path | None = None,
+        command_prefix: Sequence[str] | None = None,
+        require_clean: bool = False,
     ) -> ClaudeExecutionPlan:
         """Validate baseline/worktree binding and return a launch plan only."""
 
@@ -381,9 +470,9 @@ class ClaudeIntegration:
                 "execution worktree does not match packet base commit: "
                 f"expected {packet.base_commit}, observed {observed.current_commit}"
             )
-        observed_model_fingerprint = model_fingerprint(
-            ProjectRepository(worktree).load().to_dict()
-        )
+        if require_clean and _git_changed_paths(worktree):
+            raise ValueError("Claude execution requires a clean isolated workspace")
+        observed_model_fingerprint = model_fingerprint(ProjectRepository(worktree).load().to_dict())
         if observed_model_fingerprint != packet.project_model_fingerprint:
             raise IntegrationError(
                 "canonical Project Model fingerprint does not match packet: "
@@ -397,12 +486,10 @@ class ClaudeIntegration:
             "run the acceptance checks, and return one structured ARTIFEX result object.\n\n"
             f"{packet_json}"
         )
-        command = (
-            self.detection.executable,
-            "--print",
-            "--output-format",
-            "json",
+        prefix = _validate_claude_command_prefix(
+            (self.detection.executable,) if command_prefix is None else command_prefix
         )
+        command = _claude_execution_command(prefix, worktree, prompt)
         return ClaudeExecutionPlan(packet, str(project), str(worktree), command, prompt)
 
     prepare_stage_execution = plan_stage_execution
@@ -417,21 +504,40 @@ class ClaudeIntegration:
     ) -> ExecutionResult:
         """Execute only through an explicit injected runner and ingest its bound result."""
 
+        prefix = _claude_prefix_from_execution_command(plan.command)
         self.plan_stage_execution(
             plan.packet,
             project_root=plan.project_root,
             worktree_root=plan.worktree_root,
+            command_prefix=prefix,
         )
+        root = Path(plan.worktree_root).resolve()
+        before = _snapshot_owned_artifacts(root, plan.packet)
+        before_changed = _git_changed_paths(root)
         raw_result = runner(plan)
         self.plan_stage_execution(
             plan.packet,
             project_root=plan.project_root,
             worktree_root=plan.worktree_root,
+            command_prefix=prefix,
         )
+        _assert_only_owned_workspace_changes(root, plan.packet, before_changed=before_changed)
         normalized = self.normalize_result(plan.packet, raw_result)
-        return self.submit_result(
-            plan.packet, normalized, current_baseline=current_baseline
-        )
+        classified = self.submit_result(plan.packet, normalized, current_baseline=current_baseline)
+        if (
+            classified.status is ExecutionStatus.SUCCESS
+            and not _artifacts_are_owned_changed_and_present(
+                root,
+                plan.packet,
+                classified,
+                before,
+                forbidden_artifacts=frozenset({".artifex/project-model.json"}),
+            )
+        ):
+            raise IntegrationError(
+                "Claude SUCCESS must contain only safe, owned artifacts changed by this invocation"
+            )
+        return classified
 
     def mcp_entry(self, *, python_command: str = "python") -> Mapping[str, Any] | None:
         """Return an opt-in Claude MCP entry; never alter desktop configuration."""
@@ -685,9 +791,7 @@ class ClaudeIntegration:
                 MeasuredFact("owned_artifacts_present", artifacts_valid),
             ),
         )
-        evidence = EvidenceEntry.create(
-            evidence_id, validation, binding, recorded_at=recorded_at
-        )
+        evidence = EvidenceEntry.create(evidence_id, validation, binding, recorded_at=recorded_at)
         journal = (
             Path(plan.worktree_root)
             / ".artifex"
@@ -727,9 +831,7 @@ class ClaudeIntegration:
             workflow.transition(
                 stage.stage_id,
                 StageState.ACCEPTED if gate_state is GateState.PASS else StageState.FAILED,
-                authority=(
-                    AcceptanceAuthority.CORE if gate_state is GateState.PASS else None
-                ),
+                authority=(AcceptanceAuthority.CORE if gate_state is GateState.PASS else None),
             )
         return ClaudeWorkflowOutcome(
             execution_result,
@@ -950,11 +1052,190 @@ def _semantic_fingerprint(
     return hashlib.sha256(encoded).hexdigest()
 
 
+def _validate_claude_command_prefix(command: Sequence[str]) -> tuple[str, ...]:
+    if isinstance(command, (str, bytes, bytearray)) or not command:
+        raise IntegrationError("Claude command prefix must be a non-empty argument vector")
+    if not all(isinstance(item, str) and item and "\x00" not in item for item in command):
+        raise IntegrationError("Claude command prefix must contain non-empty safe strings")
+    normalized = tuple(command)
+    executable = Path(normalized[0]).name.casefold()
+    if executable in {"claude", "claude.exe", "claude.cmd"}:
+        if len(normalized) != 1:
+            raise IntegrationError("direct Claude command prefix cannot supply caller flags")
+        return normalized
+    if executable not in {"npx", "npx.exe", "npx.cmd"}:
+        raise IntegrationError("Claude command prefix must invoke claude or npx")
+    if len(normalized) != 3 or normalized[1] != "--yes":
+        raise IntegrationError("npx Claude command must use --yes and one pinned package")
+    if re.fullmatch(r"@anthropic-ai/claude-code@\d+\.\d+\.\d+", normalized[2]) is None:
+        raise IntegrationError("npx Claude package must pin an exact version")
+    return normalized
+
+
+def _claude_execution_command(
+    command_prefix: Sequence[str], root: Path, prompt: str
+) -> tuple[str, ...]:
+    prefix = _validate_claude_command_prefix(command_prefix)
+    del root  # cwd is bound by ClaudeProcessRunner; no second workspace path is accepted.
+    del prompt  # the bounded prompt is supplied over stdin, never shell interpolation.
+    return (
+        *prefix,
+        "--print",
+        "--json-schema",
+        _CLAUDE_OUTPUT_SCHEMA,
+        "--permission-mode",
+        "acceptEdits",
+        "--strict-mcp-config",
+        "--tools",
+        "Read,Write,Edit,Glob,Grep,Bash",
+        "--output-format",
+        "json",
+    )
+
+
+def _claude_prefix_from_execution_command(command: Sequence[str]) -> tuple[str, ...]:
+    try:
+        boundary = tuple(command).index("--print")
+    except ValueError:
+        raise IntegrationError("Claude execution command is missing the print boundary") from None
+    return _validate_claude_command_prefix(tuple(command)[:boundary])
+
+
+def _claude_execution_result_schema(packet: ExecutionPacket) -> Mapping[str, Any]:
+    return {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "additionalProperties": False,
+        "required": [
+            "status",
+            "base_commit",
+            "execution_contract_fingerprint",
+            "project_model_fingerprint",
+            "artifacts",
+            "validation",
+            "message",
+        ],
+        "properties": {
+            "status": {"type": "string", "enum": [status.value for status in ExecutionStatus]},
+            "base_commit": {"type": "string", "const": packet.base_commit},
+            "execution_contract_fingerprint": {
+                "type": "string",
+                "const": packet.contract_fingerprint,
+            },
+            "project_model_fingerprint": {
+                "type": "string",
+                "const": packet.project_model_fingerprint,
+            },
+            "artifacts": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": ["path"],
+                    "properties": {"path": {"type": "string", "minLength": 1}},
+                    "additionalProperties": False,
+                },
+            },
+            "validation": {
+                "type": "object",
+                "required": ["tests"],
+                "properties": {"tests": {"type": "string"}},
+                "additionalProperties": False,
+            },
+            "message": {"type": "string"},
+        },
+    }
+
+
+def _unique_json_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    value: dict[str, Any] = {}
+    for key, item in pairs:
+        if key in value:
+            raise json.JSONDecodeError("duplicate object key", key, 0)
+        value[key] = item
+    return value
+
+
+def _extract_claude_structured_result(value: object) -> Mapping[str, Any]:
+    if not isinstance(value, Mapping):
+        raise ClaudeProcessError("Claude JSON output was not an object")
+    if value.get("is_error") is True:
+        raise ClaudeProcessError("Claude reported an unsuccessful result")
+    candidate: object = value.get("structured_output", value)
+    if candidate is value and "result" in value:
+        candidate = value["result"]
+    if isinstance(candidate, str):
+        try:
+            candidate = json.loads(candidate, object_pairs_hook=_unique_json_object)
+        except json.JSONDecodeError:
+            raise ClaudeProcessError(
+                "Claude result did not contain one structured object"
+            ) from None
+    if not isinstance(candidate, Mapping):
+        raise ClaudeProcessError("Claude result did not contain one structured object")
+    return dict(candidate)
+
+
+def _git_changed_paths(root: Path) -> frozenset[str]:
+    paths: set[str] = set()
+    for arguments in (
+        ("diff", "--name-only", "--no-ext-diff"),
+        ("diff", "--cached", "--name-only", "--no-ext-diff"),
+        ("ls-files", "--others", "--exclude-standard"),
+    ):
+        completed = subprocess.run(
+            ("git", "-C", str(root), *arguments),
+            check=False,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=30,
+        )
+        if completed.returncode != 0:
+            raise IntegrationError("cannot inspect Claude Execution Workspace changes")
+        paths.update(
+            normalize_relative_path(line) for line in completed.stdout.splitlines() if line.strip()
+        )
+    return frozenset(paths)
+
+
+def _assert_only_owned_workspace_changes(
+    root: Path,
+    packet: ExecutionPacket,
+    *,
+    before_changed: frozenset[str] = frozenset(),
+) -> None:
+    ownership = packet.ownership.get("paths")
+    if not isinstance(ownership, Sequence) or isinstance(ownership, (str, bytes, bytearray)):
+        raise IntegrationError("execution packet ownership paths must be an array")
+    try:
+        owned = tuple(normalize_relative_path(str(item)) for item in ownership)
+    except (TypeError, ValueError):
+        raise IntegrationError("execution packet contains an unsafe ownership path") from None
+    forbidden = {".artifex/project-model.json"}
+    unexpected = sorted(
+        path
+        for path in _git_changed_paths(root) - before_changed
+        if path in forbidden
+        or not any(
+            path == allowed or path.startswith(allowed.rstrip("/") + "/") for allowed in owned
+        )
+    )
+    if unexpected:
+        raise IntegrationError(
+            "Claude changed paths outside Execution Packet ownership: " + ", ".join(unexpected)
+        )
+
+
 __all__ = [
+    "CLAUDE_CAPABILITIES",
+    "CLAUDE_INTEGRATION_VERSION",
     "ClaudeDetection",
     "ClaudeExecutionPlan",
     "ClaudeHarnessRunner",
     "ClaudeIntegration",
+    "ClaudeProcessError",
+    "ClaudeProcessRunner",
     "ClaudeWorkflowOutcome",
     "ContinuitySnapshot",
     "detect_claude",

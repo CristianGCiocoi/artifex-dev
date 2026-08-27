@@ -13,6 +13,7 @@ from typing import Any
 
 from artifex import __version__
 from artifex.capabilities import (
+    CLAUDE_DISPATCH_AUTHORIZED_ROLES,
     CODEX_DISPATCH_AUTHORIZED_ROLES,
     ActorContext,
     CapabilityGraph,
@@ -22,6 +23,7 @@ from artifex.capabilities import (
     ProviderCompositionLoader,
     ProviderInteractionService,
     ProviderRole,
+    claude_certification_projection,
     codex_certification_projection,
     record_execution_implementer_evidence,
 )
@@ -55,6 +57,11 @@ from artifex.integrations import (
     run_doctor,
     select_integration,
 )
+from artifex.integrations.claude import (
+    ClaudeDetection,
+    ClaudeIntegration,
+    ClaudeProcessRunner,
+)
 from artifex.integrations.codex import CodexIntegration, CodexProcessRunner
 from artifex.project import (
     ProjectAuthority,
@@ -79,6 +86,7 @@ from artifex.runtime import (
 from artifex.workflow import ExecutionBaseline, ExecutionStatus
 
 CodexRunnerFactory = Callable[[tuple[str, ...]], CodexProcessRunner]
+ClaudeRunnerFactory = Callable[[tuple[str, ...]], ClaudeProcessRunner]
 
 
 @dataclass(frozen=True, slots=True)
@@ -133,14 +141,19 @@ class Application:
         provider_loader: ProviderCompositionLoader | None = None,
         provider_interaction: ProviderInteractionService | None = None,
         codex_runner_factory: CodexRunnerFactory | None = None,
+        claude_runner_factory: ClaudeRunnerFactory | None = None,
     ) -> None:
         self._operations: dict[str, Operation] = {}
         self._project_root = project_root
         self._provider_loader = provider_loader or ProviderCompositionLoader(
-            certified_roles={"codex": CODEX_DISPATCH_AUTHORIZED_ROLES}
+            certified_roles={
+                "codex": CODEX_DISPATCH_AUTHORIZED_ROLES,
+                "claude": CLAUDE_DISPATCH_AUTHORIZED_ROLES,
+            }
         )
         self._provider_interaction = provider_interaction or ProviderInteractionService()
         self._codex_runner_factory = codex_runner_factory or _codex_process_runner
+        self._claude_runner_factory = claude_runner_factory or _claude_process_runner
         self.registry = (
             IntegrationRegistry((ManualIntegration(),)) if registry is None else registry
         )
@@ -334,17 +347,26 @@ class Application:
 
     def _providers_certifications(self, request: OperationRequest) -> OperationResult:
         project_id = _optional_string(request.arguments, "project_id")
+        provider_id = _optional_string(request.arguments, "provider_id") or "codex"
+        if provider_id == "codex":
+            authorized_roles = CODEX_DISPATCH_AUTHORIZED_ROLES
+            projection_factory = codex_certification_projection
+        elif provider_id == "claude":
+            authorized_roles = CLAUDE_DISPATCH_AUTHORIZED_ROLES
+            projection_factory = claude_certification_projection
+        else:
+            raise ValueError(f"provider certification is unsupported: {provider_id}")
         receipts = self._provider_interaction.store.valid_receipts(
-            provider_id="codex", project_id=project_id
+            provider_id=provider_id, project_id=project_id
         )
         evidence: dict[ProviderRole, tuple[str, ...]] = {}
-        for role in CODEX_DISPATCH_AUTHORIZED_ROLES:
+        for role in authorized_roles:
             role_receipts = tuple(
                 f"capability-receipt:{item.receipt_id}" for item in receipts if item.role is role
             )
             if role_receipts:
                 evidence[role] = role_receipts
-        projection = codex_certification_projection(evidence)
+        projection = projection_factory(evidence)
         return OperationResult(
             ok=True,
             value={
@@ -770,7 +792,7 @@ class Application:
                     "credential_reference_id and credential_reference_ids are mutually exclusive"
                 )
             credential_ids = (singular_credential,)
-        packet = CodexIntegration().prepare_execution(
+        packet = ManualIntegration().prepare_execution(
             task_contract={
                 "id": project_job_id,
                 "objective": _required_string(request.arguments, "objective"),
@@ -800,13 +822,45 @@ class Application:
             invariants=_string_sequence(request.arguments, "invariants"),
         )
         workspace_root = Path(str(workspace["workspace_root"])).resolve()
-        integration = CodexIntegration()
-        plan = integration.prepare_stage(
-            packet,
-            workspace_root,
-            require_clean=True,
-            command_prefix=provider.configuration.command,
-        )
+        execute_provider: Callable[[], ExecutionResult]
+        if provider_id == "codex":
+            codex_integration = CodexIntegration()
+            codex_plan = codex_integration.prepare_stage(
+                packet,
+                workspace_root,
+                require_clean=True,
+                command_prefix=provider.configuration.command,
+            )
+            codex_runner = self._codex_runner_factory(provider.configuration.command)
+
+            def run_codex_provider() -> ExecutionResult:
+                return codex_integration.execute_stage(codex_plan, codex_runner)
+
+            execute_provider = run_codex_provider
+        elif provider_id == "claude":
+            claude_integration = ClaudeIntegration(
+                ClaudeDetection(
+                    True,
+                    provider.readiness.executable or provider.configuration.command[0],
+                    provider.readiness.version,
+                    provider.readiness.detail,
+                )
+            )
+            claude_plan = claude_integration.plan_stage_execution(
+                packet,
+                project_root=workspace_root,
+                worktree_root=workspace_root,
+                require_clean=True,
+                command_prefix=provider.configuration.command,
+            )
+            claude_runner = self._claude_runner_factory(provider.configuration.command)
+
+            def run_claude_provider() -> ExecutionResult:
+                return claude_integration.execute_stage(claude_plan, claude_runner)
+
+            execute_provider = run_claude_provider
+        else:
+            raise ValueError(f"provider execution is unsupported: {provider_id}")
         authorization = service.authorize_dispatch(
             attempt_id,
             provider_id=provider_id,
@@ -829,10 +883,7 @@ class Application:
         )
         try:
             with service.coordinator_heartbeat():
-                result = integration.execute_stage(
-                    plan,
-                    self._codex_runner_factory(provider.configuration.command),
-                )
+                result = execute_provider()
             manifest, manifest_digest = _validate_owned_artifacts(
                 service,
                 workspace_id=workspace_id,
@@ -854,13 +905,16 @@ class Application:
                 actor=evidence_actor,
                 correlation_id=request.context.correlation_id,
             )
-            service.finish(
-                attempt_id,
-                f"provider={provider_id}; status={result.status.value}; "
-                f"owned_artifacts_sha256={manifest_digest}",
-                actor_id=provider_actor,
-                correlation_id=request.context.correlation_id,
-            )
+            if result.status is ExecutionStatus.CANCELLED:
+                service.cancel(attempt_id, actor_id=provider_actor)
+            else:
+                service.finish(
+                    attempt_id,
+                    f"provider={provider_id}; status={result.status.value}; "
+                    f"owned_artifacts_sha256={manifest_digest}",
+                    actor_id=provider_actor,
+                    correlation_id=request.context.correlation_id,
+                )
         except Exception:
             with suppress(Exception):
                 service.mark_unknown(attempt_id, actor_id=provider_actor)
@@ -1162,6 +1216,10 @@ def _runtime_service(request: OperationRequest) -> ManagedRuntimeService:
 
 def _codex_process_runner(command: tuple[str, ...]) -> CodexProcessRunner:
     return CodexProcessRunner(command=command)
+
+
+def _claude_process_runner(command: tuple[str, ...]) -> ClaudeProcessRunner:
+    return ClaudeProcessRunner(command=command)
 
 
 def _execution_envelope(value: Mapping[str, Any]) -> ExecutionEnvelope:
@@ -1467,15 +1525,16 @@ def _record_promoted_provider_certification(
     project_job_id: str,
     revision: int,
 ) -> dict[str, object] | None:
-    """Certify Codex execution only after acceptance and semantic promotion."""
+    """Certify supported provider execution only after acceptance and promotion."""
 
     workspace = service.store.get("workspaces", "workspace_id", workspace_id)
     if workspace is None:
         raise ValueError("promoted Execution Workspace is missing")
     attempt_id = str(workspace["attempt_id"])
     dispatch = service.store.dispatch_authorization(attempt_id)
+    provider_id = "" if dispatch is None else str(dispatch["provider_id"])
     if dispatch is None or (
-        str(dispatch["provider_id"]) != "codex"
+        provider_id not in {"codex", "claude"}
         or str(dispatch["provider_role"]) != ProviderRole.EXECUTION_IMPLEMENTER.value
     ):
         return None
@@ -1517,6 +1576,6 @@ def _record_promoted_provider_certification(
         promoted_baseline_sha256=promoted.fingerprint,
         acceptance_decision_id=str(decision["decision_id"]),
         promotion_revision=revision,
-        provider_id="codex",
+        provider_id=provider_id,
     )
     return receipt.to_dict()

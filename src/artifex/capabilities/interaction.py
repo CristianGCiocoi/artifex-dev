@@ -68,8 +68,8 @@ class ProviderInteractionService:
         project_job_id: str,
         prompt: str,
     ) -> dict[str, object]:
-        if provider.provider_id != "codex":
-            raise ValueError("INTERACTION currently requires the configured Codex provider")
+        if provider.provider_id not in {"codex", "claude"}:
+            raise ValueError("INTERACTION requires a supported configured provider")
         if ProviderRole.INTERACTION not in provider.certified_roles:
             raise ValueError("provider is not role-conformant for INTERACTION")
         if not prompt.strip():
@@ -81,13 +81,23 @@ class ProviderInteractionService:
         try:
             completed = self.runner(command, root)
         except (OSError, subprocess.SubprocessError) as exc:
-            raise ValueError(f"Codex interaction failed: {type(exc).__name__}") from exc
+            raise ValueError(
+                f"{provider.provider_id} interaction failed: {type(exc).__name__}"
+            ) from exc
         if completed.returncode != 0:
-            raise ValueError(f"Codex interaction exited with {completed.returncode}")
-        response = _final_agent_response(completed.stdout)
+            raise ValueError(
+                f"{provider.provider_id} interaction exited with {completed.returncode}"
+            )
+        response = (
+            _final_agent_response(completed.stdout)
+            if provider.provider_id == "codex"
+            else _final_claude_response(completed.stdout)
+        )
         after = _capture_baseline(root)
         if after != baseline:
-            raise ValueError("Codex read-only interaction changed the Git or Project baseline")
+            raise ValueError(
+                f"{provider.provider_id} read-only interaction changed the Git or Project baseline"
+            )
         sanitized, truncated = _sanitize_response(response)
         receipt = CapabilityReceipt.issue(
             provider_id=provider.provider_id,
@@ -133,6 +143,20 @@ class ProviderInteractionService:
 
 def _interaction_command(provider: ProviderInstance, root: Path, prompt: str) -> tuple[str, ...]:
     command = provider.readiness.command or provider.configuration.command
+    if provider.provider_id == "claude":
+        prefix = _validated_claude_prefix(command)
+        return (
+            *prefix,
+            "--print",
+            "--output-format",
+            "json",
+            "--permission-mode",
+            "plan",
+            "--strict-mcp-config",
+            "--tools",
+            "Read,Glob,Grep",
+            prompt,
+        )
     prefix = _validated_codex_prefix(command)
     return (
         *prefix,
@@ -173,6 +197,26 @@ def _validated_codex_prefix(command: Sequence[str]) -> tuple[str, ...]:
         raise ValueError("configured npx Codex command must be pinned and non-interactive")
     if re.fullmatch(r"@openai/codex@\d+\.\d+\.\d+", normalized[2]) is None:
         raise ValueError("configured npx Codex package must pin an exact version")
+    return normalized
+
+
+def _validated_claude_prefix(command: Sequence[str]) -> tuple[str, ...]:
+    if not command or any(
+        not isinstance(item, str) or not item or "\x00" in item for item in command
+    ):
+        raise ValueError("configured Claude command vector is invalid")
+    normalized = tuple(command)
+    executable = Path(normalized[0]).name.casefold()
+    if executable in {"claude", "claude.exe", "claude.cmd"}:
+        if len(normalized) != 1:
+            raise ValueError("configured Claude command cannot pre-supply caller flags")
+        return normalized
+    if executable not in {"npx", "npx.exe", "npx.cmd"}:
+        raise ValueError("configured command must invoke Claude")
+    if len(normalized) != 3 or normalized[1] != "--yes":
+        raise ValueError("configured npx Claude command must be pinned and non-interactive")
+    if re.fullmatch(r"@anthropic-ai/claude-code@\d+\.\d+\.\d+", normalized[2]) is None:
+        raise ValueError("configured npx Claude package must pin an exact version")
     return normalized
 
 
@@ -276,6 +320,19 @@ def _final_agent_response(output: str) -> str:
     # last one immediately preceding the sole turn.completed event is the one
     # final response; earlier messages are not final authority.
     return responses[-1]
+
+
+def _final_claude_response(output: str) -> str:
+    try:
+        value = json.loads(output, object_pairs_hook=_unique_object)
+    except json.JSONDecodeError:
+        raise ValueError("Claude interaction JSON was malformed or ambiguous") from None
+    if not isinstance(value, Mapping) or value.get("is_error") is True:
+        raise ValueError("Claude interaction did not produce a successful result")
+    response = value.get("result")
+    if not isinstance(response, str) or not response.strip():
+        raise ValueError("Claude final response was empty")
+    return response
 
 
 def _sanitize_response(value: str) -> tuple[str, bool]:

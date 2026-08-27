@@ -22,6 +22,7 @@ from artifex.capabilities.models import (
 )
 from artifex.capabilities.registry import CapabilityGraph, CapabilityRegistry
 from artifex.distribution.setup import SETUP_STATE_PATH
+from artifex.integrations.claude import CLAUDE_CAPABILITIES, ClaudeDetection
 from artifex.integrations.codex import CODEX_CAPABILITIES, CodexDetection
 
 CommandRunner = Callable[[Sequence[str]], subprocess.CompletedProcess[str]]
@@ -46,7 +47,10 @@ class ProviderCompositionLoader:
         self.which = which
         self.runner = runner
         self.credential_broker = credential_broker or CredentialBroker(
-            {"codex-native-session": self._probe_codex_native_session}
+            {
+                "codex-native-session": self._probe_codex_native_session,
+                "claude-native-session": self._probe_claude_native_session,
+            }
         )
         self.certified_roles = dict(certified_roles or {})
 
@@ -58,8 +62,12 @@ class ProviderCompositionLoader:
             return registry.graph(source=str(state_path))
         value = self._load_state(state_path)
         for configuration in self._configurations(value):
-            if configuration.enabled and configuration.provider_id == "codex":
+            if not configuration.enabled:
+                continue
+            if configuration.provider_id == "codex":
                 registry.register(self._compose_codex(configuration))
+            elif configuration.provider_id == "claude":
+                registry.register(self._compose_claude(configuration))
         return registry.graph(source=str(state_path))
 
     @staticmethod
@@ -168,6 +176,22 @@ class ProviderCompositionLoader:
                     ("INTERACTION", "EXECUTION_IMPLEMENTER"),
                 ),
             )
+        if provider_id == "claude":
+            return ProviderConfiguration(
+                provider_id="claude",
+                enabled=True,
+                roles=frozenset(
+                    {ProviderRole.INTERACTION, ProviderRole.EXECUTION_IMPLEMENTER}
+                ),
+                governance_mode=GovernanceMode.STANDALONE,
+                command=("claude",),
+                credential_reference=CredentialReference(
+                    "claude-native-session",
+                    "default",
+                    "claude",
+                    ("INTERACTION", "EXECUTION_IMPLEMENTER"),
+                ),
+            )
         return ProviderConfiguration(
             provider_id=provider_id,
             enabled=True,
@@ -220,6 +244,44 @@ class ProviderCompositionLoader:
             frozenset(role for role in certified if role in configuration.roles),
         )
 
+    def _compose_claude(self, configuration: ProviderConfiguration) -> ProviderInstance:
+        detection, command = self._detect_claude(configuration.command)
+        checks = {
+            "detected": detection.installed,
+            "configured": configuration.enabled,
+            "authenticated": False,
+            "healthy": False,
+            "registered": False,
+            "available": False,
+        }
+        state = ReadinessState.NOT_DETECTED
+        detail = detection.detail or "Claude was not detected"
+        if detection.installed:
+            state = ReadinessState.CONFIGURED
+            assertion = self._authenticate_claude(configuration, detection)
+            checks["authenticated"] = assertion.authenticated
+            detail = assertion.detail
+            if assertion.authenticated:
+                state = ReadinessState.AVAILABLE
+                checks.update({"healthy": True, "registered": True, "available": True})
+        readiness = ProviderReadiness(
+            "claude",
+            state,
+            checks,
+            detection.executable,
+            command,
+            detection.version,
+            detail,
+        )
+        certified = self.certified_roles.get("claude", frozenset())
+        return ProviderInstance(
+            "claude:local",
+            configuration,
+            readiness,
+            CLAUDE_CAPABILITIES,
+            frozenset(role for role in certified if role in configuration.roles),
+        )
+
     def _authenticate(
         self, configuration: ProviderConfiguration, detection: CodexDetection
     ) -> AuthenticationAssertion:
@@ -250,6 +312,38 @@ class ProviderCompositionLoader:
                 "native Codex session authenticated"
                 if authenticated
                 else "native Codex session unavailable"
+            ),
+        )
+
+    def _authenticate_claude(
+        self, configuration: ProviderConfiguration, detection: ClaudeDetection
+    ) -> AuthenticationAssertion:
+        reference = configuration.credential_reference
+        if reference is None or detection.executable is None:
+            return AuthenticationAssertion(False, "none", "credential reference is missing")
+        resolved = (detection.executable, *configuration.command[1:])
+        return self.credential_broker.resolve(reference, resolved)
+
+    def _probe_claude_native_session(
+        self, reference: CredentialReference, command: tuple[str, ...]
+    ) -> AuthenticationAssertion:
+        del reference
+        runner = self.runner or self._run
+        try:
+            completed = runner((*command, "auth", "status"))
+        except (OSError, subprocess.SubprocessError) as exc:
+            return AuthenticationAssertion(
+                False,
+                "claude-native-session",
+                f"authentication probe failed: {type(exc).__name__}",
+            )
+        return AuthenticationAssertion(
+            completed.returncode == 0,
+            "claude-native-session",
+            (
+                "native Claude session authenticated"
+                if completed.returncode == 0
+                else "native Claude session unavailable"
             ),
         )
 
@@ -292,6 +386,36 @@ class ProviderCompositionLoader:
             CodexDetection(True, resolved, match.group(1), raw_version=output),
             resolved_command,
         )
+
+    def _detect_claude(
+        self, command: tuple[str, ...]
+    ) -> tuple[ClaudeDetection, tuple[str, ...]]:
+        resolved = self.which(command[0])
+        if resolved is None:
+            return ClaudeDetection(False, detail=f"{command[0]} was not found on PATH"), command
+        resolved_command = (resolved, *command[1:])
+        runner = self.runner or self._run
+        try:
+            completed = runner((*resolved_command, "--version"))
+        except (OSError, subprocess.SubprocessError) as exc:
+            return (
+                ClaudeDetection(
+                    False,
+                    resolved,
+                    detail=f"Claude version probe failed: {type(exc).__name__}",
+                ),
+                resolved_command,
+            )
+        output = (completed.stdout or completed.stderr or "").strip()
+        match = _VERSION.search(output)
+        if completed.returncode != 0 or match is None:
+            reason = (
+                f"Claude version probe exited with {completed.returncode}"
+                if completed.returncode != 0
+                else "Claude version output did not contain a semantic version"
+            )
+            return ClaudeDetection(False, resolved, detail=reason), resolved_command
+        return ClaudeDetection(True, resolved, match.group(1), output), resolved_command
 
     @staticmethod
     def _run(arguments: Sequence[str]) -> subprocess.CompletedProcess[str]:

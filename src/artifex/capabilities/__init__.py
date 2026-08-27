@@ -2,9 +2,13 @@
 
 from artifex.capabilities.certification import (
     CERTIFICATION_LADDER,
+    CLAUDE_DISPATCH_AUTHORIZED_ROLES,
+    CLAUDE_SUPPORTED_VERSION_RANGE,
     CODEX_DISPATCH_AUTHORIZED_ROLES,
     CODEX_SUPPORTED_VERSION_RANGE,
+    claude_certification_projection,
     codex_certification_projection,
+    provider_certification_projection,
 )
 from artifex.capabilities.composition import ProviderCompositionLoader, ProviderSetupError
 from artifex.capabilities.credentials import AuthenticationAssertion, CredentialBroker
@@ -33,6 +37,8 @@ from artifex.capabilities.resolver import CapabilityResolver
 
 __all__ = [
     "CERTIFICATION_LADDER",
+    "CLAUDE_DISPATCH_AUTHORIZED_ROLES",
+    "CLAUDE_SUPPORTED_VERSION_RANGE",
     "CODEX_DISPATCH_AUTHORIZED_ROLES",
     "CODEX_SUPPORTED_VERSION_RANGE",
     "ActorContext",
@@ -57,7 +63,9 @@ __all__ = [
     "ProviderSetupError",
     "ReadinessState",
     "RepositoryBaseline",
+    "claude_certification_projection",
     "codex_certification_projection",
     "default_capability_evidence_path",
+    "provider_certification_projection",
     "record_execution_implementer_evidence",
 ]

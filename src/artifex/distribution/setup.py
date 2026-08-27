@@ -85,8 +85,7 @@ def apply_integration_setup(
     root = Path(plan.project_root).resolve()
     selected = tuple(action.integration_id for action in plan.actions)
     specs = {
-        action.integration_id: dict(action.provider_configuration or {})
-        for action in plan.actions
+        action.integration_id: dict(action.provider_configuration or {}) for action in plan.actions
     }
     expected = _setup_decision(
         root,
@@ -159,15 +158,11 @@ def _normalize_provider_spec(value: Mapping[str, Any]) -> Mapping[str, Any]:
         raise ValueError("provider spec contains unknown fields")
     provider_id = _required_text(value.get("provider_id"), "provider_id")
     command = _required_text_array(value.get("command"), "command")
-    roles = _required_text_array(
-        value.get("roles", _default_roles(provider_id)), "roles"
-    )
+    roles = _required_text_array(value.get("roles", _default_roles(provider_id)), "roles")
     enabled = value.get("enabled", True)
     if not isinstance(enabled, bool):
         raise ValueError("provider enabled must be a boolean")
-    governance_mode = _required_text(
-        value.get("governance_mode", "STANDALONE"), "governance_mode"
-    )
+    governance_mode = _required_text(value.get("governance_mode", "STANDALONE"), "governance_mode")
     reference_value = value.get("credential_reference")
     reference = (
         _normalize_credential_reference(reference_value, provider_id)
@@ -216,6 +211,14 @@ def _default_provider_spec(provider_id: str) -> Mapping[str, Any]:
             "broker": "codex-native-session",
             "reference": "default",
             "provider_id": "codex",
+            "scopes": ["INTERACTION", "EXECUTION_IMPLEMENTER"],
+            "secret_material_present": False,
+        }
+    elif provider_id == "claude":
+        reference = {
+            "broker": "claude-native-session",
+            "reference": "default",
+            "provider_id": "claude",
             "scopes": ["INTERACTION", "EXECUTION_IMPLEMENTER"],
             "secret_material_present": False,
         }
