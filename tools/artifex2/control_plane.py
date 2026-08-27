@@ -318,7 +318,7 @@ header,main{{max-width:1500px;margin:auto;padding:24px}}header{{border-bottom:1p
 .cards{{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:24px 0}}.card,section{{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}}
 .card span{{display:block;color:var(--muted)}}.card strong{{display:block;font-size:1.7rem;margin-top:5px}}section{{margin:18px 0;overflow:auto}}h2{{margin-top:0}}table{{border-collapse:collapse;width:100%;min-width:720px}}th,td{{padding:9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}}th{{color:var(--accent)}}code{{color:#b9d8ff}}.meta{{color:var(--muted)}}
 </style></head><body>
-<header><div class="eyebrow">Implementation control projection · M0</div><h1>ARTIFEX 2.0</h1>
+<header><div class="eyebrow">Implementation control projection · {html.escape(program['current_milestone'])}</div><h1>ARTIFEX 2.0</h1>
 <p>{html.escape(target["overview"])}</p><p class="notice">Derived view only. Machine-readable implementation-control artifacts remain authority.</p>
 <nav>{"".join(f'<a href="#{item}">{item}</a>' for item in ("overview", "milestones", "workstreams", "contracts", "providers", "journeys", "acceptance", "migration", "evidence"))}</nav></header>
 <main><div class="cards">{cards}</div>

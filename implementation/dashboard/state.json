@@ -1512,7 +1512,7 @@
       "title": "J02 — Fresh Machine + Claude"
     },
     {
-      "blocker": "M0 has no mandatory journeys; milestone dependencies not accepted",
+      "blocker": "M1 implementation active; public continuity composition not yet qualified",
       "environment": null,
       "evidence": [],
       "id": "J03",
@@ -1695,9 +1695,9 @@
   "migration": {
     "fixture": "MIGRATION/V1-RELEASE-FIXTURE.yaml",
     "fixture_state": "M0_BASELINE_ACCEPTED",
-    "migration_execution": "NOT_STARTED",
-    "milestone": "M0",
-    "mode": "BASELINE_CAPTURE_ONLY",
+    "migration_execution": "ENGINEERING_ACTIVE",
+    "milestone": "M1",
+    "mode": "NON_DESTRUCTIVE_V1_ADAPTER_ENGINEERING",
     "project_mutation": false,
     "rollback": "NOT_APPLICABLE_NO_MUTATION",
     "schema_version": "1.0"
@@ -1719,8 +1719,8 @@
       ],
       "id": "M1",
       "mandatory_for_core_ga": true,
-      "started": false,
-      "state": "READY",
+      "started": true,
+      "state": "ACTIVE",
       "title": "Project Authority, Catalog & Semantic Continuity"
     },
     {
@@ -1901,9 +1901,9 @@
   ],
   "program": {
     "architecture_status": "FROZEN",
-    "branch": "main",
-    "current_milestone": "M0",
-    "current_status": "ACCEPTED",
+    "branch": "codex/artifex-2-m1",
+    "current_milestone": "M1",
+    "current_status": "ACTIVE",
     "dashboard_state": "CURRENT",
     "directory_variance": "PACKAGING_NAME_VARIANCE_ACCEPTED",
     "handoff_declared_directory": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF",
@@ -1914,8 +1914,8 @@
     "implementation_plan_status": "FROZEN",
     "intake_commit": "5cc5dcfeb420a6df171a44426c04a0f08fa1e877",
     "latest_accepted_commit": "f476d40e7a721913b9c94c4a60b78f0500f0e85f",
-    "m1_started": false,
-    "next_integration_point": "M1 activation from accepted canonical M0 baseline",
+    "m1_started": true,
+    "next_integration_point": "M1 public-composition and J03 acceptance gates",
     "recorded_date": "2026-08-27",
     "target_release": "2.0.0"
   },
@@ -2180,23 +2180,22 @@
   "summary": {
     "active_blockers": 0,
     "adr_count": 24,
-    "current_milestone": "M0",
+    "current_milestone": "M1",
     "evidence_items": 5,
     "invariant_count": 34,
     "journey_states": {
       "NOT_STARTED": 20
     },
     "milestones_accepted": 1,
-    "milestones_started": 1,
+    "milestones_started": 2,
     "milestones_total": 16,
     "provider_step_states": {
       "NOT_STARTED": 95
     },
-    "ready_milestones": [
-      "M1"
-    ],
+    "ready_milestones": [],
     "workstream_states": {
-      "COMPLETE": 5
+      "COMPLETE": 5,
+      "IN_PROGRESS": 1
     }
   },
   "target_system": {
@@ -2312,6 +2311,27 @@
       ],
       "state": "COMPLETE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m0"
+    },
+    {
+      "base_commit": "dc153819d11134315d60acc0ccea7bab0473194f",
+      "blockers": [],
+      "branch": "codex/artifex-2-m1",
+      "id": "WS-M1-AUTHORITY-CONTINUITY",
+      "integration_owner": "ARTIFEX_2_ORCHESTRATOR",
+      "milestone": "M1",
+      "owner_subagent": "ARTIFEX_2_ORCHESTRATOR",
+      "purpose": "Implement Project Authority, Catalog, semantic continuity, bootstrap and projections",
+      "shared_contracts": [
+        "M1-CONTRACT",
+        "ADR-T001",
+        "ADR-T006",
+        "ADR-T013",
+        "ADR-T014",
+        "ADR-T019",
+        "ADR-T020"
+      ],
+      "state": "IN_PROGRESS",
+      "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m1"
     }
   ]
 }

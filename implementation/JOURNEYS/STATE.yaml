@@ -24,7 +24,7 @@ journeys:
   public_shipping_composition: null
   evidence: []
   last_run: null
-  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+  blocker: M1 implementation active; public continuity composition not yet qualified
 - id: J04
   title: J04 — Multi-session
   status: NOT_STARTED

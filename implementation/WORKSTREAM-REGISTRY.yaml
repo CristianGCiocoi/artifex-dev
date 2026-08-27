@@ -66,3 +66,21 @@ workstreams:
   state: COMPLETE
   blockers: []
   integration_owner: ARTIFEX_2_ORCHESTRATOR
+- id: WS-M1-AUTHORITY-CONTINUITY
+  milestone: M1
+  purpose: Implement Project Authority, Catalog, semantic continuity, bootstrap and projections
+  owner_subagent: ARTIFEX_2_ORCHESTRATOR
+  worktree: C:\aidev\artifex-worktrees\artifex-2-m1
+  branch: codex/artifex-2-m1
+  base_commit: dc153819d11134315d60acc0ccea7bab0473194f
+  shared_contracts:
+  - M1-CONTRACT
+  - ADR-T001
+  - ADR-T006
+  - ADR-T013
+  - ADR-T014
+  - ADR-T019
+  - ADR-T020
+  state: IN_PROGRESS
+  blockers: []
+  integration_owner: ARTIFEX_2_ORCHESTRATOR

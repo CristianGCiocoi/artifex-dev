@@ -8,18 +8,18 @@
 - Target release: `2.0.0`
 - Handoff: `ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1`
 - Intake baseline: `5cc5dcfeb420a6df171a44426c04a0f08fa1e877`
-- Branch: `main`
-- Current milestone: `M0`
-- Current status: `ACCEPTED`
+- Branch: `codex/artifex-2-m1`
+- Current milestone: `M1`
+- Current status: `ACTIVE`
 - Accepted milestones: `M0`
-- Ready milestones: `M1`
+- Ready milestones: `none`
 - Latest accepted commit: `f476d40e7a721913b9c94c4a60b78f0500f0e85f`
-- Next integration point: `M1 activation from accepted canonical M0 baseline`
-- M1 started: `false`
+- Next integration point: `M1 public-composition and J03 acceptance gates`
+- M1 started: `true`
 
 ## Work
 
-- Active workstreams: `none`
+- Active workstreams: `WS-M1-AUTHORITY-CONTINUITY`
 - Active blockers: `0`
 - Dashboard state: `CURRENT`
 - V1 regression state: `PASS`
