@@ -35,8 +35,12 @@ def _read_yaml(path: Path) -> dict[str, Any]:
     return value
 
 
-def _sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+def _normalized_text_fingerprint(path: Path) -> tuple[str, int]:
+    """Fingerprint repository text independently of checkout line endings."""
+
+    text = path.read_bytes().decode("utf-8")
+    normalized = text.replace("\r\n", "\n").replace("\r", "\n").encode("utf-8")
+    return hashlib.sha256(normalized).hexdigest(), len(normalized)
 
 
 def _counts(values: list[str]) -> dict[str, int]:
@@ -87,11 +91,12 @@ def derive(repo_root: Path) -> dict[str, Any]:
     evidence = []
     for path in sorted((implementation / "EVIDENCE").iterdir(), key=lambda item: item.name):
         if path.is_file() and path.suffix.lower() in {".yaml", ".yml", ".json"}:
+            sha256, byte_count = _normalized_text_fingerprint(path)
             evidence.append(
                 {
                     "path": path.relative_to(root).as_posix(),
-                    "sha256": _sha256(path),
-                    "bytes": path.stat().st_size,
+                    "sha256": sha256,
+                    "bytes": byte_count,
                 }
             )
 

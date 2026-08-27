@@ -5,7 +5,7 @@ from pathlib import Path
 import yaml
 
 from tools.artifex2.capture_v1_baseline import capture
-from tools.artifex2.control_plane import derive, render
+from tools.artifex2.control_plane import _normalized_text_fingerprint, derive, render
 from tools.artifex2.probe_known_gaps import probe
 from tools.artifex2.validate_m0 import validate
 
@@ -72,6 +72,15 @@ def test_dashboard_and_current_state_are_deterministic_projections() -> None:
     assert before == after
     assert state["projection"]["authoritative"] is False
     assert b"Derived view only" in after
+
+
+def test_evidence_fingerprint_is_checkout_line_ending_independent(tmp_path: Path) -> None:
+    lf = tmp_path / "lf.yaml"
+    crlf = tmp_path / "crlf.yaml"
+    lf.write_bytes(b"status: PASS\nevidence:\n  - stable\n")
+    crlf.write_bytes(b"status: PASS\r\nevidence:\r\n  - stable\r\n")
+
+    assert _normalized_text_fingerprint(lf) == _normalized_text_fingerprint(crlf)
 
 
 def test_m0_validator_passes_current_repository_state() -> None:

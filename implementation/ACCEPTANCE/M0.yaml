@@ -2,6 +2,7 @@ schema_version: '1.0'
 milestone: M0
 contract_digest: da11399318accf59ec578bdbc04da17911cca1014dd823c17cfde92d101d2b4f
 implementation_baseline_commit: 23fd3c77a1be402dbfbee79915da4748b98ebf84
+acceptance_commit: f476d40e7a721913b9c94c4a60b78f0500f0e85f
 frozen_architecture_baseline: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
 mandatory_work_complete: true
 blocked: []

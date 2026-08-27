@@ -10,13 +10,13 @@ program:
   architecture_status: FROZEN
   implementation_plan_status: FROZEN
   intake_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
-  branch: codex/artifex-2-m0
+  branch: main
   current_milestone: M0
   current_status: ACCEPTED
-  latest_accepted_commit: 23fd3c77a1be402dbfbee79915da4748b98ebf84
-  next_integration_point: M1 readiness; M1 not started
+  latest_accepted_commit: f476d40e7a721913b9c94c4a60b78f0500f0e85f
+  next_integration_point: M1 activation from accepted canonical M0 baseline
   m1_started: false
-  recorded_date: '2026-08-26'
+  recorded_date: '2026-08-27'
   dashboard_state: CURRENT
 target_system:
   overview: Persistent project-centric engineering control platform with separate
