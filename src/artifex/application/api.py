@@ -63,6 +63,12 @@ from artifex.integrations.claude import (
     ClaudeProcessRunner,
 )
 from artifex.integrations.codex import CodexIntegration, CodexProcessRunner
+from artifex.knowledge import (
+    KnowledgeApplicability,
+    KnowledgeItem,
+    OrganizationalKnowledgeService,
+    Sensitivity,
+)
 from artifex.project import (
     LifecycleContribution,
     LifecycleStage,
@@ -182,6 +188,13 @@ class Application:
         self.register("project.propose", self._project_propose)
         self.register("project.accept", self._project_accept)
         self.register("project.observe", self._project_observe)
+        self.register("knowledge.project.lesson.record", self._knowledge_lesson_record)
+        self.register("knowledge.organizational.promote", self._knowledge_promote)
+        self.register("knowledge.organizational.search", self._knowledge_search)
+        self.register("knowledge.organizational.recommend", self._knowledge_recommend)
+        self.register("knowledge.project.adopt", self._knowledge_adopt)
+        self.register("knowledge.migration.inspect", self._knowledge_migration_inspect)
+        self.register("knowledge.migration.quarantine", self._knowledge_migration_quarantine)
         self.register("reality.state", self._reality_state)
         self.register("documentation.status", self._documentation_status)
         self.register("documentation.regenerate", self._documentation_regenerate)
@@ -548,6 +561,106 @@ class Application:
             _required_string(request.arguments, "name"), actor=request.context.actor
         )
         return OperationResult(ok=True, value=result)
+
+    @staticmethod
+    def _knowledge_promote(request: OperationRequest) -> OperationResult:
+        applicability = KnowledgeApplicability.from_dict(
+            _required_mapping(request.arguments, "applicability")
+        )
+        record = OrganizationalKnowledgeService(
+            _required_string(request.arguments, "store_path")
+        ).promote(
+            source_project_root=_required_string(request.arguments, "source_project_root"),
+            source_project_id=_required_string(request.arguments, "source_project_id"),
+            lesson_id=_required_string(request.arguments, "lesson_id"),
+            applicability=applicability,
+            fresh_until=_required_string(request.arguments, "fresh_until"),
+            evidence_digests=_string_sequence(request.arguments, "evidence_digests"),
+            validator_id=_required_string(request.arguments, "validator_id"),
+            actor=_required_actor(request.arguments, "actor"),
+            created_at=_optional_string(request.arguments, "created_at"),
+        )
+        return OperationResult(ok=True, value={"knowledge": record.to_dict()})
+
+    @staticmethod
+    def _knowledge_lesson_record(request: OperationRequest) -> OperationResult:
+        lesson = OrganizationalKnowledgeService(
+            _required_string(request.arguments, "store_path")
+        ).record_project_lesson(
+            project_root=_required_string(request.arguments, "project_root"),
+            project_id=_required_string(request.arguments, "project_id"),
+            lesson=KnowledgeItem.from_dict(_required_mapping(request.arguments, "lesson")),
+            actor=_required_actor(request.arguments, "actor"),
+        )
+        return OperationResult(ok=True, value={"lesson": lesson.to_dict()})
+
+    @staticmethod
+    def _knowledge_search(request: OperationRequest) -> OperationResult:
+        records = OrganizationalKnowledgeService(
+            _required_string(request.arguments, "store_path")
+        ).search(
+            query=_required_string(request.arguments, "query"),
+            target_project_id=_required_string(request.arguments, "target_project_id"),
+            actor=_required_actor(request.arguments, "actor"),
+            clearance=Sensitivity(str(request.arguments.get("clearance", "INTERNAL"))),
+            tags=frozenset(_string_sequence(request.arguments, "tags")),
+            domains=frozenset(_string_sequence(request.arguments, "domains")),
+            now=_optional_string(request.arguments, "now"),
+        )
+        return OperationResult(
+            ok=True,
+            value={"knowledge": [record.to_dict() for record in records], "advisory": True},
+        )
+
+    @staticmethod
+    def _knowledge_recommend(request: OperationRequest) -> OperationResult:
+        recommendation = OrganizationalKnowledgeService(
+            _required_string(request.arguments, "store_path")
+        ).recommend(
+            knowledge_id=_required_string(request.arguments, "knowledge_id"),
+            target_project_root=_required_string(request.arguments, "target_project_root"),
+            target_project_id=_required_string(request.arguments, "target_project_id"),
+            actor=_required_actor(request.arguments, "actor"),
+            clearance=Sensitivity(str(request.arguments.get("clearance", "INTERNAL"))),
+            now=_optional_string(request.arguments, "now"),
+        )
+        return OperationResult(ok=True, value={"recommendation": recommendation.to_dict()})
+
+    @staticmethod
+    def _knowledge_adopt(request: OperationRequest) -> OperationResult:
+        value = OrganizationalKnowledgeService(
+            _required_string(request.arguments, "store_path")
+        ).adopt(
+            recommendation_id=_required_string(request.arguments, "recommendation_id"),
+            target_project_root=_required_string(request.arguments, "target_project_root"),
+            expected_revision=_required_int(request.arguments, "expected_revision"),
+            actor=_required_actor(request.arguments, "actor"),
+            accepted_at=_optional_string(request.arguments, "accepted_at"),
+        )
+        return OperationResult(ok=True, value=value)
+
+    @staticmethod
+    def _knowledge_migration_inspect(request: OperationRequest) -> OperationResult:
+        values = OrganizationalKnowledgeService(
+            _required_string(request.arguments, "store_path")
+        ).classify_v1_instance(
+            state_root=_required_string(request.arguments, "state_root"),
+            instance_id=_required_string(request.arguments, "instance_id"),
+            actor=_required_actor(request.arguments, "actor"),
+        )
+        return OperationResult(ok=True, value={"classifications": list(values)})
+
+    @staticmethod
+    def _knowledge_migration_quarantine(request: OperationRequest) -> OperationResult:
+        values = OrganizationalKnowledgeService(
+            _required_string(request.arguments, "store_path")
+        ).classify_v1_instance(
+            state_root=_required_string(request.arguments, "state_root"),
+            instance_id=_required_string(request.arguments, "instance_id"),
+            actor=_required_actor(request.arguments, "actor"),
+            apply=True,
+        )
+        return OperationResult(ok=True, value={"classifications": list(values)})
 
     @staticmethod
     def _reality_state(request: OperationRequest) -> OperationResult:

@@ -24,6 +24,14 @@ from .model import (
     UpdateClassification,
     VerifiedAgainst,
 )
+from .organizational import (
+    KnowledgeApplicability,
+    KnowledgeRecommendation,
+    OrganizationalKnowledgeError,
+    OrganizationalKnowledgeRecord,
+    OrganizationalKnowledgeService,
+    OrganizationalKnowledgeStore,
+)
 from .store import InstanceKnowledgeStore, KnowledgeIsolationError, ProjectLessonStore
 
 __all__ = [
@@ -31,12 +39,18 @@ __all__ = [
     "DivergenceReport",
     "ImprovementProposal",
     "InstanceKnowledgeStore",
+    "KnowledgeApplicability",
     "KnowledgeIsolationError",
     "KnowledgeItem",
     "KnowledgeKind",
     "KnowledgeProvenance",
+    "KnowledgeRecommendation",
     "KnowledgeScope",
     "KnowledgeState",
+    "OrganizationalKnowledgeError",
+    "OrganizationalKnowledgeRecord",
+    "OrganizationalKnowledgeService",
+    "OrganizationalKnowledgeStore",
     "OverlayPrivilegeError",
     "OverlayUpdateAssessment",
     "OverlayValidationStatus",

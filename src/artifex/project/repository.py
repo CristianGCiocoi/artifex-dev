@@ -120,6 +120,7 @@ class ProjectRepository:
             artifacts=model.artifacts,
             entities=model.entities,
             governance=model.governance,
+            knowledge_adoptions=model.knowledge_adoptions,
             schema_version=model.schema_version,
         )
         self.save(updated)

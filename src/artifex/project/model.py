@@ -137,6 +137,169 @@ class ProjectGovernanceState:
 
 
 @dataclass(frozen=True, slots=True)
+class KnowledgeAdoptionProvenance:
+    source: str
+    observed_at: str
+    artifact: str | None = None
+    commit: str | None = None
+    integration: str | None = None
+    evidence_ids: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        if not self.source.strip() or not self.observed_at.strip():
+            raise ValueError("knowledge adoption provenance source and time are required")
+        if not any((self.artifact, self.commit, self.integration, self.evidence_ids)):
+            raise ValueError("knowledge adoption provenance must retain a durable reference")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "source": self.source,
+            "observed_at": self.observed_at,
+            "artifact": self.artifact,
+            "commit": self.commit,
+            "integration": self.integration,
+            "evidence_ids": list(self.evidence_ids),
+        }
+
+    @classmethod
+    def from_dict(cls, value: Mapping[str, Any]) -> KnowledgeAdoptionProvenance:
+        return cls(
+            source=str(value["source"]),
+            observed_at=str(value["observed_at"]),
+            artifact=_optional_string(value.get("artifact")),
+            commit=_optional_string(value.get("commit")),
+            integration=_optional_string(value.get("integration")),
+            evidence_ids=tuple(_string_sequence(value.get("evidence_ids", []), "evidence_ids")),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class ProjectKnowledgeAdoption:
+    organizational_knowledge_id: str
+    recommendation_id: str
+    statement: str
+    source_project_id: str
+    source_project_revision: int
+    source_project_fingerprint: str
+    source_lesson_id: str
+    provenance: tuple[KnowledgeAdoptionProvenance, ...]
+    confidence: float
+    applicable_project_ids: tuple[str, ...]
+    applicability_tags: tuple[str, ...]
+    applicability_domains: tuple[str, ...]
+    fresh_until: str
+    record_digest: str
+    evidence_digests: tuple[str, ...]
+    validator_id: str
+    promotion_actor_id: str
+    promotion_policy: str
+    promotion_decision: str
+    adopted_by: str
+    adopted_at: str
+
+    def __post_init__(self) -> None:
+        required = (
+            self.organizational_knowledge_id,
+            self.recommendation_id,
+            self.statement,
+            self.source_project_id,
+            self.source_project_fingerprint,
+            self.source_lesson_id,
+            self.fresh_until,
+            self.validator_id,
+            self.promotion_actor_id,
+            self.promotion_policy,
+            self.promotion_decision,
+            self.adopted_by,
+            self.adopted_at,
+        )
+        if not all(value.strip() for value in required):
+            raise ValueError("adopted Project Knowledge fields are required")
+        if not self.provenance:
+            raise ValueError("adopted Project Knowledge must retain provenance")
+        if not 0 <= self.confidence <= 1:
+            raise ValueError("adopted Project Knowledge confidence must be between 0 and 1")
+        if self.source_project_revision < 1:
+            raise ValueError("source Project revision must be positive")
+        if len(self.source_project_fingerprint) != 64 or any(
+            character not in "0123456789abcdef"
+            for character in self.source_project_fingerprint
+        ):
+            raise ValueError("source Project fingerprint must be SHA-256")
+        if len(self.record_digest) != 64 or any(
+            character not in "0123456789abcdef" for character in self.record_digest
+        ):
+            raise ValueError("adopted Project Knowledge digest must be SHA-256")
+        if not self.evidence_digests or any(
+            len(value) != 64 or any(character not in "0123456789abcdef" for character in value)
+            for value in self.evidence_digests
+        ):
+            raise ValueError("adopted Project Knowledge requires SHA-256 evidence digests")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "organizational_knowledge_id": self.organizational_knowledge_id,
+            "recommendation_id": self.recommendation_id,
+            "statement": self.statement,
+            "source_project_id": self.source_project_id,
+            "source_project_revision": self.source_project_revision,
+            "source_project_fingerprint": self.source_project_fingerprint,
+            "source_lesson_id": self.source_lesson_id,
+            "provenance": [item.to_dict() for item in self.provenance],
+            "confidence": self.confidence,
+            "applicable_project_ids": list(self.applicable_project_ids),
+            "applicability_tags": list(self.applicability_tags),
+            "applicability_domains": list(self.applicability_domains),
+            "fresh_until": self.fresh_until,
+            "record_digest": self.record_digest,
+            "evidence_digests": list(self.evidence_digests),
+            "validator_id": self.validator_id,
+            "promotion_actor_id": self.promotion_actor_id,
+            "promotion_policy": self.promotion_policy,
+            "promotion_decision": self.promotion_decision,
+            "adopted_by": self.adopted_by,
+            "adopted_at": self.adopted_at,
+        }
+
+    @classmethod
+    def from_dict(cls, value: Mapping[str, Any]) -> ProjectKnowledgeAdoption:
+        return cls(
+            organizational_knowledge_id=str(value["organizational_knowledge_id"]),
+            recommendation_id=str(value["recommendation_id"]),
+            statement=str(value["statement"]),
+            source_project_id=str(value["source_project_id"]),
+            source_project_revision=int(value["source_project_revision"]),
+            source_project_fingerprint=str(value["source_project_fingerprint"]),
+            source_lesson_id=str(value["source_lesson_id"]),
+            provenance=tuple(
+                KnowledgeAdoptionProvenance.from_dict(item)
+                for item in _mapping_sequence(value.get("provenance", []), "provenance")
+            ),
+            confidence=float(value["confidence"]),
+            applicable_project_ids=tuple(
+                _string_sequence(value.get("applicable_project_ids", []), "applicable_project_ids")
+            ),
+            applicability_tags=tuple(
+                _string_sequence(value.get("applicability_tags", []), "applicability_tags")
+            ),
+            applicability_domains=tuple(
+                _string_sequence(value.get("applicability_domains", []), "applicability_domains")
+            ),
+            fresh_until=str(value["fresh_until"]),
+            record_digest=str(value["record_digest"]),
+            evidence_digests=tuple(
+                _string_sequence(value.get("evidence_digests", []), "evidence_digests")
+            ),
+            validator_id=str(value["validator_id"]),
+            promotion_actor_id=str(value["promotion_actor_id"]),
+            promotion_policy=str(value["promotion_policy"]),
+            promotion_decision=str(value["promotion_decision"]),
+            adopted_by=str(value["adopted_by"]),
+            adopted_at=str(value["adopted_at"]),
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class Provenance:
     path: str
     commit: str | None = None
@@ -279,6 +442,7 @@ class ProjectModel:
     artifacts: tuple[Artifact, ...] = ()
     entities: tuple[StructuredEntity, ...] = ()
     governance: ProjectGovernanceState = field(default_factory=ProjectGovernanceState)
+    knowledge_adoptions: tuple[ProjectKnowledgeAdoption, ...] = ()
     schema_version: str = SCHEMA_VERSION
 
     def __post_init__(self) -> None:
@@ -301,6 +465,9 @@ class ProjectModel:
         ]
         if missing:
             raise ValueError(f"entities reference missing artifacts: {missing}")
+        knowledge_ids = [item.organizational_knowledge_id for item in self.knowledge_adoptions]
+        if len(set(knowledge_ids)) != len(knowledge_ids):
+            raise ValueError("organizational knowledge may be adopted only once per Project")
 
     def to_dict(self) -> dict[str, Any]:
         value: dict[str, Any] = {
@@ -314,6 +481,8 @@ class ProjectModel:
         # governance state is first accepted for this Project.
         if self.governance != ProjectGovernanceState():
             value["governance"] = self.governance.to_dict()
+        if self.knowledge_adoptions:
+            value["knowledge_adoptions"] = [item.to_dict() for item in self.knowledge_adoptions]
         return value
 
     @classmethod
@@ -323,6 +492,9 @@ class ProjectModel:
         artifact_values = _mapping_sequence(value.get("artifacts", []), "artifacts")
         entity_values = _mapping_sequence(value.get("entities", []), "entities")
         governance_value = _mapping(value.get("governance", {}), "governance")
+        adoption_values = _mapping_sequence(
+            value.get("knowledge_adoptions", []), "knowledge_adoptions"
+        )
         remote_values = _mapping_sequence(git_value.get("remotes", []), "git.remotes")
         project = ProjectInfo(
             id=str(project_value["id"]),
@@ -345,6 +517,9 @@ class ProjectModel:
             artifacts=tuple(Artifact.from_dict(item) for item in artifact_values),
             entities=tuple(StructuredEntity.from_dict(item) for item in entity_values),
             governance=ProjectGovernanceState.from_dict(governance_value),
+            knowledge_adoptions=tuple(
+                ProjectKnowledgeAdoption.from_dict(item) for item in adoption_values
+            ),
             schema_version=str(value.get("schema_version", SCHEMA_VERSION)),
         )
 
