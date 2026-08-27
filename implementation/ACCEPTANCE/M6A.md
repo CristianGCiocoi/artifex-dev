@@ -1,4 +1,4 @@
-# M6A Acceptance Candidate
+# M6A Accepted
 
 ## Identity
 
@@ -31,9 +31,14 @@ evidence. The known V1 dashboard/schema-drift regression remains unchanged.
 - Ruff: PASS
 - Strict mypy: PASS, 89 source files
 - Integrated provider/runtime/authority suite: PASS, 65 tests
+- Independent canonical broad suite: PASS, 421 tests, 7 skipped
+- Independent control-plane suite: PASS, 7 tests
+- V1 release regression: reproduced unchanged at `tests/test_release.py:1702`
 - Installed-wheel live public outcome: PASS
 
 ## Disposition
 
-`IN_REVIEW` — all frozen M6A evidence classes are PASS, but this candidate does not
-self-accept and requires independent Architect acceptance and canonical integration.
+`ACCEPTED` — the integration owner independently reviewed the live evidence, integrated
+the candidate on canonical `main`, reran source, type, broad, control-plane and preserved
+V1-regression gates, and found every mandatory M6A class and role-certification gate PASS.
+The full clean-machine J02 claim remains correctly owned by M7.

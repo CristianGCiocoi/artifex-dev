@@ -10,11 +10,11 @@
 - Intake baseline: `5cc5dcfeb420a6df171a44426c04a0f08fa1e877`
 - Branch: `codex/artifex-2-m6a-live`
 - Current milestone: `M6A`
-- Current status: `IN_REVIEW`
-- Accepted milestones: `M0, M1, M2, M3, M4, M5, M8A`
-- Ready milestones: `none`
+- Current status: `ACCEPTED`
+- Accepted milestones: `M0, M1, M2, M3, M4, M5, M6A, M8A`
+- Ready milestones: `M7`
 - Latest accepted commit: `270806d1d22fc49c52bf37216027d56c11031542`
-- Next integration point: `Independent Architect acceptance and canonical integration of M6A candidate 99415ed; M7 remains dependency-blocked until acceptance`
+- Next integration point: `Reconcile fail-closed M8B/M8C provider branches on the accepted M6A baseline, then activate M7 platform-neutral foundation`
 - M6A started: `true`
 
 ## Work
@@ -27,7 +27,7 @@
 
 ## Acceptance
 
-- M6A verdict: `IN_REVIEW`
+- M6A verdict: `ACCEPTED`
 - Mandatory work complete: `true`
 - Mandatory journeys: `J02, J11`
-- Next integration point: `Independent Architect acceptance and canonical integration of M6A candidate 99415ed; M7 remains dependency-blocked until acceptance`
+- Next integration point: `Reconcile fail-closed M8B/M8C provider branches on the accepted M6A baseline, then activate M7 platform-neutral foundation`

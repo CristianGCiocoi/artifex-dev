@@ -89,7 +89,7 @@
       "BLK-M6A-CLAUDE-CODE-UNAVAILABLE"
     ],
     "unresolved_contradiction": null,
-    "verdict": "IN_REVIEW"
+    "verdict": "ACCEPTED"
   },
   "adrs": [
     {
@@ -792,9 +792,9 @@
       "sha256": "bbe2ba84030bc27d78bddae11c92bb1518266417f4b4be6265fcd7a5ae7286cb"
     },
     {
-      "bytes": 2388,
+      "bytes": 3268,
       "path": "implementation/EVIDENCE/M6A-VALIDATION.yaml",
-      "sha256": "4725de32e478a6d6638e2e2f43b9bb1419c66b2e255b31ddc9672d40251e4c2d"
+      "sha256": "72ffed0249674fd6d764eeac8f5dd630a4892ac62ad09d4c72de63aaca3eaca7"
     },
     {
       "bytes": 952,
@@ -1971,14 +1971,14 @@
       "title": "Reality, Documentation & Dashboard Operational Composition"
     },
     {
-      "accepted": false,
+      "accepted": true,
       "depends_on": [
         "M3"
       ],
       "id": "M6A",
       "mandatory_for_core_ga": true,
       "started": true,
-      "state": "IN_REVIEW",
+      "state": "ACCEPTED",
       "title": "Claude Productization & Certification"
     },
     {
@@ -2002,7 +2002,7 @@
       "id": "M7",
       "mandatory_for_core_ga": true,
       "started": false,
-      "state": "BLOCKED_DEPENDENCY",
+      "state": "READY",
       "title": "Fresh-Machine Installation & Bootstrap"
     },
     {
@@ -2127,7 +2127,7 @@
     "architecture_status": "FROZEN",
     "branch": "codex/artifex-2-m6a-live",
     "current_milestone": "M6A",
-    "current_status": "IN_REVIEW",
+    "current_status": "ACCEPTED",
     "dashboard_state": "CURRENT",
     "directory_variance": "PACKAGING_NAME_VARIANCE_ACCEPTED",
     "handoff_declared_directory": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF",
@@ -2145,7 +2145,7 @@
     "m5_started": true,
     "m6a_started": true,
     "m8a_started": true,
-    "next_integration_point": "Independent Architect acceptance and canonical integration of M6A candidate 99415ed; M7 remains dependency-blocked until acceptance",
+    "next_integration_point": "Reconcile fail-closed M8B/M8C provider branches on the accepted M6A baseline, then activate M7 platform-neutral foundation",
     "recorded_date": "2026-08-28",
     "target_release": "2.0.0"
   },
@@ -2431,18 +2431,18 @@
       "NOT_STARTED": 5,
       "PASS": 13
     },
-    "milestones_accepted": 7,
+    "milestones_accepted": 8,
     "milestones_started": 8,
     "milestones_total": 16,
     "provider_step_states": {
       "NOT_STARTED": 75,
       "PASS": 20
     },
-    "ready_milestones": [],
+    "ready_milestones": [
+      "M7"
+    ],
     "workstream_states": {
-      "COMPLETE": 14,
-      "IN_REVIEW": 1,
-      "PARTIAL_COMPLETE_PENDING_M6A_ACCEPTANCE": 1
+      "COMPLETE": 16
     }
   },
   "target_system": {
@@ -2720,7 +2720,7 @@
         "M6A-CONTRACT",
         "FROZEN-INVARIANTS"
       ],
-      "state": "IN_REVIEW",
+      "state": "COMPLETE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m6a-live"
     },
     {
@@ -2738,7 +2738,7 @@
         "M6A-CONTRACT",
         "FROZEN-INVARIANTS"
       ],
-      "state": "PARTIAL_COMPLETE_PENDING_M6A_ACCEPTANCE",
+      "state": "COMPLETE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-wave4"
     },
     {

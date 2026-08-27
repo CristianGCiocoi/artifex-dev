@@ -178,7 +178,7 @@ workstreams:
   branch: codex/artifex-2-m6a-live
   base_commit: 77aeb189e3359f8a54ff1f4056dd3c8409747ef7
   shared_contracts: [M6A-CONTRACT, FROZEN-INVARIANTS]
-  state: IN_REVIEW
+  state: COMPLETE
   blockers: []
   integration_owner: ARTIFEX_2_ORCHESTRATOR
 - id: WS-WAVE4-INTEGRATION
@@ -189,7 +189,7 @@ workstreams:
   branch: codex/artifex-2-wave4
   base_commit: 6e46c426786d2f3b1be10e483518197b4b5d06ce
   shared_contracts: [M4-CONTRACT, M5-CONTRACT, M6A-CONTRACT, FROZEN-INVARIANTS]
-  state: PARTIAL_COMPLETE_PENDING_M6A_ACCEPTANCE
+  state: COMPLETE
   blockers: []
   integration_owner: ARTIFEX_2_ORCHESTRATOR
 - id: WS-M8A-ORGANIZATIONAL-KNOWLEDGE

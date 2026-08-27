@@ -17,6 +17,21 @@ integrated_validation:
   passed: 65
   failed: 0
   duration_seconds: 376.96
+independent_canonical_validation:
+  canonical_candidate_commit: 7683ecb9585f4e0aaf307cbbdc66c504cbbd3160
+  ruff: PASS
+  mypy_strict: PASS
+  mypy_files: 89
+  broad_command: uv run pytest --ignore=tests/test_release.py --deselect=tests/artifex2_m0/test_m0_control_plane.py::test_dashboard_and_current_state_are_deterministic_projections -q
+  broad_result: PASS
+  passed: 421
+  skipped: 7
+  deselected_projection_test_run_separately: 1
+  broad_duration_seconds: 683.24
+  control_plane_command: uv run pytest -q tests/artifex2_m0/test_m0_control_plane.py
+  control_plane_result: PASS
+  control_plane_passed: 7
+  handoff_manifest_entries_valid: 84
 public_composition:
   artifact: artifex_dev-1.0.0-py3-none-any.whl
   artifact_sha256: 79502668511186791eb263af24e706d21a64513f7c83d92fcc49f3010f1570cd
@@ -65,4 +80,8 @@ v1_release_harness_regression:
   classification: V1-R01-DASHBOARD-FIXTURE-SCHEMA-DRIFT
   disposition: PRESERVED_BASELINE_EVIDENCE
   source_repaired_by_m6a: false
+  canonical_test: tests/test_release.py::test_candidate_passes_without_optional_m10_gate
+  result: EXPECTED_BASELINE_FAILURE
+  assertion: verify_release(tmp_path).passed was false at tests/test_release.py:1702
+  duration_seconds: 217.30
 unexpected_failures: []
