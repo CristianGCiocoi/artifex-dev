@@ -99,6 +99,13 @@ def test_windows_qualification_root_avoids_protected_profile_temp(tmp_path: Path
     else:
         assert observed is None
 
+    with harness._qualification_directory(tmp_path / "source") as root:
+        retained = root
+        assert root.is_dir()
+        if harness.os.name == "nt":
+            assert root.parent == tmp_path.resolve()
+    assert not retained.exists()
+
 
 def test_interaction_marker_must_be_unique_and_bounded() -> None:
     marker = "ARTIFEX_INTERACTION project_id=project semantic_revision=1"

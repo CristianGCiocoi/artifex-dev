@@ -16,6 +16,9 @@ import re
 import shutil
 import subprocess
 import tempfile
+import uuid
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, cast
 
@@ -61,6 +64,31 @@ def _qualification_temporary_parent(repo_root: Path | None) -> Path | None:
     if os.name != "nt" or repo_root is None:
         return None
     return repo_root.resolve().parent
+
+
+@contextmanager
+def _qualification_directory(repo_root: Path | None) -> Iterator[Path]:
+    parent = _qualification_temporary_parent(repo_root)
+    if parent is None:
+        with tempfile.TemporaryDirectory(
+            prefix="artifex-m3-public-", ignore_cleanup_errors=True
+        ) as directory:
+            yield Path(directory).resolve()
+        return
+
+    # tempfile intentionally installs a restrictive owner-only DACL on
+    # Windows.  Create an unguessable child normally so it inherits the
+    # traversable parent ACL required by the supported unelevated sandbox.
+    parent.mkdir(parents=True, exist_ok=True)
+    root = (parent / f"artifex-m3-public-{uuid.uuid4().hex}").resolve()
+    if root.parent != parent:
+        raise ValueError("qualification directory escaped its authorized parent")
+    root.mkdir()
+    try:
+        yield root
+    finally:
+        if root.parent == parent:
+            shutil.rmtree(root, ignore_errors=True)
 
 
 def _is_bounded_interaction_response(response: object, marker: str) -> bool:
@@ -771,19 +799,7 @@ def qualify(
     python = python.resolve()
     if not python.is_file():
         return _blocked("INSTALLED_PYTHON_NOT_FOUND", str(python))
-    temporary_parent = _qualification_temporary_parent(repo_root)
-    if temporary_parent is not None:
-        # The supported unelevated Windows sandbox cannot traverse a workspace
-        # nested below the current user's protected AppData Temp ACL.  An
-        # adjacent temporary root stays isolated while remaining traversable by
-        # the sandbox identity; product imports still come only from the wheel.
-        temporary_parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(
-        prefix="artifex-m3-public-",
-        dir=temporary_parent,
-        ignore_cleanup_errors=True,
-    ) as directory:
-        root = Path(directory).resolve()
+    with _qualification_directory(repo_root) as root:
         environment = os.environ.copy()
         environment.pop("PYTHONPATH", None)
         environment["PYTHONNOUSERSITE"] = "1"
