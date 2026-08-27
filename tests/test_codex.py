@@ -827,6 +827,8 @@ def test_codex_process_runner_materializes_secure_bounded_exec_and_parses_result
         assert result_path.resolve().is_relative_to(root.resolve())
         schema = json.loads(schema_path.read_text(encoding="utf-8"))
         assert schema["properties"]["base_commit"]["const"] == packet.base_commit
+        assert schema["properties"]["artifacts"]["items"]["additionalProperties"] is False
+        assert schema["properties"]["validation"]["additionalProperties"] is False
         result_path.write_text(
             json.dumps(
                 {

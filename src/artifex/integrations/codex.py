@@ -1002,10 +1002,15 @@ def _codex_execution_result_schema(packet: ExecutionPacket) -> Mapping[str, Any]
                     "type": "object",
                     "required": ["path"],
                     "properties": {"path": {"type": "string", "minLength": 1}},
-                    "additionalProperties": True,
+                    "additionalProperties": False,
                 },
             },
-            "validation": {"type": "object"},
+            "validation": {
+                "type": "object",
+                "required": ["tests"],
+                "properties": {"tests": {"type": "string"}},
+                "additionalProperties": False,
+            },
             "message": {"type": "string"},
         },
     }
