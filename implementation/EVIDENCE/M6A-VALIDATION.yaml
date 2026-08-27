@@ -1,58 +1,66 @@
 schema_version: '1.0'
 evidence_id: EVD-M6A-VALIDATION
 milestone: M6A
-status: BLOCKED_EXTERNAL_PREREQUISITE
-recorded_date: '2026-08-27'
-canonical_m3_baseline_commit: 6e46c426786d2f3b1be10e483518197b4b5d06ce
-m6a_implementation_baseline_commit: 8645cb103f8956143d477114b2842d14347f35a1
+status: PASS
+recorded_date: '2026-08-28'
+canonical_base_commit: 77aeb189e3359f8a54ff1f4056dd3c8409747ef7
+m6a_implementation_baseline_commit: 99415edfc200f1288f1f3e046fb89f8c80dabd06
 m6a_acceptance_commit: null
 m6a_contract_digest: e7c7a02ee61e64bfda4b3a18660b460967b8d167fa0734723907ca64316c82f5
 source_quality:
   ruff: PASS
   mypy_strict: PASS
-  mypy_files: 88
-focused_validation:
-  result: PASS
-  passed: 29
-  failed: 0
+  mypy_files: 89
 integrated_validation:
-  command: uv run pytest tests/artifex2_m4 tests/artifex2_m5 tests/artifex2_m6a -q
+  command: uv run pytest tests/artifex2_m3 tests/artifex2_m4 tests/artifex2_m5 tests/artifex2_m6a tests/artifex2_m8a tests/test_claude.py -q
   result: PASS
-  passed: 25
+  passed: 65
   failed: 0
-domain_integration:
-  command: uv run pytest tests --ignore=tests/test_release.py --deselect=tests/artifex2_m0/test_m0_control_plane.py::test_dashboard_and_current_state_are_deterministic_projections -q
-  result: PASS
-  passed: 413
-  skipped: 7
-  deselected_preserved_baseline: 1
-  failed: 0
-  duration_seconds: 568.40
+  duration_seconds: 376.96
 public_composition:
   artifact: artifex_dev-1.0.0-py3-none-any.whl
-  artifact_sha256: 9a960e62fbd864c6016d46f5932006ae2f52ad252c5b55fe3b90d96b923332c1
-  artifact_bytes: 253440
-  setup_and_fail_closed_readiness: PASS
-  live_role_certification: BLOCKED_EXTERNAL_PREREQUISITE
-  evidence: EVIDENCE/M6A-NONLIVE-QUALIFICATION.json
+  artifact_sha256: 79502668511186791eb263af24e706d21a64513f7c83d92fcc49f3010f1570cd
+  artifact_bytes: 268710
+  composition: CLEAN_INSTALLED_WHEEL_PUBLIC_CLI_REAL_CLAUDE_MULTI_PROCESS
+  status: PASS
+  evidence: EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json
+provider_runtime:
+  claude_version: 2.1.247
+  supported_range: '>=2.1.3,<3'
+  claude_executable_sha256: 00e5be0a8b69893cad9259a1e8b80d59be8f3eb367d4a16c19f91bcd279423b7
+  authenticated_native_session: true
+  credential_files_read: false
+  pii_persisted: false
 security_authority:
   credential_secret_material_present: false
   interaction_read_only: PASS
+  execution_tools_derived_from_envelope: PASS
   execution_workspace_isolated: PASS
   provider_self_acceptance: false
+  acceptance_authority_separate: PASS
   project_authority_promotion_required: PASS
   unknown_reconcile_before_retry: PASS
+  empty_isolated_evidence_store: PASS
 migration:
   compatible_v1_setup_schema: PASS
-  real_readiness_revalidation: BLOCKED_EXTERNAL_PREREQUISITE
+  fresh_process_real_readiness_revalidation: PASS
+  semantic_history_fabricated: false
 provider_certification:
-  claude_interaction: PUBLIC_COMPOSITION_VERIFIED
-  claude_execution_implementer: PUBLIC_COMPOSITION_VERIFIED
-  live_evidence_present: false
+  claude_interaction: LIVE_ROLE_CERTIFIED
+  claude_execution_implementer: LIVE_ROLE_CERTIFIED
+  live_evidence_present: true
+  shipping_wheel_bound: true
+journeys:
+  J02:
+    status: M6A_LIVE_PROVIDER_SLICE_PASS
+    full_clean_machine_status: NOT_CLAIMED
+    primary_proving_milestone: M7
+  J11:
+    status: PASS
+    same_project_identity_and_baseline: PASS
 external_gate:
   blocker_id: BLK-M6A-CLAUDE-CODE-UNAVAILABLE
-  executable_on_path: false
-  authenticated_native_session: false
+  status: RESOLVED
 v1_release_harness_regression:
   classification: V1-R01-DASHBOARD-FIXTURE-SCHEMA-DRIFT
   disposition: PRESERVED_BASELINE_EVIDENCE

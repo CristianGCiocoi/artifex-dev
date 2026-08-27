@@ -1,0 +1,108 @@
+{
+  "claude_probe": {
+    "auth_exit_code": 0,
+    "authenticated": true,
+    "command_sha256": "3b58a0836168c25bbda8e2397bd47a5238a46801fd03739dbf5b085a077696b4",
+    "credential_material_read": false,
+    "executable_sha256": "00e5be0a8b69893cad9259a1e8b80d59be8f3eb367d4a16c19f91bcd279423b7",
+    "pii_persisted": false,
+    "status": "PASS",
+    "version": "2.1.247",
+    "version_exit_code": 0
+  },
+  "codex_probe": {
+    "auth_exit_code": 0,
+    "auth_mode_sha256": "345b7b618c1de4ab8cd0c42a100874c69fb3007f835502622ab4e2245a3456f0",
+    "command_sha256": "5e456aa4954adbd0d70e48c6f29247279de9d4150eafbafbf8a4fbd99855770f",
+    "credential_material_read": false,
+    "status": "PASS",
+    "version": "0.150.1",
+    "version_exit_code": 0
+  },
+  "composition": "CLEAN_INSTALLED_WHEEL_PUBLIC_CLI_REAL_CLAUDE_MULTI_PROCESS",
+  "credential_files_read": false,
+  "custom_application_factory_used": false,
+  "empty_isolated_evidence_store": true,
+  "installed_package": {
+    "distribution_location": "INSTALLED_SITE_PACKAGES",
+    "origin_sha256": "13757c75715399a231804be0dad5a0764f3834b58e168b12af14138fc7862fae"
+  },
+  "journeys": {
+    "J02": {
+      "accepted_revision": 2,
+      "dashboard_revision": 2,
+      "documentation_current": true,
+      "execution_live": true,
+      "fresh_public_process_setup_reload": true,
+      "full_clean_machine_status": "NOT_CLAIMED",
+      "installed_wheel": true,
+      "interaction_live": true,
+      "primary_proving_milestone": "M7",
+      "provider_self_accepted": false,
+      "provider_version": "2.1.247",
+      "readiness_state": "AVAILABLE",
+      "status": "M6A_LIVE_PROVIDER_SLICE_PASS",
+      "workspace_isolated": true
+    },
+    "J11": {
+      "authority_roles_preserved": true,
+      "claude_attached_in_fresh_process": true,
+      "codex_closed_by_process_exit": true,
+      "no_export_or_migration": true,
+      "same_project_baseline": true,
+      "same_project_identity": true,
+      "status": "PASS"
+    }
+  },
+  "migration": {
+    "fresh_process_real_readiness": true,
+    "provider_version": "2.1.247",
+    "semantic_history_fabricated": false,
+    "source_schema": "1.0",
+    "status": "PASS"
+  },
+  "pii_persisted": false,
+  "provider_injection_used": false,
+  "qualification_transcript_bytes": 8782,
+  "qualification_transcript_sha256": "195826ad4b3ab1d85cb3ca5e032ab09146dd8ef931ccb1855bd5a154ba8f81ed",
+  "public_process_calls": [
+    {"ok": true, "operation": "project.create", "returncode": 0},
+    {"ok": true, "operation": "distribution.setup.plan", "returncode": 0},
+    {"ok": true, "operation": "distribution.setup.apply", "returncode": 0},
+    {"ok": true, "operation": "providers.readiness", "returncode": 0},
+    {"ok": true, "operation": "providers.graph", "returncode": 0},
+    {"ok": true, "operation": "providers.interact", "returncode": 0},
+    {"ok": true, "operation": "providers.interact", "returncode": 0},
+    {"ok": true, "operation": "runtime.bootstrap", "returncode": 0},
+    {"ok": true, "operation": "runtime.workspace.create", "returncode": 0},
+    {"ok": true, "operation": "runtime.provider.execute", "returncode": 0},
+    {"ok": true, "operation": "runtime.status", "returncode": 0},
+    {"ok": true, "operation": "runtime.accept", "returncode": 0},
+    {"ok": true, "operation": "runtime.workspace.promote", "returncode": 0},
+    {"ok": true, "operation": "providers.certifications", "returncode": 0},
+    {"ok": true, "operation": "documentation.regenerate", "returncode": 0},
+    {"ok": true, "operation": "documentation.status", "returncode": 0},
+    {"ok": true, "operation": "dashboard.project", "returncode": 0},
+    {"ok": true, "operation": "project.create", "returncode": 0},
+    {"ok": true, "operation": "providers.readiness", "returncode": 0}
+  ],
+  "receipt_binding": {
+    "acceptance_decision_id": "decision-b62cb040-61ae-42c8-b692-c63df28d1f36",
+    "auth_probe_sha256": "e34204cd038d27529d8871cf5a7b10a4ffa079d9072727a83bf3606a19da31c3",
+    "project_job_id": "m6a-live-job",
+    "promotion_revision": 2,
+    "provider_executable_sha256": "00e5be0a8b69893cad9259a1e8b80d59be8f3eb367d4a16c19f91bcd279423b7",
+    "provider_version": "2.1.247",
+    "shipping_artifact_sha256": "79502668511186791eb263af24e706d21a64513f7c83d92fcc49f3010f1570cd"
+  },
+  "role_certifications": {
+    "EXECUTION_IMPLEMENTER": "LIVE_ROLE_CERTIFIED",
+    "INTERACTION": "LIVE_ROLE_CERTIFIED"
+  },
+  "schema_version": "1.0",
+  "shipping_artifact": "INSTALLED_WHEEL",
+  "shipping_artifact_sha256": "79502668511186791eb263af24e706d21a64513f7c83d92fcc49f3010f1570cd",
+  "simulated_provider": false,
+  "source_tree_imported": false,
+  "status": "PASS"
+}

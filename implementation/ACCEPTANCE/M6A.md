@@ -1,36 +1,39 @@
-# M6A Blocked Qualification Report
+# M6A Acceptance Candidate
 
 ## Identity
 
-- Canonical M3 base: `6e46c426786d2f3b1be10e483518197b4b5d06ce`
-- Integrated implementation baseline: `8645cb103f8956143d477114b2842d14347f35a1`
+- Canonical base: `77aeb189e3359f8a54ff1f4056dd3c8409747ef7`
+- Implementation candidate: `99415edfc200f1288f1f3e046fb89f8c80dabd06`
 - Contract digest: `e7c7a02ee61e64bfda4b3a18660b460967b8d167fa0734723907ca64316c82f5`
 
-## Implemented and verified
+## Qualified outcome
 
-Claude discovery/setup/auth/readiness, secret-free persisted composition, role-separated
-INTERACTION and EXECUTION_IMPLEMENTER surfaces, isolated execution workspace, durable
-cancel/recovery, role-specific certification projection and V1 setup revalidation are
-implemented. A clean installed wheel persisted the `claude-native-session` credential
-reference without secret material and exposed both roles as
-`PUBLIC_COMPOSITION_VERIFIED`.
+The clean installed-wheel public composition used real Claude Code 2.1.247 and a
+fresh, empty external evidence store. Claude INTERACTION and EXECUTION_IMPLEMENTER
+each reached `LIVE_ROLE_CERTIFIED`. J11 passed with both providers reading the same
+Project identity and baseline in separate processes. The M6A-owned live provider
+slice of J02 passed; the full clean-machine J02 Journey remains explicitly unclaimed
+and M7-owned.
 
-## External gate
+Real Claude execution occurred in an isolated Execution Workspace. The provider did
+not self-accept or promote. Acceptance Authority decided independently, Project
+Authority promoted revision 2, documentation was regenerated, and the dashboard
+projected the promoted revision. The receipt binds Claude version, executable digest,
+auth attestation digest, shipping wheel digest, ProjectJob, acceptance decision and
+promotion revision.
 
-`where.exe claude` finds no executable. `claude --version` and `claude auth status`
-therefore cannot run. Public readiness correctly reports `NOT_DETECTED`, `detected=false`,
-`authenticated=false`, and no version. There is no live receipt for either role.
+Compatible V1 Claude setup was revalidated in a fresh public process against real
+readiness. No credential file, secret material or PII is persisted in milestone
+evidence. The known V1 dashboard/schema-drift regression remains unchanged.
 
-J02 and J11 cannot pass, the compatible V1 setup cannot be migrated as ready, and neither
-Claude role can reach `LIVE_ROLE_CERTIFIED` until a supported Claude Code (`>=2.1.3,<3`)
-is installed on PATH and an authenticated native session is available.
+## Validation
 
-## Preserved authority boundaries
+- Ruff: PASS
+- Strict mypy: PASS, 89 source files
+- Integrated provider/runtime/authority suite: PASS, 65 tests
+- Installed-wheel live public outcome: PASS
 
-No simulated provider result is accepted as live evidence. Provider completion cannot
-self-accept or promote Project semantics. The V1 dashboard/schema-drift regression is
-unchanged.
+## Disposition
 
-## Verdict
-
-`BLOCKED_EXTERNAL_PREREQUISITE` — not `ACCEPTED`.
+`IN_REVIEW` — all frozen M6A evidence classes are PASS, but this candidate does not
+self-accept and requires independent Architect acceptance and canonical integration.

@@ -12,13 +12,13 @@ journeys:
   blocker: Full clean-machine installer and managed-service Journey remains M7-owned
 - id: J02
   title: J02 — Fresh Machine + Claude
-  status: BLOCKED_EXTERNAL_PREREQUISITE
-  environment: CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS_CLAUDE_ABSENT
-  public_shipping_composition: INSTALLED_WHEEL_PUBLIC_CLI_NON_LIVE
+  status: M6A_LIVE_PROVIDER_SLICE_PASS
+  environment: CLEAN_INSTALLED_WHEEL_WINDOWS_REAL_CLAUDE_PROVIDER_SLICE
+  public_shipping_composition: INSTALLED_WHEEL_PUBLIC_CLI_REAL_CLAUDE_MULTI_PROCESS
   evidence:
-  - EVIDENCE/M6A-NONLIVE-QUALIFICATION.json
-  last_run: '2026-08-27'
-  blocker: BLK-M6A-CLAUDE-CODE-UNAVAILABLE
+  - EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json
+  last_run: '2026-08-28'
+  blocker: Full clean-machine installer and managed-service Journey remains M7-owned
 - id: J03
   title: J03 — Project Continuity
   status: PASS
@@ -91,13 +91,13 @@ journeys:
   blocker: M0 has no mandatory journeys; milestone dependencies not accepted
 - id: J11
   title: J11 — Cross-provider Continuity
-  status: BLOCKED_EXTERNAL_PREREQUISITE
-  environment: CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS_CLAUDE_ABSENT
-  public_shipping_composition: INSTALLED_WHEEL_PUBLIC_CLI_NON_LIVE
+  status: PASS
+  environment: CLEAN_INSTALLED_WHEEL_WINDOWS_REAL_CODEX_AND_CLAUDE
+  public_shipping_composition: INSTALLED_WHEEL_PUBLIC_CLI_REAL_PROVIDER_MULTI_PROCESS
   evidence:
-  - EVIDENCE/M6A-NONLIVE-QUALIFICATION.json
-  last_run: '2026-08-27'
-  blocker: BLK-M6A-CLAUDE-CODE-UNAVAILABLE
+  - EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json
+  last_run: '2026-08-28'
+  blocker: null
 - id: J12
   title: J12 — Organizational Knowledge
   status: PASS

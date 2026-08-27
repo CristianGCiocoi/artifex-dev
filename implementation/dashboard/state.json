@@ -1,17 +1,15 @@
 {
   "acceptance": {
     "acceptance_commit": null,
-    "blocked": [
-      "BLK-M6A-CLAUDE-CODE-UNAVAILABLE"
-    ],
+    "blocked": [],
     "contract_digest": "e7c7a02ee61e64bfda4b3a18660b460967b8d167fa0734723907ca64316c82f5",
     "evidence_classes": {
       "BLACK_BOX_OUTCOME": {
         "evidence": [
-          "EVIDENCE/M6A-NONLIVE-QUALIFICATION.json"
+          "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json"
         ],
         "required_m6a": true,
-        "status": "BLOCKED_EXTERNAL_PREREQUISITE"
+        "status": "PASS"
       },
       "COMPONENT": {
         "evidence": [
@@ -22,7 +20,7 @@
       },
       "DASHBOARD": {
         "evidence": [
-          "EVIDENCE/M6A-VALIDATION.yaml"
+          "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json"
         ],
         "required_m6a": true,
         "status": "PASS"
@@ -36,7 +34,7 @@
       },
       "DOCUMENTATION": {
         "evidence": [
-          "EVIDENCE/M6A-VALIDATION.yaml"
+          "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json"
         ],
         "required_m6a": true,
         "status": "PASS"
@@ -50,21 +48,21 @@
       },
       "MIGRATION": {
         "evidence": [
-          "EVIDENCE/M6A-NONLIVE-QUALIFICATION.json"
+          "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json"
         ],
         "required_m6a": true,
-        "status": "BLOCKED_EXTERNAL_PREREQUISITE"
+        "status": "PASS"
       },
       "PROVIDER_CERTIFICATION": {
         "evidence": [
-          "EVIDENCE/M6A-NONLIVE-QUALIFICATION.json"
+          "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json"
         ],
         "required_m6a": true,
-        "status": "BLOCKED_EXTERNAL_PREREQUISITE"
+        "status": "PASS"
       },
       "PUBLIC_COMPOSITION": {
         "evidence": [
-          "EVIDENCE/M6A-NONLIVE-QUALIFICATION.json"
+          "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json"
         ],
         "required_m6a": true,
         "status": "PASS"
@@ -78,18 +76,20 @@
       }
     },
     "frozen_architecture_baseline": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
-    "implementation_baseline_commit": "8645cb103f8956143d477114b2842d14347f35a1",
+    "implementation_baseline_commit": "99415edfc200f1288f1f3e046fb89f8c80dabd06",
     "mandatory_journeys": [
       "J02",
       "J11"
     ],
-    "mandatory_work_complete": false,
-    "migration": "V1_CLAUDE_SETUP_REVALIDATION_BLOCKED_UNTIL_REAL_READINESS",
+    "mandatory_work_complete": true,
+    "migration": "V1_CLAUDE_SETUP_REVALIDATED_WITH_REAL_READINESS",
     "milestone": "M6A",
     "schema_version": "1.0",
-    "superseded": [],
+    "superseded": [
+      "BLK-M6A-CLAUDE-CODE-UNAVAILABLE"
+    ],
     "unresolved_contradiction": null,
-    "verdict": "BLOCKED_EXTERNAL_PREREQUISITE"
+    "verdict": "IN_REVIEW"
   },
   "adrs": [
     {
@@ -719,21 +719,7 @@
       "type": "FROZEN_ADR"
     }
   ],
-  "blockers": [
-    {
-      "class": "EXTERNAL_PREREQUISITE",
-      "evidence": [
-        "EVIDENCE/M6A-NONLIVE-QUALIFICATION.json"
-      ],
-      "id": "BLK-M6A-CLAUDE-CODE-UNAVAILABLE",
-      "required_authority": "HUMAN_ENVIRONMENT_OWNER",
-      "resolution": "Install Claude Code >=2.1.3,<3 on PATH and establish an authenticated native session",
-      "scope": "M6A",
-      "status": "OPEN",
-      "summary": "Supported Claude Code executable and authenticated native session are unavailable",
-      "unrelated_work_may_continue": true
-    }
-  ],
+  "blockers": [],
   "evidence": [
     {
       "bytes": 9924,
@@ -796,14 +782,19 @@
       "sha256": "cf9d4b91b61ad6dc0ba78848803867e50ffc500c18e3a8f742be423678f8c764"
     },
     {
+      "bytes": 4641,
+      "path": "implementation/EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json",
+      "sha256": "acc11430f71cb85361eb349cf0aeb1454c633ba6a51a9fa6ea81e5005185583d"
+    },
+    {
       "bytes": 1218,
       "path": "implementation/EVIDENCE/M6A-NONLIVE-QUALIFICATION.json",
       "sha256": "bbe2ba84030bc27d78bddae11c92bb1518266417f4b4be6265fcd7a5ae7286cb"
     },
     {
-      "bytes": 2147,
+      "bytes": 2388,
       "path": "implementation/EVIDENCE/M6A-VALIDATION.yaml",
-      "sha256": "76fc1ed3f015debb63acb1b0179f5ee92df702e78b6124a7321040f443b77fc2"
+      "sha256": "4725de32e478a6d6638e2e2f43b9bb1419c66b2e255b31ddc9672d40251e4c2d"
     },
     {
       "bytes": 952,
@@ -1590,15 +1581,15 @@
       "title": "J01 — Fresh Machine + Codex"
     },
     {
-      "blocker": "BLK-M6A-CLAUDE-CODE-UNAVAILABLE",
-      "environment": "CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS_CLAUDE_ABSENT",
+      "blocker": "Full clean-machine installer and managed-service Journey remains M7-owned",
+      "environment": "CLEAN_INSTALLED_WHEEL_WINDOWS_REAL_CLAUDE_PROVIDER_SLICE",
       "evidence": [
-        "EVIDENCE/M6A-NONLIVE-QUALIFICATION.json"
+        "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json"
       ],
       "id": "J02",
-      "last_run": "2026-08-27",
-      "public_shipping_composition": "INSTALLED_WHEEL_PUBLIC_CLI_NON_LIVE",
-      "status": "BLOCKED_EXTERNAL_PREREQUISITE",
+      "last_run": "2026-08-28",
+      "public_shipping_composition": "INSTALLED_WHEEL_PUBLIC_CLI_REAL_CLAUDE_MULTI_PROCESS",
+      "status": "M6A_LIVE_PROVIDER_SLICE_PASS",
       "title": "J02 — Fresh Machine + Claude"
     },
     {
@@ -1694,15 +1685,15 @@
       "title": "J10 — No Automated Provider"
     },
     {
-      "blocker": "BLK-M6A-CLAUDE-CODE-UNAVAILABLE",
-      "environment": "CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS_CLAUDE_ABSENT",
+      "blocker": null,
+      "environment": "CLEAN_INSTALLED_WHEEL_WINDOWS_REAL_CODEX_AND_CLAUDE",
       "evidence": [
-        "EVIDENCE/M6A-NONLIVE-QUALIFICATION.json"
+        "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json"
       ],
       "id": "J11",
-      "last_run": "2026-08-27",
-      "public_shipping_composition": "INSTALLED_WHEEL_PUBLIC_CLI_NON_LIVE",
-      "status": "BLOCKED_EXTERNAL_PREREQUISITE",
+      "last_run": "2026-08-28",
+      "public_shipping_composition": "INSTALLED_WHEEL_PUBLIC_CLI_REAL_PROVIDER_MULTI_PROCESS",
+      "status": "PASS",
       "title": "J11 — Cross-provider Continuity"
     },
     {
@@ -1904,7 +1895,7 @@
     "fixture_state": "M0_BASELINE_ACCEPTED",
     "m4_target_interaction_governance_state": "M4_ACCEPTED_ADDITIVE_STATE",
     "m5_docs_dashboard_classification": "M5_ACCEPTED_CURRENT_STALE_MISSING_CLASSIFICATION",
-    "m6a_v1_claude_setup_revalidation": "BLOCKED_UNTIL_SUPPORTED_CLAUDE_READINESS",
+    "m6a_v1_claude_setup_revalidation": "PASS_FRESH_PROCESS_REAL_CLAUDE_READINESS",
     "m8a_v1_instance_knowledge_promotion": "CLASSIFICATION_QUARANTINE_ONLY_ACCEPTANCE_NA",
     "migration_execution": "M2_ACCEPTED_EMPTY_RUNSTORE",
     "milestone": "M3",
@@ -1987,7 +1978,7 @@
       "id": "M6A",
       "mandatory_for_core_ga": true,
       "started": true,
-      "state": "BLOCKED_EXTERNAL_PREREQUISITE",
+      "state": "IN_REVIEW",
       "title": "Claude Productization & Certification"
     },
     {
@@ -2102,6 +2093,17 @@
   "observations": [
     {
       "evidence": [
+        "EVIDENCE/M6A-NONLIVE-QUALIFICATION.json",
+        "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json"
+      ],
+      "id": "BLK-M6A-CLAUDE-CODE-UNAVAILABLE",
+      "required_authority": "HUMAN_ENVIRONMENT_OWNER",
+      "scope": "M6A",
+      "state": "RESOLVED_EXTERNAL_PREREQUISITE",
+      "unrelated_work_may_continue": true
+    },
+    {
+      "evidence": [
         "EVIDENCE/HANDOFF-INTEGRITY.yaml"
       ],
       "id": "OBS-PACKAGE-DIRECTORY-NAME",
@@ -2123,9 +2125,9 @@
   ],
   "program": {
     "architecture_status": "FROZEN",
-    "branch": "codex/artifex-2-m8a",
+    "branch": "codex/artifex-2-m6a-live",
     "current_milestone": "M6A",
-    "current_status": "BLOCKED_DAG_FRONTIER_EXTERNAL_PREREQUISITE",
+    "current_status": "IN_REVIEW",
     "dashboard_state": "CURRENT",
     "directory_variance": "PACKAGING_NAME_VARIANCE_ACCEPTED",
     "handoff_declared_directory": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF",
@@ -2143,8 +2145,8 @@
     "m5_started": true,
     "m6a_started": true,
     "m8a_started": true,
-    "next_integration_point": "Resolve M6A by installing/authenticating supported Claude Code; M7/M9/M12 remain dependency-blocked",
-    "recorded_date": "2026-08-27",
+    "next_integration_point": "Independent Architect acceptance and canonical integration of M6A candidate 99415ed; M7 remains dependency-blocked until acceptance",
+    "recorded_date": "2026-08-28",
     "target_release": "2.0.0"
   },
   "projection": {
@@ -2201,14 +2203,15 @@
       },
       {
         "evidence": [
-          "EVIDENCE/M6A-NONLIVE-QUALIFICATION.json"
+          "EVIDENCE/M6A-NONLIVE-QUALIFICATION.json",
+          "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json"
         ],
         "provider": "claude",
         "requirement": "MANDATORY",
         "role": "INTERACTION",
         "steps": {
           "ADAPTER_IMPLEMENTED": "PASS",
-          "LIVE_ROLE_CERTIFIED": "IN_PROGRESS",
+          "LIVE_ROLE_CERTIFIED": "PASS",
           "PACKAGED": "PASS",
           "PUBLIC_COMPOSITION_VERIFIED": "PASS",
           "ROLE_CONFORMANCE_VERIFIED": "PASS"
@@ -2216,14 +2219,15 @@
       },
       {
         "evidence": [
-          "EVIDENCE/M6A-NONLIVE-QUALIFICATION.json"
+          "EVIDENCE/M6A-NONLIVE-QUALIFICATION.json",
+          "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json"
         ],
         "provider": "claude",
         "requirement": "MANDATORY",
         "role": "EXECUTION_IMPLEMENTER",
         "steps": {
           "ADAPTER_IMPLEMENTED": "PASS",
-          "LIVE_ROLE_CERTIFIED": "IN_PROGRESS",
+          "LIVE_ROLE_CERTIFIED": "PASS",
           "PACKAGED": "PASS",
           "PUBLIC_COMPOSITION_VERIFIED": "PASS",
           "ROLE_CONFORMANCE_VERIFIED": "PASS"
@@ -2416,30 +2420,29 @@
   },
   "schema_version": "1.0",
   "summary": {
-    "active_blockers": 1,
+    "active_blockers": 0,
     "adr_count": 24,
     "current_milestone": "M6A",
-    "evidence_items": 18,
+    "evidence_items": 19,
     "invariant_count": 34,
     "journey_states": {
-      "BLOCKED_EXTERNAL_PREREQUISITE": 2,
       "M3_VERTICAL_SLICE_ONLY": 1,
+      "M6A_LIVE_PROVIDER_SLICE_PASS": 1,
       "NOT_STARTED": 5,
-      "PASS": 12
+      "PASS": 13
     },
     "milestones_accepted": 7,
     "milestones_started": 8,
     "milestones_total": 16,
     "provider_step_states": {
-      "IN_PROGRESS": 2,
       "NOT_STARTED": 75,
-      "PASS": 18
+      "PASS": 20
     },
     "ready_milestones": [],
     "workstream_states": {
-      "BLOCKED_EXTERNAL_PREREQUISITE": 1,
       "COMPLETE": 14,
-      "PARTIAL_COMPLETE_WITH_EXTERNAL_GATE": 1
+      "IN_REVIEW": 1,
+      "PARTIAL_COMPLETE_PENDING_M6A_ACCEPTANCE": 1
     }
   },
   "target_system": {
@@ -2705,11 +2708,9 @@
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m5"
     },
     {
-      "base_commit": "6e46c426786d2f3b1be10e483518197b4b5d06ce",
-      "blockers": [
-        "BLK-M6A-CLAUDE-CODE-UNAVAILABLE"
-      ],
-      "branch": "codex/artifex-2-m6a",
+      "base_commit": "77aeb189e3359f8a54ff1f4056dd3c8409747ef7",
+      "blockers": [],
+      "branch": "codex/artifex-2-m6a-live",
       "id": "WS-M6A-CLAUDE-PRODUCTIZATION",
       "integration_owner": "ARTIFEX_2_ORCHESTRATOR",
       "milestone": "M6A",
@@ -2719,14 +2720,12 @@
         "M6A-CONTRACT",
         "FROZEN-INVARIANTS"
       ],
-      "state": "BLOCKED_EXTERNAL_PREREQUISITE",
-      "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m6a"
+      "state": "IN_REVIEW",
+      "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m6a-live"
     },
     {
       "base_commit": "6e46c426786d2f3b1be10e483518197b4b5d06ce",
-      "blockers": [
-        "BLK-M6A-CLAUDE-CODE-UNAVAILABLE"
-      ],
+      "blockers": [],
       "branch": "codex/artifex-2-wave4",
       "id": "WS-WAVE4-INTEGRATION",
       "integration_owner": "ARTIFEX_2_ORCHESTRATOR",
@@ -2739,7 +2738,7 @@
         "M6A-CONTRACT",
         "FROZEN-INVARIANTS"
       ],
-      "state": "PARTIAL_COMPLETE_WITH_EXTERNAL_GATE",
+      "state": "PARTIAL_COMPLETE_PENDING_M6A_ACCEPTANCE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-wave4"
     },
     {

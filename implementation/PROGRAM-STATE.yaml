@@ -10,11 +10,11 @@ program:
   architecture_status: FROZEN
   implementation_plan_status: FROZEN
   intake_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
-  branch: codex/artifex-2-m8a
+  branch: codex/artifex-2-m6a-live
   current_milestone: M6A
-  current_status: BLOCKED_DAG_FRONTIER_EXTERNAL_PREREQUISITE
+  current_status: IN_REVIEW
   latest_accepted_commit: 270806d1d22fc49c52bf37216027d56c11031542
-  next_integration_point: Resolve M6A by installing/authenticating supported Claude Code; M7/M9/M12 remain dependency-blocked
+  next_integration_point: Independent Architect acceptance and canonical integration of M6A candidate 99415ed; M7 remains dependency-blocked until acceptance
   m1_started: true
   m2_started: true
   m3_started: true
@@ -22,7 +22,7 @@ program:
   m5_started: true
   m6a_started: true
   m8a_started: true
-  recorded_date: '2026-08-27'
+  recorded_date: '2026-08-28'
   dashboard_state: CURRENT
 target_system:
   overview: Persistent project-centric engineering control platform with separate
@@ -69,7 +69,7 @@ milestone_states:
     started: true
     accepted: true
   M6A:
-    state: BLOCKED_EXTERNAL_PREREQUISITE
+    state: IN_REVIEW
     started: true
     accepted: false
   M6B:
