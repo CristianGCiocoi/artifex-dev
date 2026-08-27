@@ -395,6 +395,55 @@ def test_public_provider_timeout_is_durably_unknown(tmp_path: Path) -> None:
     assert status.value["run"]["state"] == "WAITING_RECONCILIATION"
 
 
+def test_public_provider_blocked_result_is_durably_observed_not_unknown(tmp_path: Path) -> None:
+    common, _ = _bootstrap_and_workspace(tmp_path)
+
+    def process_runner(arguments: list[str], **_: Any) -> subprocess.CompletedProcess[str]:
+        schema = json.loads(
+            Path(arguments[arguments.index("--output-schema") + 1]).read_text(encoding="utf-8")
+        )
+        output = Path(arguments[arguments.index("--output-last-message") + 1])
+        output.write_text(
+            json.dumps(
+                {
+                    "status": "BLOCKED",
+                    "base_commit": schema["properties"]["base_commit"]["const"],
+                    "execution_contract_fingerprint": schema["properties"][
+                        "execution_contract_fingerprint"
+                    ]["const"],
+                    "project_model_fingerprint": schema["properties"]["project_model_fingerprint"][
+                        "const"
+                    ],
+                    "artifacts": [],
+                    "validation": {"tests": "NOT_RUN"},
+                    "message": "bounded provider blocker",
+                }
+            ),
+            encoding="utf-8",
+        )
+        return subprocess.CompletedProcess(arguments, 0, '{"type":"turn.completed"}\n', "")
+
+    application = Application(
+        provider_loader=_provider_loader(),
+        codex_runner_factory=lambda command: CodexProcessRunner(
+            command=command, process_runner=process_runner
+        ),
+    )
+    result = application.dispatch(
+        OperationRequest("runtime.provider.execute", _execution_arguments(common))
+    )
+    assert result.ok, result.to_dict()
+    assert result.value["execution"]["status"] == "BLOCKED"
+    assert result.value["execution"]["owned_artifacts"] == []
+    assert result.value["execution"]["evidence"][0]["passed"] is False
+
+    status = Application().dispatch(
+        OperationRequest("runtime.status", {**common, "run_id": "run-public-provider"})
+    )
+    assert status.value["attempts"][0]["state"] == "FINISHED"
+    assert status.value["project_jobs"][0]["state"] == "FINISHED"
+
+
 def test_automated_public_paths_reject_legacy_actor_strings(tmp_path: Path) -> None:
     project_root, authority, head = _project(tmp_path)
     result = Application().dispatch(

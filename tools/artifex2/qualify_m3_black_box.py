@@ -633,8 +633,13 @@ def _vertical_slice(cli: PublicCLI, root: Path, context: dict[str, Any]) -> dict
     if execution.get("provider_id") != "codex" or execution.get("live") is not True:
         raise AssertionError("Codex EXECUTION_IMPLEMENTER did not execute live")
     if str(execution.get("status", "")).upper() not in {"SUCCESS", "FINISHED", "PASS"}:
+        provider_result = execution.get("result", {})
+        provider_message = (
+            provider_result.get("message", "") if isinstance(provider_result, dict) else ""
+        )
         raise AssertionError(
-            f"Codex execution did not finish successfully: {execution.get('status')}"
+            "Codex execution did not finish successfully: "
+            f"{execution.get('status')}; message={provider_message}"
         )
     evidence = execution.get("evidence")
     if not isinstance(evidence, list) or not evidence:

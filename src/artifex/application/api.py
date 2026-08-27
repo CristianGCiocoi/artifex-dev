@@ -804,6 +804,7 @@ class Application:
                 owned_paths=owned_paths,
                 result=result,
                 actor=evidence_actor,
+                require_complete=result.status is ExecutionStatus.SUCCESS,
             )
             passed = result.status is ExecutionStatus.SUCCESS
             evidence = _record_required_evidence(
@@ -1342,6 +1343,7 @@ def _validate_owned_artifacts(
     owned_paths: tuple[str, ...],
     result: ExecutionResult,
     actor: ActorPrincipal,
+    require_complete: bool = True,
 ) -> tuple[list[dict[str, str]], str]:
     manifest: dict[str, str] = {}
     for owned_path in owned_paths:
@@ -1360,7 +1362,7 @@ def _validate_owned_artifacts(
                 raise ValueError("owned artifact escapes the Execution Workspace") from exc
             manifest[relative] = hashlib.sha256(resolved.read_bytes()).hexdigest()
             owned_files += 1
-        if owned_files == 0:
+        if owned_files == 0 and require_complete:
             raise ValueError(f"owned artifact was not produced: {owned_path}")
     claimed = {
         _required_string(artifact, "path").replace("\\", "/").removeprefix("./")
@@ -1417,9 +1419,7 @@ def _provider_execution_criteria(envelope: ExecutionEnvelope) -> tuple[str, ...]
 
     authority_gates = {"acceptance", "acceptance-authority", "project-authority"}
     criteria = tuple(
-        f"gate:{gate}"
-        for gate in envelope.required_gates
-        if gate.casefold() not in authority_gates
+        f"gate:{gate}" for gate in envelope.required_gates if gate.casefold() not in authority_gates
     )
     return criteria or ("executor-result-bound-to-envelope",)
 
