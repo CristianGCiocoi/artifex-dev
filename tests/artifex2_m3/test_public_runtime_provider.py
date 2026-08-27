@@ -221,6 +221,7 @@ def test_public_provider_execution_is_bound_evidenced_and_not_accepted(
 ) -> None:
     monkeypatch.setenv("ARTIFEX_LOCAL_STATE_ROOT", str(tmp_path / "local-state"))
     common, project_root = _bootstrap_and_workspace(tmp_path)
+    assert (tmp_path / "workspaces" / "workspace-public-provider" / ".git").is_dir()
     observed_commands: list[list[str]] = []
 
     def process_runner(arguments: list[str], **options: Any) -> subprocess.CompletedProcess[str]:

@@ -69,9 +69,7 @@ class WorkspaceManager:
         run = self.store.get("runs", "run_id", str(job["run_id"]))
         if run is None:
             raise RuntimeTransitionError("Execution Workspace Run is missing")
-        envelope = self.store.envelope(
-            str(run["envelope_id"]), int(str(run["envelope_version"]))
-        )
+        envelope = self.store.envelope(str(run["envelope_id"]), int(str(run["envelope_version"])))
         if envelope is None:
             raise RuntimeTransitionError("Execution Workspace Envelope is missing")
         if baseline_revision != int(envelope["baseline_revision"]):
@@ -90,6 +88,7 @@ class WorkspaceManager:
         principal = actor_principal(actor_id)
         principal.require("workspace:create", current.project_id, now=self.clock())
         git_created = False
+        clone_created = False
         try:
             git_root = _git_root(source)
             if git_root == source:
@@ -105,29 +104,58 @@ class WorkspaceManager:
                 expected_commit = envelope.get("baseline_commit")
                 if head and expected_commit is not None and head != expected_commit:
                     raise RuntimeAuthorizationError("workspace Git HEAD does not match Envelope")
-                if head and envelope.get("allowed_providers") and _git_output(
-                    source, "status", "--porcelain"
+                if (
+                    head
+                    and envelope.get("allowed_providers")
+                    and _git_output(source, "status", "--porcelain")
                 ):
                     raise RuntimeAuthorizationError(
                         "provider execution requires a clean Git baseline"
                     )
                 if head:
-                    subprocess.run(
-                        (
-                            "git",
-                            "-C",
-                            str(source),
-                            "worktree",
-                            "add",
-                            "--detach",
-                            str(target),
-                            head,
-                        ),
-                        check=True,
-                        capture_output=True,
-                        text=True,
-                    )
-                    git_created = True
+                    if envelope.get("allowed_providers"):
+                        # Provider sandboxes must not need to traverse a .git
+                        # indirection back into the canonical repository.  A
+                        # no-local clone keeps Git metadata and objects inside
+                        # the authorized Execution Workspace.
+                        subprocess.run(
+                            (
+                                "git",
+                                "clone",
+                                "--no-local",
+                                "--no-checkout",
+                                "--quiet",
+                                str(source),
+                                str(target),
+                            ),
+                            check=True,
+                            capture_output=True,
+                            text=True,
+                        )
+                        clone_created = True
+                        subprocess.run(
+                            ("git", "-C", str(target), "checkout", "--detach", "--quiet", head),
+                            check=True,
+                            capture_output=True,
+                            text=True,
+                        )
+                    else:
+                        subprocess.run(
+                            (
+                                "git",
+                                "-C",
+                                str(source),
+                                "worktree",
+                                "add",
+                                "--detach",
+                                str(target),
+                                head,
+                            ),
+                            check=True,
+                            capture_output=True,
+                            text=True,
+                        )
+                        git_created = True
             else:
                 shutil.copytree(source, target, ignore=shutil.ignore_patterns(".git"))
             _assert_no_symlink_escape(target)
@@ -139,7 +167,7 @@ class WorkspaceManager:
                     capture_output=True,
                     text=True,
                 )
-            elif target.exists():
+            elif clone_created or target.exists():
                 shutil.rmtree(target)
             raise
         now = self.clock()
@@ -185,8 +213,7 @@ class WorkspaceManager:
                 f"{permission} is not allowed by the Execution Envelope"
             )
         owners = tuple(
-            str(value).replace("\\", "/").removeprefix("./")
-            for value in envelope["allowed_paths"]
+            str(value).replace("\\", "/").removeprefix("./") for value in envelope["allowed_paths"]
         )
         if not any(
             owner == "." or relative == owner or relative.startswith(f"{owner}/")
@@ -225,9 +252,7 @@ class WorkspaceManager:
             raise RuntimeTransitionError("ProjectJob has not been accepted")
 
         run = self._run_for_workspace(workspace)
-        envelope = self.store.envelope(
-            str(run["envelope_id"]), int(str(run["envelope_version"]))
-        )
+        envelope = self.store.envelope(str(run["envelope_id"]), int(str(run["envelope_version"])))
         if envelope is None or decision.envelope_fingerprint not in {
             None,
             str(envelope["fingerprint"]),
