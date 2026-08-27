@@ -158,10 +158,11 @@ def test_j03_black_box_continue_by_name_survives_process_restart(tmp_path: Path)
 def test_m1_control_plane_acceptance_is_self_consistent() -> None:
     state = validate_m1(Path(__file__).parents[2])
 
-    assert state["program"]["current_status"] == "ACCEPTED"
+    m1 = next(item for item in state["milestones"] if item["id"] == "M1")
+    assert m1["state"] == "ACCEPTED"
     m2 = next(item for item in state["milestones"] if item["id"] == "M2")
-    assert m2["state"] == "READY"
-    assert m2["started"] is False
+    assert m2["state"] in {"READY", "ACTIVE", "ACCEPTED"}
+    assert m2["started"] is state["program"]["m2_started"]
 
 
 def _cli(*arguments: str) -> subprocess.CompletedProcess[str]:

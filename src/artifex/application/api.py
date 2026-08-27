@@ -37,7 +37,8 @@ from artifex.integrations import (
     run_doctor,
     select_integration,
 )
-from artifex.project import ProjectControlService, default_catalog_path
+from artifex.project import ProjectControlService, ProjectModel, default_catalog_path
+from artifex.runtime import ExecutionEnvelope, ManagedRuntimeService, ReconciliationOutcome
 from artifex.workflow import ExecutionBaseline
 
 
@@ -106,6 +107,16 @@ class Application:
         self.register("project.accept", self._project_accept)
         self.register("project.observe", self._project_observe)
         self.register("dashboard.platform", self._platform_dashboard)
+        self.register("runtime.bootstrap", self._runtime_bootstrap)
+        self.register("runtime.status", self._runtime_status)
+        self.register("runtime.attempt.finish", self._runtime_attempt_finish)
+        self.register("runtime.attempt.cancel", self._runtime_attempt_cancel)
+        self.register("runtime.attempt.unknown", self._runtime_attempt_unknown)
+        self.register("runtime.attempt.reconcile", self._runtime_attempt_reconcile)
+        self.register("runtime.attempt.retry", self._runtime_attempt_retry)
+        self.register("runtime.accept", self._runtime_accept)
+        self.register("runtime.workspace.create", self._runtime_workspace_create)
+        self.register("runtime.workspace.promote", self._runtime_workspace_promote)
         self.register("manual.packet.create", self._manual_packet_create)
         self.register("manual.result.submit", self._manual_result_submit)
         self.register("research.request.validate", self._research_request_validate)
@@ -286,6 +297,124 @@ class Application:
     @staticmethod
     def _platform_dashboard(request: OperationRequest) -> OperationResult:
         return OperationResult(ok=True, value=_project_service(request).platform_dashboard())
+
+    @staticmethod
+    def _runtime_bootstrap(request: OperationRequest) -> OperationResult:
+        envelope_value = _required_mapping(request.arguments, "envelope")
+        envelope = ExecutionEnvelope(
+            envelope_id=_required_string(envelope_value, "envelope_id"),
+            version=_required_int(envelope_value, "version"),
+            project_id=_required_string(envelope_value, "project_id"),
+            objective=_required_string(envelope_value, "objective"),
+            baseline_revision=_required_int(envelope_value, "baseline_revision"),
+            actor_id=_required_string(envelope_value, "actor_id"),
+            allowed_paths=_string_sequence(envelope_value, "allowed_paths"),
+            allowed_capabilities=_string_sequence(envelope_value, "allowed_capabilities"),
+            required_gates=_string_sequence(envelope_value, "required_gates"),
+            max_attempts=_required_int(envelope_value, "max_attempts"),
+            recovery_policy=_required_string(envelope_value, "recovery_policy"),
+            stop_on_unknown=_optional_bool(envelope_value, "stop_on_unknown", True),
+            approved=_optional_bool(envelope_value, "approved", True),
+        )
+        value = _runtime_service(request).bootstrap_run(
+            envelope,
+            workstream_id=_required_string(request.arguments, "workstream_id"),
+            run_id=_required_string(request.arguments, "run_id"),
+            project_job_id=_required_string(request.arguments, "project_job_id"),
+            attempt_id=_required_string(request.arguments, "attempt_id"),
+            purpose=_required_string(request.arguments, "purpose"),
+            actor_id=request.context.actor,
+        )
+        return OperationResult(ok=True, value=value)
+
+    @staticmethod
+    def _runtime_status(request: OperationRequest) -> OperationResult:
+        return OperationResult(
+            ok=True,
+            value=_runtime_service(request).status(_required_string(request.arguments, "run_id")),
+        )
+
+    @staticmethod
+    def _runtime_attempt_finish(request: OperationRequest) -> OperationResult:
+        _runtime_service(request).finish(
+            _required_string(request.arguments, "attempt_id"),
+            _required_string(request.arguments, "result_claim"),
+            actor_id=request.context.actor,
+        )
+        return OperationResult(ok=True, value={"attempt_state": "FINISHED", "accepted": False})
+
+    @staticmethod
+    def _runtime_attempt_cancel(request: OperationRequest) -> OperationResult:
+        _runtime_service(request).cancel(
+            _required_string(request.arguments, "attempt_id"), actor_id=request.context.actor
+        )
+        return OperationResult(ok=True, value={"attempt_state": "CANCELLED", "accepted": False})
+
+    @staticmethod
+    def _runtime_attempt_unknown(request: OperationRequest) -> OperationResult:
+        _runtime_service(request).mark_unknown(
+            _required_string(request.arguments, "attempt_id"), actor_id=request.context.actor
+        )
+        return OperationResult(
+            ok=True,
+            value={"attempt_state": "UNKNOWN", "blind_retry": False, "accepted": False},
+        )
+
+    @staticmethod
+    def _runtime_attempt_reconcile(request: OperationRequest) -> OperationResult:
+        service = _runtime_service(request)
+        attempt_id = _required_string(request.arguments, "attempt_id")
+        if _optional_bool(request.arguments, "begin", True):
+            service.begin_reconciliation(attempt_id, actor_id=request.context.actor)
+        outcome = ReconciliationOutcome(_required_string(request.arguments, "outcome"))
+        service.reconcile(
+            attempt_id,
+            outcome,
+            actor_id=request.context.actor,
+            recovered_claim=_optional_string(request.arguments, "recovered_claim"),
+        )
+        return OperationResult(ok=True, value={"outcome": outcome.value, "accepted": False})
+
+    @staticmethod
+    def _runtime_attempt_retry(request: OperationRequest) -> OperationResult:
+        service = _runtime_service(request)
+        service.coordinator.retry_attempt(
+            _required_string(request.arguments, "previous_attempt_id"),
+            _required_string(request.arguments, "new_attempt_id"),
+            actor_id=request.context.actor,
+        )
+        return OperationResult(ok=True, value={"created": True, "provider_dispatch": False})
+
+    @staticmethod
+    def _runtime_accept(request: OperationRequest) -> OperationResult:
+        decision = _runtime_service(request).accept(
+            _required_string(request.arguments, "project_job_id"),
+            evidence_valid=_optional_bool(request.arguments, "evidence_valid", False),
+            actor_id=request.context.actor,
+            reason=_required_string(request.arguments, "reason"),
+        )
+        return OperationResult(ok=True, value={"decision": decision.to_dict()})
+
+    @staticmethod
+    def _runtime_workspace_create(request: OperationRequest) -> OperationResult:
+        path = _runtime_service(request).create_workspace(
+            _required_string(request.arguments, "workspace_id"),
+            _required_string(request.arguments, "attempt_id"),
+            _required_string(request.arguments, "project_root"),
+            _required_int(request.arguments, "baseline_revision"),
+            actor_id=request.context.actor,
+        )
+        return OperationResult(ok=True, value={"workspace_root": str(path), "isolated": True})
+
+    @staticmethod
+    def _runtime_workspace_promote(request: OperationRequest) -> OperationResult:
+        revision = _runtime_service(request).promote_accepted_workspace(
+            _required_string(request.arguments, "workspace_id"),
+            ProjectModel.from_dict(_required_mapping(request.arguments, "model")),
+            _required_string(request.arguments, "project_job_id"),
+            actor_id=request.context.actor,
+        )
+        return OperationResult(ok=True, value={"semantic_revision": revision})
 
     def _manual_packet_create(self, request: OperationRequest) -> OperationResult:
         manual = self.registry.get("manual")
@@ -521,3 +650,10 @@ def _project_service(request: OperationRequest) -> ProjectControlService:
     if not isinstance(catalog, str) or not catalog:
         raise TypeError("catalog_path must be a string")
     return ProjectControlService(catalog)
+
+
+def _runtime_service(request: OperationRequest) -> ManagedRuntimeService:
+    store_path = _required_string(request.arguments, "store_path")
+    service_id = str(request.arguments.get("service_id", "artifex-managed-service"))
+    workspace_root = _optional_string(request.arguments, "workspace_root")
+    return ManagedRuntimeService(store_path, service_id=service_id, workspace_root=workspace_root)

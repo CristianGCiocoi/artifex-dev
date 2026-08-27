@@ -49,12 +49,12 @@ def validate(repo_root: Path) -> dict[str, Any]:
     state = derive(root)
     program = state["program"]
     milestones = {item["id"]: item for item in state["milestones"]}
-    if program["current_milestone"] != "M1" or program["current_status"] != "ACCEPTED":
-        raise ValueError("M1 is not the current accepted milestone")
     if not program["m1_started"] or milestones["M1"]["state"] != "ACCEPTED":
         raise ValueError("M1 acceptance state is incomplete")
-    if milestones["M2"]["state"] != "READY" or milestones["M2"]["started"]:
-        raise ValueError("M2 must be READY and unstarted after M1 acceptance")
+    if milestones["M2"]["state"] not in {"READY", "ACTIVE", "ACCEPTED"}:
+        raise ValueError("M2 state is incompatible with accepted M1 dependency")
+    if milestones["M2"]["started"] != program["m2_started"]:
+        raise ValueError("M2 start state disagrees with the program projection")
 
     _require_ancestor(root, M0_ACCEPTANCE_COMMIT)
     baseline = str(program["latest_accepted_commit"])
@@ -74,6 +74,11 @@ def validate(repo_root: Path) -> dict[str, Any]:
         raise ValueError(f"M1 required evidence class is not PASS: {required}")
     if acceptance["mandatory_journeys"] != ["J03"] or acceptance["verdict"] != "ACCEPTED":
         raise ValueError("M1 Journey/verdict acceptance is invalid")
+    if program["m2_started"]:
+        acceptance_commit = str(acceptance.get("acceptance_commit", ""))
+        if not acceptance_commit:
+            raise ValueError("started M2 is missing the accepted M1 commit")
+        _require_ancestor(root, acceptance_commit)
 
     contracts = _yaml(implementation / "CONTRACT-REGISTRY.yaml")
     m1_contract = next(item for item in contracts["contracts"] if item["id"] == "M1-CONTRACT")
@@ -104,8 +109,13 @@ def validate(repo_root: Path) -> dict[str, Any]:
         raise ValueError("M1 changed the controlled V1 release regression source")
 
     migration = _yaml(implementation / "MIGRATION/STATE.yaml")
-    if migration["migration_execution"] != "V1_MODEL_ADAPTER_BASELINE_QUALIFIED":
-        raise ValueError("M1 V1 adapter baseline is not qualified")
+    allowed_migration_states = {"V1_MODEL_ADAPTER_BASELINE_QUALIFIED"}
+    if program["m2_started"]:
+        allowed_migration_states.add("ENGINEERING_ACTIVE_NO_LEGACY_RUNTIME_IMPORT")
+    if migration["migration_execution"] not in allowed_migration_states:
+        raise ValueError("migration state is incompatible with accepted M1 provenance")
+    if migration["project_mutation"]:
+        raise ValueError("later migration state mutated accepted M1 Project semantics")
     render(root, write=False)
     return state
 
