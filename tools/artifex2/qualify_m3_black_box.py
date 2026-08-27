@@ -408,7 +408,7 @@ def _j16(
         "actor": {
             "actor_id": "m3-coordinator",
             "actor_type": "SERVICE",
-            "delegated_roles": ["EXECUTION_DISPATCH"],
+            "delegated_roles": ["EXECUTION_IMPLEMENTER"],
         },
         "data_classification": "INTERNAL",
     }
