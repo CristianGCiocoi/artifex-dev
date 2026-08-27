@@ -200,6 +200,6 @@ workstreams:
   branch: codex/artifex-2-m8a
   base_commit: 28b8126f7fed53a2ceeae60d7ddefc86630e5c43
   shared_contracts: [M8A-CONTRACT, FROZEN-INVARIANTS]
-  state: ACTIVE
+  state: COMPLETE
   blockers: []
   integration_owner: ARTIFEX_2_ORCHESTRATOR

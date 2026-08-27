@@ -1,0 +1,18 @@
+schema_version: '1.0'
+evidence_id: EVD-M10-READINESS-DISCOVERY
+milestone: M10
+status: MISSING_CURRENT_HANDOFF
+recorded_date: '2026-08-27'
+mutation_performed: false
+atlas_runtime_accessed: false
+atlas_readiness_claimed: false
+observations:
+- ARTIFEX 2.0 boundary and ADR-T017 define authority, identity and capability semantics but no target wire schema
+- PIO-ARTIFEX-FUTURE-REQUIREMENTS-001 and PIO-ARTIFEX-COMPATIBILITY-001 are historical read-only discovery with implementation_authorized false
+- ATLAS Platform Contract 1.0.0-candidate.4 is generic, not live-accepted and declares artifex_current_atlas_dependency NONE
+- The platform-integration ARTIFEX request is deferred pending a future target-specific handoff
+disposition:
+  m10: READY_UNCLAIMED
+  m11: BLOCKED_DEPENDENCY
+  required_input: Explicit current versioned target-specific ARTIFEX-ATLAS Integration Handoff
+unexpected_findings: []

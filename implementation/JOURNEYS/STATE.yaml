@@ -100,12 +100,13 @@ journeys:
   blocker: BLK-M6A-CLAUDE-CODE-UNAVAILABLE
 - id: J12
   title: J12 — Organizational Knowledge
-  status: NOT_STARTED
-  environment: null
-  public_shipping_composition: null
-  evidence: []
-  last_run: null
-  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+  status: PASS
+  environment: CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS
+  public_shipping_composition: INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS
+  evidence:
+  - EVIDENCE/M8A-PUBLIC-OUTCOME.json
+  last_run: '2026-08-27'
+  blocker: null
 - id: J13
   title: J13 — Pandora Research
   status: NOT_STARTED

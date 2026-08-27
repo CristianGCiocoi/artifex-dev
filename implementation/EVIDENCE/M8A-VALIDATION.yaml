@@ -1,0 +1,56 @@
+schema_version: '1.0'
+evidence_id: EVD-M8A-VALIDATION
+milestone: M8A
+status: PASS
+recorded_date: '2026-08-27'
+canonical_base_commit: 28b8126f7fed53a2ceeae60d7ddefc86630e5c43
+m8a_implementation_baseline_commit: 8bc41f00fdea17ba62cf4557cc2419b73a7ed30d
+m8a_acceptance_commit: null
+m8a_contract_digest: 77a0a4330677c814cb1d6cb874cd8f759662f5351812acffb1fea7f73f5b646b
+source_quality:
+  ruff: PASS
+  mypy_strict: PASS
+  mypy_files: 89
+focused_validation:
+  integration_owner_command: uv run pytest tests/artifex2_m8a -q
+  integration_owner_result: PASS
+  integration_owner_passed: 6
+  workstream_focused_and_compatibility_passed: 49
+domain_integration:
+  command: uv run pytest -q --ignore=tests/test_release.py
+  result: PASS
+  passed: 420
+  skipped: 7
+  failed: 0
+  duration_seconds: 610.15
+public_composition:
+  artifact: artifex_dev-1.0.0-py3-none-any.whl
+  artifact_sha256: 39bf8a51da0f5a426b4f82124af697f3b85ac3c9f72b504e4dc1f1e860c5a4d7
+  artifact_bytes: 262465
+  composition: CLEAN_INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS
+  evidence: EVIDENCE/M8A-PUBLIC-OUTCOME.json
+  status: PASS
+security_authority:
+  organizational_store_outside_projects: PASS
+  recommendation_mutates_target_project: false
+  explicit_project_authority_adoption: PASS
+  optimistic_revision_conflict: PASS
+  direct_semantic_file_mutation_fail_closed: PASS
+  stale_low_confidence_forged_fail_closed: PASS
+  cross_project_contamination: false
+documentation:
+  architecture: docs/architecture/ORGANIZATIONAL_KNOWLEDGE.md
+  guide: docs/guides/ORGANIZATIONAL_KNOWLEDGE_GUIDE.md
+  status: CURRENT
+dashboard:
+  implementation_projection: PASS
+  authoritative: false
+migration:
+  acceptance_class: NOT_APPLICABLE
+  mode: CLASSIFICATION_QUARANTINE
+  searchable_before_explicit_promotion: false
+v1_release_harness_regression:
+  classification: V1-R01-DASHBOARD-FIXTURE-SCHEMA-DRIFT
+  disposition: REPRODUCED_AND_PRESERVED
+  source_repaired_by_m8a: false
+unexpected_failures: []

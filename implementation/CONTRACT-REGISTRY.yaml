@@ -252,8 +252,10 @@ contracts:
   - Project B remains semantically unchanged until explicit adoption
   - Organizational recommendations retain provenance and confidence
   - No silent shared-memory injection or cross-project contamination occurs
-  evidence_references: []
-  implementation_state: ACTIVE
+  evidence_references:
+  - EVIDENCE/M8A-VALIDATION.yaml
+  - EVIDENCE/M8A-PUBLIC-OUTCOME.json
+  implementation_state: ACCEPTED
   m0_baseline_state: NOT_APPLICABLE
 adrs:
 - id: ADR-T001

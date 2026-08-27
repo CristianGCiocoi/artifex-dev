@@ -18,3 +18,10 @@ observations:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
   required_authority: ORCHESTRATOR
   unrelated_work_may_continue: true
+- id: OBS-M10-MISSING-CURRENT-HANDOFF
+  scope: M10
+  state: READY_UNCLAIMED_MISSING_CURRENT_HANDOFF
+  evidence:
+  - EVIDENCE/M10-READINESS-DISCOVERY.yaml
+  required_authority: ARTIFEX_ATLAS_HANDOFF_OWNER
+  unrelated_work_may_continue: true

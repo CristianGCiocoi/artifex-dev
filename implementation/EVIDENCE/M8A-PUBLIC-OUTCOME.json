@@ -1,0 +1,30 @@
+{
+  "composition": "CLEAN_INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS",
+  "custom_application_factory_used": false,
+  "journeys": {
+    "J12": {
+      "accepted_revision": 2,
+      "adversarial": {
+        "cross_project_leak": false,
+        "direct_mutation": "ArtifactCorruptError",
+        "forged_recommendation": "OrganizationalKnowledgeError",
+        "low_confidence": "OrganizationalKnowledgeError",
+        "stale": "OrganizationalKnowledgeError"
+      },
+      "lineage_retained": true,
+      "organizational_id_separate": "ORGK-87c23ec6-b310-4c32-bf53-4990bb95f9c8",
+      "recommendation_advisory": true,
+      "restart_multi_process": true,
+      "status": "PASS",
+      "target_bytes_unchanged_before_adoption": true,
+      "target_revision_before_adoption": 1
+    }
+  },
+  "migration": {
+    "acceptance": "N/A",
+    "mode": "CLASSIFICATION_QUARANTINE"
+  },
+  "schema_version": "1.0",
+  "source_tree_imported": false,
+  "status": "PASS"
+}

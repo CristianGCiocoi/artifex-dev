@@ -1,72 +1,95 @@
 {
   "acceptance": {
     "acceptance_commit": null,
-    "blocked": [],
-    "contract_digest": "77a0a4330677c814cb1d6cb874cd8f759662f5351812acffb1fea7f73f5b646b",
+    "blocked": [
+      "BLK-M6A-CLAUDE-CODE-UNAVAILABLE"
+    ],
+    "contract_digest": "e7c7a02ee61e64bfda4b3a18660b460967b8d167fa0734723907ca64316c82f5",
     "evidence_classes": {
       "BLACK_BOX_OUTCOME": {
-        "evidence": [],
-        "required_m8a": true,
-        "status": "PENDING"
+        "evidence": [
+          "EVIDENCE/M6A-NONLIVE-QUALIFICATION.json"
+        ],
+        "required_m6a": true,
+        "status": "BLOCKED_EXTERNAL_PREREQUISITE"
       },
       "COMPONENT": {
-        "evidence": [],
-        "required_m8a": true,
-        "status": "PENDING"
+        "evidence": [
+          "EVIDENCE/M6A-VALIDATION.yaml"
+        ],
+        "required_m6a": true,
+        "status": "PASS"
       },
       "DASHBOARD": {
-        "evidence": [],
-        "required_m8a": true,
-        "status": "PENDING"
+        "evidence": [
+          "EVIDENCE/M6A-VALIDATION.yaml"
+        ],
+        "required_m6a": true,
+        "status": "PASS"
       },
       "DESIGN_CONFORMANCE": {
-        "evidence": [],
-        "required_m8a": true,
-        "status": "PENDING"
+        "evidence": [
+          "EVIDENCE/M6A-VALIDATION.yaml"
+        ],
+        "required_m6a": true,
+        "status": "PASS"
       },
       "DOCUMENTATION": {
-        "evidence": [],
-        "required_m8a": true,
-        "status": "PENDING"
+        "evidence": [
+          "EVIDENCE/M6A-VALIDATION.yaml"
+        ],
+        "required_m6a": true,
+        "status": "PASS"
       },
       "DOMAIN_INTEGRATION": {
-        "evidence": [],
-        "required_m8a": true,
-        "status": "PENDING"
+        "evidence": [
+          "EVIDENCE/M6A-VALIDATION.yaml"
+        ],
+        "required_m6a": true,
+        "status": "PASS"
       },
       "MIGRATION": {
-        "evidence": [],
-        "required_m8a": false,
-        "status": "NOT_APPLICABLE"
+        "evidence": [
+          "EVIDENCE/M6A-NONLIVE-QUALIFICATION.json"
+        ],
+        "required_m6a": true,
+        "status": "BLOCKED_EXTERNAL_PREREQUISITE"
       },
       "PROVIDER_CERTIFICATION": {
-        "evidence": [],
-        "required_m8a": false,
-        "status": "NOT_APPLICABLE"
+        "evidence": [
+          "EVIDENCE/M6A-NONLIVE-QUALIFICATION.json"
+        ],
+        "required_m6a": true,
+        "status": "BLOCKED_EXTERNAL_PREREQUISITE"
       },
       "PUBLIC_COMPOSITION": {
-        "evidence": [],
-        "required_m8a": true,
-        "status": "PENDING"
+        "evidence": [
+          "EVIDENCE/M6A-NONLIVE-QUALIFICATION.json"
+        ],
+        "required_m6a": true,
+        "status": "PASS"
       },
       "SECURITY_AUTHORITY": {
-        "evidence": [],
-        "required_m8a": true,
-        "status": "PENDING"
+        "evidence": [
+          "EVIDENCE/M6A-VALIDATION.yaml"
+        ],
+        "required_m6a": true,
+        "status": "PASS"
       }
     },
     "frozen_architecture_baseline": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
-    "implementation_baseline_commit": null,
+    "implementation_baseline_commit": "8645cb103f8956143d477114b2842d14347f35a1",
     "mandatory_journeys": [
-      "J12"
+      "J02",
+      "J11"
     ],
     "mandatory_work_complete": false,
-    "migration": "ELIGIBLE_PROVENANCE_BOUND_V1_KNOWLEDGE_ONLY_PENDING",
-    "milestone": "M8A",
+    "migration": "V1_CLAUDE_SETUP_REVALIDATION_BLOCKED_UNTIL_REAL_READINESS",
+    "milestone": "M6A",
     "schema_version": "1.0",
     "superseded": [],
     "unresolved_contradiction": null,
-    "verdict": "IN_PROGRESS"
+    "verdict": "BLOCKED_EXTERNAL_PREREQUISITE"
   },
   "adrs": [
     {
@@ -733,6 +756,11 @@
       "sha256": "19ed19d6a2080b999da0052adb518f504a3da6c64d33105745faffb1fd62fce0"
     },
     {
+      "bytes": 899,
+      "path": "implementation/EVIDENCE/M10-READINESS-DISCOVERY.yaml",
+      "sha256": "bc235728bfeff21948d9a1bafd06cd846eb110e82a941b44c68069b19ff17dc0"
+    },
+    {
       "bytes": 3620,
       "path": "implementation/EVIDENCE/M2-VALIDATION.yaml",
       "sha256": "892f6c74fba60c6634ca45669146dc52e1efbc5c624fbea7503cd864e5c2f2b2"
@@ -776,6 +804,16 @@
       "bytes": 2147,
       "path": "implementation/EVIDENCE/M6A-VALIDATION.yaml",
       "sha256": "76fc1ed3f015debb63acb1b0179f5ee92df702e78b6124a7321040f443b77fc2"
+    },
+    {
+      "bytes": 952,
+      "path": "implementation/EVIDENCE/M8A-PUBLIC-OUTCOME.json",
+      "sha256": "f227f743aad9c14a004a5457665579dab81d75332e1d308eaeea2d28af8523c5"
+    },
+    {
+      "bytes": 1943,
+      "path": "implementation/EVIDENCE/M8A-VALIDATION.yaml",
+      "sha256": "96f74f4979e92d1f6f829d45418fde2a6f7680684f3c0eeff05a75b6b8959cde"
     },
     {
       "bytes": 3220,
@@ -1668,13 +1706,15 @@
       "title": "J11 — Cross-provider Continuity"
     },
     {
-      "blocker": "M0 has no mandatory journeys; milestone dependencies not accepted",
-      "environment": null,
-      "evidence": [],
+      "blocker": null,
+      "environment": "CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS",
+      "evidence": [
+        "EVIDENCE/M8A-PUBLIC-OUTCOME.json"
+      ],
       "id": "J12",
-      "last_run": null,
-      "public_shipping_composition": null,
-      "status": "NOT_STARTED",
+      "last_run": "2026-08-27",
+      "public_shipping_composition": "INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS",
+      "status": "PASS",
       "title": "J12 — Organizational Knowledge"
     },
     {
@@ -1865,7 +1905,7 @@
     "m4_target_interaction_governance_state": "M4_ACCEPTED_ADDITIVE_STATE",
     "m5_docs_dashboard_classification": "M5_ACCEPTED_CURRENT_STALE_MISSING_CLASSIFICATION",
     "m6a_v1_claude_setup_revalidation": "BLOCKED_UNTIL_SUPPORTED_CLAUDE_READINESS",
-    "m8a_v1_instance_knowledge_promotion": "PENDING_ELIGIBILITY_AND_PROVENANCE_REVIEW",
+    "m8a_v1_instance_knowledge_promotion": "CLASSIFICATION_QUARANTINE_ONLY_ACCEPTANCE_NA",
     "migration_execution": "M2_ACCEPTED_EMPTY_RUNSTORE",
     "milestone": "M3",
     "mode": "M3_ACCEPTED_PROVIDER_SETUP_SCHEMA",
@@ -1975,14 +2015,14 @@
       "title": "Fresh-Machine Installation & Bootstrap"
     },
     {
-      "accepted": false,
+      "accepted": true,
       "depends_on": [
         "M4"
       ],
       "id": "M8A",
       "mandatory_for_core_ga": true,
       "started": true,
-      "state": "ACTIVE",
+      "state": "ACCEPTED",
       "title": "Organizational Knowledge"
     },
     {
@@ -2069,13 +2109,23 @@
       "scope": "BOOTSTRAP",
       "state": "RESOLVED_ROUTINE_IMPLEMENTATION_CHOICE",
       "unrelated_work_may_continue": true
+    },
+    {
+      "evidence": [
+        "EVIDENCE/M10-READINESS-DISCOVERY.yaml"
+      ],
+      "id": "OBS-M10-MISSING-CURRENT-HANDOFF",
+      "required_authority": "ARTIFEX_ATLAS_HANDOFF_OWNER",
+      "scope": "M10",
+      "state": "READY_UNCLAIMED_MISSING_CURRENT_HANDOFF",
+      "unrelated_work_may_continue": true
     }
   ],
   "program": {
     "architecture_status": "FROZEN",
     "branch": "codex/artifex-2-m8a",
-    "current_milestone": "M8A",
-    "current_status": "ACTIVE_WITH_UNRELATED_M6A_EXTERNAL_GATE",
+    "current_milestone": "M6A",
+    "current_status": "BLOCKED_DAG_FRONTIER_EXTERNAL_PREREQUISITE",
     "dashboard_state": "CURRENT",
     "directory_variance": "PACKAGING_NAME_VARIANCE_ACCEPTED",
     "handoff_declared_directory": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF",
@@ -2093,7 +2143,7 @@
     "m5_started": true,
     "m6a_started": true,
     "m8a_started": true,
-    "next_integration_point": "Qualify M8A J12 while preserving the independent M6A Claude gate",
+    "next_integration_point": "Resolve M6A by installing/authenticating supported Claude Code; M7/M9/M12 remain dependency-blocked",
     "recorded_date": "2026-08-27",
     "target_release": "2.0.0"
   },
@@ -2368,16 +2418,16 @@
   "summary": {
     "active_blockers": 1,
     "adr_count": 24,
-    "current_milestone": "M8A",
-    "evidence_items": 15,
+    "current_milestone": "M6A",
+    "evidence_items": 18,
     "invariant_count": 34,
     "journey_states": {
       "BLOCKED_EXTERNAL_PREREQUISITE": 2,
       "M3_VERTICAL_SLICE_ONLY": 1,
-      "NOT_STARTED": 6,
-      "PASS": 11
+      "NOT_STARTED": 5,
+      "PASS": 12
     },
-    "milestones_accepted": 6,
+    "milestones_accepted": 7,
     "milestones_started": 8,
     "milestones_total": 16,
     "provider_step_states": {
@@ -2387,9 +2437,8 @@
     },
     "ready_milestones": [],
     "workstream_states": {
-      "ACTIVE": 1,
       "BLOCKED_EXTERNAL_PREREQUISITE": 1,
-      "COMPLETE": 13,
+      "COMPLETE": 14,
       "PARTIAL_COMPLETE_WITH_EXTERNAL_GATE": 1
     }
   },
@@ -2706,7 +2755,7 @@
         "M8A-CONTRACT",
         "FROZEN-INVARIANTS"
       ],
-      "state": "ACTIVE",
+      "state": "COMPLETE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m8a"
     }
   ]
