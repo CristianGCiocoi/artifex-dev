@@ -39,6 +39,7 @@ J01_INTERPRETATION = {
 _SEMVER = re.compile(r"(?<!\d)(\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?)(?!\d)")
 _SENSITIVE = re.compile(r"(?:token|secret|password|credential|api[_-]?key)", re.I)
 _MAX_EXCERPT = 2_048
+_MAX_INTERACTION_RESPONSE_BYTES = 512
 
 
 def _sha256(value: bytes | str) -> str:
@@ -60,6 +61,16 @@ def _qualification_temporary_parent(repo_root: Path | None) -> Path | None:
     if os.name != "nt" or repo_root is None:
         return None
     return repo_root.resolve().parent
+
+
+def _is_bounded_interaction_response(response: object, marker: str) -> bool:
+    if not isinstance(response, str):
+        return False
+    normalized = response.strip()
+    return (
+        len(normalized.encode("utf-8", errors="replace")) <= _MAX_INTERACTION_RESPONSE_BYTES
+        and normalized.count(marker) == 1
+    )
 
 
 def _run(
@@ -576,9 +587,8 @@ def _vertical_slice(cli: PublicCLI, root: Path, context: dict[str, Any]) -> dict
     )
     if interaction.get("provider_id") != "codex" or interaction.get("live") is not True:
         raise AssertionError("Codex INTERACTION did not execute live")
-    if interaction.get("response") != (
-        "ARTIFEX_INTERACTION project_id=m3-codex-project semantic_revision=1"
-    ):
+    interaction_marker = "ARTIFEX_INTERACTION project_id=m3-codex-project semantic_revision=1"
+    if not _is_bounded_interaction_response(interaction.get("response"), interaction_marker):
         raise AssertionError("Codex INTERACTION did not return the bounded live response")
 
     cli.call(

@@ -100,6 +100,14 @@ def test_windows_qualification_root_avoids_protected_profile_temp(tmp_path: Path
         assert observed is None
 
 
+def test_interaction_marker_must_be_unique_and_bounded() -> None:
+    marker = "ARTIFEX_INTERACTION project_id=project semantic_revision=1"
+    assert harness._is_bounded_interaction_response(marker, marker)
+    assert harness._is_bounded_interaction_response(f"Result: {marker}.", marker)
+    assert not harness._is_bounded_interaction_response(f"{marker}\n{marker}", marker)
+    assert not harness._is_bounded_interaction_response("x" * 513 + marker, marker)
+
+
 def test_unauthenticated_codex_is_blocked(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     responses = iter(
         [
