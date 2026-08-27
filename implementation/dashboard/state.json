@@ -811,9 +811,9 @@
       "sha256": "f227f743aad9c14a004a5457665579dab81d75332e1d308eaeea2d28af8523c5"
     },
     {
-      "bytes": 1943,
+      "bytes": 1979,
       "path": "implementation/EVIDENCE/M8A-VALIDATION.yaml",
-      "sha256": "96f74f4979e92d1f6f829d45418fde2a6f7680684f3c0eeff05a75b6b8959cde"
+      "sha256": "8838b99b4041cd16cba9d5bf672f72fc92f07a89d38566fafea1d02c38251cb6"
     },
     {
       "bytes": 3220,
@@ -2135,7 +2135,7 @@
     "id": "ARTIFEX-2.0-IMPLEMENTATION",
     "implementation_plan_status": "FROZEN",
     "intake_commit": "5cc5dcfeb420a6df171a44426c04a0f08fa1e877",
-    "latest_accepted_commit": "df886820a99de84876c4bb9151e53d6322248c59",
+    "latest_accepted_commit": "270806d1d22fc49c52bf37216027d56c11031542",
     "m1_started": true,
     "m2_started": true,
     "m3_started": true,

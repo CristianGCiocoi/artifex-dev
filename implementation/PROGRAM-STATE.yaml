@@ -13,7 +13,7 @@ program:
   branch: codex/artifex-2-m8a
   current_milestone: M6A
   current_status: BLOCKED_DAG_FRONTIER_EXTERNAL_PREREQUISITE
-  latest_accepted_commit: df886820a99de84876c4bb9151e53d6322248c59
+  latest_accepted_commit: 270806d1d22fc49c52bf37216027d56c11031542
   next_integration_point: Resolve M6A by installing/authenticating supported Claude Code; M7/M9/M12 remain dependency-blocked
   m1_started: true
   m2_started: true

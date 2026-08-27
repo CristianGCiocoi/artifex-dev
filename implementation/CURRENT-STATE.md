@@ -13,7 +13,7 @@
 - Current status: `BLOCKED_DAG_FRONTIER_EXTERNAL_PREREQUISITE`
 - Accepted milestones: `M0, M1, M2, M3, M4, M5, M8A`
 - Ready milestones: `none`
-- Latest accepted commit: `df886820a99de84876c4bb9151e53d6322248c59`
+- Latest accepted commit: `270806d1d22fc49c52bf37216027d56c11031542`
 - Next integration point: `Resolve M6A by installing/authenticating supported Claude Code; M7/M9/M12 remain dependency-blocked`
 - M6A started: `true`
 
