@@ -11,7 +11,7 @@ from artifex.documentation import DocumentationLifecycle
 from artifex.project.authority import ProjectAuthority, SemanticProposal, SemanticRevision
 from artifex.project.catalog import ProjectCatalog
 from artifex.project.errors import ProjectError
-from artifex.project.model import ProjectModel
+from artifex.project.model import LifecycleContribution, ProjectModel
 from artifex.project.projections import (
     ProjectionFramework,
     render_project_baseline,
@@ -169,6 +169,53 @@ class ProjectControlService:
         RealityReconciliationService(root).resolve_proposal(proposal_id)
         DocumentationLifecycle(root).mark_accepted_change(previous, revision)
         dashboard = render_project_projection(root, revision, entry)
+        return self._result(revision, entry.to_dict(), dashboard)
+
+    def advance_lifecycle(
+        self,
+        name_or_alias: str,
+        contribution: LifecycleContribution,
+        *,
+        expected_revision: int,
+        authority_actor: str = "artifex-project-authority",
+    ) -> dict[str, Any]:
+        """Accept one ordered collaborative lifecycle contribution.
+
+        The interaction actor remains proposal attribution. Acceptance still flows
+        through Project Authority and optimistic semantic revisioning.
+        """
+
+        entry, root = self.catalog.reachable_location(name_or_alias)
+        authority = ProjectAuthority(root)
+        current = authority.current()
+        if current.number != expected_revision:
+            raise ValueError(
+                "semantic revision conflict: "
+                f"expected {expected_revision}, current {current.number}"
+            )
+        updated = ProjectModel(
+            project=current.model.project,
+            git=current.model.git,
+            artifacts=current.model.artifacts,
+            entities=current.model.entities,
+            governance=current.model.governance.advance(contribution),
+            schema_version=current.model.schema_version,
+        )
+        proposal = authority.propose(
+            updated,
+            expected_revision=expected_revision,
+            actor=contribution.actor_id,
+            source="INTERACTION_LIFECYCLE",
+        )
+        revision = authority.accept(
+            proposal.id,
+            expected_revision=expected_revision,
+            actor=authority_actor,
+        )
+        entry = self.catalog.record_revision(
+            entry.project_id, revision.number, revision.accepted_at
+        )
+        dashboard = render_project_baseline(root, revision, entry)
         return self._result(revision, entry.to_dict(), dashboard)
 
     def observe_external(self, name_or_alias: str, *, actor: str = "external") -> dict[str, Any]:

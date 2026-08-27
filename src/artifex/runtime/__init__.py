@@ -2,6 +2,16 @@
 
 from artifex.runtime.acceptance import RuntimeAcceptanceAuthority
 from artifex.runtime.coordinator import ExecutionCoordinator
+from artifex.runtime.governance import (
+    ControlScope,
+    DecisionOutcome,
+    InteractionSession,
+    InteractionSessionManager,
+    InteractionState,
+    MaterialDecisionManager,
+    OperationalControlManager,
+    OperationalControlState,
+)
 from artifex.runtime.models import (
     AcceptanceDecision,
     AcceptanceOutcome,
@@ -40,8 +50,10 @@ __all__ = [
     "ActorPrincipal",
     "ActorType",
     "AttemptState",
+    "ControlScope",
     "CoordinatorFencedError",
     "CredentialReference",
+    "DecisionOutcome",
     "DelegationGrant",
     "DispatchAuthorization",
     "EnvelopeError",
@@ -50,8 +62,14 @@ __all__ = [
     "ExecutionCoordinator",
     "ExecutionEnvelope",
     "FenceToken",
+    "InteractionSession",
+    "InteractionSessionManager",
+    "InteractionState",
     "ManagedRuntimeService",
+    "MaterialDecisionManager",
     "Materiality",
+    "OperationalControlManager",
+    "OperationalControlState",
     "ProjectJobState",
     "PromotionConflictError",
     "ReconciliationOutcome",

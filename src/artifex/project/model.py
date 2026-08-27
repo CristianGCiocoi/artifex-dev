@@ -44,6 +44,98 @@ class EntityKind(StrEnum):
     TASK = "task"
 
 
+class LifecycleStage(StrEnum):
+    IDEA = "IDEA"
+    EXPLORATION = "EXPLORATION"
+    RESEARCH = "RESEARCH"
+    DEFINITION = "DEFINITION"
+    ARCHITECTURE = "ARCHITECTURE"
+    REQUIREMENTS_ADRS = "REQUIREMENTS_ADRS"
+    PLAN = "PLAN"
+    ENVELOPE_PROPOSED = "ENVELOPE_PROPOSED"
+    APPROVED_PLAN = "APPROVED_PLAN"
+
+
+_LIFECYCLE_ORDER = tuple(LifecycleStage)
+
+
+@dataclass(frozen=True, slots=True)
+class LifecycleContribution:
+    stage: LifecycleStage
+    summary: str
+    actor_id: str
+    session_id: str
+    evidence_refs: tuple[str, ...] = ()
+    decision_refs: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        if not all(value.strip() for value in (self.summary, self.actor_id, self.session_id)):
+            raise ValueError("lifecycle contribution summary, actor and session are required")
+        if any(not value.strip() for value in self.evidence_refs + self.decision_refs):
+            raise ValueError("lifecycle references must be non-empty")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "stage": self.stage.value,
+            "summary": self.summary,
+            "actor_id": self.actor_id,
+            "session_id": self.session_id,
+            "evidence_refs": list(self.evidence_refs),
+            "decision_refs": list(self.decision_refs),
+        }
+
+    @classmethod
+    def from_dict(cls, value: Mapping[str, Any]) -> LifecycleContribution:
+        return cls(
+            stage=LifecycleStage(str(value["stage"])),
+            summary=str(value["summary"]),
+            actor_id=str(value["actor_id"]),
+            session_id=str(value["session_id"]),
+            evidence_refs=tuple(_string_sequence(value.get("evidence_refs", []), "evidence_refs")),
+            decision_refs=tuple(_string_sequence(value.get("decision_refs", []), "decision_refs")),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class ProjectGovernanceState:
+    stage: LifecycleStage = LifecycleStage.IDEA
+    contributions: tuple[LifecycleContribution, ...] = ()
+
+    def __post_init__(self) -> None:
+        previous = -1
+        for contribution in self.contributions:
+            position = _LIFECYCLE_ORDER.index(contribution.stage)
+            if position < previous:
+                raise ValueError("lifecycle contributions must be monotonic")
+            previous = position
+        if self.contributions and self.contributions[-1].stage is not self.stage:
+            raise ValueError("lifecycle stage must match the latest contribution")
+
+    def advance(self, contribution: LifecycleContribution) -> ProjectGovernanceState:
+        current = _LIFECYCLE_ORDER.index(self.stage)
+        target = _LIFECYCLE_ORDER.index(contribution.stage)
+        if target != current + 1:
+            raise ValueError(
+                f"lifecycle must advance one stage at a time: {self.stage.value} -> "
+                f"{contribution.stage.value}"
+            )
+        return ProjectGovernanceState(contribution.stage, (*self.contributions, contribution))
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "stage": self.stage.value,
+            "contributions": [item.to_dict() for item in self.contributions],
+        }
+
+    @classmethod
+    def from_dict(cls, value: Mapping[str, Any]) -> ProjectGovernanceState:
+        contributions = _mapping_sequence(value.get("contributions", []), "contributions")
+        return cls(
+            stage=LifecycleStage(str(value.get("stage", LifecycleStage.IDEA.value))),
+            contributions=tuple(LifecycleContribution.from_dict(item) for item in contributions),
+        )
+
+
 @dataclass(frozen=True, slots=True)
 class Provenance:
     path: str
@@ -186,6 +278,7 @@ class ProjectModel:
     git: GitState
     artifacts: tuple[Artifact, ...] = ()
     entities: tuple[StructuredEntity, ...] = ()
+    governance: ProjectGovernanceState = field(default_factory=ProjectGovernanceState)
     schema_version: str = SCHEMA_VERSION
 
     def __post_init__(self) -> None:
@@ -210,13 +303,18 @@ class ProjectModel:
             raise ValueError(f"entities reference missing artifacts: {missing}")
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        value: dict[str, Any] = {
             "schema_version": self.schema_version,
             "project": self.project.to_dict(),
             "git": self.git.to_dict(),
             "artifacts": [artifact.to_dict() for artifact in self.artifacts],
             "entities": [entity.to_dict() for entity in self.entities],
         }
+        # Preserve the exact M1 portable representation/fingerprint until M4
+        # governance state is first accepted for this Project.
+        if self.governance != ProjectGovernanceState():
+            value["governance"] = self.governance.to_dict()
+        return value
 
     @classmethod
     def from_dict(cls, value: Mapping[str, Any]) -> ProjectModel:
@@ -224,6 +322,7 @@ class ProjectModel:
         git_value = _mapping(value.get("git"), "git")
         artifact_values = _mapping_sequence(value.get("artifacts", []), "artifacts")
         entity_values = _mapping_sequence(value.get("entities", []), "entities")
+        governance_value = _mapping(value.get("governance", {}), "governance")
         remote_values = _mapping_sequence(git_value.get("remotes", []), "git.remotes")
         project = ProjectInfo(
             id=str(project_value["id"]),
@@ -245,6 +344,7 @@ class ProjectModel:
             git=git,
             artifacts=tuple(Artifact.from_dict(item) for item in artifact_values),
             entities=tuple(StructuredEntity.from_dict(item) for item in entity_values),
+            governance=ProjectGovernanceState.from_dict(governance_value),
             schema_version=str(value.get("schema_version", SCHEMA_VERSION)),
         )
 

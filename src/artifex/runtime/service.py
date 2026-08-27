@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
 from pathlib import Path
 from threading import Event, Thread
@@ -11,15 +11,23 @@ from time import time
 from artifex.project import ProjectModel
 from artifex.runtime.acceptance import RuntimeAcceptanceAuthority
 from artifex.runtime.coordinator import ExecutionCoordinator
+from artifex.runtime.governance import (
+    InteractionSessionManager,
+    MaterialDecisionManager,
+    OperationalControlManager,
+)
 from artifex.runtime.models import (
     AcceptanceDecision,
     AcceptanceOutcome,
     ActorLike,
     ActorPrincipal,
+    ActorType,
     DispatchAuthorization,
     EvidenceRecord,
     ExecutionEnvelope,
     ReconciliationOutcome,
+    RuntimeAuthorizationError,
+    actor_principal,
 )
 from artifex.runtime.store import SQLiteRunStore
 from artifex.runtime.workspace import WorkspaceManager
@@ -48,6 +56,9 @@ class ManagedRuntimeService:
         self.acceptance = RuntimeAcceptanceAuthority(
             self.store, self.coordinator.token, clock=clock
         )
+        self.interactions = InteractionSessionManager(self.store, self.coordinator, clock=clock)
+        self.decisions = MaterialDecisionManager(self.store, self.coordinator, clock=clock)
+        self.controls = OperationalControlManager(self.store, self.coordinator, clock=clock)
         root = (
             Path(workspace_root)
             if workspace_root is not None
@@ -89,6 +100,7 @@ class ManagedRuntimeService:
         self.coordinator.create_project_job(project_job_id, run_id, purpose, actor_id=actor_id)
         self.coordinator.create_attempt(attempt_id, project_job_id, actor_id=actor_id)
         if not envelope.allowed_providers:
+            self.controls.assert_dispatch_allowed(attempt_id)
             self.coordinator.start_attempt(attempt_id, actor_id=actor_id)
         return {
             **self.coordinator.snapshot(run_id),
@@ -110,6 +122,7 @@ class ManagedRuntimeService:
         credential_reference_ids: tuple[str, ...] = (),
         correlation_id: str | None = None,
     ) -> DispatchAuthorization:
+        self.controls.assert_dispatch_allowed(attempt_id, provider_id=provider_id)
         authorization = self.coordinator.authorize_attempt_dispatch(
             attempt_id,
             provider_id=provider_id,
@@ -124,6 +137,54 @@ class ManagedRuntimeService:
         )
         self.coordinator.start_attempt(attempt_id, actor_id=actor)
         return authorization
+
+    def authorize_approved_run(
+        self,
+        envelope_id: str,
+        envelope_version: int,
+        *,
+        workstream_id: str,
+        run_id: str,
+        project_job_id: str,
+        attempt_id: str,
+        purpose: str,
+        actor_id: ActorLike,
+    ) -> dict[str, object]:
+        """Create authorized runtime state from an already approved Envelope.
+
+        The Attempt remains PENDING: authorization is not dispatch.
+        """
+
+        envelope = self.store.envelope(envelope_id, envelope_version)
+        if envelope is None or not bool(envelope["approved"]):
+            raise ValueError("Run authorization requires a previously approved Envelope")
+        project_id = str(envelope["project_id"])
+        principal = actor_principal(actor_id)
+        principal.require("run:authorize", project_id, now=self.coordinator.clock())
+        if isinstance(actor_id, ActorPrincipal) and principal.actor_type in {
+            ActorType.INTERACTION_CLIENT,
+            ActorType.PROVIDER,
+            ActorType.AGENT,
+        }:
+            raise RuntimeAuthorizationError(
+                "interaction, provider, and agent actors cannot authorize a Run"
+            )
+        self.coordinator.create_workstream(workstream_id, project_id, actor_id=actor_id)
+        self.coordinator.create_run(
+            run_id,
+            workstream_id,
+            project_id,
+            envelope_id,
+            envelope_version,
+            actor_id=actor_id,
+        )
+        self.coordinator.create_project_job(project_job_id, run_id, purpose, actor_id=actor_id)
+        self.coordinator.create_attempt(attempt_id, project_job_id, actor_id=actor_id)
+        return {
+            **self.coordinator.snapshot(run_id),
+            "run_authorized": True,
+            "provider_dispatch": False,
+        }
 
     @contextmanager
     def coordinator_heartbeat(self, *, interval_seconds: float | None = None) -> Iterator[None]:
@@ -198,6 +259,7 @@ class ManagedRuntimeService:
         evidence_ids: tuple[str, ...] = (),
         correlation_id: str | None = None,
     ) -> AcceptanceDecision:
+        self.decisions.assert_project_job_unblocked(project_job_id)
         decision = self.acceptance.decide(
             project_job_id,
             AcceptanceOutcome.ACCEPT,
@@ -252,6 +314,7 @@ class ManagedRuntimeService:
         *,
         actor_id: ActorLike,
     ) -> int:
+        self.decisions.assert_project_job_unblocked(decision.project_job_id)
         return self.workspaces.promote(workspace_id, model, decision, actor_id=actor_id)
 
     def promote_accepted_workspace(
@@ -283,9 +346,17 @@ class ManagedRuntimeService:
         return self.promote_workspace(workspace_id, model, decision, actor_id=actor_id)
 
     def status(self, run_id: str) -> dict[str, object]:
+        snapshot = self.coordinator.snapshot(run_id)
+        run = snapshot["run"]
+        if not isinstance(run, Mapping):
+            raise ValueError("runtime snapshot Run is invalid")
+        project_id = str(run["project_id"])
         return {
-            **self.coordinator.snapshot(run_id),
+            **snapshot,
             "audit": list(self.store.audit()),
+            "interaction_sessions": [item.to_dict() for item in self.interactions.list(project_id)],
+            "decision_requests": list(self.store.decision_requests(project_id)),
+            "operational_controls": list(self.store.operational_controls()),
             "projection": {
                 "scope": "RUNTIME",
                 "authoritative": False,

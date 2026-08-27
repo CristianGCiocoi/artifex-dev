@@ -93,6 +93,8 @@ class SQLiteRunStore:
         actor: ActorLike | None = None,
         correlation_id: str | None = None,
     ) -> None:
+        if not envelope.approved:
+            raise RuntimeAuthorizationError("only approved Execution Envelopes may be persisted")
         payload = json.dumps(envelope.to_dict(), sort_keys=True, separators=(",", ":"))
         principal = actor_principal(actor if actor is not None else envelope.actor_id)
         principal.require("envelope:approve", envelope.project_id, now=now)
@@ -223,9 +225,7 @@ class SQLiteRunStore:
         value["filesystem_permissions"] = json.loads(str(value["filesystem_permissions"]))
         value["network_permissions"] = json.loads(str(value["network_permissions"]))
         value["tool_permissions"] = json.loads(str(value["tool_permissions"]))
-        value["credential_reference_ids"] = json.loads(
-            str(value["credential_reference_ids"])
-        )
+        value["credential_reference_ids"] = json.loads(str(value["credential_reference_ids"]))
         return value
 
     def record_evidence(
@@ -505,6 +505,379 @@ class SQLiteRunStore:
         value["evidence_ids"] = json.loads(str(value.get("evidence_ids", "[]")))
         return value
 
+    def propose_envelope(
+        self,
+        envelope: ExecutionEnvelope,
+        token: FenceToken,
+        *,
+        now: int,
+        actor: ActorLike,
+        correlation_id: str | None = None,
+    ) -> None:
+        if envelope.approved:
+            raise RuntimeAuthorizationError("Envelope proposal must not claim approval")
+        principal = actor_principal(actor)
+        principal.require("envelope:propose", envelope.project_id, now=now)
+        payload = json.dumps(envelope.to_dict(), sort_keys=True, separators=(",", ":"))
+        with self._transaction() as connection:
+            self._assert_fence(connection, token, now)
+            connection.execute(
+                """INSERT INTO envelope_proposals
+                   (envelope_id, version, project_id, fingerprint, proposed_by, payload,
+                    proposed_at, state)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, 'PROPOSED')""",
+                (
+                    envelope.envelope_id,
+                    envelope.version,
+                    envelope.project_id,
+                    envelope.fingerprint,
+                    principal.actor_id,
+                    payload,
+                    now,
+                ),
+            )
+            self._audit(
+                connection,
+                "ENVELOPE_PROPOSED",
+                principal,
+                "envelope",
+                envelope.envelope_id,
+                now,
+                {"version": envelope.version, "fingerprint": envelope.fingerprint},
+                correlation_id=correlation_id,
+            )
+
+    def envelope_proposal(self, envelope_id: str, version: int) -> Mapping[str, Any] | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                """SELECT * FROM envelope_proposals
+                   WHERE envelope_id = ? AND version = ?""",
+                (envelope_id, version),
+            ).fetchone()
+        if row is None:
+            return None
+        value = dict(row)
+        value["payload"] = json.loads(str(value["payload"]))
+        return value
+
+    def mark_envelope_proposal_approved(
+        self,
+        envelope_id: str,
+        version: int,
+        token: FenceToken,
+        *,
+        now: int,
+        actor: ActorLike,
+    ) -> None:
+        with self._transaction() as connection:
+            self._assert_fence(connection, token, now)
+            cursor = connection.execute(
+                """UPDATE envelope_proposals SET state = 'APPROVED'
+                   WHERE envelope_id = ? AND version = ? AND state = 'PROPOSED'""",
+                (envelope_id, version),
+            )
+            if cursor.rowcount != 1:
+                raise CoordinatorFencedError("Envelope proposal is not pending approval")
+            self._audit(
+                connection,
+                "ENVELOPE_PROPOSAL_APPROVED",
+                actor,
+                "envelope",
+                envelope_id,
+                now,
+                {"version": version},
+            )
+
+    def create_interaction_session(
+        self,
+        values: Mapping[str, Any],
+        token: FenceToken,
+        *,
+        now: int,
+        actor: ActorLike,
+    ) -> None:
+        self._validate_actor(actor)
+        columns = tuple(values)
+        with self._transaction() as connection:
+            self._assert_fence(connection, token, now)
+            connection.execute(
+                f"INSERT INTO interaction_sessions ({', '.join(columns)}) "
+                f"VALUES ({', '.join('?' for _ in columns)})",
+                tuple(values[column] for column in columns),
+            )
+            self._audit(
+                connection,
+                "INTERACTION_SESSION_OPENED",
+                actor,
+                "interaction_session",
+                str(values["session_id"]),
+                now,
+                {
+                    "project_id": values["project_id"],
+                    "opened_revision": values["opened_revision"],
+                },
+            )
+
+    def interaction_session(self, session_id: str) -> dict[str, Any] | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT * FROM interaction_sessions WHERE session_id = ?", (session_id,)
+            ).fetchone()
+        if row is None:
+            return None
+        value = dict(row)
+        value["delegated_actions"] = json.loads(str(value["delegated_actions"]))
+        return value
+
+    def interaction_sessions(self, project_id: str) -> tuple[dict[str, Any], ...]:
+        with self._connect() as connection:
+            rows = connection.execute(
+                "SELECT * FROM interaction_sessions WHERE project_id = ? ORDER BY created_at",
+                (project_id,),
+            ).fetchall()
+        return tuple(
+            {**dict(row), "delegated_actions": json.loads(str(row["delegated_actions"]))}
+            for row in rows
+        )
+
+    def update_interaction_session(
+        self,
+        session_id: str,
+        *,
+        expected_state: str,
+        state: str,
+        last_seen_revision: int,
+        token: FenceToken,
+        now: int,
+        actor: ActorLike,
+        event_type: str,
+    ) -> None:
+        self._validate_actor(actor)
+        with self._transaction() as connection:
+            self._assert_fence(connection, token, now)
+            cursor = connection.execute(
+                """UPDATE interaction_sessions
+                   SET state = ?, last_seen_revision = ?, updated_at = ?
+                   WHERE session_id = ? AND state = ?""",
+                (state, last_seen_revision, now, session_id, expected_state),
+            )
+            if cursor.rowcount != 1:
+                raise CoordinatorFencedError(
+                    f"interaction session state mismatch: {session_id}:{expected_state}"
+                )
+            self._audit(
+                connection,
+                event_type,
+                actor,
+                "interaction_session",
+                session_id,
+                now,
+                {"from": expected_state, "to": state, "last_seen_revision": last_seen_revision},
+            )
+
+    def create_decision_request(
+        self,
+        values: Mapping[str, Any],
+        token: FenceToken,
+        *,
+        now: int,
+        actor: ActorLike,
+    ) -> None:
+        self._validate_actor(actor)
+        columns = tuple(values)
+        with self._transaction() as connection:
+            self._assert_fence(connection, token, now)
+            blocked_states = json.loads(str(values["blocked_from_states"]))
+            if not isinstance(blocked_states, dict) or not blocked_states:
+                raise ValueError("DecisionRequest requires affected Workstream states")
+            for workstream_id, expected_state in blocked_states.items():
+                cursor = connection.execute(
+                    """UPDATE workstreams SET state = 'BLOCKED', updated_at = ?
+                       WHERE workstream_id = ? AND project_id = ? AND state = ?""",
+                    (now, workstream_id, values["project_id"], expected_state),
+                )
+                if cursor.rowcount != 1:
+                    raise CoordinatorFencedError(
+                        f"DecisionRequest Workstream lost race: {workstream_id}"
+                    )
+                self._audit(
+                    connection,
+                    "WORKSTREAM_BLOCKED_BY_DECISION",
+                    actor,
+                    "workstream",
+                    str(workstream_id),
+                    now,
+                    {
+                        "decision_request_id": values["decision_request_id"],
+                        "from": expected_state,
+                        "to": "BLOCKED",
+                    },
+                )
+            connection.execute(
+                f"INSERT INTO decision_requests ({', '.join(columns)}) "
+                f"VALUES ({', '.join('?' for _ in columns)})",
+                tuple(values[column] for column in columns),
+            )
+            self._audit(
+                connection,
+                "DECISION_REQUEST_CREATED",
+                actor,
+                "decision_request",
+                str(values["decision_request_id"]),
+                now,
+                {
+                    "materiality": values["materiality"],
+                    "affected_workstreams": json.loads(str(values["affected_workstreams"])),
+                },
+            )
+
+    def decision_request(self, decision_request_id: str) -> dict[str, Any] | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT * FROM decision_requests WHERE decision_request_id = ?",
+                (decision_request_id,),
+            ).fetchone()
+        return _decision_row(row)
+
+    def decision_requests(self, project_id: str) -> tuple[dict[str, Any], ...]:
+        with self._connect() as connection:
+            rows = connection.execute(
+                "SELECT * FROM decision_requests WHERE project_id = ? ORDER BY created_at",
+                (project_id,),
+            ).fetchall()
+        return tuple(value for row in rows if (value := _decision_row(row)) is not None)
+
+    def resolve_decision_request(
+        self,
+        decision_request_id: str,
+        *,
+        outcome: str,
+        resolution: str,
+        restore_workstreams: bool,
+        token: FenceToken,
+        now: int,
+        actor: ActorLike,
+    ) -> None:
+        self._validate_actor(actor)
+        with self._transaction() as connection:
+            self._assert_fence(connection, token, now)
+            row = connection.execute(
+                "SELECT * FROM decision_requests WHERE decision_request_id = ? AND state = 'OPEN'",
+                (decision_request_id,),
+            ).fetchone()
+            if row is None:
+                raise CoordinatorFencedError(f"decision request is not open: {decision_request_id}")
+            if restore_workstreams:
+                blocked_states = json.loads(str(row["blocked_from_states"]))
+                for workstream_id, target_state in blocked_states.items():
+                    cursor = connection.execute(
+                        """UPDATE workstreams SET state = ?, updated_at = ?
+                           WHERE workstream_id = ? AND state = 'BLOCKED'""",
+                        (target_state, now, workstream_id),
+                    )
+                    if cursor.rowcount != 1:
+                        raise CoordinatorFencedError(
+                            f"blocked Workstream lost race: {workstream_id}"
+                        )
+                    self._audit(
+                        connection,
+                        "WORKSTREAM_RESUMED_AFTER_DECISION",
+                        actor,
+                        "workstream",
+                        str(workstream_id),
+                        now,
+                        {
+                            "decision_request_id": decision_request_id,
+                            "from": "BLOCKED",
+                            "to": target_state,
+                        },
+                    )
+            cursor = connection.execute(
+                """UPDATE decision_requests SET state = ?, outcome = ?, resolution = ?,
+                   resolved_by = ?, resolved_at = ?
+                   WHERE decision_request_id = ? AND state = 'OPEN'""",
+                (
+                    "RESOLVED",
+                    outcome,
+                    resolution,
+                    actor_principal(actor).actor_id,
+                    now,
+                    decision_request_id,
+                ),
+            )
+            if cursor.rowcount != 1:
+                raise CoordinatorFencedError(f"decision request lost race: {decision_request_id}")
+            self._audit(
+                connection,
+                "DECISION_REQUEST_RESOLVED",
+                actor,
+                "decision_request",
+                decision_request_id,
+                now,
+                {"outcome": outcome, "resolution": resolution},
+            )
+
+    def set_operational_control(
+        self,
+        *,
+        scope_type: str,
+        scope_id: str,
+        project_id: str | None,
+        state: str,
+        reason: str,
+        generation: int,
+        token: FenceToken,
+        now: int,
+        actor: ActorLike,
+    ) -> None:
+        self._validate_actor(actor)
+        with self._transaction() as connection:
+            self._assert_fence(connection, token, now)
+            connection.execute(
+                """INSERT INTO operational_controls
+                   (scope_type, scope_id, project_id, state, reason, generation, actor_id,
+                    updated_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                   ON CONFLICT(scope_type, scope_id) DO UPDATE SET
+                   project_id = excluded.project_id, state = excluded.state,
+                   reason = excluded.reason, generation = excluded.generation,
+                   actor_id = excluded.actor_id, updated_at = excluded.updated_at""",
+                (
+                    scope_type,
+                    scope_id,
+                    project_id,
+                    state,
+                    reason,
+                    generation,
+                    actor_principal(actor).actor_id,
+                    now,
+                ),
+            )
+            self._audit(
+                connection,
+                "OPERATIONAL_CONTROL_CHANGED",
+                actor,
+                "operational_control",
+                f"{scope_type}:{scope_id}",
+                now,
+                {"state": state, "reason": reason, "generation": generation},
+            )
+
+    def operational_control(self, scope_type: str, scope_id: str) -> dict[str, Any] | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT * FROM operational_controls WHERE scope_type = ? AND scope_id = ?",
+                (scope_type, scope_id),
+            ).fetchone()
+        return dict(row) if row is not None else None
+
+    def operational_controls(self) -> tuple[dict[str, Any], ...]:
+        with self._connect() as connection:
+            rows = connection.execute(
+                "SELECT * FROM operational_controls ORDER BY scope_type, scope_id"
+            ).fetchall()
+        return tuple(dict(row) for row in rows)
+
     def snapshot_run(self, run_id: str) -> dict[str, Any]:
         with self._connect() as connection:
             run = connection.execute("SELECT * FROM runs WHERE run_id = ?", (run_id,)).fetchone()
@@ -562,9 +935,7 @@ class SQLiteRunStore:
                     "filesystem_permissions": json.loads(str(row["filesystem_permissions"])),
                     "network_permissions": json.loads(str(row["network_permissions"])),
                     "tool_permissions": json.loads(str(row["tool_permissions"])),
-                    "credential_reference_ids": json.loads(
-                        str(row["credential_reference_ids"])
-                    ),
+                    "credential_reference_ids": json.loads(str(row["credential_reference_ids"])),
                 }
                 for row in dispatches
             ],
@@ -768,6 +1139,36 @@ class SQLiteRunStore:
                     entity_type TEXT NOT NULL, entity_id TEXT NOT NULL,
                     occurred_at INTEGER NOT NULL, payload TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS envelope_proposals (
+                    envelope_id TEXT NOT NULL, version INTEGER NOT NULL,
+                    project_id TEXT NOT NULL, fingerprint TEXT NOT NULL,
+                    proposed_by TEXT NOT NULL, payload TEXT NOT NULL,
+                    proposed_at INTEGER NOT NULL, state TEXT NOT NULL,
+                    PRIMARY KEY (envelope_id, version)
+                );
+                CREATE TABLE IF NOT EXISTS interaction_sessions (
+                    session_id TEXT PRIMARY KEY, project_id TEXT NOT NULL,
+                    workstream_id TEXT, run_id TEXT, actor_id TEXT NOT NULL,
+                    actor_type TEXT NOT NULL, delegation_id TEXT,
+                    delegated_actions TEXT NOT NULL, opened_revision INTEGER NOT NULL,
+                    last_seen_revision INTEGER NOT NULL, state TEXT NOT NULL,
+                    reconnect_token_hash TEXT NOT NULL, created_at INTEGER NOT NULL,
+                    updated_at INTEGER NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS decision_requests (
+                    decision_request_id TEXT PRIMARY KEY, project_id TEXT NOT NULL,
+                    run_id TEXT, requested_by TEXT NOT NULL, materiality TEXT NOT NULL,
+                    question TEXT NOT NULL, affected_workstreams TEXT NOT NULL,
+                    blocked_from_states TEXT NOT NULL, state TEXT NOT NULL,
+                    outcome TEXT, resolution TEXT, resolved_by TEXT,
+                    created_at INTEGER NOT NULL, resolved_at INTEGER
+                );
+                CREATE TABLE IF NOT EXISTS operational_controls (
+                    scope_type TEXT NOT NULL, scope_id TEXT NOT NULL, project_id TEXT,
+                    state TEXT NOT NULL, reason TEXT NOT NULL, generation INTEGER NOT NULL,
+                    actor_id TEXT NOT NULL, updated_at INTEGER NOT NULL,
+                    PRIMARY KEY (scope_type, scope_id)
+                );
                 """
             )
             _ensure_column(connection, "envelopes", "fingerprint", "TEXT NOT NULL DEFAULT ''")
@@ -852,6 +1253,15 @@ def _upgrade_envelope_payload(value: Mapping[str, Any]) -> dict[str, Any]:
     return payload
 
 
+def _decision_row(row: sqlite3.Row | None) -> dict[str, Any] | None:
+    if row is None:
+        return None
+    value = dict(row)
+    value["affected_workstreams"] = json.loads(str(value["affected_workstreams"]))
+    value["blocked_from_states"] = json.loads(str(value["blocked_from_states"]))
+    return value
+
+
 def _secret_safe(value: Any, *, key: str = "") -> Any:
     if any(marker in key.casefold() for marker in _SENSITIVE_KEYS):
         return "[REDACTED]"
@@ -859,8 +1269,7 @@ def _secret_safe(value: Any, *, key: str = "") -> Any:
         return scrub_secrets(value)
     if isinstance(value, Mapping):
         return {
-            str(item_key): _secret_safe(item, key=str(item_key))
-            for item_key, item in value.items()
+            str(item_key): _secret_safe(item, key=str(item_key)) for item_key, item in value.items()
         }
     if isinstance(value, (list, tuple)):
         return [_secret_safe(item) for item in value]

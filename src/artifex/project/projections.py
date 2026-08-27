@@ -64,6 +64,7 @@ class ProjectionFramework:
             },
             "semantic_revision": revision.number,
             "semantic_fingerprint": revision.fingerprint,
+            "lifecycle_stage": revision.model.governance.stage.value,
             "catalog": entry.to_dict(),
             "documentation": {
                 "state": aggregate_state,

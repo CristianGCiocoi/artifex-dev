@@ -10,6 +10,22 @@ External repository changes are observations/divergences until a proposal is
 accepted through Project Authority. Dashboard and documentation files are
 rebuildable views and must not be used as write authority.
 
+## Operational control
+
+Operational control is scope-aware. `DRAINING`, `PAUSED`, and `EMERGENCY_STOP` block
+new dispatch at their applicable Platform, Project, Workstream, Run, ProjectJob, or
+provider scope. Existing durable state and the read/control/reconciliation surfaces
+remain available.
+
+Do not treat PAUSED as proof that an external provider stopped. When emergency
+termination is not independently confirmed, ARTIFEX records the Attempt as
+`NEEDS_RECONCILIATION`. Clear an emergency control only after explicit reconciliation.
+
+Use `control.status` to inspect both stored controls and the effective state for an
+Attempt. Runtime status also projects Interaction Sessions, DecisionRequests and
+controls from the RunStore; that projection is observational and not a second
+authority.
+
 Candidate: 9189765d392c2e03db81056e05da64e060097652
 
 Model: 82364730319cfe057f28cb6b2a6482a5e298c86b76fb4da2867e14754f43d76d

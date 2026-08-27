@@ -1,5 +1,22 @@
 # ARTIFEX User Guide
 
+## Collaborative Projects
+
+Multiple clients may attach to the same Project using Interaction Sessions. Each
+client works from an explicit semantic revision. If another client accepts a newer
+revision first, the stale client is asked to refresh or reconcile; its update is not
+silently applied.
+
+Use the collaborative lifecycle operations to move from an idea through exploration,
+research, definition, architecture, requirements/ADRs and planning. ARTIFEX records
+each accepted contribution in the Project. The final Execution Envelope is proposed
+separately and must be approved by an authorized user before a Run can be authorized.
+
+A material question appears as a DecisionRequest. Only the affected branch waits;
+unrelated authorized work continues. Platform operators may drain, safely pause, or
+emergency-stop dispatch. An uncertain external stop is shown as needing
+reconciliation, never as confirmed.
+
 Candidate: 9189765d392c2e03db81056e05da64e060097652
 
 Model: 82364730319cfe057f28cb6b2a6482a5e298c86b76fb4da2867e14754f43d76d

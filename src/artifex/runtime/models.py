@@ -316,8 +316,6 @@ class ExecutionEnvelope:
             raise EnvelopeError("Envelope version, baseline, and attempt limit must be positive")
         if not self.allowed_paths or not self.required_gates or not self.recovery_policy.strip():
             raise EnvelopeError("Envelope scope, gates, and recovery policy are required")
-        if not self.approved:
-            raise EnvelopeError("Only approved Envelopes may authorize a Run")
         normalized_paths = tuple(_safe_relative_path(path) for path in self.allowed_paths)
         if len(set(normalized_paths)) != len(normalized_paths):
             raise EnvelopeError("Envelope paths must be unique after normalization")

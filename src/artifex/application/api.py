@@ -6,7 +6,7 @@ import hashlib
 import json
 from collections.abc import Callable, Mapping, Sequence
 from contextlib import suppress
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from time import time
 from typing import Any
@@ -64,6 +64,8 @@ from artifex.integrations.claude import (
 )
 from artifex.integrations.codex import CodexIntegration, CodexProcessRunner
 from artifex.project import (
+    LifecycleContribution,
+    LifecycleStage,
     ProjectAuthority,
     ProjectControlService,
     ProjectModel,
@@ -72,11 +74,14 @@ from artifex.project import (
 from artifex.runtime import (
     ActorPrincipal,
     ActorType,
+    ControlScope,
+    DecisionOutcome,
     DelegationGrant,
     EvidenceRecord,
     ExecutionEnvelope,
     ManagedRuntimeService,
     Materiality,
+    OperationalControlState,
     ReconciliationOutcome,
     SupervisionLevel,
 )
@@ -181,8 +186,22 @@ class Application:
         self.register("documentation.status", self._documentation_status)
         self.register("documentation.regenerate", self._documentation_regenerate)
         self.register("dashboard.project", self._project_dashboard)
+        self.register("interaction.open", self._interaction_open)
+        self.register("interaction.disconnect", self._interaction_disconnect)
+        self.register("interaction.reconnect", self._interaction_reconnect)
+        self.register("interaction.close", self._interaction_close)
+        self.register("interaction.list", self._interaction_list)
+        self.register("interaction.semantic.submit", self._interaction_semantic_submit)
+        self.register("interaction.lifecycle.advance", self._interaction_lifecycle_advance)
+        self.register("governance.decision.request", self._governance_decision_request)
+        self.register("governance.decision.resolve", self._governance_decision_resolve)
+        self.register("governance.envelope.propose", self._governance_envelope_propose)
+        self.register("governance.envelope.approve", self._governance_envelope_approve)
+        self.register("control.set", self._control_set)
+        self.register("control.status", self._control_status)
         self.register("dashboard.platform", self._platform_dashboard)
         self.register("runtime.bootstrap", self._runtime_bootstrap)
+        self.register("runtime.run.authorize", self._runtime_run_authorize)
         self.register("runtime.status", self._runtime_status)
         self.register("runtime.attempt.finish", self._runtime_attempt_finish)
         self.register("runtime.attempt.cancel", self._runtime_attempt_cancel)
@@ -562,6 +581,231 @@ class Application:
         )
 
     @staticmethod
+    def _interaction_open(request: OperationRequest) -> OperationResult:
+        session, reconnect_token = _runtime_service(request).interactions.open(
+            _project_root(request),
+            actor=_required_actor(request.arguments, "actor"),
+            workstream_id=_optional_string(request.arguments, "workstream_id"),
+            run_id=_optional_string(request.arguments, "run_id"),
+            session_id=_optional_string(request.arguments, "session_id"),
+        )
+        return OperationResult(
+            ok=True,
+            value={"session": session.to_dict(), "reconnect_token": reconnect_token},
+        )
+
+    @staticmethod
+    def _interaction_disconnect(request: OperationRequest) -> OperationResult:
+        session = _runtime_service(request).interactions.disconnect(
+            _required_string(request.arguments, "session_id"),
+            actor=_required_actor(request.arguments, "actor"),
+        )
+        return OperationResult(ok=True, value={"session": session.to_dict()})
+
+    @staticmethod
+    def _interaction_reconnect(request: OperationRequest) -> OperationResult:
+        session = _runtime_service(request).interactions.reconnect(
+            _required_string(request.arguments, "session_id"),
+            _required_string(request.arguments, "reconnect_token"),
+            actor=_required_actor(request.arguments, "actor"),
+        )
+        return OperationResult(ok=True, value={"session": session.to_dict()})
+
+    @staticmethod
+    def _interaction_close(request: OperationRequest) -> OperationResult:
+        session = _runtime_service(request).interactions.close(
+            _required_string(request.arguments, "session_id"),
+            actor=_required_actor(request.arguments, "actor"),
+        )
+        return OperationResult(ok=True, value={"session": session.to_dict()})
+
+    @staticmethod
+    def _interaction_list(request: OperationRequest) -> OperationResult:
+        project_id = _required_string(request.arguments, "project_id")
+        actor = _required_actor(request.arguments, "actor")
+        actor.require("interaction:read", project_id, now=int(time()))
+        sessions = _runtime_service(request).interactions.list(project_id)
+        return OperationResult(
+            ok=True, value={"sessions": [session.to_dict() for session in sessions]}
+        )
+
+    @staticmethod
+    def _interaction_semantic_submit(request: OperationRequest) -> OperationResult:
+        runtime = _runtime_service(request)
+        actor = _required_actor(request.arguments, "actor")
+        session_id = _required_string(request.arguments, "session_id")
+        session = runtime.interactions.require_active(session_id, actor)
+        expected_revision = _required_int(request.arguments, "expected_revision")
+        if expected_revision != session.last_seen_revision:
+            raise ValueError(
+                "session revision conflict; refresh/reconcile before semantic submission"
+            )
+        projects = _project_service(request)
+        proposal = projects.propose(
+            _required_string(request.arguments, "name"),
+            _required_mapping(request.arguments, "model"),
+            expected_revision=expected_revision,
+            actor=actor.actor_id,
+            source="INTERACTION_SESSION",
+        )
+        value: dict[str, Any] = {
+            "proposal": proposal.to_dict(),
+            "accepted": False,
+            "session_id": session_id,
+        }
+        if _optional_bool(request.arguments, "accept", False):
+            accepted = projects.accept(
+                _required_string(request.arguments, "name"),
+                proposal.id,
+                expected_revision=expected_revision,
+                actor="artifex-project-authority",
+            )
+            revision = int(accepted["semantic_revision"])
+            value.update(accepted)
+            value["accepted"] = True
+            value["session"] = runtime.interactions.record_revision(
+                session_id, revision, actor=actor
+            ).to_dict()
+        return OperationResult(ok=True, value=value)
+
+    @staticmethod
+    def _interaction_lifecycle_advance(request: OperationRequest) -> OperationResult:
+        runtime = _runtime_service(request)
+        actor = _required_actor(request.arguments, "actor")
+        session_id = _required_string(request.arguments, "session_id")
+        session = runtime.interactions.require_active(session_id, actor)
+        expected_revision = _required_int(request.arguments, "expected_revision")
+        if expected_revision != session.last_seen_revision:
+            raise ValueError(
+                "session revision conflict; refresh/reconcile before lifecycle contribution"
+            )
+        contribution = LifecycleContribution(
+            stage=LifecycleStage(_required_string(request.arguments, "stage")),
+            summary=_required_string(request.arguments, "summary"),
+            actor_id=actor.actor_id,
+            session_id=session_id,
+            evidence_refs=_string_sequence(request.arguments, "evidence_refs"),
+            decision_refs=_string_sequence(request.arguments, "decision_refs"),
+        )
+        value = _project_service(request).advance_lifecycle(
+            _required_string(request.arguments, "name"),
+            contribution,
+            expected_revision=expected_revision,
+        )
+        revision = int(value["semantic_revision"])
+        value["session"] = runtime.interactions.record_revision(
+            session_id, revision, actor=actor
+        ).to_dict()
+        return OperationResult(ok=True, value=value)
+
+    @staticmethod
+    def _governance_decision_request(request: OperationRequest) -> OperationResult:
+        value = _runtime_service(request).decisions.create(
+            project_id=_required_string(request.arguments, "project_id"),
+            question=_required_string(request.arguments, "question"),
+            affected_workstreams=_string_sequence(request.arguments, "affected_workstreams"),
+            actor=_required_actor(request.arguments, "actor"),
+            run_id=_optional_string(request.arguments, "run_id"),
+            decision_request_id=_optional_string(request.arguments, "decision_request_id"),
+            materiality=Materiality(
+                str(request.arguments.get("materiality", Materiality.STRATEGIC_MATERIAL.value))
+            ),
+        )
+        return OperationResult(ok=True, value={"decision_request": value})
+
+    @staticmethod
+    def _governance_decision_resolve(request: OperationRequest) -> OperationResult:
+        value = _runtime_service(request).decisions.resolve(
+            _required_string(request.arguments, "decision_request_id"),
+            outcome=DecisionOutcome(_required_string(request.arguments, "outcome")),
+            resolution=_required_string(request.arguments, "resolution"),
+            actor=_required_actor(request.arguments, "actor"),
+        )
+        return OperationResult(ok=True, value={"decision_request": value})
+
+    @staticmethod
+    def _governance_envelope_propose(request: OperationRequest) -> OperationResult:
+        runtime = _runtime_service(request)
+        envelope_value = _required_mapping(request.arguments, "envelope")
+        _validate_full_governance_envelope(envelope_value)
+        envelope = _execution_envelope(envelope_value)
+        if envelope.approved:
+            raise ValueError("Envelope proposal must set approved=false")
+        actor = _required_actor(request.arguments, "actor")
+        runtime.store.propose_envelope(
+            envelope,
+            runtime.coordinator.token,
+            now=runtime.coordinator.clock(),
+            actor=actor,
+            correlation_id=request.context.correlation_id,
+        )
+        return OperationResult(ok=True, value={"envelope_proposal": envelope.to_dict()})
+
+    @staticmethod
+    def _governance_envelope_approve(request: OperationRequest) -> OperationResult:
+        runtime = _runtime_service(request)
+        envelope_id = _required_string(request.arguments, "envelope_id")
+        version = _required_int(request.arguments, "version")
+        value = runtime.store.envelope_proposal(envelope_id, version)
+        if value is None:
+            raise ValueError("Execution Envelope proposal does not exist")
+        proposal = _execution_envelope(_mapping(value["payload"], "Envelope proposal"))
+        if proposal.approved:
+            raise ValueError("stored Envelope proposal already claims approval")
+        actor = _required_actor(request.arguments, "actor")
+        approved = replace(proposal, approved=True)
+        runtime.coordinator.approve_envelope(
+            approved, actor=actor, correlation_id=request.context.correlation_id
+        )
+        runtime.store.mark_envelope_proposal_approved(
+            envelope_id,
+            version,
+            runtime.coordinator.token,
+            now=runtime.coordinator.clock(),
+            actor=actor,
+        )
+        return OperationResult(ok=True, value={"envelope": approved.to_dict()})
+
+    @staticmethod
+    def _control_set(request: OperationRequest) -> OperationResult:
+        runtime = _runtime_service(request)
+        actor = _required_actor(request.arguments, "actor")
+        value = runtime.controls.set(
+            scope=ControlScope(_required_string(request.arguments, "scope")),
+            scope_id=_required_string(request.arguments, "scope_id"),
+            project_id=_optional_string(request.arguments, "project_id"),
+            state=OperationalControlState(_required_string(request.arguments, "state")),
+            reason=_required_string(request.arguments, "reason"),
+            actor=actor,
+            reconciled=_optional_bool(request.arguments, "reconciled", False),
+        )
+        attempts = [
+            runtime.controls.emergency_attempt(
+                _required_string(item, "attempt_id"),
+                termination_confirmed=_optional_bool(item, "termination_confirmed", False),
+                actor=actor,
+            )
+            for item in _mapping_sequence(request.arguments, "attempts")
+        ]
+        return OperationResult(ok=True, value={"control": value, "attempts": attempts})
+
+    @staticmethod
+    def _control_status(request: OperationRequest) -> OperationResult:
+        runtime = _runtime_service(request)
+        actor = _required_actor(request.arguments, "actor")
+        project_id = _optional_string(request.arguments, "project_id") or "*"
+        actor.require("control:read", project_id, now=int(time()))
+        attempt_id = _optional_string(request.arguments, "attempt_id")
+        value: dict[str, Any] = {"controls": list(runtime.store.operational_controls())}
+        if attempt_id is not None:
+            state, controls = runtime.controls.effective_for_attempt(
+                attempt_id,
+                provider_id=_optional_string(request.arguments, "provider_id"),
+            )
+            value.update({"effective_state": state.value, "effective_controls": list(controls)})
+        return OperationResult(ok=True, value=value)
+
+    @staticmethod
     def _platform_dashboard(request: OperationRequest) -> OperationResult:
         return OperationResult(ok=True, value=_project_service(request).platform_dashboard())
 
@@ -582,6 +826,20 @@ class Application:
             actor_id=actor,
             approval_actor=approval_actor,
             correlation_id=request.context.correlation_id,
+        )
+        return OperationResult(ok=True, value=value)
+
+    @staticmethod
+    def _runtime_run_authorize(request: OperationRequest) -> OperationResult:
+        value = _runtime_service(request).authorize_approved_run(
+            _required_string(request.arguments, "envelope_id"),
+            _required_int(request.arguments, "envelope_version"),
+            workstream_id=_required_string(request.arguments, "workstream_id"),
+            run_id=_required_string(request.arguments, "run_id"),
+            project_job_id=_required_string(request.arguments, "project_job_id"),
+            attempt_id=_required_string(request.arguments, "attempt_id"),
+            purpose=_required_string(request.arguments, "purpose"),
+            actor_id=_required_actor(request.arguments, "actor"),
         )
         return OperationResult(ok=True, value=value)
 
@@ -1279,6 +1537,28 @@ def _execution_envelope(value: Mapping[str, Any]) -> ExecutionEnvelope:
         baseline_fingerprint=_optional_string(value, "baseline_fingerprint"),
         baseline_commit=_optional_string(value, "baseline_commit"),
     )
+
+
+def _validate_full_governance_envelope(value: Mapping[str, Any]) -> None:
+    required = {
+        "supervision_level",
+        "materiality",
+        "allowed_workstreams",
+        "filesystem_permissions",
+        "network_permissions",
+        "tool_permissions",
+        "data_classification",
+        "resource_budget",
+        "deadline_at",
+        "stop_conditions",
+    }
+    missing = sorted(required - set(value))
+    if missing:
+        raise ValueError(f"full M4 Execution Envelope fields are missing: {missing}")
+    _required_sequence(value, "allowed_workstreams")
+    _required_mapping(value, "resource_budget")
+    if _required_int(value, "deadline_at") < 1:
+        raise ValueError("full M4 Execution Envelope requires a positive deadline")
 
 
 def _required_actor(arguments: Mapping[str, Any], name: str) -> ActorPrincipal:

@@ -1,5 +1,17 @@
 # ARTIFEX Security Guide
 
+## Interaction and governance authority
+
+Interaction clients require authenticated, Project-scoped connect/write authority.
+Session reconnect credentials are returned only at session creation and stored as
+SHA-256 hashes in the RunStore. They do not enter Project Git, generated docs, audit
+payloads, or provider context.
+
+Envelope proposal is distinct from approval. Providers, automation, and interaction
+clients cannot approve an Execution Envelope. Strategic DecisionRequests require an
+authorized USER resolution. Operational control requires USER or ARTIFEX_SERVICE
+authority; provider and interaction identities cannot operate it.
+
 Candidate: 9189765d392c2e03db81056e05da64e060097652
 
 Model: 82364730319cfe057f28cb6b2a6482a5e298c86b76fb4da2867e14754f43d76d

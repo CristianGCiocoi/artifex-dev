@@ -119,6 +119,7 @@ class ProjectRepository:
             git=state,
             artifacts=model.artifacts,
             entities=model.entities,
+            governance=model.governance,
             schema_version=model.schema_version,
         )
         self.save(updated)
