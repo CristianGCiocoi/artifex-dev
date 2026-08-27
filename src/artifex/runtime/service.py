@@ -171,6 +171,7 @@ class ManagedRuntimeService:
     def status(self, run_id: str) -> dict[str, object]:
         return {
             **self.coordinator.snapshot(run_id),
+            "audit": list(self.store.audit()),
             "projection": {
                 "scope": "RUNTIME",
                 "authoritative": False,

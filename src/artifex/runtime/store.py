@@ -336,12 +336,20 @@ class SQLiteRunStore:
                    ORDER BY d.decided_at""",
                 (run_id,),
             ).fetchall()
+            workspaces = connection.execute(
+                """SELECT w.* FROM workspaces w JOIN attempts a
+                   ON w.attempt_id = a.attempt_id JOIN project_jobs j
+                   ON a.project_job_id = j.project_job_id WHERE j.run_id = ?
+                   ORDER BY w.workspace_id""",
+                (run_id,),
+            ).fetchall()
         return {
             "workstream": dict(workstream) if workstream is not None else None,
             "run": dict(run),
             "project_jobs": [dict(row) for row in jobs],
             "attempts": [dict(row) for row in attempts],
             "acceptance_decisions": [dict(row) for row in decisions],
+            "workspaces": [dict(row) for row in workspaces],
         }
 
     def audit(self) -> tuple[dict[str, Any], ...]:
