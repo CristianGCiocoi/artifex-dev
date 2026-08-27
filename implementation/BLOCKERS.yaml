@@ -1,5 +1,15 @@
 schema_version: '1.0'
-blockers: []
+blockers:
+- id: BLK-M6A-CLAUDE-CODE-UNAVAILABLE
+  scope: M6A
+  class: EXTERNAL_PREREQUISITE
+  status: OPEN
+  summary: Supported Claude Code executable and authenticated native session are unavailable
+  evidence:
+  - EVIDENCE/M6A-NONLIVE-QUALIFICATION.json
+  required_authority: HUMAN_ENVIRONMENT_OWNER
+  resolution: Install Claude Code >=2.1.3,<3 on PATH and establish an authenticated native session
+  unrelated_work_may_continue: true
 observations:
 - id: OBS-PACKAGE-DIRECTORY-NAME
   scope: BOOTSTRAP

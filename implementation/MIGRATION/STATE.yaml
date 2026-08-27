@@ -11,4 +11,4 @@ active_parallel_wave: [M4, M5, M6A]
 active_wave_migration_policy: ADDITIVE_ONLY_PENDING_INDEPENDENT_ACCEPTANCE
 m4_target_interaction_governance_state: M4_ACCEPTED_ADDITIVE_STATE
 m5_docs_dashboard_classification: M5_ACCEPTED_CURRENT_STALE_MISSING_CLASSIFICATION
-m6a_v1_claude_setup_revalidation: PENDING
+m6a_v1_claude_setup_revalidation: BLOCKED_UNTIL_SUPPORTED_CLAUDE_READINESS

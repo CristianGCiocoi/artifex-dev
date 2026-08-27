@@ -232,8 +232,10 @@ contracts:
   - Claude INTERACTION is live-role certified
   - Claude EXECUTION_IMPLEMENTER is live-role certified
   - Codex to Claude continuity passes
-  evidence_references: []
-  implementation_state: ACTIVE
+  evidence_references:
+  - EVIDENCE/M6A-VALIDATION.yaml
+  - EVIDENCE/M6A-NONLIVE-QUALIFICATION.json
+  implementation_state: BLOCKED_EXTERNAL_PREREQUISITE
   m0_baseline_state: NOT_APPLICABLE
 adrs:
 - id: ADR-T001

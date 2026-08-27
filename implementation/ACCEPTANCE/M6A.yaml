@@ -1,24 +1,24 @@
 schema_version: '1.0'
 milestone: M6A
 contract_digest: e7c7a02ee61e64bfda4b3a18660b460967b8d167fa0734723907ca64316c82f5
-implementation_baseline_commit: null
+implementation_baseline_commit: 8645cb103f8956143d477114b2842d14347f35a1
 acceptance_commit: null
 frozen_architecture_baseline: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
 mandatory_work_complete: false
-blocked: []
+blocked: [BLK-M6A-CLAUDE-CODE-UNAVAILABLE]
 superseded: []
 evidence_classes:
-  DESIGN_CONFORMANCE: {required_m6a: true, status: PENDING, evidence: []}
-  COMPONENT: {required_m6a: true, status: PENDING, evidence: []}
-  DOMAIN_INTEGRATION: {required_m6a: true, status: PENDING, evidence: []}
-  PUBLIC_COMPOSITION: {required_m6a: true, status: PENDING, evidence: []}
-  BLACK_BOX_OUTCOME: {required_m6a: true, status: PENDING, evidence: []}
-  SECURITY_AUTHORITY: {required_m6a: true, status: PENDING, evidence: []}
-  DOCUMENTATION: {required_m6a: true, status: PENDING, evidence: []}
-  DASHBOARD: {required_m6a: true, status: PENDING, evidence: []}
-  MIGRATION: {required_m6a: true, status: PENDING, evidence: []}
-  PROVIDER_CERTIFICATION: {required_m6a: true, status: PENDING, evidence: []}
+  DESIGN_CONFORMANCE: {required_m6a: true, status: PASS, evidence: [EVIDENCE/M6A-VALIDATION.yaml]}
+  COMPONENT: {required_m6a: true, status: PASS, evidence: [EVIDENCE/M6A-VALIDATION.yaml]}
+  DOMAIN_INTEGRATION: {required_m6a: true, status: PASS, evidence: [EVIDENCE/M6A-VALIDATION.yaml]}
+  PUBLIC_COMPOSITION: {required_m6a: true, status: PASS, evidence: [EVIDENCE/M6A-NONLIVE-QUALIFICATION.json]}
+  BLACK_BOX_OUTCOME: {required_m6a: true, status: BLOCKED_EXTERNAL_PREREQUISITE, evidence: [EVIDENCE/M6A-NONLIVE-QUALIFICATION.json]}
+  SECURITY_AUTHORITY: {required_m6a: true, status: PASS, evidence: [EVIDENCE/M6A-VALIDATION.yaml]}
+  DOCUMENTATION: {required_m6a: true, status: PASS, evidence: [EVIDENCE/M6A-VALIDATION.yaml]}
+  DASHBOARD: {required_m6a: true, status: PASS, evidence: [EVIDENCE/M6A-VALIDATION.yaml]}
+  MIGRATION: {required_m6a: true, status: BLOCKED_EXTERNAL_PREREQUISITE, evidence: [EVIDENCE/M6A-NONLIVE-QUALIFICATION.json]}
+  PROVIDER_CERTIFICATION: {required_m6a: true, status: BLOCKED_EXTERNAL_PREREQUISITE, evidence: [EVIDENCE/M6A-NONLIVE-QUALIFICATION.json]}
 mandatory_journeys: [J02, J11]
 unresolved_contradiction: null
-migration: V1_CLAUDE_SETUP_REVALIDATION_PENDING
-verdict: IN_PROGRESS
+migration: V1_CLAUDE_SETUP_REVALIDATION_BLOCKED_UNTIL_REAL_READINESS
+verdict: BLOCKED_EXTERNAL_PREREQUISITE

@@ -178,8 +178,8 @@ workstreams:
   branch: codex/artifex-2-m6a
   base_commit: 6e46c426786d2f3b1be10e483518197b4b5d06ce
   shared_contracts: [M6A-CONTRACT, FROZEN-INVARIANTS]
-  state: ACTIVE
-  blockers: []
+  state: BLOCKED_EXTERNAL_PREREQUISITE
+  blockers: [BLK-M6A-CLAUDE-CODE-UNAVAILABLE]
   integration_owner: ARTIFEX_2_ORCHESTRATOR
 - id: WS-WAVE4-INTEGRATION
   milestone: M4+M5+M6A

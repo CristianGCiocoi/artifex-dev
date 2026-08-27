@@ -12,12 +12,13 @@ journeys:
   blocker: Full clean-machine installer and managed-service Journey remains M7-owned
 - id: J02
   title: J02 — Fresh Machine + Claude
-  status: NOT_STARTED
-  environment: null
-  public_shipping_composition: null
-  evidence: []
-  last_run: null
-  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+  status: BLOCKED_EXTERNAL_PREREQUISITE
+  environment: CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS_CLAUDE_ABSENT
+  public_shipping_composition: INSTALLED_WHEEL_PUBLIC_CLI_NON_LIVE
+  evidence:
+  - EVIDENCE/M6A-NONLIVE-QUALIFICATION.json
+  last_run: '2026-08-27'
+  blocker: BLK-M6A-CLAUDE-CODE-UNAVAILABLE
 - id: J03
   title: J03 — Project Continuity
   status: PASS
@@ -90,12 +91,13 @@ journeys:
   blocker: M0 has no mandatory journeys; milestone dependencies not accepted
 - id: J11
   title: J11 — Cross-provider Continuity
-  status: NOT_STARTED
-  environment: null
-  public_shipping_composition: null
-  evidence: []
-  last_run: null
-  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+  status: BLOCKED_EXTERNAL_PREREQUISITE
+  environment: CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS_CLAUDE_ABSENT
+  public_shipping_composition: INSTALLED_WHEEL_PUBLIC_CLI_NON_LIVE
+  evidence:
+  - EVIDENCE/M6A-NONLIVE-QUALIFICATION.json
+  last_run: '2026-08-27'
+  blocker: BLK-M6A-CLAUDE-CODE-UNAVAILABLE
 - id: J12
   title: J12 — Organizational Knowledge
   status: NOT_STARTED

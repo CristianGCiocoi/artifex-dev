@@ -1,0 +1,41 @@
+{
+  "blocker": {
+    "id": "BLK-M6A-CLAUDE-CODE-UNAVAILABLE",
+    "required_resolution": "Install Claude Code >=2.1.3,<3 on PATH and establish an authenticated native session"
+  },
+  "composition": "CLEAN_INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS_NON_LIVE",
+  "discovery": {
+    "auth_command_runnable": false,
+    "executable": null,
+    "version_command_runnable": false,
+    "where_exe": "NOT_FOUND"
+  },
+  "journeys": {
+    "J02": "BLOCKED_EXTERNAL_PREREQUISITE",
+    "J11": "BLOCKED_EXTERNAL_PREREQUISITE"
+  },
+  "public_readiness": {
+    "authenticated": false,
+    "configured": true,
+    "detected": false,
+    "detail": "claude was not found on PATH",
+    "healthy": false,
+    "registered": false,
+    "state": "NOT_DETECTED",
+    "version": null
+  },
+  "role_certification": {
+    "EXECUTION_IMPLEMENTER": "PUBLIC_COMPOSITION_VERIFIED",
+    "INTERACTION": "PUBLIC_COMPOSITION_VERIFIED",
+    "live_evidence_present": false
+  },
+  "schema_version": "1.0",
+  "setup": {
+    "applied": true,
+    "credential_broker": "claude-native-session",
+    "credential_reference": "default",
+    "secret_material_present": false,
+    "vendor_configuration_mutated": false
+  },
+  "status": "BLOCKED_EXTERNAL_PREREQUISITE"
+}
