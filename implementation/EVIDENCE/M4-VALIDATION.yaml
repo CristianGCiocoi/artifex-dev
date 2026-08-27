@@ -5,7 +5,7 @@ status: PASS
 recorded_date: '2026-08-27'
 canonical_m3_baseline_commit: 6e46c426786d2f3b1be10e483518197b4b5d06ce
 m4_implementation_baseline_commit: 8645cb103f8956143d477114b2842d14347f35a1
-m4_acceptance_commit: null
+m4_acceptance_commit: 41b1767585912a792953a81cbae3efc253b8f377
 m4_contract_digest: ad8c5126ca025a81b0e70aa25f6cc88445e7c2a127b6b0b1ce6493b96bee5772
 source_quality:
   ruff: PASS

@@ -740,9 +740,9 @@
       "sha256": "9df268c6c12a47f248ec90d9259ce2c460dab35a39e43150d300c63a92bbeea8"
     },
     {
-      "bytes": 2006,
+      "bytes": 2042,
       "path": "implementation/EVIDENCE/M4-VALIDATION.yaml",
-      "sha256": "ec0086c01845810fb16cc18ba1ad1b1d568320df9ef5ad296311e09f9940de27"
+      "sha256": "c710d0296479daf31af0c449962e770993cda6f419a1d1086b1b0976e10d5965"
     },
     {
       "bytes": 3220,
@@ -2043,7 +2043,7 @@
     "id": "ARTIFEX-2.0-IMPLEMENTATION",
     "implementation_plan_status": "FROZEN",
     "intake_commit": "5cc5dcfeb420a6df171a44426c04a0f08fa1e877",
-    "latest_accepted_commit": "d3a57311e069a887e69e4037969170f554026cc4",
+    "latest_accepted_commit": "41b1767585912a792953a81cbae3efc253b8f377",
     "m1_started": true,
     "m2_started": true,
     "m3_started": true,
