@@ -127,8 +127,16 @@ class ProviderCompositionLoader:
     def _credential_reference(value: object, provider_id: str) -> CredentialReference:
         if not isinstance(value, Mapping):
             raise ProviderSetupError("credential_reference must be an object")
-        if set(value) != {"broker", "reference", "provider_id", "scopes"}:
+        if set(value) != {
+            "broker",
+            "reference",
+            "provider_id",
+            "scopes",
+            "secret_material_present",
+        }:
             raise ProviderSetupError("credential_reference fields are invalid")
+        if value.get("secret_material_present") is not False:
+            raise ProviderSetupError("credential reference cannot contain secret material")
         observed_provider = ProviderCompositionLoader._string(
             value.get("provider_id"), "credential provider_id"
         )

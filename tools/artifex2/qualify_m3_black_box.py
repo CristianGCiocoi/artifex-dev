@@ -348,7 +348,7 @@ def _j16(
         "command": codex_command,
         "roles": ["INTERACTION", "EXECUTION_IMPLEMENTER"],
         "credential_reference": {
-            "broker": "CODEX_CLI",
+            "broker": "codex-native-session",
             "reference": "default-session",
             "provider_id": "codex",
             "scopes": ["INTERACTION", "EXECUTION_IMPLEMENTER"],

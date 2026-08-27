@@ -187,8 +187,16 @@ def _normalize_provider_spec(value: Mapping[str, Any]) -> Mapping[str, Any]:
 def _normalize_credential_reference(value: object, provider_id: str) -> Mapping[str, Any]:
     if not isinstance(value, Mapping):
         raise ValueError("credential_reference must be an object")
-    if set(value) - {"broker", "reference", "provider_id", "scopes"}:
+    if set(value) - {
+        "broker",
+        "reference",
+        "provider_id",
+        "scopes",
+        "secret_material_present",
+    }:
         raise ValueError("credential_reference contains unknown fields")
+    if value.get("secret_material_present", False) is not False:
+        raise ValueError("credential_reference cannot contain secret material")
     observed = _required_text(value.get("provider_id", provider_id), "credential provider_id")
     if observed != provider_id:
         raise ValueError("credential reference provider does not match provider spec")
@@ -197,6 +205,7 @@ def _normalize_credential_reference(value: object, provider_id: str) -> Mapping[
         "reference": _required_text(value.get("reference"), "credential reference"),
         "provider_id": provider_id,
         "scopes": list(_required_text_array(value.get("scopes"), "credential scopes")),
+        "secret_material_present": False,
     }
 
 
@@ -208,6 +217,7 @@ def _default_provider_spec(provider_id: str) -> Mapping[str, Any]:
             "reference": "default",
             "provider_id": "codex",
             "scopes": ["INTERACTION", "EXECUTION_IMPLEMENTER"],
+            "secret_material_present": False,
         }
     return {
         "provider_id": provider_id,
