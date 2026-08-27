@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import subprocess
 from collections.abc import Callable, Mapping, Sequence
@@ -136,6 +137,7 @@ def _interaction_command(provider: ProviderInstance, root: Path, prompt: str) ->
     return (
         *prefix,
         "exec",
+        *_windows_sandbox_override(),
         "--sandbox",
         "read-only",
         "--ephemeral",
@@ -146,6 +148,12 @@ def _interaction_command(provider: ProviderInstance, root: Path, prompt: str) ->
         str(root),
         prompt,
     )
+
+
+def _windows_sandbox_override() -> tuple[str, ...]:
+    # Codex documents unelevated as the supported fallback when administrator-
+    # approved native setup is unavailable. It retains ACL filesystem bounds.
+    return ("-c", 'windows.sandbox="unelevated"') if os.name == "nt" else ()
 
 
 def _validated_codex_prefix(command: Sequence[str]) -> tuple[str, ...]:

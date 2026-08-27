@@ -742,7 +742,9 @@ def qualify(
     python = python.resolve()
     if not python.is_file():
         return _blocked("INSTALLED_PYTHON_NOT_FOUND", str(python))
-    with tempfile.TemporaryDirectory(prefix="artifex-m3-public-") as directory:
+    with tempfile.TemporaryDirectory(
+        prefix="artifex-m3-public-", ignore_cleanup_errors=True
+    ) as directory:
         root = Path(directory).resolve()
         environment = os.environ.copy()
         environment.pop("PYTHONPATH", None)

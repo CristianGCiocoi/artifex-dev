@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 from collections.abc import Sequence
 from pathlib import Path
@@ -151,14 +152,12 @@ def test_read_only_interaction_preserves_baseline_and_stores_hashes_only(
     )
 
     command = observed[0]
-    assert command[1:7] == (
-        "exec",
-        "--sandbox",
-        "read-only",
-        "--ephemeral",
-        "--json",
-        "--color",
-    )
+    assert command[1] == "exec"
+    assert command[command.index("--sandbox") + 1] == "read-only"
+    assert "--ephemeral" in command
+    assert "--json" in command
+    if os.name == "nt":
+        assert command[command.index("-c") + 1] == 'windows.sandbox="unelevated"'
     assert result["live"] is True
     assert result["response"] == "Safe response"
     assert _git(root, "status", "--porcelain") == ""

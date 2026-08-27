@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 import importlib
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -445,14 +446,13 @@ class CodexProcessRunner:
 
             stdout = completed.stdout or ""
             stderr = completed.stderr or ""
-            if _encoded_size(stdout) > self.max_output_bytes or _encoded_size(
-                stderr
-            ) > self.max_output_bytes:
+            if (
+                _encoded_size(stdout) > self.max_output_bytes
+                or _encoded_size(stderr) > self.max_output_bytes
+            ):
                 raise CodexProcessError("process diagnostics exceeded the configured bound")
             if completed.returncode != 0:
-                raise CodexProcessError(
-                    f"process exited non-zero (code {completed.returncode})"
-                )
+                raise CodexProcessError(f"process exited non-zero (code {completed.returncode})")
             _validate_codex_jsonl(stdout)
             if not result_path.is_file():
                 raise CodexProcessError("structured result was not produced")
@@ -525,9 +525,7 @@ class ContinuitySnapshot:
             execution_contract_fingerprint=_optional_string(
                 value.get("execution_contract_fingerprint")
             ),
-            project_model_fingerprint=_optional_string(
-                value.get("project_model_fingerprint")
-            ),
+            project_model_fingerprint=_optional_string(value.get("project_model_fingerprint")),
             schema_version=str(value.get("schema_version", "")),
             kind=str(value.get("kind", "")),
         )
@@ -665,10 +663,7 @@ class CodexIntegration:
                 f"worktree HEAD {binding.head_commit} does not match packet base "
                 f"{binding.expected_base_commit}"
             )
-        if (
-            binding.observed_project_model_fingerprint
-            != binding.project_model_fingerprint
-        ):
+        if binding.observed_project_model_fingerprint != binding.project_model_fingerprint:
             raise IntegrationError(
                 "canonical Project Model fingerprint "
                 f"{binding.observed_project_model_fingerprint} does not match packet fingerprint "
@@ -736,17 +731,13 @@ class CodexIntegration:
             raise IntegrationError("Codex harness runner must return an object")
         result = self.normalize_result(plan.packet, raw_result)
         observed_baseline = _observed_repository_baseline(root, plan.packet)
-        classified = self.submit_result(
-            plan.packet, result, current_baseline=observed_baseline
-        )
+        classified = self.submit_result(plan.packet, result, current_baseline=observed_baseline)
         if classified.status is ExecutionStatus.SUCCESS and current_baseline is not None:
             classified = self.submit_result(
                 plan.packet, classified, current_baseline=current_baseline
             )
         if classified.status is ExecutionStatus.SUCCESS:
-            _verify_success_artifacts(
-                root, plan.packet, classified, owned_paths, before
-            )
+            _verify_success_artifacts(root, plan.packet, classified, owned_paths, before)
         return classified
 
     def normalize_result(
@@ -858,9 +849,7 @@ class CodexIntegration:
                 task_contract=_required_mapping(arguments, "task_contract"),
                 context=_optional_mapping(arguments, "context"),
                 base_commit=_required_string(arguments, "base_commit"),
-                project_model_fingerprint=_required_string(
-                    arguments, "project_model_fingerprint"
-                ),
+                project_model_fingerprint=_required_string(arguments, "project_model_fingerprint"),
                 acceptance_criteria=_required_sequence(arguments, "acceptance_criteria"),
                 ownership=_optional_mapping(arguments, "ownership"),
                 expected_result=_required_mapping(arguments, "expected_result"),
@@ -948,12 +937,11 @@ def _validate_codex_command_prefix(command: Sequence[str]) -> tuple[str, ...]:
     return normalized
 
 
-def _codex_exec_command(
-    command_prefix: Sequence[str], root: Path, prompt: str
-) -> tuple[str, ...]:
+def _codex_exec_command(command_prefix: Sequence[str], root: Path, prompt: str) -> tuple[str, ...]:
     return (
         *command_prefix,
         "exec",
+        *_windows_sandbox_override(),
         "--sandbox",
         "workspace-write",
         "--ephemeral",
@@ -968,6 +956,10 @@ def _codex_exec_command(
         str(root),
         prompt,
     )
+
+
+def _windows_sandbox_override() -> tuple[str, ...]:
+    return ("-c", 'windows.sandbox="unelevated"') if os.name == "nt" else ()
 
 
 def _codex_execution_result_schema(packet: ExecutionPacket) -> Mapping[str, Any]:
@@ -1081,9 +1073,7 @@ def _canonical_project_model_fingerprint(root: Path) -> str:
     try:
         value = json.loads(model_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
-        raise IntegrationError(
-            f"cannot read canonical Project Model at {model_path}"
-        ) from exc
+        raise IntegrationError(f"cannot read canonical Project Model at {model_path}") from exc
     if not isinstance(value, Mapping):
         raise IntegrationError("canonical Project Model must be an object")
     encoded = json.dumps(
@@ -1096,9 +1086,7 @@ def _canonical_project_model_fingerprint(root: Path) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
-def _observed_repository_baseline(
-    root: Path, packet: ExecutionPacket
-) -> ExecutionBaseline:
+def _observed_repository_baseline(root: Path, packet: ExecutionPacket) -> ExecutionBaseline:
     return ExecutionBaseline(
         _git_value(_read_only_runner, root, "rev-parse", "HEAD"),
         packet.contract_fingerprint,
@@ -1148,13 +1136,9 @@ def _verify_success_artifacts(
         authority_reason = _core_authority_reason(relative, packet)
         if authority_reason is not None:
             raise IntegrationError(
-                f"Codex SUCCESS cannot claim Core authority artifact {relative}: "
-                f"{authority_reason}"
+                f"Codex SUCCESS cannot claim Core authority artifact {relative}: {authority_reason}"
             )
-        if not any(
-            relative == owner or relative.startswith(f"{owner}/")
-            for owner in owned_paths
-        ):
+        if not any(relative == owner or relative.startswith(f"{owner}/") for owner in owned_paths):
             raise IntegrationError(f"Codex result artifact is outside packet ownership: {relative}")
         if not target.is_file():
             raise IntegrationError(f"Codex SUCCESS artifact does not exist: {relative}")
@@ -1165,14 +1149,11 @@ def _verify_success_artifacts(
             )
 
 
-def _core_authority_reason(
-    relative_path: str, packet: ExecutionPacket
-) -> str | None:
+def _core_authority_reason(relative_path: str, packet: ExecutionPacket) -> str | None:
     normalized = relative_path.casefold()
     allowed_artifex_outputs = (".artifex/generated/", ".artifex/runs/")
     if normalized == ".artifex" or (
-        normalized.startswith(".artifex/")
-        and not normalized.startswith(allowed_artifex_outputs)
+        normalized.startswith(".artifex/") and not normalized.startswith(allowed_artifex_outputs)
     ):
         return "the .artifex namespace is Core-owned outside generated/run outputs"
     governing_changesets = _governing_changeset_ids(packet)

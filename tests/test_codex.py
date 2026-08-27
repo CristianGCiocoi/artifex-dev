@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 from collections.abc import Mapping
 from datetime import UTC, datetime
@@ -130,9 +131,7 @@ def _packet(
 
 
 def _model_fingerprint(repository: ProjectRepository) -> str:
-    return str(
-        generation_manifest(repository.load().to_dict())["project_model_fingerprint"]
-    )
+    return str(generation_manifest(repository.load().to_dict())["project_model_fingerprint"])
 
 
 def _execute_and_accept(
@@ -202,9 +201,7 @@ def _execute_and_accept(
     workflow.claim_complete(stage_id, outputs={output})
     workflow.transition(stage_id, StageState.VALIDATING)
 
-    validator_result = StructuredInspectionValidator(
-        "VAL-CODEX-INDEPENDENT", "1"
-    ).validate(
+    validator_result = StructuredInspectionValidator("VAL-CODEX-INDEPENDENT", "1").validate(
         ValidationContext("bound adapter execution", "codex", binding),
         inspector_id="independent-fixture",
         passed=result.status is ExecutionStatus.SUCCESS,
@@ -274,9 +271,7 @@ def test_m06_t01_detection_is_versioned_capability_rich_and_read_only() -> None:
     assert missing.version is None
     failed = detect_codex(
         which=lambda _: "/fixture/codex",
-        runner=lambda arguments: _completed(
-            list(arguments), returncode=7, stderr="probe denied"
-        ),
+        runner=lambda arguments: _completed(list(arguments), returncode=7, stderr="probe denied"),
     )
     assert failed.available is False
     assert "exited with 7" in str(failed.error)
@@ -310,9 +305,7 @@ def test_m06_t02_interface_pack_has_all_portable_agent_skills() -> None:
         content = (skills_root / name / "SKILL.md").read_text(encoding="utf-8")
         assert f"skills/{name}/SKILL.md" in content
         assert "canonical" in content.casefold() or "authority" in content.casefold()
-    assert "native codex memory" in (root / "AGENTS.md").read_text(
-        encoding="utf-8"
-    ).casefold()
+    assert "native codex memory" in (root / "AGENTS.md").read_text(encoding="utf-8").casefold()
     assert json.loads((root / "mcp.json").read_text(encoding="utf-8"))["mcpServers"]
 
 
@@ -405,9 +398,7 @@ def test_m06_t05_worker_is_bound_to_exact_worktree_and_baseline(tmp_path: Path) 
     head = _commit_all(root, "baseline")
     integration = CodexIntegration(_successful_detection())
     model_fingerprint = _model_fingerprint(repository)
-    packet = _packet(
-        integration, base_commit=head, model_fingerprint=model_fingerprint
-    )
+    packet = _packet(integration, base_commit=head, model_fingerprint=model_fingerprint)
     binding = integration.inspect_worktree(packet, root, require_clean=True)
     assert binding.bound is True
     assert binding.clean is True
@@ -577,9 +568,7 @@ def test_m06_t08_codex_only_brownfield_changeset_preserves_existing_content(
     changeset = changeset.transition(ChangeSetStatus.ACCEPTED, actor="core", commit=head)
     change_path = changesets.save(changeset)
     head = _commit_all(root, "accept brownfield changeset")
-    changeset = changeset.transition(
-        ChangeSetStatus.IMPLEMENTING, actor="core", commit=head
-    )
+    changeset = changeset.transition(ChangeSetStatus.IMPLEMENTING, actor="core", commit=head)
     changesets.save(changeset)
 
     integration = CodexIntegration(_successful_detection())
@@ -631,10 +620,7 @@ def test_m06_t09_failure_cancel_stale_noop_and_post_run_drift_fail_closed(
         return value
 
     assert integration.normalize_result(packet, raw("failed")).status is ExecutionStatus.FAIL
-    assert (
-        integration.normalize_result(packet, raw("blocked")).status
-        is ExecutionStatus.BLOCKED
-    )
+    assert integration.normalize_result(packet, raw("blocked")).status is ExecutionStatus.BLOCKED
     assert integration.cancel(packet).status is ExecutionStatus.CANCELLED
 
     stale = ExecutionBaseline(
@@ -739,9 +725,8 @@ def test_m06_t09_failure_cancel_stale_noop_and_post_run_drift_fail_closed(
         }
 
     for forbidden in authority_paths[1:]:
-        def mutate_authority(
-            _: CodexWorkerPlan, path: str = forbidden
-        ) -> Mapping[str, object]:
+
+        def mutate_authority(_: CodexWorkerPlan, path: str = forbidden) -> Mapping[str, object]:
             (root / path).write_text(f"mutated by runner: {path}\n", encoding="utf-8")
             return authority_result(path)
 
@@ -755,9 +740,7 @@ def test_m06_t09_failure_cancel_stale_noop_and_post_run_drift_fail_closed(
         model_path.write_text(json.dumps(model), encoding="utf-8")
         return authority_result(".artifex/project-model.json")
 
-    post_run_drift = integration.execute_stage(
-        authority_plan, mutate_model_after_execution
-    )
+    post_run_drift = integration.execute_stage(authority_plan, mutate_model_after_execution)
     assert post_run_drift.status is ExecutionStatus.REBASE_REQUIRED
 
 
@@ -870,6 +853,8 @@ def test_codex_process_runner_materializes_secure_bounded_exec_and_parses_result
     arguments = observed["arguments"]
     assert isinstance(arguments, list)
     assert arguments[:4] == ["npx", "--yes", "@openai/codex@0.150.1", "exec"]
+    if os.name == "nt":
+        assert arguments[arguments.index("-c") + 1] == 'windows.sandbox="unelevated"'
     assert arguments[arguments.index("--sandbox") + 1] == "workspace-write"
     assert "--ephemeral" in arguments
     assert "--json" in arguments
@@ -906,9 +891,7 @@ def test_codex_process_runner_maps_uncertain_process_outcomes_to_sanitized_unkno
             raise subprocess.TimeoutExpired(arguments, timeout=1, stderr=secret)
         return _completed(arguments, stderr=secret, returncode=17)
 
-    runner = CodexProcessRunner(
-        ("npx", "--yes", "@openai/codex@0.150.1"), process_runner=process
-    )
+    runner = CodexProcessRunner(("npx", "--yes", "@openai/codex@0.150.1"), process_runner=process)
     with pytest.raises(CodexProcessError) as captured:
         runner(plan)
     assert captured.value.outcome == "UNKNOWN"
@@ -936,8 +919,6 @@ def test_codex_process_runner_rejects_malformed_ambiguous_or_unbound_results(
         result_path.write_text(result_text, encoding="utf-8")
         return _completed(arguments, stdout=stdout)
 
-    runner = CodexProcessRunner(
-        ("npx", "--yes", "@openai/codex@0.150.1"), process_runner=process
-    )
+    runner = CodexProcessRunner(("npx", "--yes", "@openai/codex@0.150.1"), process_runner=process)
     with pytest.raises(CodexProcessError, match="UNKNOWN"):
         runner(plan)
