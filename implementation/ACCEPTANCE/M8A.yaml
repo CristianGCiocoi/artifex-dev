@@ -1,0 +1,24 @@
+schema_version: '1.0'
+milestone: M8A
+contract_digest: 77a0a4330677c814cb1d6cb874cd8f759662f5351812acffb1fea7f73f5b646b
+implementation_baseline_commit: null
+acceptance_commit: null
+frozen_architecture_baseline: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+mandatory_work_complete: false
+blocked: []
+superseded: []
+evidence_classes:
+  DESIGN_CONFORMANCE: {required_m8a: true, status: PENDING, evidence: []}
+  COMPONENT: {required_m8a: true, status: PENDING, evidence: []}
+  DOMAIN_INTEGRATION: {required_m8a: true, status: PENDING, evidence: []}
+  PUBLIC_COMPOSITION: {required_m8a: true, status: PENDING, evidence: []}
+  BLACK_BOX_OUTCOME: {required_m8a: true, status: PENDING, evidence: []}
+  SECURITY_AUTHORITY: {required_m8a: true, status: PENDING, evidence: []}
+  DOCUMENTATION: {required_m8a: true, status: PENDING, evidence: []}
+  DASHBOARD: {required_m8a: true, status: PENDING, evidence: []}
+  MIGRATION: {required_m8a: false, status: NOT_APPLICABLE, evidence: []}
+  PROVIDER_CERTIFICATION: {required_m8a: false, status: NOT_APPLICABLE, evidence: []}
+mandatory_journeys: [J12]
+unresolved_contradiction: null
+migration: ELIGIBLE_PROVENANCE_BOUND_V1_KNOWLEDGE_ONLY_PENDING
+verdict: IN_PROGRESS

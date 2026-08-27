@@ -8,14 +8,14 @@
 - Target release: `2.0.0`
 - Handoff: `ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1`
 - Intake baseline: `5cc5dcfeb420a6df171a44426c04a0f08fa1e877`
-- Branch: `codex/artifex-2-wave4`
-- Current milestone: `M6A`
-- Current status: `BLOCKED_EXTERNAL_PREREQUISITE`
+- Branch: `codex/artifex-2-m8a`
+- Current milestone: `M8A`
+- Current status: `ACTIVE_WITH_UNRELATED_M6A_EXTERNAL_GATE`
 - Accepted milestones: `M0, M1, M2, M3, M4, M5`
 - Ready milestones: `none`
 - Latest accepted commit: `df886820a99de84876c4bb9151e53d6322248c59`
-- Next integration point: `Install and authenticate supported Claude Code for M6A live J02/J11; unrelated M4/M5 dependents may continue`
-- M6A started: `true`
+- Next integration point: `Qualify M8A J12 while preserving the independent M6A Claude gate`
+- M8A started: `true`
 
 ## Work
 
@@ -27,7 +27,7 @@
 
 ## Acceptance
 
-- M6A verdict: `BLOCKED_EXTERNAL_PREREQUISITE`
+- M8A verdict: `IN_PROGRESS`
 - Mandatory work complete: `false`
-- Mandatory journeys: `J02, J11`
-- Next integration point: `Install and authenticate supported Claude Code for M6A live J02/J11; unrelated M4/M5 dependents may continue`
+- Mandatory journeys: `J12`
+- Next integration point: `Qualify M8A J12 while preserving the independent M6A Claude gate`

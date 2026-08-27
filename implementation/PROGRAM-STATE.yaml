@@ -10,17 +10,18 @@ program:
   architecture_status: FROZEN
   implementation_plan_status: FROZEN
   intake_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
-  branch: codex/artifex-2-wave4
-  current_milestone: M6A
-  current_status: BLOCKED_EXTERNAL_PREREQUISITE
+  branch: codex/artifex-2-m8a
+  current_milestone: M8A
+  current_status: ACTIVE_WITH_UNRELATED_M6A_EXTERNAL_GATE
   latest_accepted_commit: df886820a99de84876c4bb9151e53d6322248c59
-  next_integration_point: Install and authenticate supported Claude Code for M6A live J02/J11; unrelated M4/M5 dependents may continue
+  next_integration_point: Qualify M8A J12 while preserving the independent M6A Claude gate
   m1_started: true
   m2_started: true
   m3_started: true
   m4_started: true
   m5_started: true
   m6a_started: true
+  m8a_started: true
   recorded_date: '2026-08-27'
   dashboard_state: CURRENT
 target_system:
@@ -80,15 +81,15 @@ milestone_states:
     started: false
     accepted: false
   M8A:
-    state: BLOCKED_DEPENDENCY
-    started: false
+    state: ACTIVE
+    started: true
     accepted: false
   M8B:
-    state: BLOCKED_DEPENDENCY
+    state: READY_UNCLAIMED
     started: false
     accepted: false
   M8C:
-    state: BLOCKED_DEPENDENCY
+    state: READY_UNCLAIMED
     started: false
     accepted: false
   M9:
@@ -96,7 +97,7 @@ milestone_states:
     started: false
     accepted: false
   M10:
-    state: BLOCKED_DEPENDENCY
+    state: READY_UNCLAIMED
     started: false
     accepted: false
   M11:
