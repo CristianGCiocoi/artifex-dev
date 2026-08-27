@@ -3,7 +3,7 @@ kind: ARTIFEX_INTERFACE_PACK
 id: codex
 name: OpenAI Codex standalone
 integration_module: artifex.integrations.codex
-roles: [interface, harness, implementer]
+roles: [INTERACTION, EXECUTION_IMPLEMENTER]
 capabilities:
   - interactive
   - headless
@@ -26,7 +26,7 @@ authority:
   native_memory: auxiliary_only
   executor_claims: non_canonical
 execution:
-  live_default: disabled
+  live_default: envelope_and_resolver_guarded
   fixture_mode: deterministic_non_mutating
   worktree_binding: base_commit_and_project_model_fingerprint
   raw_result_identity: required_no_defaults

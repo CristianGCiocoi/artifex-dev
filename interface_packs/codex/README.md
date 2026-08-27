@@ -1,13 +1,14 @@
 # ARTIFEX Codex Interface Pack
 
-This pack makes Codex a standalone ARTIFEX interface, harness, and implementer.
+This pack makes Codex a standalone ARTIFEX interaction client and execution implementer.
 Hermes is not required. Repository artifacts remain canonical; Codex sessions,
 transcripts, and native memory are auxiliary.
 
-The adapter performs only read-only Codex detection (`codex --version`) and Git
-worktree inspection. Stage preparation recomputes the canonical Project Model
-fingerprint as well as Git HEAD. A caller must explicitly inject a runner to
-execute a generated plan; the runner result must echo the packet's base commit,
+The adapter performs distinct discovery, authentication and readiness probes plus
+Git worktree inspection. Stage preparation recomputes the canonical Project Model
+fingerprint as well as Git HEAD. Live execution is allowed only after public
+bootstrap composition, role certification, contextual resolution and Execution
+Envelope authorization; the runner result must echo the packet's base commit,
 execution-contract fingerprint, and Project Model fingerprint. Missing or stale
 identity fails closed. For `SUCCESS`, every claimed artifact must be inside the
 packet's owned paths and must have been created or content-changed by that exact
@@ -23,5 +24,5 @@ skills under the repository's top-level `skills/` directory. `AGENTS.md` defines
 the broad interface boundary; generated project and nested `AGENTS.md` files may
 add narrower instructions without replacing canonical semantic state.
 
-`mcp.json` uses the local stdio transport. The same semantic operations are
+`mcp.json` uses the packaged `artifex-mcp` local stdio transport. The same semantic operations are
 available through the M04 Application API and its generic CLI call surface.

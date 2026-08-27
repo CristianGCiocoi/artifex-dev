@@ -132,6 +132,12 @@ def serve_stdio(
             stdout.flush()
 
 
+def main() -> None:
+    """Run the packaged stdio server without assuming a Python executable."""
+
+    serve_stdio()
+
+
 def _encode(value: Mapping[str, Any]) -> str:
     return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
@@ -149,4 +155,4 @@ def _error(
 
 
 if __name__ == "__main__":
-    serve_stdio()
+    main()
