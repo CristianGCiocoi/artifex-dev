@@ -1,9 +1,8 @@
-"""First-class, standalone Codex integration behind the M04 contracts.
+"""First-class Codex integration with deterministic and live execution seams.
 
-The adapter deliberately separates discovery from execution.  Discovery only
-invokes ``codex --version`` and Git inspection commands.  Stage execution is
-driven by an explicitly supplied fixture/runner result; this module never
-starts a live, mutating Codex session by itself.
+Discovery remains read-only. Stage execution accepts the historical injectable
+fixture boundary or an explicit, bounded ``CodexProcessRunner`` whose command,
+workspace, sandbox and structured result are all bound by ARTIFEX.
 """
 
 from __future__ import annotations
@@ -14,11 +13,13 @@ import json
 import re
 import shutil
 import subprocess
+import tempfile
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, Protocol, cast
 
+import jsonschema  # type: ignore[import-untyped]
 import yaml  # type: ignore[import-untyped]
 
 from artifex.integrations.contracts import (
@@ -61,6 +62,12 @@ CODEX_OPERATION_NAMES = (
 )
 
 CommandRunner = Callable[[Sequence[str]], subprocess.CompletedProcess[str]]
+ProcessRunner = Callable[..., subprocess.CompletedProcess[str]]
+
+_CODEX_OUTPUT_SCHEMA = "<ARTIFEX_CODEX_OUTPUT_SCHEMA>"
+_CODEX_OUTPUT_LAST_MESSAGE = "<ARTIFEX_CODEX_OUTPUT_LAST_MESSAGE>"
+_MAX_CODEX_TIMEOUT_SECONDS = 3600.0
+_DEFAULT_CODEX_OUTPUT_BYTES = 2 * 1024 * 1024
 
 
 class ApplicationLike(Protocol):
@@ -340,6 +347,132 @@ class CodexExecutionFixture:
         }
 
 
+class CodexProcessError(IntegrationError):
+    """A live Codex process whose external outcome cannot be trusted."""
+
+    outcome = "UNKNOWN"
+
+    def __init__(self, reason: str) -> None:
+        super().__init__(f"Codex execution outcome is UNKNOWN: {reason}")
+
+
+@dataclass(frozen=True, slots=True)
+class CodexProcessRunner:
+    """Bounded, fail-closed runner for one ephemeral Codex ``exec`` process.
+
+    The command prefix is deliberately narrow.  It can be a direct ``codex``
+    executable or a pinned npm invocation such as
+    ``npx --yes @openai/codex@0.150.1``.  ARTIFEX, rather than caller-supplied
+    flags, owns the workspace, sandbox and structured-output controls.
+    """
+
+    command: tuple[str, ...] = ("codex",)
+    timeout_seconds: float = 900.0
+    max_output_bytes: int = _DEFAULT_CODEX_OUTPUT_BYTES
+    process_runner: ProcessRunner = subprocess.run
+
+    def __post_init__(self) -> None:
+        command = _validate_codex_command_prefix(self.command)
+        object.__setattr__(self, "command", command)
+        if not 0 < self.timeout_seconds <= _MAX_CODEX_TIMEOUT_SECONDS:
+            raise IntegrationError(
+                f"Codex timeout must be greater than zero and at most "
+                f"{int(_MAX_CODEX_TIMEOUT_SECONDS)} seconds"
+            )
+        if not 1024 <= self.max_output_bytes <= 16 * 1024 * 1024:
+            raise IntegrationError("Codex output bound must be between 1024 and 16777216 bytes")
+
+    @property
+    def command_prefix(self) -> tuple[str, ...]:
+        return self.command
+
+    def __call__(self, plan: CodexWorkerPlan) -> Mapping[str, Any]:
+        root = Path(plan.worktree.root).resolve()
+        if not root.is_dir():
+            raise CodexProcessError("bound Git workspace is unavailable")
+        try:
+            observed_root = Path(
+                _git_value(_read_only_runner, root, "rev-parse", "--show-toplevel")
+            ).resolve()
+            observed_head = _git_value(_read_only_runner, root, "rev-parse", "HEAD")
+            observed_model = _canonical_project_model_fingerprint(root)
+        except (IntegrationError, OSError):
+            raise CodexProcessError("bound Git workspace could not be verified") from None
+        if observed_root != root:
+            raise CodexProcessError("execution directory is not the exact Git workspace root")
+        if observed_head != plan.packet.base_commit:
+            raise CodexProcessError("Git workspace no longer matches the packet baseline")
+        if observed_model != plan.packet.project_model_fingerprint:
+            raise CodexProcessError("Project Model no longer matches the packet baseline")
+        expected = _codex_exec_command(self.command, root, plan.prompt)
+        if plan.command != expected:
+            raise CodexProcessError("prepared command does not match the bound execution plan")
+
+        schema = _codex_execution_result_schema(plan.packet)
+        with tempfile.TemporaryDirectory(prefix="artifex-codex-") as temporary:
+            temporary_root = Path(temporary)
+            schema_path = temporary_root / "execution-result.schema.json"
+            result_path = temporary_root / "execution-result.json"
+            schema_path.write_text(
+                json.dumps(schema, sort_keys=True, separators=(",", ":")),
+                encoding="utf-8",
+            )
+            command = tuple(
+                str(schema_path)
+                if item == _CODEX_OUTPUT_SCHEMA
+                else str(result_path)
+                if item == _CODEX_OUTPUT_LAST_MESSAGE
+                else item
+                for item in plan.command
+            )
+            try:
+                completed = self.process_runner(
+                    list(command),
+                    cwd=str(root),
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    timeout=self.timeout_seconds,
+                )
+            except subprocess.TimeoutExpired:
+                raise CodexProcessError("process timed out before a trustworthy result") from None
+            except (OSError, subprocess.SubprocessError) as exc:
+                raise CodexProcessError(
+                    f"process could not be observed ({type(exc).__name__})"
+                ) from None
+
+            stdout = completed.stdout or ""
+            stderr = completed.stderr or ""
+            if _encoded_size(stdout) > self.max_output_bytes or _encoded_size(
+                stderr
+            ) > self.max_output_bytes:
+                raise CodexProcessError("process diagnostics exceeded the configured bound")
+            if completed.returncode != 0:
+                raise CodexProcessError(
+                    f"process exited non-zero (code {completed.returncode})"
+                )
+            _validate_codex_jsonl(stdout)
+            if not result_path.is_file():
+                raise CodexProcessError("structured result was not produced")
+            if result_path.stat().st_size > self.max_output_bytes:
+                raise CodexProcessError("structured result exceeded the configured bound")
+            try:
+                value = _load_unique_json(result_path.read_text(encoding="utf-8"))
+            except (OSError, UnicodeError, json.JSONDecodeError):
+                raise CodexProcessError("structured result was malformed or ambiguous") from None
+            if not isinstance(value, Mapping):
+                raise CodexProcessError("structured result was not an object")
+            try:
+                jsonschema.Draft202012Validator(schema).validate(value)
+            except jsonschema.ValidationError:
+                raise CodexProcessError(
+                    "structured result did not match its bound schema"
+                ) from None
+            return cast(Mapping[str, Any], _copy_json(value))
+
+
 @dataclass(frozen=True, slots=True)
 class ContinuitySnapshot:
     """Portable semantic-state fingerprint independent of Codex native memory."""
@@ -554,21 +687,32 @@ class CodexIntegration:
         *,
         runner: CommandRunner | None = None,
         require_clean: bool = False,
+        command_prefix: Sequence[str] = ("codex",),
     ) -> CodexWorkerPlan:
         binding = self.inspect_worktree(
             packet, project_root, runner=runner, require_clean=require_clean
         )
         layers = discover_agents_hierarchy(project_root)
+        root = Path(project_root).resolve()
+        prefix = _validate_codex_command_prefix(command_prefix)
         prompt = (
             f"Execute task {packet.task_contract.get('id', 'UNKNOWN')} from the supplied "
             "ARTIFEX Execution Packet. Preserve its base commit, Project Model fingerprint, "
-            "ownership, acceptance criteria, and Core acceptance boundary."
+            "ownership, acceptance criteria, and Core acceptance boundary. Return exactly one "
+            "ExecutionResult object that conforms to the supplied output schema. Executor claims "
+            "are never canonical acceptance.\n\nARTIFEX_EXECUTION_PACKET:\n"
+            + json.dumps(
+                packet.to_dict(),
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=False,
+            )
         )
         return CodexWorkerPlan(
             packet=packet,
             worktree=binding,
             instruction_layers=layers,
-            command=("codex", "exec", "--json", "-C", str(Path(project_root).resolve()), prompt),
+            command=_codex_exec_command(prefix, root, prompt),
             prompt=prompt,
         )
 
@@ -579,7 +723,7 @@ class CodexIntegration:
         *,
         current_baseline: ExecutionBaseline | None = None,
     ) -> ExecutionResult:
-        """Execute a prepared plan only through an injected non-mutating harness boundary."""
+        """Execute a prepared plan through an explicit fixture or process runner."""
 
         # Re-read both Git and canonical semantic identity immediately before
         # handing the packet to a runner.  Preparing a plan cannot freeze a
@@ -782,6 +926,123 @@ def create_codex_application(
     application = application_type(IntegrationRegistry((ManualIntegration(), adapter)))
     adapter.register_application_operations(application)
     return application
+
+
+def _validate_codex_command_prefix(command: Sequence[str]) -> tuple[str, ...]:
+    if isinstance(command, (str, bytes, bytearray)) or not command:
+        raise IntegrationError("Codex command prefix must be a non-empty argument vector")
+    if not all(isinstance(item, str) and item and "\x00" not in item for item in command):
+        raise IntegrationError("Codex command prefix must contain non-empty safe strings")
+    normalized = tuple(command)
+    executable = Path(normalized[0]).name.casefold()
+    if executable in {"codex", "codex.exe", "codex.cmd"}:
+        if len(normalized) != 1:
+            raise IntegrationError("direct Codex command prefix cannot supply caller-owned flags")
+        return normalized
+    if executable not in {"npx", "npx.exe", "npx.cmd"}:
+        raise IntegrationError("Codex command prefix must invoke codex or npx")
+    if len(normalized) != 3 or normalized[1] != "--yes":
+        raise IntegrationError("npx Codex command must use --yes and one pinned package")
+    if re.fullmatch(r"@openai/codex@\d+\.\d+\.\d+", normalized[2]) is None:
+        raise IntegrationError("npx Codex package must be @openai/codex at a pinned version")
+    return normalized
+
+
+def _codex_exec_command(
+    command_prefix: Sequence[str], root: Path, prompt: str
+) -> tuple[str, ...]:
+    return (
+        *command_prefix,
+        "exec",
+        "--sandbox",
+        "workspace-write",
+        "--ephemeral",
+        "--json",
+        "--color",
+        "never",
+        "--output-schema",
+        _CODEX_OUTPUT_SCHEMA,
+        "--output-last-message",
+        _CODEX_OUTPUT_LAST_MESSAGE,
+        "-C",
+        str(root),
+        prompt,
+    )
+
+
+def _codex_execution_result_schema(packet: ExecutionPacket) -> Mapping[str, Any]:
+    return {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "additionalProperties": False,
+        "required": [
+            "status",
+            "base_commit",
+            "execution_contract_fingerprint",
+            "project_model_fingerprint",
+            "artifacts",
+            "validation",
+            "message",
+        ],
+        "properties": {
+            "status": {
+                "type": "string",
+                "enum": [status.value for status in ExecutionStatus],
+            },
+            "base_commit": {"type": "string", "const": packet.base_commit},
+            "execution_contract_fingerprint": {
+                "type": "string",
+                "const": packet.contract_fingerprint,
+            },
+            "project_model_fingerprint": {
+                "type": "string",
+                "const": packet.project_model_fingerprint,
+            },
+            "artifacts": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": ["path"],
+                    "properties": {"path": {"type": "string", "minLength": 1}},
+                    "additionalProperties": True,
+                },
+            },
+            "validation": {"type": "object"},
+            "message": {"type": "string"},
+        },
+    }
+
+
+def _encoded_size(value: str) -> int:
+    return len(value.encode("utf-8", errors="replace"))
+
+
+def _unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    value: dict[str, Any] = {}
+    for key, item in pairs:
+        if key in value:
+            raise json.JSONDecodeError("duplicate object key", key, 0)
+        value[key] = item
+    return value
+
+
+def _load_unique_json(value: str) -> Any:
+    return json.loads(value, object_pairs_hook=_unique_object)
+
+
+def _validate_codex_jsonl(value: str) -> None:
+    lines = value.splitlines()
+    if not lines:
+        raise CodexProcessError("JSONL event stream was empty")
+    for line in lines:
+        if not line.strip():
+            raise CodexProcessError("JSONL event stream contained an empty record")
+        try:
+            event = _load_unique_json(line)
+        except json.JSONDecodeError:
+            raise CodexProcessError("JSONL event stream was malformed or ambiguous") from None
+        if not isinstance(event, Mapping):
+            raise CodexProcessError("JSONL event stream contained a non-object record")
 
 
 def _read_only_runner(arguments: Sequence[str]) -> subprocess.CompletedProcess[str]:
@@ -1090,6 +1351,8 @@ __all__ = [
     "CodexDetection",
     "CodexExecutionFixture",
     "CodexIntegration",
+    "CodexProcessError",
+    "CodexProcessRunner",
     "CodexWorkerPlan",
     "CodexWorktreeBinding",
     "ContinuitySnapshot",

@@ -18,6 +18,8 @@ from artifex.integrations.codex import (
     CODEX_OPERATION_NAMES,
     CodexDetection,
     CodexIntegration,
+    CodexProcessError,
+    CodexProcessRunner,
     CodexWorkerPlan,
     ContinuitySnapshot,
     create_codex_application,
@@ -802,3 +804,139 @@ def test_m06_t10_continuity_snapshot_is_portable_round_trippable_and_memory_free
     tampered["state"] = {"project": {"id": "TAMPERED"}}
     with pytest.raises(IntegrationError, match="fingerprint"):
         ContinuitySnapshot.from_dict(tampered)
+
+
+def _process_runner_plan(
+    tmp_path: Path,
+    *,
+    command_prefix: tuple[str, ...] = (
+        "npx",
+        "--yes",
+        "@openai/codex@0.150.1",
+    ),
+) -> tuple[CodexIntegration, ExecutionPacket, CodexWorkerPlan, Path]:
+    root = tmp_path / "process-runner"
+    repository = ProjectRepository.initialize(root, project_id="LIVE", name="Live Runner")
+    head = _commit_all(root, "process runner baseline")
+    integration = CodexIntegration(_successful_detection())
+    packet = _packet(
+        integration,
+        base_commit=head,
+        model_fingerprint=_model_fingerprint(repository),
+    )
+    plan = integration.prepare_stage(packet, root, command_prefix=command_prefix)
+    return integration, packet, plan, root
+
+
+def test_codex_process_runner_materializes_secure_bounded_exec_and_parses_result(
+    tmp_path: Path,
+) -> None:
+    _, packet, plan, root = _process_runner_plan(tmp_path)
+    observed: dict[str, object] = {}
+
+    def process(arguments: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        observed["arguments"] = arguments
+        observed.update(kwargs)
+        schema_path = Path(arguments[arguments.index("--output-schema") + 1])
+        result_path = Path(arguments[arguments.index("--output-last-message") + 1])
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        assert schema["properties"]["base_commit"]["const"] == packet.base_commit
+        result_path.write_text(
+            json.dumps(
+                {
+                    "status": "BLOCKED",
+                    "base_commit": packet.base_commit,
+                    "execution_contract_fingerprint": packet.contract_fingerprint,
+                    "project_model_fingerprint": packet.project_model_fingerprint,
+                    "artifacts": [],
+                    "validation": {"tests": "NOT_RUN"},
+                    "message": "bounded fixture",
+                }
+            ),
+            encoding="utf-8",
+        )
+        return _completed(arguments, stdout='{"type":"thread.started"}\n')
+
+    runner = CodexProcessRunner(
+        ("npx", "--yes", "@openai/codex@0.150.1"),
+        timeout_seconds=30,
+        process_runner=process,
+    )
+    result = runner(plan)
+
+    assert result["status"] == "BLOCKED"
+    assert result["execution_contract_fingerprint"] == packet.contract_fingerprint
+    arguments = observed["arguments"]
+    assert isinstance(arguments, list)
+    assert arguments[:4] == ["npx", "--yes", "@openai/codex@0.150.1", "exec"]
+    assert arguments[arguments.index("--sandbox") + 1] == "workspace-write"
+    assert "--ephemeral" in arguments
+    assert "--json" in arguments
+    assert arguments[arguments.index("-C") + 1] == str(root.resolve())
+    assert observed["cwd"] == str(root.resolve())
+    assert observed["timeout"] == 30
+
+
+@pytest.mark.parametrize(
+    "command",
+    [
+        ("codex", "--dangerously-bypass-approvals-and-sandbox"),
+        ("npx", "--yes", "@openai/codex@latest"),
+        ("npx", "@openai/codex@0.150.1"),
+        ("powershell", "codex"),
+    ],
+)
+def test_codex_process_runner_rejects_caller_owned_or_unpinned_command_flags(
+    command: tuple[str, ...],
+) -> None:
+    with pytest.raises(IntegrationError, match=r"Codex|codex|npx"):
+        CodexProcessRunner(command)
+
+
+@pytest.mark.parametrize("mode", ["nonzero", "timeout"])
+def test_codex_process_runner_maps_uncertain_process_outcomes_to_sanitized_unknown(
+    tmp_path: Path, mode: str
+) -> None:
+    _, _, plan, _ = _process_runner_plan(tmp_path)
+    secret = "super-secret-provider-diagnostic"
+
+    def process(arguments: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        if mode == "timeout":
+            raise subprocess.TimeoutExpired(arguments, timeout=1, stderr=secret)
+        return _completed(arguments, stderr=secret, returncode=17)
+
+    runner = CodexProcessRunner(
+        ("npx", "--yes", "@openai/codex@0.150.1"), process_runner=process
+    )
+    with pytest.raises(CodexProcessError) as captured:
+        runner(plan)
+    assert captured.value.outcome == "UNKNOWN"
+    assert "UNKNOWN" in str(captured.value)
+    assert secret not in str(captured.value)
+
+
+@pytest.mark.parametrize(
+    "result_text, stdout",
+    [
+        (
+            '{"status":"BLOCKED","status":"SUCCESS"}',
+            '{"type":"thread.started"}\n',
+        ),
+        ("{}", "not-jsonl\n"),
+    ],
+)
+def test_codex_process_runner_rejects_malformed_ambiguous_or_unbound_results(
+    tmp_path: Path, result_text: str, stdout: str
+) -> None:
+    _, _, plan, _ = _process_runner_plan(tmp_path)
+
+    def process(arguments: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        result_path = Path(arguments[arguments.index("--output-last-message") + 1])
+        result_path.write_text(result_text, encoding="utf-8")
+        return _completed(arguments, stdout=stdout)
+
+    runner = CodexProcessRunner(
+        ("npx", "--yes", "@openai/codex@0.150.1"), process_runner=process
+    )
+    with pytest.raises(CodexProcessError, match="UNKNOWN"):
+        runner(plan)
