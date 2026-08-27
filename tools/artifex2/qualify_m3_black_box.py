@@ -113,9 +113,7 @@ def _command_vector(value: str | None) -> list[str]:
     return [resolved] if resolved else []
 
 
-def probe_codex(
-    command: list[str], *, cwd: Path, environment: dict[str, str]
-) -> dict[str, Any]:
+def probe_codex(command: list[str], *, cwd: Path, environment: dict[str, str]) -> dict[str, Any]:
     """Run version and login-status probes without reading credential material."""
 
     if not command:
@@ -207,9 +205,7 @@ def _installed_origin(
         "print(json.dumps({'origin':str(pathlib.Path(artifex.__file__).resolve()),"
         "'prefix':str(pathlib.Path(sys.prefix).resolve())}))"
     )
-    result = _run(
-        [str(python), "-I", "-c", script], cwd=cwd, environment=environment, timeout=30
-    )
+    result = _run([str(python), "-I", "-c", script], cwd=cwd, environment=environment, timeout=30)
     if result.returncode != 0:
         raise AssertionError(f"installed ARTIFEX import failed: {_scrub(result.stderr)}")
     value = json.loads(result.stdout)
@@ -249,9 +245,7 @@ class PublicCLI:
             "--arguments",
             json.dumps(arguments, separators=(",", ":"), ensure_ascii=False),
         ]
-        result = _run(
-            command, cwd=self.cwd, environment=self.environment, timeout=timeout
-        )
+        result = _run(command, cwd=self.cwd, environment=self.environment, timeout=timeout)
         stdout = result.stdout.strip()
         if not stdout:
             raise AssertionError(
@@ -304,7 +298,33 @@ def _value(payload: dict[str, Any], key: str) -> dict[str, Any]:
     return cast(dict[str, Any], value[key])
 
 
-def _envelope(project_id: str) -> dict[str, Any]:
+def _principal(actor_id: str, actor_type: str, *permissions: str) -> dict[str, Any]:
+    return {
+        "actor_id": actor_id,
+        "actor_type": actor_type,
+        "authenticated": True,
+        "authentication_method": "m3-black-box-qualification",
+        "direct_permissions": list(permissions),
+    }
+
+
+def _git(root: Path, *arguments: str, environment: dict[str, str]) -> str:
+    result = _run(
+        ["git", "-C", str(root), *arguments],
+        cwd=root,
+        environment=environment,
+        timeout=60,
+    )
+    if result.returncode != 0:
+        raise AssertionError(
+            f"Git baseline operation failed: {_scrub(result.stderr or result.stdout)}"
+        )
+    return result.stdout.strip()
+
+
+def _envelope(
+    project_id: str, *, baseline_fingerprint: str, baseline_commit: str
+) -> dict[str, Any]:
     return {
         "envelope_id": "m3-envelope",
         "version": 1,
@@ -313,16 +333,40 @@ def _envelope(project_id: str) -> dict[str, Any]:
         "baseline_revision": 1,
         "actor_id": "m3-architect",
         "allowed_paths": ["deliverables/m3-codex.txt"],
-        "allowed_capabilities": ["filesystem:workspace", "provider:codex:execution"],
+        "allowed_capabilities": [
+            "repository_read",
+            "repository_write",
+            "test_execution",
+        ],
         "allowed_providers": ["codex"],
-        "required_gates": ["validation", "acceptance", "project-authority"],
+        "allowed_provider_roles": ["EXECUTION_IMPLEMENTER"],
+        "allowed_workstreams": ["m3-workstream"],
+        "required_gates": ["validation", "acceptance-authority", "project-authority"],
+        "filesystem_permissions": ["READ", "WRITE"],
+        "network_permissions": ["PROVIDER_API"],
+        "tool_permissions": ["codex.exec"],
+        "data_classification": "INTERNAL",
+        "credential_references": [
+            {
+                "reference_id": "codex-cli-session",
+                "provider_id": "codex",
+                "role": "EXECUTION_IMPLEMENTER",
+                "project_id": project_id,
+                "revoked": False,
+            }
+        ],
+        "resource_budget": {"attempts": 1},
+        "stop_conditions": ["MAX_ATTEMPTS", "UNKNOWN_OUTCOME"],
+        "require_durable_evidence": True,
+        "baseline_fingerprint": baseline_fingerprint,
+        "baseline_commit": baseline_commit,
         "max_attempts": 1,
         "recovery_policy": "RECONCILE_BEFORE_RETRY",
         "stop_on_unknown": True,
         "approved": True,
         "supervision_level": "L2",
         "network_policy": "PROVIDER_ONLY",
-        "materiality": "NON_MATERIAL",
+        "materiality": "TACTICAL",
     }
 
 
@@ -334,7 +378,7 @@ def _j16(
     project_root = root / "project"
     catalog = root / "catalog.sqlite3"
     project_id = "m3-codex-project"
-    cli.call(
+    created = cli.call(
         "project.create",
         {
             "project_root": str(project_root),
@@ -342,7 +386,7 @@ def _j16(
             "name": "M3 Codex Public Outcome",
             "project_id": project_id,
         },
-    )
+    )["value"]
     provider_spec = {
         "provider_id": "codex",
         "command": codex_command,
@@ -384,11 +428,34 @@ def _j16(
         if re.search(rf'(?i)["\']?{key}["\']?\s*:\s*["\']?(?!null|false)', setup_text):
             raise AssertionError(f"setup state appears to contain credential material: {key}")
 
+    # The real execution workspace must derive from a clean, immutable Git
+    # baseline.  This is repository setup, not a product API shortcut.
+    _git(project_root, "config", "user.name", "ARTIFEX M3 Qualifier", environment=cli.environment)
+    _git(
+        project_root,
+        "config",
+        "user.email",
+        "artifex-m3-qualifier@invalid.local",
+        environment=cli.environment,
+    )
+    _git(project_root, "add", "--all", environment=cli.environment)
+    _git(
+        project_root,
+        "commit",
+        "-m",
+        "Establish M3 black-box baseline",
+        environment=cli.environment,
+    )
+    baseline_commit = _git(project_root, "rev-parse", "HEAD", environment=cli.environment)
+    baseline_fingerprint = str(created.get("semantic_fingerprint", ""))
+    if not re.fullmatch(r"[a-f0-9]{40}", baseline_commit):
+        raise AssertionError("fresh Project Git baseline is not a full SHA-1")
+    if not re.fullmatch(r"[a-f0-9]{64}", baseline_fingerprint):
+        raise AssertionError("fresh Project semantic baseline is not a SHA-256")
+
     # Every call is a fresh public process.  These calls therefore prove consumption,
     # not an in-memory registration left behind by setup apply.
-    graph = _value(
-        cli.call(PROVIDER_GRAPH, {"project_root": str(project_root)}), "graph"
-    )
+    graph = _value(cli.call(PROVIDER_GRAPH, {"project_root": str(project_root)}), "graph")
     node = _find_provider(graph, "codex")
     readiness = _value(
         cli.call(
@@ -404,7 +471,11 @@ def _j16(
         "capabilities": ["repository_write", "test_execution"],
         "project_id": project_id,
         "project_job_id": "m3-job",
-        "envelope": _envelope(project_id),
+        "envelope": _envelope(
+            project_id,
+            baseline_fingerprint=baseline_fingerprint,
+            baseline_commit=baseline_commit,
+        ),
         "actor": {
             "actor_id": "m3-coordinator",
             "actor_type": "SERVICE",
@@ -440,6 +511,8 @@ def _j16(
             "project_root": project_root,
             "catalog": catalog,
             "project_id": project_id,
+            "baseline_fingerprint": baseline_fingerprint,
+            "baseline_commit": baseline_commit,
             "graph": graph,
         },
     )
@@ -455,6 +528,28 @@ def _vertical_slice(cli: PublicCLI, root: Path, context: dict[str, Any]) -> dict
         "service_id": "m3-managed-runtime",
         "workspace_root": str(workspaces),
     }
+    envelope = _envelope(
+        project_id,
+        baseline_fingerprint=str(context["baseline_fingerprint"]),
+        baseline_commit=str(context["baseline_commit"]),
+    )
+    automation = _principal(
+        "m3-coordinator",
+        "AUTOMATION_SYSTEM_ACTOR",
+        "runtime:dispatch",
+        "workspace:create",
+        "workspace:access",
+    )
+    architect = _principal("m3-architect", "USER", "envelope:approve")
+    provider_actor = _principal("m3-codex-provider", "PROVIDER", "result:submit")
+    evidence_actor = _principal(
+        "m3-evidence-service",
+        "ARTIFEX_SERVICE",
+        "workspace:access",
+        "evidence:record",
+    )
+    acceptance_actor = _principal("m3-acceptance-authority", "USER", "acceptance:decide")
+    promotion_actor = _principal("m3-project-authority", "USER", "project:promote")
     interaction = _value(
         cli.call(
             PROVIDER_INTERACT,
@@ -476,7 +571,9 @@ def _vertical_slice(cli: PublicCLI, root: Path, context: dict[str, Any]) -> dict
         "runtime.bootstrap",
         {
             **common,
-            "envelope": _envelope(project_id),
+            "envelope": envelope,
+            "actor": automation,
+            "approval_actor": architect,
             "workstream_id": "m3-workstream",
             "run_id": "m3-run",
             "project_job_id": "m3-job",
@@ -492,6 +589,7 @@ def _vertical_slice(cli: PublicCLI, root: Path, context: dict[str, Any]) -> dict
             "attempt_id": "m3-attempt",
             "project_root": str(project_root),
             "baseline_revision": 1,
+            "actor": automation,
         },
     )["value"]
     execution = _value(
@@ -512,6 +610,13 @@ def _vertical_slice(cli: PublicCLI, root: Path, context: dict[str, Any]) -> dict
                 ),
                 "owned_paths": ["deliverables/m3-codex.txt"],
                 "credential_reference_id": "codex-cli-session",
+                "capabilities": ["repository_write", "test_execution"],
+                "filesystem_permissions": ["READ", "WRITE"],
+                "network_permissions": ["PROVIDER_API"],
+                "tool_permissions": ["codex.exec"],
+                "actor": automation,
+                "provider_actor": provider_actor,
+                "evidence_actor": evidence_actor,
             },
             timeout=600,
         ),
@@ -523,6 +628,16 @@ def _vertical_slice(cli: PublicCLI, root: Path, context: dict[str, Any]) -> dict
         raise AssertionError(
             f"Codex execution did not finish successfully: {execution.get('status')}"
         )
+    evidence = execution.get("evidence")
+    if not isinstance(evidence, list) or not evidence:
+        raise AssertionError("provider execution did not persist bound validation evidence")
+    evidence_ids = [
+        str(item.get("evidence_id"))
+        for item in evidence
+        if isinstance(item, dict) and item.get("evidence_id")
+    ]
+    if len(evidence_ids) != len(evidence):
+        raise AssertionError("provider execution evidence identities are malformed")
 
     observed = cli.call("runtime.status", {**common, "run_id": "m3-run"})["value"]
     attempts = observed.get("attempts", [])
@@ -540,6 +655,8 @@ def _vertical_slice(cli: PublicCLI, root: Path, context: dict[str, Any]) -> dict
             **common,
             "project_job_id": "m3-job",
             "evidence_valid": True,
+            "evidence_ids": evidence_ids,
+            "actor": acceptance_actor,
             "reason": "independent M3 owned-path validation passed",
         },
     )
@@ -553,6 +670,7 @@ def _vertical_slice(cli: PublicCLI, root: Path, context: dict[str, Any]) -> dict
             "workspace_id": "m3-workspace",
             "project_job_id": "m3-job",
             "model": model,
+            "actor": promotion_actor,
         },
     )["value"]
     if promoted.get("semantic_revision") != 2:
@@ -561,7 +679,11 @@ def _vertical_slice(cli: PublicCLI, root: Path, context: dict[str, Any]) -> dict
     certifications = _value(
         cli.call(
             PROVIDER_CERTIFICATIONS,
-            {"project_root": str(project_root), "provider_id": "codex"},
+            {
+                "project_root": str(project_root),
+                "project_id": project_id,
+                "provider_id": "codex",
+            },
         ),
         "certifications",
     )
