@@ -56,6 +56,12 @@ def _scrub(text: str) -> str:
     return value[:_MAX_EXCERPT]
 
 
+def _qualification_temporary_parent(repo_root: Path | None) -> Path | None:
+    if os.name != "nt" or repo_root is None:
+        return None
+    return repo_root.resolve().parent
+
+
 def _run(
     command: list[str],
     *,
@@ -755,8 +761,17 @@ def qualify(
     python = python.resolve()
     if not python.is_file():
         return _blocked("INSTALLED_PYTHON_NOT_FOUND", str(python))
+    temporary_parent = _qualification_temporary_parent(repo_root)
+    if temporary_parent is not None:
+        # The supported unelevated Windows sandbox cannot traverse a workspace
+        # nested below the current user's protected AppData Temp ACL.  An
+        # adjacent temporary root stays isolated while remaining traversable by
+        # the sandbox identity; product imports still come only from the wheel.
+        temporary_parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(
-        prefix="artifex-m3-public-", ignore_cleanup_errors=True
+        prefix="artifex-m3-public-",
+        dir=temporary_parent,
+        ignore_cleanup_errors=True,
     ) as directory:
         root = Path(directory).resolve()
         environment = os.environ.copy()

@@ -92,6 +92,14 @@ def test_missing_codex_is_blocked_and_never_passes(tmp_path: Path) -> None:
     assert result["blocker"]["code"] == "CODEX_EXECUTABLE_NOT_FOUND"
 
 
+def test_windows_qualification_root_avoids_protected_profile_temp(tmp_path: Path) -> None:
+    observed = harness._qualification_temporary_parent(tmp_path / "source")
+    if harness.os.name == "nt":
+        assert observed == tmp_path.resolve()
+    else:
+        assert observed is None
+
+
 def test_unauthenticated_codex_is_blocked(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     responses = iter(
         [
