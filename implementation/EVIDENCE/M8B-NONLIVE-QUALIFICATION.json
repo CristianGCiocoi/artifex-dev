@@ -1,0 +1,40 @@
+{
+  "artifact_sha256": "a639f7e00b79eba6626dce5ea77a78afa05aa40dddb0b50d564b30eb29251d85",
+  "blocker": {
+    "class": "EXTERNAL_PREREQUISITE",
+    "id": "BLK-M8B-PANDORA-RUNTIME-UNAVAILABLE",
+    "required_resolution": "Provide a real reachable Pandora runtime, supported RESEARCH exchange identity, and independent live public-composition evidence"
+  },
+  "composition": "CLEAN_INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS_NON_LIVE",
+  "custom_application_factory_used": false,
+  "journeys": {
+    "J13": {
+      "evidence_imported": true,
+      "explicit_adoption_blocked_without_live_certification": true,
+      "forged_provider_lineage_rejected": true,
+      "project_bytes_unchanged": true,
+      "project_revision_unchanged": true,
+      "request_exported": true,
+      "status": "BLOCKED_EXTERNAL_PREREQUISITE"
+    }
+  },
+  "provider": {
+    "certification_ladder": {
+      "ADAPTER_IMPLEMENTED": "PASS",
+      "LIVE_ROLE_CERTIFIED": "BLOCKED_EXTERNAL_PREREQUISITE",
+      "PACKAGED": "PASS",
+      "PUBLIC_COMPOSITION_VERIFIED": "PASS",
+      "ROLE_CONFORMANCE_VERIFIED": "PASS"
+    },
+    "globally_available": false,
+    "id": "pandora",
+    "readiness_state": "CONFIGURED",
+    "role": "RESEARCH"
+  },
+  "provider_claimed_live": false,
+  "schema_version": "1.0",
+  "shipping_artifact": "INSTALLED_WHEEL",
+  "simulated_provider": true,
+  "source_tree_imported": false,
+  "status": "BLOCKED_EXTERNAL_PREREQUISITE"
+}

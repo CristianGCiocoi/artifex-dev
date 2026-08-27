@@ -732,6 +732,19 @@
       "status": "OPEN",
       "summary": "Stable DeepSeek CLI, native authentication, endpoint and model are not qualified",
       "unrelated_work_may_continue": true
+    },
+    {
+      "class": "EXTERNAL_PREREQUISITE",
+      "evidence": [
+        "EVIDENCE/M8B-NONLIVE-QUALIFICATION.json"
+      ],
+      "id": "BLK-M8B-PANDORA-RUNTIME-UNAVAILABLE",
+      "required_authority": "HUMAN_ENVIRONMENT_OWNER",
+      "resolution": "Provide a real Pandora runtime, supported RESEARCH exchange identity, and independent live qualification evidence",
+      "scope": "M8B",
+      "status": "OPEN",
+      "summary": "A real reachable Pandora RESEARCH runtime and live public-composition evidence are unavailable",
+      "unrelated_work_may_continue": true
     }
   ],
   "evidence": [
@@ -819,6 +832,16 @@
       "bytes": 1979,
       "path": "implementation/EVIDENCE/M8A-VALIDATION.yaml",
       "sha256": "8838b99b4041cd16cba9d5bf672f72fc92f07a89d38566fafea1d02c38251cb6"
+    },
+    {
+      "bytes": 1422,
+      "path": "implementation/EVIDENCE/M8B-NONLIVE-QUALIFICATION.json",
+      "sha256": "1434f3bab556444354d1d1e0cb91d5b1f039d64d0da5ada393331e8c74bab757"
+    },
+    {
+      "bytes": 3032,
+      "path": "implementation/EVIDENCE/M8B-VALIDATION.yaml",
+      "sha256": "546702007738b6e352b169ebdaf4429d4803fc29cc04969cc519abadf2eafcee"
     },
     {
       "bytes": 2431,
@@ -1738,13 +1761,15 @@
       "title": "J12 — Organizational Knowledge"
     },
     {
-      "blocker": "M0 has no mandatory journeys; milestone dependencies not accepted",
-      "environment": null,
-      "evidence": [],
+      "blocker": "BLK-M8B-PANDORA-RUNTIME-UNAVAILABLE",
+      "environment": "CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS_PANDORA_RUNTIME_ABSENT",
+      "evidence": [
+        "EVIDENCE/M8B-NONLIVE-QUALIFICATION.json"
+      ],
       "id": "J13",
-      "last_run": null,
-      "public_shipping_composition": null,
-      "status": "NOT_STARTED",
+      "last_run": "2026-08-28",
+      "public_shipping_composition": "INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS_NON_LIVE",
+      "status": "BLOCKED_EXTERNAL_PREREQUISITE",
       "title": "J13 — Pandora Research"
     },
     {
@@ -2053,8 +2078,8 @@
       ],
       "id": "M8B",
       "mandatory_for_core_ga": false,
-      "started": false,
-      "state": "READY_UNCLAIMED",
+      "started": true,
+      "state": "BLOCKED_EXTERNAL_PREREQUISITE",
       "title": "Pandora Productization"
     },
     {
@@ -2175,6 +2200,7 @@
     "m5_started": true,
     "m6a_started": true,
     "m8a_started": true,
+    "m8b_started": true,
     "m8c_started": true,
     "next_integration_point": "Reconcile fail-closed M8B/M8C provider branches on the accepted M6A baseline, then activate M7 platform-neutral foundation",
     "recorded_date": "2026-08-28",
@@ -2356,16 +2382,19 @@
         }
       },
       {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M8B-VALIDATION.yaml",
+          "EVIDENCE/M8B-NONLIVE-QUALIFICATION.json"
+        ],
         "provider": "pandora",
         "requirement": "OPTIONAL_IF_CLAIMED",
         "role": "RESEARCH",
         "steps": {
-          "ADAPTER_IMPLEMENTED": "NOT_STARTED",
-          "LIVE_ROLE_CERTIFIED": "NOT_STARTED",
-          "PACKAGED": "NOT_STARTED",
-          "PUBLIC_COMPOSITION_VERIFIED": "NOT_STARTED",
-          "ROLE_CONFORMANCE_VERIFIED": "NOT_STARTED"
+          "ADAPTER_IMPLEMENTED": "PASS",
+          "LIVE_ROLE_CERTIFIED": "IN_PROGRESS",
+          "PACKAGED": "PASS",
+          "PUBLIC_COMPOSITION_VERIFIED": "PASS",
+          "ROLE_CONFORMANCE_VERIFIED": "PASS"
         }
       },
       {
@@ -2458,31 +2487,32 @@
   },
   "schema_version": "1.0",
   "summary": {
-    "active_blockers": 1,
+    "active_blockers": 2,
     "adr_count": 24,
     "current_milestone": "M6A",
-    "evidence_items": 22,
+    "evidence_items": 24,
     "invariant_count": 34,
     "journey_states": {
+      "BLOCKED_EXTERNAL_PREREQUISITE": 1,
       "M3_VERTICAL_SLICE_ONLY": 1,
       "M6A_LIVE_PROVIDER_SLICE_PASS": 1,
-      "NOT_STARTED": 5,
+      "NOT_STARTED": 4,
       "PASS": 13
     },
     "milestones_accepted": 8,
-    "milestones_started": 9,
+    "milestones_started": 10,
     "milestones_total": 16,
     "provider_step_states": {
-      "IN_PROGRESS": 1,
+      "IN_PROGRESS": 2,
       "NOT_APPLICABLE": 10,
-      "NOT_STARTED": 60,
-      "PASS": 24
+      "NOT_STARTED": 55,
+      "PASS": 28
     },
     "ready_milestones": [
       "M7"
     ],
     "workstream_states": {
-      "BLOCKED_EXTERNAL_PREREQUISITE": 1,
+      "BLOCKED_EXTERNAL_PREREQUISITE": 2,
       "COMPLETE": 16
     }
   },
@@ -2822,6 +2852,28 @@
       ],
       "state": "BLOCKED_EXTERNAL_PREREQUISITE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m8c"
+    },
+    {
+      "base_commit": "77aeb189e3359f8a54ff1f4056dd3c8409747ef7",
+      "blockers": [
+        "BLK-M8B-PANDORA-RUNTIME-UNAVAILABLE"
+      ],
+      "branch": "codex/artifex-2-m8b",
+      "id": "WS-M8B-PANDORA-RESEARCH",
+      "integration_owner": "ARTIFEX_2_ORCHESTRATOR",
+      "milestone": "M8B",
+      "owner_subagent": "m8b_pandora",
+      "purpose": "Productize Pandora RESEARCH composition, explicit Project adoption, and J13 qualification",
+      "shared_contracts": [
+        "M8B-CONTRACT",
+        "ADR-T007",
+        "ADR-T008",
+        "ADR-T023",
+        "ADR-T024",
+        "J13"
+      ],
+      "state": "BLOCKED_EXTERNAL_PREREQUISITE",
+      "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m8b"
     }
   ]
 }

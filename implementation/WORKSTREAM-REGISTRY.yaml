@@ -214,3 +214,14 @@ workstreams:
   state: BLOCKED_EXTERNAL_PREREQUISITE
   blockers: [BLK-M8C-DEEPSEEK-LIVE-PREREQUISITES]
   integration_owner: ARTIFEX_2_ORCHESTRATOR
+- id: WS-M8B-PANDORA-RESEARCH
+  milestone: M8B
+  purpose: Productize Pandora RESEARCH composition, explicit Project adoption, and J13 qualification
+  owner_subagent: m8b_pandora
+  worktree: C:\aidev\artifex-worktrees\artifex-2-m8b
+  branch: codex/artifex-2-m8b
+  base_commit: 77aeb189e3359f8a54ff1f4056dd3c8409747ef7
+  shared_contracts: [M8B-CONTRACT, ADR-T007, ADR-T008, ADR-T023, ADR-T024, J13]
+  state: BLOCKED_EXTERNAL_PREREQUISITE
+  blockers: [BLK-M8B-PANDORA-RUNTIME-UNAVAILABLE]
+  integration_owner: ARTIFEX_2_ORCHESTRATOR

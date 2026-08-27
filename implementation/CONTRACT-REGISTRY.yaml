@@ -279,6 +279,26 @@ contracts:
   - EVIDENCE/M8C-PUBLIC-OUTCOME.json
   implementation_state: BLOCKED_EXTERNAL_PREREQUISITE
   m0_baseline_state: NOT_APPLICABLE
+- id: M8B-CONTRACT
+  title: M8B — Pandora Productization & Certification
+  type: MILESTONE_CONTRACT
+  digest: 3ef2cefbdbce0e0d14f3484fb2dc3683be93ccc7f0980d12c643dd353392d7f9
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 77aeb189e3359f8a54ff1f4056dd3c8409747ef7
+  dependencies:
+  - M4-CONTRACT
+  authority_sources:
+  - MILESTONES/M8B.md
+  acceptance_criteria:
+  - Pandora is independently live-role certified for RESEARCH if claimed
+  - J13 passes through the public shipping composition
+  - Pandora evidence cannot mutate Project truth and adoption remains Project Authority owned
+  evidence_references:
+  - EVIDENCE/M8B-VALIDATION.yaml
+  - EVIDENCE/M8B-NONLIVE-QUALIFICATION.json
+  implementation_state: BLOCKED_EXTERNAL_PREREQUISITE
+  m0_baseline_state: NOT_APPLICABLE
 adrs:
 - id: ADR-T001
   title: ADR-T001 — Project Authority vs Portable Semantic Representation

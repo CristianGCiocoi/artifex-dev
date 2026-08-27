@@ -109,12 +109,13 @@ journeys:
   blocker: null
 - id: J13
   title: J13 — Pandora Research
-  status: NOT_STARTED
-  environment: null
-  public_shipping_composition: null
-  evidence: []
-  last_run: null
-  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+  status: BLOCKED_EXTERNAL_PREREQUISITE
+  environment: CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS_PANDORA_RUNTIME_ABSENT
+  public_shipping_composition: INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS_NON_LIVE
+  evidence:
+  - EVIDENCE/M8B-NONLIVE-QUALIFICATION.json
+  last_run: '2026-08-28'
+  blocker: BLK-M8B-PANDORA-RUNTIME-UNAVAILABLE
 - id: J14
   title: J14 — External Reality Drift
   status: PASS
