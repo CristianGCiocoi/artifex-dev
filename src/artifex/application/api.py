@@ -8,6 +8,7 @@ from typing import Any
 
 from artifex import __version__
 from artifex.capabilities import (
+    CODEX_DISPATCH_AUTHORIZED_ROLES,
     ActorContext,
     CapabilityGraph,
     CapabilityRequest,
@@ -104,7 +105,9 @@ class Application:
     ) -> None:
         self._operations: dict[str, Operation] = {}
         self._project_root = project_root
-        self._provider_loader = provider_loader or ProviderCompositionLoader()
+        self._provider_loader = provider_loader or ProviderCompositionLoader(
+            certified_roles={"codex": CODEX_DISPATCH_AUTHORIZED_ROLES}
+        )
         self.registry = (
             IntegrationRegistry((ManualIntegration(),)) if registry is None else registry
         )
