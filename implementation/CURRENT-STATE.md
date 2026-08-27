@@ -8,12 +8,12 @@
 - Target release: `2.0.0`
 - Handoff: `ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1`
 - Intake baseline: `5cc5dcfeb420a6df171a44426c04a0f08fa1e877`
-- Branch: `codex/artifex-2-m2`
+- Branch: `main`
 - Current milestone: `M2`
 - Current status: `ACCEPTED`
 - Accepted milestones: `M0, M1, M2`
 - Ready milestones: `M3`
-- Latest accepted commit: `1547cd295e06b2c05546c1c9f2c157969c59531f`
+- Latest accepted commit: `87b6e88e55725b6451c12eeeb3b58b97a6d61748`
 - Next integration point: `M3 readiness; M3 not started`
 - M2 started: `true`
 

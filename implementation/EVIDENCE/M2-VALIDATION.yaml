@@ -5,6 +5,8 @@ status: PASS
 recorded_date: '2026-08-27'
 canonical_m1_baseline_commit: 0b77fd4fb0c6ed93b943917fb511e809ecc06740
 m2_implementation_baseline_commit: 1547cd295e06b2c05546c1c9f2c157969c59531f
+m2_acceptance_commit: 87b6e88e55725b6451c12eeeb3b58b97a6d61748
+canonical_integration_branch: main
 m2_contract_digest: 2165c197747cf55f9b7a8aebc3c2dc29e1a6f59a9390d4a0db5d6769ba6a8401
 source_quality:
   ruff: PASS
