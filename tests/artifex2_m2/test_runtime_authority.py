@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sqlite3
 from pathlib import Path
+from threading import Event
 
 import pytest
 
@@ -166,6 +167,23 @@ def test_execution_envelope_is_mandatory_and_codex_provider_is_outside_m2(
         )
 
 
+def test_managed_service_renews_fence_while_provider_call_is_in_flight(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    service = ManagedRuntimeService(tmp_path / "heartbeat.sqlite3")
+    renewed = Event()
+    original_renew = service.coordinator.renew
+
+    def renew() -> object:
+        token = original_renew()
+        renewed.set()
+        return token
+
+    monkeypatch.setattr(service.coordinator, "renew", renew)
+    with service.coordinator_heartbeat(interval_seconds=0.01):
+        assert renewed.wait(1)
+
+
 @pytest.mark.integration
 def test_j05_committed_hierarchy_survives_service_and_frontend_restart(
     tmp_path: Path,
@@ -242,9 +260,7 @@ def test_safe_retry_is_created_only_after_explicit_reconciliation(tmp_path: Path
     _bootstrap(service)
     service.mark_unknown("attempt-1", actor_id="runtime")
     service.begin_reconciliation("attempt-1", actor_id="reconciler")
-    service.reconcile(
-        "attempt-1", ReconciliationOutcome.SAFE_TO_RETRY, actor_id="reconciler"
-    )
+    service.reconcile("attempt-1", ReconciliationOutcome.SAFE_TO_RETRY, actor_id="reconciler")
     service.coordinator.retry_attempt("attempt-1", "attempt-2", actor_id="runtime")
 
     attempts = service.status("run-1")["attempts"]

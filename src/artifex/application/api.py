@@ -793,10 +793,11 @@ class Application:
             correlation_id=request.context.correlation_id,
         )
         try:
-            result = integration.execute_stage(
-                plan,
-                self._codex_runner_factory(provider.configuration.command),
-            )
+            with service.coordinator_heartbeat():
+                result = integration.execute_stage(
+                    plan,
+                    self._codex_runner_factory(provider.configuration.command),
+                )
             manifest, manifest_digest = _validate_owned_artifacts(
                 service,
                 workspace_id=workspace_id,

@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from pathlib import Path
+from threading import Event, Thread
 from time import time
 
 from artifex.project import ProjectModel
@@ -123,6 +125,42 @@ class ManagedRuntimeService:
         self.coordinator.start_attempt(attempt_id, actor_id=actor)
         return authorization
 
+    @contextmanager
+    def coordinator_heartbeat(self, *, interval_seconds: float | None = None) -> Iterator[None]:
+        """Renew the fencing lease while one bounded provider call is in flight."""
+
+        interval = (
+            max(0.1, self.coordinator.lease_seconds / 3)
+            if interval_seconds is None
+            else interval_seconds
+        )
+        if interval <= 0:
+            raise ValueError("coordinator heartbeat interval must be positive")
+        stopped = Event()
+        failures: list[Exception] = []
+
+        def heartbeat() -> None:
+            while not stopped.wait(interval):
+                try:
+                    self.coordinator.renew()
+                except Exception as exc:
+                    failures.append(exc)
+                    stopped.set()
+
+        worker = Thread(
+            target=heartbeat,
+            name=f"artifex-fence-{self.coordinator.holder_id}",
+            daemon=True,
+        )
+        worker.start()
+        try:
+            yield
+        finally:
+            stopped.set()
+            worker.join(timeout=max(1.0, interval * 2))
+        if failures:
+            raise failures[0]
+
     def record_evidence(
         self,
         evidence: EvidenceRecord,
@@ -130,9 +168,7 @@ class ManagedRuntimeService:
         actor: ActorLike,
         correlation_id: str | None = None,
     ) -> None:
-        self.coordinator.record_evidence(
-            evidence, actor=actor, correlation_id=correlation_id
-        )
+        self.coordinator.record_evidence(evidence, actor=actor, correlation_id=correlation_id)
 
     def finish(
         self,
