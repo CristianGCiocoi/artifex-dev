@@ -33,10 +33,11 @@ class ManagedRuntimeService:
         service_id: str = "artifex-managed-service",
         workspace_root: str | Path | None = None,
         clock: Callable[[], int] = _clock,
+        lease_seconds: int = 300,
     ) -> None:
         self.store = SQLiteRunStore(store_path)
         self.coordinator = ExecutionCoordinator(
-            self.store, service_id, clock=clock, lease_seconds=30
+            self.store, service_id, clock=clock, lease_seconds=lease_seconds
         )
         self.acceptance = RuntimeAcceptanceAuthority(
             self.store, self.coordinator.token, clock=clock

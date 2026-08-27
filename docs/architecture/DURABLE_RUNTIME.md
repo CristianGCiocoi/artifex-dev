@@ -19,7 +19,8 @@ M3 concern.
 The standalone coordinator holds a leased generation in the RunStore. Each service
 restart receives a new generation and fences the prior process. Related lifecycle
 changes commit in one SQLite transaction. A foreign live coordinator cannot acquire the
-same standalone instance.
+same standalone instance. The managed-service profile uses a five-minute lease and the
+coordinator primitive remains configurable for testing and future service profiles.
 
 ## Execution Envelope minimum
 
@@ -58,4 +59,3 @@ The M2 migration creates a new empty RunStore. It never fabricates runtime histo
 V1 Project and does not alter accepted M1 provenance. OS service installation and start
 policy are completed by M7; the M2 managed-service composition and restart/fencing
 contracts are independent of frontend lifetime.
-
