@@ -1,26 +1,27 @@
 schema_version: '1.0'
 milestone: M3
 contract_digest: 4c715b81581f4688f3b38d34829a967760e7f862f8408a477f37245f886d07eb
-implementation_baseline_commit: null
+implementation_baseline_commit: b7efb7b08fee418715a8f05faa450649b121f6f6
+acceptance_commit: null
 frozen_architecture_baseline: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
-mandatory_work_complete: false
+mandatory_work_complete: true
 blocked: []
 superseded: []
 evidence_classes:
-  DESIGN_CONFORMANCE: {required_m3: true, status: PENDING, evidence: []}
-  COMPONENT: {required_m3: true, status: PENDING, evidence: []}
-  DOMAIN_INTEGRATION: {required_m3: true, status: PENDING, evidence: []}
-  PUBLIC_COMPOSITION: {required_m3: true, status: PENDING, evidence: []}
-  BLACK_BOX_OUTCOME: {required_m3: true, status: PENDING, evidence: []}
-  SECURITY_AUTHORITY: {required_m3: true, status: PENDING, evidence: []}
-  DOCUMENTATION: {required_m3: true, status: PENDING, evidence: []}
-  DASHBOARD: {required_m3: true, status: PENDING, evidence: []}
-  MIGRATION: {required_m3: true, status: PENDING, evidence: []}
-  PROVIDER_CERTIFICATION: {required_m3: true, status: PENDING, evidence: []}
+  DESIGN_CONFORMANCE: {required_m3: true, status: PASS, evidence: [EVIDENCE/M3-VALIDATION.yaml]}
+  COMPONENT: {required_m3: true, status: PASS, evidence: [EVIDENCE/M3-VALIDATION.yaml]}
+  DOMAIN_INTEGRATION: {required_m3: true, status: PASS, evidence: [EVIDENCE/M3-VALIDATION.yaml]}
+  PUBLIC_COMPOSITION: {required_m3: true, status: PASS, evidence: [EVIDENCE/M3-PUBLIC-OUTCOME.json]}
+  BLACK_BOX_OUTCOME: {required_m3: true, status: PASS, evidence: [EVIDENCE/M3-PUBLIC-OUTCOME.json]}
+  SECURITY_AUTHORITY: {required_m3: true, status: PASS, evidence: [EVIDENCE/M3-VALIDATION.yaml]}
+  DOCUMENTATION: {required_m3: true, status: PASS, evidence: [EVIDENCE/M3-VALIDATION.yaml]}
+  DASHBOARD: {required_m3: true, status: PASS, evidence: [EVIDENCE/M3-VALIDATION.yaml]}
+  MIGRATION: {required_m3: true, status: PASS, evidence: [EVIDENCE/M3-VALIDATION.yaml]}
+  PROVIDER_CERTIFICATION: {required_m3: true, status: PASS, evidence: [EVIDENCE/M3-PUBLIC-OUTCOME.json, PROVIDERS/ROLE-CERTIFICATION.yaml]}
 mandatory_journeys: [J01, J16]
 unresolved_contradiction: null
 provider_claim_changes:
 - codex/INTERACTION
 - codex/EXECUTION_IMPLEMENTER
-migration: PROVIDER_SETUP_SCHEMA_ENGINEERING
-verdict: IN_PROGRESS
+migration: M3_ACCEPTED_PROVIDER_SETUP_SCHEMA
+verdict: ACCEPTED

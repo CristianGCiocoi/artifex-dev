@@ -1,8 +1,9 @@
 schema_version: '1.0'
 milestone: M3
-mode: PROVIDER_SETUP_SCHEMA_ENGINEERING
+mode: M3_ACCEPTED_PROVIDER_SETUP_SCHEMA
 project_mutation: false
 fixture: MIGRATION/V1-RELEASE-FIXTURE.yaml
 fixture_state: M0_BASELINE_ACCEPTED
 migration_execution: M2_ACCEPTED_EMPTY_RUNSTORE
-rollback: REMOVE_NEW_PROVIDER_SETUP_STORE_ONLY; accepted M2 RunStore remains authoritative
+provider_setup_migration: M3_ACCEPTED_SECRET_FREE_PROVIDER_SETUP_SCHEMA
+rollback: REMOVE_NEW_PROVIDER_SETUP_STATE_ONLY; accepted M2 RunStore and Project semantics remain authoritative

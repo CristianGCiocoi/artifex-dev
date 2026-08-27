@@ -165,8 +165,8 @@ def test_validator_rejects_full_j01_pass_role_conflation_and_auth_ambiguity() ->
         validate_outcome_evidence(auth)
 
 
-def test_active_m3_control_plane_is_valid_without_claiming_live_acceptance() -> None:
+def test_accepted_m3_control_plane_is_self_consistent() -> None:
     state = validate(Path(__file__).parents[2])
     m3 = next(item for item in state["milestones"] if item["id"] == "M3")
-    assert m3["state"] == "ACTIVE"
-    assert m3["accepted"] is False
+    assert m3["state"] == "ACCEPTED"
+    assert m3["accepted"] is True

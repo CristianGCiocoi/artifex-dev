@@ -112,7 +112,7 @@ workstreams:
   branch: codex/artifex-2-m3-provider
   base_commit: e1e4cd5e07aac4b8b380111807259cad7a550c0f
   shared_contracts: [M3-CONTRACT, ADR-T007, ADR-T015, ADR-T023, ADR-T024]
-  state: IN_PROGRESS
+  state: COMPLETE
   blockers: []
   integration_owner: ARTIFEX_2_ORCHESTRATOR
 - id: WS-M3-SECURITY-AUTHORITY
@@ -123,7 +123,7 @@ workstreams:
   branch: codex/artifex-2-m3-security
   base_commit: e1e4cd5e07aac4b8b380111807259cad7a550c0f
   shared_contracts: [M3-CONTRACT, ADR-T008, ADR-T021, ADR-T022, ADR-T023]
-  state: IN_PROGRESS
+  state: COMPLETE
   blockers: []
   integration_owner: ARTIFEX_2_ORCHESTRATOR
 - id: WS-M3-PUBLIC-OUTCOMES
@@ -134,7 +134,7 @@ workstreams:
   branch: codex/artifex-2-m3-outcomes
   base_commit: e1e4cd5e07aac4b8b380111807259cad7a550c0f
   shared_contracts: [M3-CONTRACT, J01, J16, OUTCOME-ACCEPTANCE-POLICY]
-  state: IN_PROGRESS
+  state: COMPLETE
   blockers: []
   integration_owner: ARTIFEX_2_ORCHESTRATOR
 - id: WS-M3-INTEGRATION-DOCS
@@ -145,6 +145,6 @@ workstreams:
   branch: codex/artifex-2-m3
   base_commit: e1e4cd5e07aac4b8b380111807259cad7a550c0f
   shared_contracts: [M3-CONTRACT, FROZEN-INVARIANTS]
-  state: IN_PROGRESS
+  state: COMPLETE
   blockers: []
   integration_owner: ARTIFEX_2_ORCHESTRATOR

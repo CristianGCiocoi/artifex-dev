@@ -12,9 +12,9 @@ program:
   intake_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
   branch: codex/artifex-2-m3
   current_milestone: M3
-  current_status: ACTIVE
-  latest_accepted_commit: 87b6e88e55725b6451c12eeeb3b58b97a6d61748
-  next_integration_point: M3 Codex public-composition and J01/J16 acceptance gates
+  current_status: ACCEPTED
+  latest_accepted_commit: b7efb7b08fee418715a8f05faa450649b121f6f6
+  next_integration_point: Canonicalize M3, then activate mandatory-ready M4, M5 and M6A
   m1_started: true
   m2_started: true
   m3_started: true
@@ -53,23 +53,23 @@ milestone_states:
     started: true
     accepted: true
   M3:
-    state: ACTIVE
+    state: ACCEPTED
     started: true
-    accepted: false
+    accepted: true
   M4:
-    state: BLOCKED_DEPENDENCY
+    state: READY
     started: false
     accepted: false
   M5:
-    state: BLOCKED_DEPENDENCY
+    state: READY
     started: false
     accepted: false
   M6A:
-    state: BLOCKED_DEPENDENCY
+    state: READY
     started: false
     accepted: false
   M6B:
-    state: BLOCKED_DEPENDENCY
+    state: READY_UNCLAIMED
     started: false
     accepted: false
   M7:

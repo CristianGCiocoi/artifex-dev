@@ -1,0 +1,76 @@
+schema_version: '1.0'
+evidence_id: EVD-M3-VALIDATION
+milestone: M3
+status: PASS
+recorded_date: '2026-08-27'
+canonical_m2_baseline_commit: e1e4cd5e07aac4b8b380111807259cad7a550c0f
+m3_implementation_baseline_commit: b7efb7b08fee418715a8f05faa450649b121f6f6
+m3_acceptance_commit: null
+canonical_integration_branch: main
+m3_contract_digest: 4c715b81581f4688f3b38d34829a967760e7f862f8408a477f37245f886d07eb
+source_quality:
+  ruff: PASS
+  mypy_strict: PASS
+  mypy_files: 81
+integrated_validation:
+  command: uv run pytest tests/artifex2_m2 tests/artifex2_m3 tests/test_codex.py -q
+  result: PASS
+  passed: 57
+  failed: 0
+  unexpected_failures: 0
+domain_integration:
+  command: uv run pytest tests --ignore=tests/test_release.py -q
+  result: PASS
+  passed: 389
+  skipped: 7
+  failed: 0
+  duration_seconds: 425.80
+  skip_reason: Windows symlink creation unavailable
+public_composition:
+  artifact: artifex_dev-1.0.0-py3-none-any.whl
+  artifact_sha256: 062021266c5784891d068d83935d0d1aab2d9c708d254b61bdfc836d38bd2872
+  artifact_bytes: 228495
+  composition: CLEAN_INSTALLED_WHEEL_PUBLIC_CLI_REAL_CODEX_MULTI_PROCESS
+  evidence: EVIDENCE/M3-PUBLIC-OUTCOME.json
+  status: PASS
+black_box_outcome:
+  status: PASS
+  j01_status: M3_VERTICAL_SLICE_ONLY
+  j01_full_journey_status: NOT_CLAIMED
+  j01_primary_proving_milestone: M7
+  j16_status: PASS
+  semantic_revision: 2
+  provider_result_self_accepted: false
+security_authority:
+  authenticated_explicit_actors: PASS
+  approved_execution_envelope: PASS
+  credential_values_persisted: false
+  contextual_provider_eligibility: PASS
+  provider_workspace_git_metadata_self_contained: true
+  coordinator_fencing_heartbeat: PASS
+  external_unknown_fail_closed: PASS
+  acceptance_authority_separate: PASS
+  project_authority_promotion_required: PASS
+provider_certification:
+  codex_interaction: LIVE_ROLE_CERTIFIED
+  codex_execution_implementer: LIVE_ROLE_CERTIFIED
+  codex_harness: NOT_CLAIMED
+documentation:
+  capability_composition: docs/architecture/CAPABILITY_COMPOSITION.md
+  state: CURRENT
+dashboard:
+  implementation_projection: PASS
+  authoritative: false
+migration:
+  mode: M3_ACCEPTED_PROVIDER_SETUP_SCHEMA
+  provider_setup_secret_material_present: false
+  legacy_provider_claims_fabricated: false
+  project_semantics_mutated_by_schema_migration: false
+m2_provenance:
+  acceptance_files_changed_from_canonical_m2: false
+  evidence_files_changed_from_canonical_m2: false
+v1_release_harness_regression:
+  classification: V1-R01-DASHBOARD-FIXTURE-SCHEMA-DRIFT
+  disposition: PRESERVED_BASELINE_EVIDENCE
+  source_repaired_by_m3: false
+unexpected_failures: []
