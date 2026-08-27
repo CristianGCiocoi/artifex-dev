@@ -1,5 +1,15 @@
 # ARTIFEX Operations Guide
 
+## ARTIFEX 2.0 Project operations
+
+Observed Reality, selective documentation maintenance, and the unified
+Project/Platform dashboard composition are documented in
+[`REALITY_DOCUMENTATION_DASHBOARDS.md`](../architecture/REALITY_DOCUMENTATION_DASHBOARDS.md).
+
+External repository changes are observations/divergences until a proposal is
+accepted through Project Authority. Dashboard and documentation files are
+rebuildable views and must not be used as write authority.
+
 Candidate: 9189765d392c2e03db81056e05da64e060097652
 
 Model: 82364730319cfe057f28cb6b2a6482a5e298c86b76fb4da2867e14754f43d76d

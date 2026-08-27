@@ -7,11 +7,18 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
+from artifex.documentation import DocumentationLifecycle
 from artifex.project.authority import ProjectAuthority, SemanticProposal, SemanticRevision
 from artifex.project.catalog import ProjectCatalog
+from artifex.project.errors import ProjectError
 from artifex.project.model import ProjectModel
-from artifex.project.projections import ProjectionFramework, render_project_baseline
+from artifex.project.projections import (
+    ProjectionFramework,
+    render_project_baseline,
+    render_project_projection,
+)
 from artifex.project.repository import MODEL_PATH, ProjectRepository
+from artifex.reality import RealityReconciliationService
 
 
 class ProjectControlService:
@@ -114,7 +121,10 @@ class ProjectControlService:
         entry = self.catalog.record_revision(
             entry.project_id, revision.number, revision.accepted_at
         )
-        dashboard = render_project_baseline(root, revision, entry)
+        lifecycle = DocumentationLifecycle(root)
+        if not lifecycle.status(revision) or not (root / ".artifex/docs/manifest.json").is_file():
+            lifecycle.establish_baseline(revision)
+        dashboard = render_project_projection(root, revision, entry)
         return self._result(revision, entry.to_dict(), dashboard)
 
     def propose(
@@ -146,7 +156,9 @@ class ProjectControlService:
         actor: str,
     ) -> dict[str, Any]:
         entry, root = self.catalog.reachable_location(name_or_alias)
-        revision = ProjectAuthority(root).accept(
+        authority = ProjectAuthority(root)
+        previous = authority.current()
+        revision = authority.accept(
             proposal_id,
             expected_revision=expected_revision,
             actor=actor,
@@ -154,20 +166,74 @@ class ProjectControlService:
         entry = self.catalog.record_revision(
             entry.project_id, revision.number, revision.accepted_at
         )
-        dashboard = render_project_baseline(root, revision, entry)
+        RealityReconciliationService(root).resolve_proposal(proposal_id)
+        DocumentationLifecycle(root).mark_accepted_change(previous, revision)
+        dashboard = render_project_projection(root, revision, entry)
         return self._result(revision, entry.to_dict(), dashboard)
 
     def observe_external(self, name_or_alias: str, *, actor: str = "external") -> dict[str, Any]:
         entry, root = self.catalog.reachable_location(name_or_alias)
-        proposal = ProjectAuthority(root).observe_external_mutation(actor=actor)
+        result = RealityReconciliationService(root).observe_repository(actor=actor)
+        revision = ProjectAuthority(root).current()
+        render_project_projection(root, revision, entry)
+        return result
+
+    def reality_state(self, name_or_alias: str) -> dict[str, object]:
+        _, root = self.catalog.reachable_location(name_or_alias)
+        return RealityReconciliationService(root).state()
+
+    def documentation_status(self, name_or_alias: str) -> dict[str, object]:
+        _, root = self.catalog.reachable_location(name_or_alias)
+        revision = ProjectAuthority(root).current()
+        documents = DocumentationLifecycle(root).status(revision)
         return {
-            "project_id": entry.project_id,
-            "semantic_revision_unchanged": True,
-            "proposal": proposal.to_dict() if proposal is not None else None,
+            "project_id": revision.project_id,
+            "semantic_revision": revision.number,
+            "authoritative": False,
+            "derived_from": "PROJECT_AUTHORITY",
+            "documents": [item.to_dict() for item in documents],
         }
 
+    def regenerate_documentation(
+        self, name_or_alias: str, names: tuple[str, ...] = ()
+    ) -> dict[str, object]:
+        entry, root = self.catalog.reachable_location(name_or_alias)
+        revision = ProjectAuthority(root).current()
+        documents = DocumentationLifecycle(root).regenerate(revision, names or None)
+        dashboard = render_project_projection(root, revision, entry)
+        return {
+            "project_id": revision.project_id,
+            "semantic_revision": revision.number,
+            "documents": [item.to_dict() for item in documents],
+            "project_dashboard": dashboard,
+        }
+
+    def project_dashboard(self, name_or_alias: str) -> dict[str, Any]:
+        entry, root = self.catalog.reachable_location(name_or_alias)
+        return render_project_projection(root, ProjectAuthority(root).current(), entry)
+
     def platform_dashboard(self) -> dict[str, Any]:
-        return ProjectionFramework.platform_state(self.catalog)
+        state = ProjectionFramework.platform_state(self.catalog)
+        projects: list[dict[str, Any]] = []
+        for entry in self.catalog.list():
+            summary = entry.to_dict()
+            try:
+                _, root = self.catalog.reachable_location(entry.primary_name)
+                revision = ProjectAuthority(root).current()
+                documentation = DocumentationLifecycle(root).status(revision)
+                reality = RealityReconciliationService(root).state()
+                summary["semantic_revision"] = revision.number
+                summary["semantic_fingerprint"] = revision.fingerprint
+                summary["documentation"] = {
+                    state: sum(candidate.state.value == state for candidate in documentation)
+                    for state in ("CURRENT", "STALE", "MISSING", "NOT_APPLICABLE")
+                }
+                summary["open_divergence_count"] = reality["open_divergence_count"]
+            except (OSError, KeyError, ProjectError):
+                summary["operational_state"] = "UNREACHABLE"
+                summary["reachable"] = False
+            projects.append(summary)
+        return {**state, "schema_version": "2.0", "projects": projects}
 
     @staticmethod
     def _result(

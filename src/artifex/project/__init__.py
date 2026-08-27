@@ -33,7 +33,11 @@ from artifex.project.model import (
 )
 from artifex.project.parser import ArtifactParser
 from artifex.project.paths import normalize_relative_path
-from artifex.project.projections import ProjectionFramework, render_project_baseline
+from artifex.project.projections import (
+    ProjectionFramework,
+    render_project_baseline,
+    render_project_projection,
+)
 from artifex.project.repository import (
     ProjectRepository,
     adopt_project,
@@ -91,4 +95,5 @@ __all__ = [
     "initialize_project",
     "normalize_relative_path",
     "render_project_baseline",
+    "render_project_projection",
 ]

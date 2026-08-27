@@ -18,11 +18,17 @@ integration_app = typer.Typer(help="Inspect and select replaceable integrations.
 manual_app = typer.Typer(help="Exchange portable manual execution packets and results.")
 project_app = typer.Typer(help="Read semantic project state.")
 research_app = typer.Typer(help="Validate provider-neutral research contracts.")
+documentation_app = typer.Typer(help="Inspect and selectively regenerate Project documentation.")
+dashboard_app = typer.Typer(help="Inspect Project and Platform operational views.")
+reality_app = typer.Typer(help="Inspect sourced Observed Reality and divergences.")
 app.add_typer(system_app, name="system")
 app.add_typer(integration_app, name="integration")
 app.add_typer(manual_app, name="manual")
 app.add_typer(project_app, name="project")
 app.add_typer(research_app, name="research")
+app.add_typer(documentation_app, name="documentation")
+app.add_typer(dashboard_app, name="dashboard")
+app.add_typer(reality_app, name="reality")
 
 
 def _emit(
@@ -384,6 +390,69 @@ def project_observe(
     if catalog_path is not None:
         arguments["catalog_path"] = catalog_path
     _emit("project.observe", arguments)
+
+
+@reality_app.command("state")
+def reality_state(
+    name: str,
+    catalog_path: str | None = typer.Option(None, "--catalog"),
+) -> None:
+    """Read sourced observations and unresolved divergences."""
+
+    arguments = {"name": name}
+    if catalog_path is not None:
+        arguments["catalog_path"] = catalog_path
+    _emit("reality.state", arguments)
+
+
+@documentation_app.command("status")
+def documentation_status(
+    name: str,
+    catalog_path: str | None = typer.Option(None, "--catalog"),
+) -> None:
+    """Classify generated Project documentation as CURRENT, STALE, or MISSING."""
+
+    arguments = {"name": name}
+    if catalog_path is not None:
+        arguments["catalog_path"] = catalog_path
+    _emit("documentation.status", arguments)
+
+
+@documentation_app.command("regenerate")
+def documentation_regenerate(
+    name: str,
+    document: Annotated[list[str] | None, typer.Option("--document")] = None,
+    catalog_path: str | None = typer.Option(None, "--catalog"),
+) -> None:
+    """Regenerate only the requested or currently affected documents."""
+
+    arguments: dict[str, Any] = {"name": name, "documents": document or []}
+    if catalog_path is not None:
+        arguments["catalog_path"] = catalog_path
+    _emit("documentation.regenerate", arguments)
+
+
+@dashboard_app.command("project")
+def dashboard_project(
+    name: str,
+    catalog_path: str | None = typer.Option(None, "--catalog"),
+) -> None:
+    """Rebuild and read one Project operational dashboard."""
+
+    arguments = {"name": name}
+    if catalog_path is not None:
+        arguments["catalog_path"] = catalog_path
+    _emit("dashboard.project", arguments)
+
+
+@dashboard_app.command("platform")
+def dashboard_platform(
+    catalog_path: str | None = typer.Option(None, "--catalog"),
+) -> None:
+    """Read the catalog-backed Platform operational dashboard."""
+
+    arguments = {} if catalog_path is None else {"catalog_path": catalog_path}
+    _emit("dashboard.platform", arguments)
 
 
 @manual_app.command("packet-create")

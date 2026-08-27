@@ -111,6 +111,19 @@ def _document_data(project_model: Mapping[str, Any], filename: str) -> dict[str,
     return data
 
 
+def human_document_sources(
+    project_model: Mapping[str, Any], filename: str
+) -> dict[str, Any]:
+    """Return the accepted semantic inputs consumed by one human document."""
+
+    normalized = filename.upper() if filename.upper() != "README.MD" else "README.md"
+    if normalized.endswith(".MD") and normalized != "README.md":
+        normalized = f"{normalized.removesuffix('.MD')}.md"
+    if normalized not in _DOCUMENT_SOURCES:
+        raise ValueError(f"unsupported human document: {filename}")
+    return _document_data(project_understanding(project_model), normalized)
+
+
 def render_human_document(project_model: Mapping[str, Any], filename: str) -> str:
     """Render one generated Markdown view from canonical model fields."""
 
@@ -246,6 +259,7 @@ __all__ = [
     "compile_human_documents",
     "compile_machine_pack",
     "compile_machine_understanding_pack",
+    "human_document_sources",
     "render_agent_shim",
     "render_human_document",
     "serialize_machine_view",

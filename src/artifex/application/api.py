@@ -164,6 +164,10 @@ class Application:
         self.register("project.propose", self._project_propose)
         self.register("project.accept", self._project_accept)
         self.register("project.observe", self._project_observe)
+        self.register("reality.state", self._reality_state)
+        self.register("documentation.status", self._documentation_status)
+        self.register("documentation.regenerate", self._documentation_regenerate)
+        self.register("dashboard.project", self._project_dashboard)
         self.register("dashboard.platform", self._platform_dashboard)
         self.register("runtime.bootstrap", self._runtime_bootstrap)
         self.register("runtime.status", self._runtime_status)
@@ -503,6 +507,37 @@ class Application:
             _required_string(request.arguments, "name"), actor=request.context.actor
         )
         return OperationResult(ok=True, value=result)
+
+    @staticmethod
+    def _reality_state(request: OperationRequest) -> OperationResult:
+        result = _project_service(request).reality_state(
+            _required_string(request.arguments, "name")
+        )
+        return OperationResult(ok=True, value=result)
+
+    @staticmethod
+    def _documentation_status(request: OperationRequest) -> OperationResult:
+        result = _project_service(request).documentation_status(
+            _required_string(request.arguments, "name")
+        )
+        return OperationResult(ok=True, value=result)
+
+    @staticmethod
+    def _documentation_regenerate(request: OperationRequest) -> OperationResult:
+        result = _project_service(request).regenerate_documentation(
+            _required_string(request.arguments, "name"),
+            _string_sequence(request.arguments, "documents"),
+        )
+        return OperationResult(ok=True, value=result)
+
+    @staticmethod
+    def _project_dashboard(request: OperationRequest) -> OperationResult:
+        return OperationResult(
+            ok=True,
+            value=_project_service(request).project_dashboard(
+                _required_string(request.arguments, "name")
+            ),
+        )
 
     @staticmethod
     def _platform_dashboard(request: OperationRequest) -> OperationResult:
