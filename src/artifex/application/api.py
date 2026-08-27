@@ -15,6 +15,7 @@ from artifex import __version__
 from artifex.capabilities import (
     CLAUDE_DISPATCH_AUTHORIZED_ROLES,
     CODEX_DISPATCH_AUTHORIZED_ROLES,
+    DEEPSEEK_DISPATCH_AUTHORIZED_ROLES,
     ActorContext,
     CapabilityGraph,
     CapabilityRequest,
@@ -26,6 +27,7 @@ from artifex.capabilities import (
     ProviderRole,
     claude_certification_projection,
     codex_certification_projection,
+    deepseek_certification_projection,
     record_execution_implementer_evidence,
     shipping_artifact_sha256,
 )
@@ -65,6 +67,14 @@ from artifex.integrations.claude import (
     ClaudeProcessRunner,
 )
 from artifex.integrations.codex import CodexIntegration, CodexProcessRunner
+from artifex.integrations.deepseek import (
+    DeepSeekCompatibility,
+    DeepSeekDetection,
+    DeepSeekHarnessAdapter,
+)
+from artifex.integrations.deepseek import (
+    Runner as DeepSeekRunner,
+)
 from artifex.integrations.pandora import PandoraResearchService
 from artifex.knowledge import (
     KnowledgeApplicability,
@@ -156,6 +166,7 @@ class Application:
         provider_interaction: ProviderInteractionService | None = None,
         codex_runner_factory: CodexRunnerFactory | None = None,
         claude_runner_factory: ClaudeRunnerFactory | None = None,
+        deepseek_runner: DeepSeekRunner | None = None,
     ) -> None:
         self._operations: dict[str, Operation] = {}
         self._project_root = project_root
@@ -163,11 +174,13 @@ class Application:
             certified_roles={
                 "codex": CODEX_DISPATCH_AUTHORIZED_ROLES,
                 "claude": CLAUDE_DISPATCH_AUTHORIZED_ROLES,
+                "deepseek": DEEPSEEK_DISPATCH_AUTHORIZED_ROLES,
             }
         )
         self._provider_interaction = provider_interaction or ProviderInteractionService()
         self._codex_runner_factory = codex_runner_factory or _codex_process_runner
         self._claude_runner_factory = claude_runner_factory or _claude_process_runner
+        self._deepseek_runner = deepseek_runner
         self.registry = (
             IntegrationRegistry((ManualIntegration(),)) if registry is None else registry
         )
@@ -393,6 +406,9 @@ class Application:
         elif provider_id == "claude":
             authorized_roles = CLAUDE_DISPATCH_AUTHORIZED_ROLES
             projection_factory = claude_certification_projection
+        elif provider_id == "deepseek":
+            authorized_roles = DEEPSEEK_DISPATCH_AUTHORIZED_ROLES
+            projection_factory = deepseek_certification_projection
         else:
             raise ValueError(f"provider certification is unsupported: {provider_id}")
         receipts = self._provider_interaction.store.valid_receipts(
@@ -1215,6 +1231,7 @@ class Application:
             invariants=_string_sequence(request.arguments, "invariants"),
         )
         workspace_root = Path(str(workspace["workspace_root"])).resolve()
+        deepseek_unowned_before: dict[str, str] | None = None
         execute_provider: Callable[[], ExecutionResult]
         if provider_id == "codex":
             codex_integration = CodexIntegration()
@@ -1252,6 +1269,36 @@ class Application:
                 return claude_integration.execute_stage(claude_plan, claude_runner)
 
             execute_provider = run_claude_provider
+        elif provider_id == "deepseek":
+            deepseek_detection = DeepSeekDetection(
+                True,
+                provider.readiness.executable or provider.configuration.command[0],
+                provider.readiness.version,
+                provider.capabilities,
+                DeepSeekCompatibility.STABLE,
+                provider.readiness.detail,
+            )
+            deepseek_integration = (
+                DeepSeekHarnessAdapter(deepseek_detection)
+                if self._deepseek_runner is None
+                else DeepSeekHarnessAdapter(
+                    deepseek_detection,
+                    runner=self._deepseek_runner,
+                )
+            )
+            deepseek_plan = deepseek_integration.plan_execution(
+                packet,
+                worktree_root=workspace_root,
+            )
+            deepseek_unowned_before = _unowned_workspace_snapshot(
+                workspace_root,
+                owned_paths,
+            )
+
+            def run_deepseek_provider() -> ExecutionResult:
+                return deepseek_integration.execute(deepseek_plan)
+
+            execute_provider = run_deepseek_provider
         else:
             raise ValueError(f"provider execution is unsupported: {provider_id}")
         authorization = service.authorize_dispatch(
@@ -1269,6 +1316,15 @@ class Application:
         try:
             with service.coordinator_heartbeat():
                 result = execute_provider()
+            if deepseek_unowned_before is not None:
+                deepseek_unowned_after = _unowned_workspace_snapshot(
+                    workspace_root,
+                    owned_paths,
+                )
+                if deepseek_unowned_after != deepseek_unowned_before:
+                    raise ValueError(
+                        "DeepSeek modified files outside its Execution Envelope ownership"
+                    )
             manifest, manifest_digest = _validate_owned_artifacts(
                 service,
                 workspace_id=workspace_id,
@@ -1873,6 +1929,34 @@ def _validate_execution_actors(
         raise ValueError("dispatch, provider-result, and evidence actors must be distinct")
 
 
+def _unowned_workspace_snapshot(
+    workspace_root: Path,
+    owned_paths: tuple[str, ...],
+) -> dict[str, str]:
+    """Hash the isolated workspace outside provider-owned paths.
+
+    Git's private clone metadata is excluded. It is coordinator plumbing rather
+    than Project content and may change when a provider invokes Git read-only.
+    """
+
+    owners = tuple(path.replace("\\", "/").removeprefix("./").rstrip("/") for path in owned_paths)
+    snapshot: dict[str, str] = {}
+    for candidate in sorted(workspace_root.rglob("*")):
+        relative = candidate.relative_to(workspace_root).as_posix()
+        if relative == ".git" or relative.startswith(".git/"):
+            continue
+        if any(
+            owner == "." or relative == owner or relative.startswith(f"{owner}/")
+            for owner in owners
+        ):
+            continue
+        if candidate.is_symlink():
+            snapshot[relative] = f"SYMLINK:{candidate.readlink()}"
+        elif candidate.is_file():
+            snapshot[relative] = hashlib.sha256(candidate.read_bytes()).hexdigest()
+    return snapshot
+
+
 def _required_envelope_commit(envelope: ExecutionEnvelope) -> str:
     if envelope.baseline_commit is None:
         raise ValueError("provider Execution Envelope is missing baseline_commit")
@@ -1991,7 +2075,7 @@ def _record_promoted_provider_certification(
     dispatch = service.store.dispatch_authorization(attempt_id)
     provider_id = "" if dispatch is None else str(dispatch["provider_id"])
     if dispatch is None or (
-        provider_id not in {"codex", "claude"}
+        provider_id not in {"codex", "claude", "deepseek"}
         or str(dispatch["provider_role"]) != ProviderRole.EXECUTION_IMPLEMENTER.value
     ):
         return None

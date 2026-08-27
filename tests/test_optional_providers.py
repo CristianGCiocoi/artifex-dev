@@ -262,7 +262,8 @@ def test_deepseek_headless_plan_and_result_normalization(tmp_path: Path) -> None
     adapter = DeepSeekHarnessAdapter(_stable_detection(), runner=runner)
     packet = _packet(adapter)
     plan = adapter.plan_execution(packet, worktree_root=tmp_path)
-    assert plan.to_dict()["mutating"] is False
+    assert plan.to_dict()["mutating"] is True
+    assert plan.to_dict()["canonical_mutation"] is False
     result = adapter.execute(plan, timeout=1)
     assert result.status is ExecutionStatus.SUCCESS
     assert result.artifacts == ({"path": "owned.txt"},)

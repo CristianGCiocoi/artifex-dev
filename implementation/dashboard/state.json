@@ -719,7 +719,21 @@
       "type": "FROZEN_ADR"
     }
   ],
-  "blockers": [],
+  "blockers": [
+    {
+      "class": "EXTERNAL_PREREQUISITE",
+      "evidence": [
+        "EVIDENCE/M8C-PUBLIC-OUTCOME.json"
+      ],
+      "id": "BLK-M8C-DEEPSEEK-LIVE-PREREQUISITES",
+      "required_authority": "HUMAN_ENVIRONMENT_OWNER",
+      "resolution": "Provide a supported DeepSeek 1.x CLI and an approved authenticated provider boundary, then run the installed-wheel live execution qualifier",
+      "scope": "M8C",
+      "status": "OPEN",
+      "summary": "Stable DeepSeek CLI, native authentication, endpoint and model are not qualified",
+      "unrelated_work_may_continue": true
+    }
+  ],
   "evidence": [
     {
       "bytes": 9924,
@@ -805,6 +819,21 @@
       "bytes": 1979,
       "path": "implementation/EVIDENCE/M8A-VALIDATION.yaml",
       "sha256": "8838b99b4041cd16cba9d5bf672f72fc92f07a89d38566fafea1d02c38251cb6"
+    },
+    {
+      "bytes": 2179,
+      "path": "implementation/EVIDENCE/M8C-EXECUTABLE-CONTRACT.yaml",
+      "sha256": "ee271021dc7ee791a359587caf5b9536f3503ea8a4c30bfedc0d1c2edf6cb70e"
+    },
+    {
+      "bytes": 3483,
+      "path": "implementation/EVIDENCE/M8C-PUBLIC-OUTCOME.json",
+      "sha256": "43564c9e5e16130b9d3bf6718d0b5e2a1edd0f006d9ceeed259315dc0ea1c5f2"
+    },
+    {
+      "bytes": 2987,
+      "path": "implementation/EVIDENCE/M8C-VALIDATION.yaml",
+      "sha256": "6baf08142c7550bb7636fcfc6fab17e0b3e0c5948f68e1df0b449b385599348a"
     },
     {
       "bytes": 3220,
@@ -1897,6 +1926,7 @@
     "m5_docs_dashboard_classification": "M5_ACCEPTED_CURRENT_STALE_MISSING_CLASSIFICATION",
     "m6a_v1_claude_setup_revalidation": "PASS_FRESH_PROCESS_REAL_CLAUDE_READINESS",
     "m8a_v1_instance_knowledge_promotion": "CLASSIFICATION_QUARANTINE_ONLY_ACCEPTANCE_NA",
+    "m8c_v1_deepseek_setup_revalidation": "PASS_FAIL_CLOSED_NOT_DETECTED_NO_STALE_CLAIM",
     "migration_execution": "M2_ACCEPTED_EMPTY_RUNSTORE",
     "milestone": "M3",
     "mode": "M3_ACCEPTED_PROVIDER_SETUP_SCHEMA",
@@ -2034,8 +2064,8 @@
       ],
       "id": "M8C",
       "mandatory_for_core_ga": false,
-      "started": false,
-      "state": "READY_UNCLAIMED",
+      "started": true,
+      "state": "BLOCKED_EXTERNAL_PREREQUISITE",
       "title": "DeepSeek Productization / Experimental Certification"
     },
     {
@@ -2145,6 +2175,7 @@
     "m5_started": true,
     "m6a_started": true,
     "m8a_started": true,
+    "m8c_started": true,
     "next_integration_point": "Reconcile fail-closed M8B/M8C provider branches on the accepted M6A baseline, then activate M7 platform-neutral foundation",
     "recorded_date": "2026-08-28",
     "target_release": "2.0.0"
@@ -2338,42 +2369,49 @@
         }
       },
       {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M8C-PUBLIC-OUTCOME.json"
+        ],
         "provider": "deepseek",
-        "requirement": "OPTIONAL_IF_CLAIMED",
+        "requirement": "EXPERIMENTAL_OMITTED",
         "role": "INTERACTION",
         "steps": {
-          "ADAPTER_IMPLEMENTED": "NOT_STARTED",
-          "LIVE_ROLE_CERTIFIED": "NOT_STARTED",
-          "PACKAGED": "NOT_STARTED",
-          "PUBLIC_COMPOSITION_VERIFIED": "NOT_STARTED",
-          "ROLE_CONFORMANCE_VERIFIED": "NOT_STARTED"
+          "ADAPTER_IMPLEMENTED": "NOT_APPLICABLE",
+          "LIVE_ROLE_CERTIFIED": "NOT_APPLICABLE",
+          "PACKAGED": "NOT_APPLICABLE",
+          "PUBLIC_COMPOSITION_VERIFIED": "NOT_APPLICABLE",
+          "ROLE_CONFORMANCE_VERIFIED": "NOT_APPLICABLE"
         }
       },
       {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M8C-VALIDATION.yaml",
+          "EVIDENCE/M8C-PUBLIC-OUTCOME.json"
+        ],
         "provider": "deepseek",
         "requirement": "OPTIONAL_IF_CLAIMED",
         "role": "EXECUTION_IMPLEMENTER",
         "steps": {
-          "ADAPTER_IMPLEMENTED": "NOT_STARTED",
-          "LIVE_ROLE_CERTIFIED": "NOT_STARTED",
-          "PACKAGED": "NOT_STARTED",
-          "PUBLIC_COMPOSITION_VERIFIED": "NOT_STARTED",
-          "ROLE_CONFORMANCE_VERIFIED": "NOT_STARTED"
+          "ADAPTER_IMPLEMENTED": "PASS",
+          "LIVE_ROLE_CERTIFIED": "IN_PROGRESS",
+          "PACKAGED": "PASS",
+          "PUBLIC_COMPOSITION_VERIFIED": "PASS",
+          "ROLE_CONFORMANCE_VERIFIED": "PASS"
         }
       },
       {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M8C-PUBLIC-OUTCOME.json"
+        ],
         "provider": "deepseek",
-        "requirement": "OPTIONAL_IF_CLAIMED",
+        "requirement": "EXPERIMENTAL_OMITTED",
         "role": "HARNESS",
         "steps": {
-          "ADAPTER_IMPLEMENTED": "NOT_STARTED",
-          "LIVE_ROLE_CERTIFIED": "NOT_STARTED",
-          "PACKAGED": "NOT_STARTED",
-          "PUBLIC_COMPOSITION_VERIFIED": "NOT_STARTED",
-          "ROLE_CONFORMANCE_VERIFIED": "NOT_STARTED"
+          "ADAPTER_IMPLEMENTED": "NOT_APPLICABLE",
+          "LIVE_ROLE_CERTIFIED": "NOT_APPLICABLE",
+          "PACKAGED": "NOT_APPLICABLE",
+          "PUBLIC_COMPOSITION_VERIFIED": "NOT_APPLICABLE",
+          "ROLE_CONFORMANCE_VERIFIED": "NOT_APPLICABLE"
         }
       },
       {
@@ -2420,10 +2458,10 @@
   },
   "schema_version": "1.0",
   "summary": {
-    "active_blockers": 0,
+    "active_blockers": 1,
     "adr_count": 24,
     "current_milestone": "M6A",
-    "evidence_items": 19,
+    "evidence_items": 22,
     "invariant_count": 34,
     "journey_states": {
       "M3_VERTICAL_SLICE_ONLY": 1,
@@ -2432,16 +2470,19 @@
       "PASS": 13
     },
     "milestones_accepted": 8,
-    "milestones_started": 8,
+    "milestones_started": 9,
     "milestones_total": 16,
     "provider_step_states": {
-      "NOT_STARTED": 75,
-      "PASS": 20
+      "IN_PROGRESS": 1,
+      "NOT_APPLICABLE": 10,
+      "NOT_STARTED": 60,
+      "PASS": 24
     },
     "ready_milestones": [
       "M7"
     ],
     "workstream_states": {
+      "BLOCKED_EXTERNAL_PREREQUISITE": 1,
       "COMPLETE": 16
     }
   },
@@ -2756,6 +2797,31 @@
       ],
       "state": "COMPLETE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m8a"
+    },
+    {
+      "base_commit": "77aeb189e3359f8a54ff1f4056dd3c8409747ef7",
+      "blockers": [
+        "BLK-M8C-DEEPSEEK-LIVE-PREREQUISITES"
+      ],
+      "branch": "codex/artifex-2-m8c",
+      "id": "WS-M8C-DEEPSEEK-PRODUCTIZATION",
+      "integration_owner": "ARTIFEX_2_ORCHESTRATOR",
+      "milestone": "M8C",
+      "owner_subagent": "m5_reality_docs",
+      "purpose": "Productize the stable DeepSeek execution boundary and qualify role-specific claims",
+      "shared_contracts": [
+        "M8C-CONTRACT",
+        "ADR-T007",
+        "ADR-T008",
+        "ADR-T015",
+        "ADR-T018",
+        "ADR-T021",
+        "ADR-T022",
+        "ADR-T023",
+        "ADR-T024"
+      ],
+      "state": "BLOCKED_EXTERNAL_PREREQUISITE",
+      "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m8c"
     }
   ]
 }

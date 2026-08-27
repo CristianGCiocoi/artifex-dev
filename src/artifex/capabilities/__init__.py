@@ -6,8 +6,11 @@ from artifex.capabilities.certification import (
     CLAUDE_SUPPORTED_VERSION_RANGE,
     CODEX_DISPATCH_AUTHORIZED_ROLES,
     CODEX_SUPPORTED_VERSION_RANGE,
+    DEEPSEEK_DISPATCH_AUTHORIZED_ROLES,
+    DEEPSEEK_SUPPORTED_VERSION_RANGE,
     claude_certification_projection,
     codex_certification_projection,
+    deepseek_certification_projection,
     provider_certification_projection,
 )
 from artifex.capabilities.composition import ProviderCompositionLoader, ProviderSetupError
@@ -42,6 +45,8 @@ __all__ = [
     "CLAUDE_SUPPORTED_VERSION_RANGE",
     "CODEX_DISPATCH_AUTHORIZED_ROLES",
     "CODEX_SUPPORTED_VERSION_RANGE",
+    "DEEPSEEK_DISPATCH_AUTHORIZED_ROLES",
+    "DEEPSEEK_SUPPORTED_VERSION_RANGE",
     "ActorContext",
     "AuthenticationAssertion",
     "CapabilityEvidenceStore",
@@ -66,6 +71,7 @@ __all__ = [
     "RepositoryBaseline",
     "claude_certification_projection",
     "codex_certification_projection",
+    "deepseek_certification_projection",
     "default_capability_evidence_path",
     "provider_certification_projection",
     "record_execution_implementer_evidence",

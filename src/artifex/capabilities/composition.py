@@ -25,6 +25,7 @@ from artifex.capabilities.registry import CapabilityGraph, CapabilityRegistry
 from artifex.distribution.setup import SETUP_STATE_PATH
 from artifex.integrations.claude import CLAUDE_CAPABILITIES, ClaudeDetection
 from artifex.integrations.codex import CODEX_CAPABILITIES, CodexDetection
+from artifex.integrations.deepseek import DeepSeekDetection, detect_deepseek
 
 CommandRunner = Callable[[Sequence[str]], subprocess.CompletedProcess[str]]
 _VERSION = re.compile(r"(?<!\d)(\d+(?:\.\d+){1,3}(?:[-+][A-Za-z0-9.-]+)?)")
@@ -53,6 +54,7 @@ class ProviderCompositionLoader:
             {
                 "codex-native-session": self._probe_codex_native_session,
                 "claude-native-session": self._probe_claude_native_session,
+                "deepseek-native-session": self._probe_deepseek_native_session,
             }
         )
         self.certified_roles = dict(certified_roles or {})
@@ -71,6 +73,8 @@ class ProviderCompositionLoader:
                 registry.register(self._compose_codex(configuration))
             elif configuration.provider_id == "claude":
                 registry.register(self._compose_claude(configuration))
+            elif configuration.provider_id == "deepseek":
+                registry.register(self._compose_deepseek(configuration))
         return registry.graph(source=str(state_path))
 
     @staticmethod
@@ -193,6 +197,20 @@ class ProviderCompositionLoader:
                     "default",
                     "claude",
                     ("INTERACTION", "EXECUTION_IMPLEMENTER"),
+                ),
+            )
+        if provider_id == "deepseek":
+            return ProviderConfiguration(
+                provider_id="deepseek",
+                enabled=True,
+                roles=frozenset({ProviderRole.EXECUTION_IMPLEMENTER}),
+                governance_mode=GovernanceMode.PROVIDER_MANAGED,
+                command=("deepseek",),
+                credential_reference=CredentialReference(
+                    "deepseek-native-session",
+                    "default",
+                    "deepseek",
+                    ("EXECUTION_IMPLEMENTER",),
                 ),
             )
         return ProviderConfiguration(
@@ -318,6 +336,57 @@ class ProviderCompositionLoader:
             frozenset(role for role in certified if role in configuration.roles),
         )
 
+    def _compose_deepseek(self, configuration: ProviderConfiguration) -> ProviderInstance:
+        detection, command = self._detect_deepseek(configuration.command)
+        checks = {
+            "detected": detection.installed,
+            "configured": configuration.enabled,
+            "authenticated": False,
+            "healthy": False,
+            "registered": False,
+            "available": False,
+            "stable_headless_boundary": detection.stable_headless,
+        }
+        state = ReadinessState.NOT_DETECTED
+        detail = detection.detail or "DeepSeek was not detected"
+        if detection.installed:
+            state = ReadinessState.DETECTED
+            state = ReadinessState.CONFIGURED
+            if detection.stable_headless:
+                assertion = self._authenticate_deepseek(configuration, detection)
+                checks["authenticated"] = assertion.authenticated
+                detail = assertion.detail
+                if assertion.authenticated:
+                    state = ReadinessState.AUTHENTICATED
+                    checks["healthy"] = True
+                    state = ReadinessState.HEALTHY
+                    checks["registered"] = True
+                    state = ReadinessState.REGISTERED
+                    checks["available"] = True
+                    state = ReadinessState.AVAILABLE
+            else:
+                detail = (
+                    "DeepSeek stable headless structured-output boundary is unavailable; "
+                    f"{detection.detail}"
+                )
+        readiness = ProviderReadiness(
+            "deepseek",
+            state,
+            checks,
+            detection.executable,
+            command,
+            detection.version,
+            detail,
+        )
+        certified = self.certified_roles.get("deepseek", frozenset())
+        return ProviderInstance(
+            "deepseek:local",
+            configuration,
+            readiness,
+            detection.capabilities,
+            frozenset(role for role in certified if role in configuration.roles),
+        )
+
     def _authenticate(
         self, configuration: ProviderConfiguration, detection: CodexDetection
     ) -> AuthenticationAssertion:
@@ -390,6 +459,39 @@ class ProviderCompositionLoader:
             ),
         )
 
+    def _authenticate_deepseek(
+        self, configuration: ProviderConfiguration, detection: DeepSeekDetection
+    ) -> AuthenticationAssertion:
+        reference = configuration.credential_reference
+        if reference is None or detection.executable is None:
+            return AuthenticationAssertion(False, "none", "credential reference is missing")
+        resolved = (detection.executable,)
+        return self.credential_broker.resolve(reference, resolved)
+
+    def _probe_deepseek_native_session(
+        self, reference: CredentialReference, command: tuple[str, ...]
+    ) -> AuthenticationAssertion:
+        del reference
+        runner = self.runner or self._run
+        try:
+            completed = runner((*command, "auth", "status"))
+        except (OSError, subprocess.SubprocessError) as exc:
+            return AuthenticationAssertion(
+                False,
+                "deepseek-native-session",
+                f"authentication probe failed: {type(exc).__name__}",
+            )
+        authenticated = completed.returncode == 0
+        return AuthenticationAssertion(
+            authenticated,
+            "deepseek-native-session",
+            (
+                "native DeepSeek session authenticated"
+                if authenticated
+                else "native DeepSeek session unavailable"
+            ),
+        )
+
     def _detect_codex(
         self, command: tuple[str, ...]
     ) -> tuple[CodexDetection, tuple[str, ...]]:
@@ -459,6 +561,27 @@ class ProviderCompositionLoader:
             )
             return ClaudeDetection(False, resolved, detail=reason), resolved_command
         return ClaudeDetection(True, resolved, match.group(1), output), resolved_command
+
+    def _detect_deepseek(
+        self, command: tuple[str, ...]
+    ) -> tuple[DeepSeekDetection, tuple[str, ...]]:
+        if len(command) != 1:
+            return (
+                DeepSeekDetection(
+                    False,
+                    detail="configured DeepSeek command cannot pre-supply caller flags",
+                ),
+                command,
+            )
+        detection = detect_deepseek(
+            command[0],
+            which=self.which,
+            runner=self.runner,
+        )
+        resolved_command = (
+            (detection.executable,) if detection.executable is not None else command
+        )
+        return detection, resolved_command
 
     @staticmethod
     def _run(arguments: Sequence[str]) -> subprocess.CompletedProcess[str]:

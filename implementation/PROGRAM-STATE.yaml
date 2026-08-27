@@ -22,6 +22,7 @@ program:
   m5_started: true
   m6a_started: true
   m8a_started: true
+  m8c_started: true
   recorded_date: '2026-08-28'
   dashboard_state: CURRENT
 target_system:
@@ -89,8 +90,8 @@ milestone_states:
     started: false
     accepted: false
   M8C:
-    state: READY_UNCLAIMED
-    started: false
+    state: BLOCKED_EXTERNAL_PREREQUISITE
+    started: true
     accepted: false
   M9:
     state: BLOCKED_DEPENDENCY

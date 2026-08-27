@@ -97,13 +97,19 @@ class DeepSeekDetection:
         }
 
 
-def detect_deepseek(executable: str = "deepseek", *, timeout: float = 3.0) -> DeepSeekDetection:
+def detect_deepseek(
+    executable: str = "deepseek",
+    *,
+    timeout: float = 3.0,
+    which: Callable[[str], str | None] | None = None,
+    runner: Callable[[Sequence[str]], subprocess.CompletedProcess[str]] | None = None,
+) -> DeepSeekDetection:
     """Probe an optional DeepSeek CLI without writing configuration or project data."""
 
-    resolved = shutil.which(executable)
+    resolved = (which or shutil.which)(executable)
     if resolved is None:
         return DeepSeekDetection(False, detail=f"{executable} executable was not found")
-    version_result = _probe((resolved, "--version"), timeout)
+    version_result = _run_probe((resolved, "--version"), timeout, runner)
     if isinstance(version_result, str):
         return DeepSeekDetection(False, resolved, detail=version_result)
     version_output = (version_result.stdout or version_result.stderr).strip()
@@ -116,7 +122,7 @@ def detect_deepseek(executable: str = "deepseek", *, timeout: float = 3.0) -> De
     match = _VERSION_PATTERN.search(version_output)
     version = match.group(1) if match else None
 
-    help_result = _probe((resolved, "run", "--help"), timeout)
+    help_result = _run_probe((resolved, "run", "--help"), timeout, runner)
     help_succeeded = not isinstance(help_result, str) and help_result.returncode == 0
     help_output = (
         f"{help_result.stdout}\n{help_result.stderr}".lower()
@@ -183,8 +189,15 @@ def _classify_compatibility(
     return DeepSeekCompatibility.STABLE
 
 
-def _probe(command: tuple[str, ...], timeout: float) -> subprocess.CompletedProcess[str] | str:
+def _probe(
+    command: tuple[str, ...],
+    timeout: float,
+    *,
+    runner: Callable[[Sequence[str]], subprocess.CompletedProcess[str]] | None = None,
+) -> subprocess.CompletedProcess[str] | str:
     try:
+        if runner is not None:
+            return runner(command)
         return subprocess.run(
             command,
             check=False,
@@ -195,6 +208,19 @@ def _probe(command: tuple[str, ...], timeout: float) -> subprocess.CompletedProc
             timeout=timeout,
             shell=False,
         )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return f"read-only capability detection failed: {exc}"
+
+
+def _run_probe(
+    command: tuple[str, ...],
+    timeout: float,
+    runner: Callable[[Sequence[str]], subprocess.CompletedProcess[str]] | None,
+) -> subprocess.CompletedProcess[str] | str:
+    if runner is None:
+        return _probe(command, timeout)
+    try:
+        return runner(command)
     except (OSError, subprocess.TimeoutExpired) as exc:
         return f"read-only capability detection failed: {exc}"
 
@@ -212,7 +238,8 @@ class DeepSeekExecutionPlan:
             "worktree_root": self.worktree_root,
             "command": list(self.command),
             "stdin": self.stdin,
-            "mutating": False,
+            "mutating": True,
+            "canonical_mutation": False,
         }
 
 

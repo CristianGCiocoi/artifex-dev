@@ -13,7 +13,7 @@ from artifex.distribution.approvals import ApprovalStore
 from artifex.distribution.models import DecisionExplanation, SetupAction, SetupPlan
 from artifex.distribution.presentation import explain_decision, require_approval
 
-SUPPORTED_INTEGRATIONS = frozenset({"manual", "hermes", "codex", "claude"})
+SUPPORTED_INTEGRATIONS = frozenset({"manual", "hermes", "codex", "claude", "deepseek"})
 SETUP_STATE_PATH = ".artifex/integrations.json"
 
 
@@ -222,11 +222,21 @@ def _default_provider_spec(provider_id: str) -> Mapping[str, Any]:
             "scopes": ["INTERACTION", "EXECUTION_IMPLEMENTER"],
             "secret_material_present": False,
         }
+    elif provider_id == "deepseek":
+        reference = {
+            "broker": "deepseek-native-session",
+            "reference": "default",
+            "provider_id": "deepseek",
+            "scopes": ["EXECUTION_IMPLEMENTER"],
+            "secret_material_present": False,
+        }
     return {
         "provider_id": provider_id,
         "enabled": True,
         "roles": list(_default_roles(provider_id)),
-        "governance_mode": "STANDALONE",
+        "governance_mode": (
+            "PROVIDER_MANAGED" if provider_id == "deepseek" else "STANDALONE"
+        ),
         "command": [provider_id],
         "credential_reference": reference,
     }
@@ -235,6 +245,8 @@ def _default_provider_spec(provider_id: str) -> Mapping[str, Any]:
 def _default_roles(provider_id: str) -> tuple[str, ...]:
     if provider_id in {"codex", "claude"}:
         return ("INTERACTION", "EXECUTION_IMPLEMENTER")
+    if provider_id == "deepseek":
+        return ("EXECUTION_IMPLEMENTER",)
     if provider_id == "manual":
         return ("INTERACTION", "EXECUTION_IMPLEMENTER")
     return ("INTERACTION",)

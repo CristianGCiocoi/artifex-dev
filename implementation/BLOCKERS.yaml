@@ -1,5 +1,15 @@
 schema_version: '1.0'
-blockers: []
+blockers:
+- id: BLK-M8C-DEEPSEEK-LIVE-PREREQUISITES
+  scope: M8C
+  class: EXTERNAL_PREREQUISITE
+  status: OPEN
+  summary: Stable DeepSeek CLI, native authentication, endpoint and model are not qualified
+  evidence:
+  - EVIDENCE/M8C-PUBLIC-OUTCOME.json
+  required_authority: HUMAN_ENVIRONMENT_OWNER
+  resolution: Provide a supported DeepSeek 1.x CLI and an approved authenticated provider boundary, then run the installed-wheel live execution qualifier
+  unrelated_work_may_continue: true
 observations:
 - id: BLK-M6A-CLAUDE-CODE-UNAVAILABLE
   scope: M6A

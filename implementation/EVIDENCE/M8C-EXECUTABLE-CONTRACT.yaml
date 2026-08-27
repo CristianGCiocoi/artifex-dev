@@ -1,0 +1,55 @@
+schema_version: '1.0'
+evidence_id: EVD-M8C-EXECUTABLE-CONTRACT
+milestone: M8C
+status: FROZEN
+canonical_base_commit: 77aeb189e3359f8a54ff1f4056dd3c8409747ef7
+contract_digest: 686191f28ba33b59db39cc67ea654d71766365c6d587041c8b0c7badb6c66929
+authority_sources:
+- MILESTONES/M8C.md
+- ADR/ADR-T007-Contextual-Capability-Graph.md
+- ADR/ADR-T008-Execution-Envelope.md
+- ADR/ADR-T015-Provider-Composition-at-Bootstrap.md
+- ADR/ADR-T018-Outcome-Acceptance.md
+- ADR/ADR-T021-Execution-Workspace-Result-Promotion.md
+- ADR/ADR-T022-Acceptance-Authority-Boundary.md
+- ADR/ADR-T023-Actor-Identity-Trust-Credential-Handling.md
+- ADR/ADR-T024-Provider-Claim-Capability-Certification.md
+role_contract:
+  EXECUTION_IMPLEMENTER:
+    release_status: EXPERIMENTAL
+    supported_version_range: '>=1.0.0,<2'
+    stable_boundary: HEADLESS_STRUCTURED_OUTPUT_CLI
+    claim: CONDITIONAL_ON_FULL_CERTIFICATION_LADDER
+  INTERACTION:
+    claim: EXPERIMENTAL_NOT_CLAIMED
+    reason: NO_FROZEN_STABLE_PUBLIC_ROLE_BOUNDARY
+  HARNESS:
+    claim: EXPERIMENTAL_NOT_CLAIMED
+    reason: NO_ARTIFEX_2_PUBLIC_HARNESS_DISPATCH_SURFACE
+tasks:
+- id: M8C-T01
+  title: Secret-free setup, V1 migration and current readiness composition
+  state: COMPLETE
+- id: M8C-T02
+  title: Contextual execution resolution and stable-boundary fail-closed checks
+  state: COMPLETE
+- id: M8C-T03
+  title: Isolated runtime execution and Acceptance/Project Authority separation
+  state: COMPLETE
+- id: M8C-T04
+  title: Role-specific certification projection and stale-receipt exclusion
+  state: COMPLETE
+- id: M8C-T05
+  title: Clean installed-wheel public multi-process qualification
+  state: COMPLETE_NONLIVE
+- id: M8C-T06
+  title: Real DeepSeek execution and LIVE_ROLE_CERTIFIED receipt
+  state: BLOCKED_EXTERNAL_PREREQUISITE
+  blocker: BLK-M8C-DEEPSEEK-LIVE-PREREQUISITES
+security_boundaries:
+- provider result is never Project acceptance
+- modifying execution occurs only in an isolated Execution Workspace
+- changes outside Envelope-owned paths force UNKNOWN
+- credential references contain no secret material
+- provider absence, auth failure and unsupported versions remain unavailable
+- no role is inferred from another role's evidence

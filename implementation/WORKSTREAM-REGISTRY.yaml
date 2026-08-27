@@ -203,3 +203,14 @@ workstreams:
   state: COMPLETE
   blockers: []
   integration_owner: ARTIFEX_2_ORCHESTRATOR
+- id: WS-M8C-DEEPSEEK-PRODUCTIZATION
+  milestone: M8C
+  purpose: Productize the stable DeepSeek execution boundary and qualify role-specific claims
+  owner_subagent: m5_reality_docs
+  worktree: C:\aidev\artifex-worktrees\artifex-2-m8c
+  branch: codex/artifex-2-m8c
+  base_commit: 77aeb189e3359f8a54ff1f4056dd3c8409747ef7
+  shared_contracts: [M8C-CONTRACT, ADR-T007, ADR-T008, ADR-T015, ADR-T018, ADR-T021, ADR-T022, ADR-T023, ADR-T024]
+  state: BLOCKED_EXTERNAL_PREREQUISITE
+  blockers: [BLK-M8C-DEEPSEEK-LIVE-PREREQUISITES]
+  integration_owner: ARTIFEX_2_ORCHESTRATOR

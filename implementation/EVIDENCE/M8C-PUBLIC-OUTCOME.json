@@ -1,0 +1,125 @@
+{
+  "artifact": "artifex_dev-1.0.0-py3-none-any.whl",
+  "artifact_sha256": "94855b621348d75fc4a4ea7778e7bc450f550466cfe56b9b86d10b9354ff25d5",
+  "blockers": [
+    {
+      "class": "EXTERNAL_PREREQUISITE",
+      "detail": "deepseek executable was not found",
+      "id": "BLK-M8C-DEEPSEEK-LIVE-PREREQUISITES"
+    }
+  ],
+  "capability_graph": {
+    "certified_roles": [
+      "EXECUTION_IMPLEMENTER"
+    ],
+    "globally_available": false,
+    "provider_id": "deepseek"
+  },
+  "composition": "CLEAN_INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS",
+  "contextual_resolution": {
+    "contextual": true,
+    "eligible": false,
+    "evaluated": [
+      {
+        "eligible": false,
+        "provider_id": "deepseek",
+        "reasons": [
+          "NOT_GLOBALLY_AVAILABLE",
+          "CAPABILITIES_NOT_PROVIDED"
+        ]
+      }
+    ],
+    "instance_id": null,
+    "provider_id": null,
+    "reasons": [
+      "NO_CONTEXTUALLY_ELIGIBLE_PROVIDER"
+    ]
+  },
+  "credential_material_persisted": false,
+  "credential_material_read": false,
+  "custom_application_factory_used": false,
+  "installed_module": "C:\\aidev\\artifex-worktrees\\artifex-2-m8c\\.tmp-m8c-qualification\\venv\\Lib\\site-packages\\artifex\\__init__.py",
+  "migration": {
+    "runtime_history_fabricated": false,
+    "secret_material_present": false,
+    "state": "NOT_DETECTED",
+    "v1_setup_revalidated": true
+  },
+  "milestone": "M8C",
+  "provider_certification": {
+    "ladder": [
+      "ADAPTER_IMPLEMENTED",
+      "ROLE_CONFORMANCE_VERIFIED",
+      "PACKAGED",
+      "PUBLIC_COMPOSITION_VERIFIED",
+      "LIVE_ROLE_CERTIFIED"
+    ],
+    "omitted_roles": [
+      {
+        "provider": "deepseek",
+        "reason": "no frozen stable public role boundary",
+        "role": "INTERACTION",
+        "state": "EXPERIMENTAL_NOT_CLAIMED"
+      },
+      {
+        "provider": "deepseek",
+        "reason": "no frozen stable public role boundary",
+        "role": "HARNESS",
+        "state": "EXPERIMENTAL_NOT_CLAIMED"
+      }
+    ],
+    "release_status": "EXPERIMENTAL",
+    "roles": [
+      {
+        "evidence": [],
+        "provider": "deepseek",
+        "role": "EXECUTION_IMPLEMENTER",
+        "state": "PUBLIC_COMPOSITION_VERIFIED",
+        "steps": {
+          "ADAPTER_IMPLEMENTED": "PASS",
+          "LIVE_ROLE_CERTIFIED": "IN_PROGRESS",
+          "PACKAGED": "PASS",
+          "PUBLIC_COMPOSITION_VERIFIED": "PASS",
+          "ROLE_CONFORMANCE_VERIFIED": "PASS"
+        },
+        "supported_version_range": ">=1.0.0,<2"
+      }
+    ]
+  },
+  "provider_injection_used": false,
+  "readiness": {
+    "checks": {
+      "authenticated": false,
+      "available": false,
+      "configured": true,
+      "detected": false,
+      "healthy": false,
+      "registered": false,
+      "stable_headless_boundary": false
+    },
+    "command": [
+      "deepseek"
+    ],
+    "detail": "deepseek executable was not found",
+    "executable": null,
+    "provider_id": "deepseek",
+    "state": "NOT_DETECTED",
+    "version": null
+  },
+  "role_claims": {
+    "EXECUTION_IMPLEMENTER": "NOT_LIVE_CERTIFIED",
+    "HARNESS": "EXPERIMENTAL_NOT_CLAIMED",
+    "INTERACTION": "EXPERIMENTAL_NOT_CLAIMED"
+  },
+  "schema_version": "1.0",
+  "setup": {
+    "fresh_process_consumed": true,
+    "schema_version": "2.0",
+    "secret_material_present": false,
+    "vendor_configuration_mutated": false
+  },
+  "shipping_artifact": "INSTALLED_WHEEL",
+  "simulated_provider": false,
+  "source_tree_imported": false,
+  "status": "BLOCKED_EXTERNAL_PREREQUISITE"
+}
