@@ -12,6 +12,10 @@ from artifex.runtime.coordinator import ExecutionCoordinator
 from artifex.runtime.models import (
     AcceptanceDecision,
     AcceptanceOutcome,
+    ActorLike,
+    ActorPrincipal,
+    DispatchAuthorization,
+    EvidenceRecord,
     ExecutionEnvelope,
     ReconciliationOutcome,
 )
@@ -58,9 +62,19 @@ class ManagedRuntimeService:
         project_job_id: str,
         attempt_id: str,
         purpose: str,
-        actor_id: str,
+        actor_id: ActorLike,
+        approval_actor: ActorPrincipal | None = None,
+        correlation_id: str | None = None,
     ) -> dict[str, object]:
-        self.coordinator.approve_envelope(envelope)
+        if envelope.allowed_providers and approval_actor is None:
+            raise ValueError(
+                "automated provider Run requires an explicit authenticated Envelope approver"
+            )
+        self.coordinator.approve_envelope(
+            envelope,
+            actor=approval_actor,
+            correlation_id=correlation_id,
+        )
         self.coordinator.create_workstream(workstream_id, envelope.project_id, actor_id=actor_id)
         self.coordinator.create_run(
             run_id,
@@ -72,17 +86,70 @@ class ManagedRuntimeService:
         )
         self.coordinator.create_project_job(project_job_id, run_id, purpose, actor_id=actor_id)
         self.coordinator.create_attempt(attempt_id, project_job_id, actor_id=actor_id)
-        self.coordinator.start_attempt(attempt_id, actor_id=actor_id)
+        if not envelope.allowed_providers:
+            self.coordinator.start_attempt(attempt_id, actor_id=actor_id)
         return {
             **self.coordinator.snapshot(run_id),
             "provider_dispatch": False,
             "automated_codex_execution": False,
         }
 
-    def finish(self, attempt_id: str, result_claim: str, *, actor_id: str) -> None:
-        self.coordinator.finish_attempt(attempt_id, result_claim, actor_id=actor_id)
+    def authorize_dispatch(
+        self,
+        attempt_id: str,
+        *,
+        provider_id: str,
+        provider_role: str,
+        requested_capabilities: tuple[str, ...],
+        filesystem_permissions: tuple[str, ...],
+        actor: ActorPrincipal,
+        network_permissions: tuple[str, ...] = (),
+        tool_permissions: tuple[str, ...] = (),
+        credential_reference_ids: tuple[str, ...] = (),
+        correlation_id: str | None = None,
+    ) -> DispatchAuthorization:
+        authorization = self.coordinator.authorize_attempt_dispatch(
+            attempt_id,
+            provider_id=provider_id,
+            provider_role=provider_role,
+            requested_capabilities=requested_capabilities,
+            filesystem_permissions=filesystem_permissions,
+            network_permissions=network_permissions,
+            tool_permissions=tool_permissions,
+            credential_reference_ids=credential_reference_ids,
+            actor=actor,
+            correlation_id=correlation_id,
+        )
+        self.coordinator.start_attempt(attempt_id, actor_id=actor)
+        return authorization
 
-    def cancel(self, attempt_id: str, *, actor_id: str) -> None:
+    def record_evidence(
+        self,
+        evidence: EvidenceRecord,
+        *,
+        actor: ActorLike,
+        correlation_id: str | None = None,
+    ) -> None:
+        self.coordinator.record_evidence(
+            evidence, actor=actor, correlation_id=correlation_id
+        )
+
+    def finish(
+        self,
+        attempt_id: str,
+        result_claim: str,
+        *,
+        actor_id: ActorLike,
+        correlation_id: str | None = None,
+    ) -> None:
+        self.coordinator.finish_attempt(
+            attempt_id,
+            result_claim,
+            actor_id=actor_id,
+            correlation_id=correlation_id,
+        )
+
+    def cancel(self, attempt_id: str, *, actor_id: ActorLike) -> None:
         self.coordinator.cancel_attempt(attempt_id, actor_id=actor_id)
 
     def accept(
@@ -90,8 +157,10 @@ class ManagedRuntimeService:
         project_job_id: str,
         *,
         evidence_valid: bool,
-        actor_id: str,
+        actor_id: ActorLike,
         reason: str,
+        evidence_ids: tuple[str, ...] = (),
+        correlation_id: str | None = None,
     ) -> AcceptanceDecision:
         decision = self.acceptance.decide(
             project_job_id,
@@ -99,14 +168,16 @@ class ManagedRuntimeService:
             evidence_valid=evidence_valid,
             actor_id=actor_id,
             reason=reason,
+            evidence_ids=evidence_ids,
+            correlation_id=correlation_id,
         )
         self.coordinator.settle_run_for_job(project_job_id, actor_id=actor_id)
         return decision
 
-    def mark_unknown(self, attempt_id: str, *, actor_id: str) -> None:
+    def mark_unknown(self, attempt_id: str, *, actor_id: ActorLike) -> None:
         self.coordinator.mark_unknown(attempt_id, actor_id=actor_id)
 
-    def begin_reconciliation(self, attempt_id: str, *, actor_id: str) -> None:
+    def begin_reconciliation(self, attempt_id: str, *, actor_id: ActorLike) -> None:
         self.coordinator.begin_reconciliation(attempt_id, actor_id=actor_id)
 
     def reconcile(
@@ -114,7 +185,7 @@ class ManagedRuntimeService:
         attempt_id: str,
         outcome: ReconciliationOutcome,
         *,
-        actor_id: str,
+        actor_id: ActorLike,
         recovered_claim: str | None = None,
     ) -> None:
         self.coordinator.reconcile_attempt(
@@ -131,7 +202,7 @@ class ManagedRuntimeService:
         project_root: str | Path,
         baseline_revision: int,
         *,
-        actor_id: str,
+        actor_id: ActorLike,
     ) -> Path:
         return self.workspaces.create(
             workspace_id, attempt_id, project_root, baseline_revision, actor_id=actor_id
@@ -143,7 +214,7 @@ class ManagedRuntimeService:
         model: ProjectModel,
         decision: AcceptanceDecision,
         *,
-        actor_id: str,
+        actor_id: ActorLike,
     ) -> int:
         return self.workspaces.promote(workspace_id, model, decision, actor_id=actor_id)
 
@@ -153,7 +224,7 @@ class ManagedRuntimeService:
         model: ProjectModel,
         project_job_id: str,
         *,
-        actor_id: str,
+        actor_id: ActorLike,
     ) -> int:
         value = self.store.acceptance(project_job_id)
         if value is None:
@@ -166,6 +237,12 @@ class ManagedRuntimeService:
             actor_id=str(value["actor_id"]),
             reason=str(value["reason"]),
             decided_at=int(value["decided_at"]),
+            evidence_ids=tuple(str(item) for item in value.get("evidence_ids", ())),
+            envelope_fingerprint=(
+                str(value["envelope_fingerprint"])
+                if value.get("envelope_fingerprint") is not None
+                else None
+            ),
         )
         return self.promote_workspace(workspace_id, model, decision, actor_id=actor_id)
 
