@@ -19,11 +19,14 @@ Approve the reversible setup plan before applying it. ARTIFEX writes only
 
 Check `providers.graph` and `providers.readiness` from a fresh process. `AVAILABLE` requires
 a supported stable 1.x executable, headless structured output and a successful native
-authentication status. `DETECTED` or `CONFIGURED` alone is not executable readiness.
+authentication status containing JSON `{"authenticated": true}`. A zero exit code, plain
+text such as `authenticated`, malformed JSON or an explicit false value fails closed.
+`DETECTED` or `CONFIGURED` alone is not executable readiness.
 
 Then use `providers.resolve` with the actual ProjectJob, approved Execution Envelope,
 delegated actor and data classification. A globally healthy provider can still be rejected
-for the current context.
+for the current context. In the blocked M8C source baseline, it must be rejected with no
+default certified execution role until live certification evidence is independently anchored.
 
 ## Interpret certification
 
@@ -36,6 +39,8 @@ Use `providers.certifications` with `provider_id=deepseek`. Expected states are:
 
 Never use V1 adapter tests, a config write, an authentication status, another provider's
 result, or a synthetic runner as proof of live DeepSeek certification.
+Legacy or promoted-style receipts without provider-version, executable, semantic-auth-probe
+and installed-wheel digest bindings are also ineligible for live certification.
 
 ## Live qualification gate
 

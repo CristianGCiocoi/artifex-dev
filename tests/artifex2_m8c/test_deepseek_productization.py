@@ -12,11 +12,13 @@ import pytest
 from artifex.application import Application, OperationRequest
 from artifex.capabilities import (
     DEEPSEEK_DISPATCH_AUTHORIZED_ROLES,
+    DEEPSEEK_PRODUCTIZED_ROLES,
     CapabilityEvidenceStore,
     ProviderCompositionLoader,
     ProviderRole,
     ReadinessState,
     deepseek_certification_projection,
+    record_execution_implementer_evidence,
 )
 from artifex.distribution import apply_integration_setup, plan_integration_setup
 from artifex.distribution.approvals import ApprovalStore
@@ -61,7 +63,12 @@ def _persist_setup(root: Path) -> None:
 
 
 def _loader(
-    *, authenticated: bool = True, version: str = "1.4.0"
+    *,
+    authenticated: bool = True,
+    version: str = "1.4.0",
+    executable: str = "C:/fixture/deepseek.exe",
+    authorize_candidate: bool = True,
+    auth_stdout: str | None = None,
 ) -> ProviderCompositionLoader:
     def probe(arguments: Sequence[str]) -> subprocess.CompletedProcess[str]:
         suffix = tuple(arguments[-2:])
@@ -73,14 +80,22 @@ def _loader(
                 stdout="run --headless --format json; repository write; test command\n",
             )
         assert suffix == ("auth", "status")
-        return _completed(arguments, returncode=0 if authenticated else 1)
+        return _completed(
+            arguments,
+            returncode=0 if authenticated else 1,
+            stdout=(
+                auth_stdout
+                if auth_stdout is not None
+                else json.dumps({"authenticated": authenticated})
+            ),
+        )
 
     return ProviderCompositionLoader(
-        which=lambda executable: (
-            "C:/fixture/deepseek.exe" if executable == "deepseek" else None
-        ),
+        which=lambda requested: executable if requested == "deepseek" else None,
         runner=probe,
-        certified_roles={"deepseek": DEEPSEEK_DISPATCH_AUTHORIZED_ROLES},
+        certified_roles={
+            "deepseek": DEEPSEEK_PRODUCTIZED_ROLES if authorize_candidate else frozenset()
+        },
     )
 
 
@@ -274,12 +289,63 @@ def test_setup_readiness_migration_and_claims_are_fail_closed(tmp_path: Path) ->
     ready = _loader().load(tmp_path).provider("deepseek")
     assert ready is not None
     assert ready.readiness.state is ReadinessState.AVAILABLE
-    assert ready.certified_roles == DEEPSEEK_DISPATCH_AUTHORIZED_ROLES
+    assert ready.certified_roles == DEEPSEEK_PRODUCTIZED_ROLES
+    assert frozenset() == DEEPSEEK_DISPATCH_AUTHORIZED_ROLES
 
     unauthenticated = _loader(authenticated=False).load(tmp_path).provider("deepseek")
     assert unauthenticated is not None
     assert unauthenticated.readiness.state is ReadinessState.CONFIGURED
     assert unauthenticated.globally_available is False
+
+    ambiguous_auth = _loader(auth_stdout="authenticated\n").load(tmp_path).provider(
+        "deepseek"
+    )
+    assert ambiguous_auth is not None
+    assert ambiguous_auth.readiness.state is ReadinessState.CONFIGURED
+    assert ambiguous_auth.readiness.checks["authenticated"] is False
+
+    explicit_denial = _loader(auth_stdout='{"authenticated": false}').load(
+        tmp_path
+    ).provider("deepseek")
+    assert explicit_denial is not None
+    assert explicit_denial.readiness.state is ReadinessState.CONFIGURED
+    assert explicit_denial.readiness.checks["authenticated"] is False
+
+    blocked_candidate = _loader(authorize_candidate=False).load(tmp_path).provider(
+        "deepseek"
+    )
+    assert blocked_candidate is not None
+    assert blocked_candidate.readiness.state is ReadinessState.AVAILABLE
+    assert blocked_candidate.certified_roles == frozenset()
+    resolution = Application(
+        provider_loader=_loader(authorize_candidate=False)
+    ).dispatch(
+        OperationRequest(
+            "providers.resolve",
+            {
+                "project_root": str(tmp_path),
+                "project_id": "m8c-project",
+                "project_job_id": "m8c-job",
+                "provider_id": "deepseek",
+                "role": "EXECUTION_IMPLEMENTER",
+                "capabilities": ["repository_write"],
+                "data_classification": "INTERNAL",
+                "envelope": {
+                    "allowed_providers": ["deepseek"],
+                    "allowed_capabilities": ["repository_write"],
+                },
+                "actor": {
+                    "actor_id": "candidate-auditor",
+                    "actor_type": "AUTOMATION_SYSTEM_ACTOR",
+                    "delegated_roles": ["EXECUTION_IMPLEMENTER"],
+                },
+            },
+        )
+    )
+    assert resolution.ok, resolution.to_dict()
+    decision = resolution.value["decision"]
+    assert decision["eligible"] is False
+    assert "ROLE_NOT_CERTIFIED" in decision["evaluated"][0]["reasons"]
 
     incompatible = _loader(version="2.0.0").load(tmp_path).provider("deepseek")
     assert incompatible is not None
@@ -317,8 +383,14 @@ def test_execution_isolated_separately_accepted_and_role_certified(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setenv("ARTIFEX_LOCAL_STATE_ROOT", str(tmp_path / "local-state"))
+    monkeypatch.setenv("ARTIFEX_SHIPPING_ARTIFACT_SHA256", "b" * 64)
     common, project_root = _bootstrap(tmp_path)
-    app = Application(provider_loader=_loader(), deepseek_runner=_successful_runner)
+    executable = tmp_path / "deepseek.exe"
+    executable.write_bytes(b"fixture DeepSeek executable")
+    app = Application(
+        provider_loader=_loader(executable=str(executable)),
+        deepseek_runner=_successful_runner,
+    )
     executed = app.dispatch(
         OperationRequest("runtime.provider.execute", _execute_arguments(common))
     )
@@ -348,7 +420,7 @@ def test_execution_isolated_separately_accepted_and_role_certified(
     assert accepted.ok, accepted.to_dict()
     model = json.loads((project_root / ".artifex" / "project-model.json").read_text())
     model["project"]["description"] = "accepted DeepSeek result"
-    promoted = Application().dispatch(
+    promoted = app.dispatch(
         OperationRequest(
             "runtime.workspace.promote",
             {
@@ -366,11 +438,17 @@ def test_execution_isolated_separately_accepted_and_role_certified(
     receipt = promoted.value["provider_certification_receipt"]
     assert receipt["provider_id"] == "deepseek"
     assert receipt["role"] == "EXECUTION_IMPLEMENTER"
+    assert receipt["provider_version"] == "1.4.0"
+    assert receipt["provider_executable_sha256"]
+    assert receipt["auth_probe_sha256"]
+    assert receipt["shipping_artifact_sha256"] == "b" * 64
+    assert receipt["live_role_eligible"] is True
     stored = CapabilityEvidenceStore(
         tmp_path / "local-state" / "capability-evidence.sqlite3"
     ).valid_receipts(provider_id="deepseek", project_id="m8c-project")
     assert len(stored) == 1
     assert stored[0].role is ProviderRole.EXECUTION_IMPLEMENTER
+    assert stored[0].live_role_eligible is True
 
     certifications = app.dispatch(
         OperationRequest(
@@ -382,6 +460,38 @@ def test_execution_isolated_separately_accepted_and_role_certified(
     assert certifications.value["certifications"]["roles"][0]["state"] == (
         "LIVE_ROLE_CERTIFIED"
     )
+
+
+def test_unbound_promoted_style_receipt_never_grants_live_certification(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("ARTIFEX_LOCAL_STATE_ROOT", str(tmp_path / "local-state"))
+    store = CapabilityEvidenceStore(
+        tmp_path / "local-state" / "capability-evidence.sqlite3"
+    )
+    legacy = record_execution_implementer_evidence(
+        project_id="m8c-project",
+        project_job_id="m8c-job",
+        accepted_result_sha256="a" * 64,
+        promoted_baseline_sha256="b" * 64,
+        acceptance_decision_id="acceptance-m8c",
+        promotion_revision=2,
+        provider_id="deepseek",
+        store=store,
+    )
+    assert legacy.live_role_eligible is False
+
+    certifications = Application().dispatch(
+        OperationRequest(
+            "providers.certifications",
+            {"provider_id": "deepseek", "project_id": "m8c-project"},
+        )
+    )
+    assert certifications.ok, certifications.to_dict()
+    role = certifications.value["certifications"]["roles"][0]
+    assert role["state"] == "PUBLIC_COMPOSITION_VERIFIED"
+    assert role["steps"]["LIVE_ROLE_CERTIFIED"] == "IN_PROGRESS"
+    assert role["evidence"] == []
 
 
 def test_unowned_workspace_mutation_is_unknown_and_never_accepts(tmp_path: Path) -> None:

@@ -821,19 +821,19 @@
       "sha256": "8838b99b4041cd16cba9d5bf672f72fc92f07a89d38566fafea1d02c38251cb6"
     },
     {
-      "bytes": 2179,
+      "bytes": 2431,
       "path": "implementation/EVIDENCE/M8C-EXECUTABLE-CONTRACT.yaml",
-      "sha256": "ee271021dc7ee791a359587caf5b9536f3503ea8a4c30bfedc0d1c2edf6cb70e"
+      "sha256": "93597852093b05c46854951e74a7d9baa89f6670db4a9f092733ef551e13128f"
     },
     {
-      "bytes": 3483,
+      "bytes": 3599,
       "path": "implementation/EVIDENCE/M8C-PUBLIC-OUTCOME.json",
-      "sha256": "43564c9e5e16130b9d3bf6718d0b5e2a1edd0f006d9ceeed259315dc0ea1c5f2"
+      "sha256": "4eb7fcd2e3572b67c4283670b9f4ce2a17298515304df3c36c8f95105deb1f0e"
     },
     {
-      "bytes": 2987,
+      "bytes": 3465,
       "path": "implementation/EVIDENCE/M8C-VALIDATION.yaml",
-      "sha256": "6baf08142c7550bb7636fcfc6fab17e0b3e0c5948f68e1df0b449b385599348a"
+      "sha256": "a471896714c27c61da20fc070fbe360a7eea2345ddd0336b5b9b8251d83406b8"
     },
     {
       "bytes": 3220,

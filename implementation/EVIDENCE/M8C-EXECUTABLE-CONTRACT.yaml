@@ -52,4 +52,7 @@ security_boundaries:
 - changes outside Envelope-owned paths force UNKNOWN
 - credential references contain no secret material
 - provider absence, auth failure and unsupported versions remain unavailable
+- zero-exit authentication without semantic authenticated JSON remains unavailable
+- default dispatch roles remain empty until independently anchored live evidence exists
+- live receipts bind provider version, executable, auth probe and shipping wheel
 - no role is inferred from another role's evidence

@@ -1,6 +1,6 @@
 {
   "artifact": "artifex_dev-1.0.0-py3-none-any.whl",
-  "artifact_sha256": "94855b621348d75fc4a4ea7778e7bc450f550466cfe56b9b86d10b9354ff25d5",
+  "artifact_sha256": "e00cad69a3319ec8bb969abdfcff371b4301f7611533e5606220542d24ee927e",
   "blockers": [
     {
       "class": "EXTERNAL_PREREQUISITE",
@@ -9,9 +9,7 @@
     }
   ],
   "capability_graph": {
-    "certified_roles": [
-      "EXECUTION_IMPLEMENTER"
-    ],
+    "certified_roles": [],
     "globally_available": false,
     "provider_id": "deepseek"
   },
@@ -25,6 +23,7 @@
         "provider_id": "deepseek",
         "reasons": [
           "NOT_GLOBALLY_AVAILABLE",
+          "ROLE_NOT_CERTIFIED",
           "CAPABILITIES_NOT_PROVIDED"
         ]
       }
@@ -38,7 +37,7 @@
   "credential_material_persisted": false,
   "credential_material_read": false,
   "custom_application_factory_used": false,
-  "installed_module": "C:\\aidev\\artifex-worktrees\\artifex-2-m8c\\.tmp-m8c-qualification\\venv\\Lib\\site-packages\\artifex\\__init__.py",
+  "installed_module": "C:\\aidev\\artifex-worktrees\\artifex-2-m8c\\.tmp-m8c-followup\\venv\\Lib\\site-packages\\artifex\\__init__.py",
   "migration": {
     "runtime_history_fabricated": false,
     "secret_material_present": false,
@@ -88,6 +87,7 @@
   },
   "provider_injection_used": false,
   "readiness": {
+    "auth_probe_sha256": "bf5fc8dbf64f10ad2fd5528d8c7a1381571e0b3571f62c6870b47a8c01249cd5",
     "checks": {
       "authenticated": false,
       "available": false,
@@ -102,6 +102,7 @@
     ],
     "detail": "deepseek executable was not found",
     "executable": null,
+    "executable_sha256": null,
     "provider_id": "deepseek",
     "state": "NOT_DETECTED",
     "version": null

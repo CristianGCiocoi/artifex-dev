@@ -14,7 +14,8 @@ claim or public runtime authority.
 Project-owned setup stores only a scoped `deepseek-native-session` credential reference.
 It never stores a token, API key, endpoint credential, or vendor configuration. A fresh
 runtime performs version and `run --help` discovery, then a secret-free native-session
-status probe. The instance progresses through detected, configured, authenticated,
+status probe. A zero exit code is insufficient: the status response must be valid JSON
+whose `authenticated` field is exactly `true`. The instance progresses through detected, configured, authenticated,
 healthy, registered and available states only when every preceding check passes.
 
 The supported experimental range is `>=1.0.0,<2`. Preview versions, other major versions,
@@ -23,6 +24,11 @@ all remain unavailable. Global availability still does not imply contextual elig
 the resolver also evaluates the Project, ProjectJob, Execution Envelope, actor delegation,
 capabilities and data classification.
 
+Availability is not dispatch authority. While M8C lacks independently anchored
+`LIVE_ROLE_CERTIFIED` evidence, the default Capability Graph exposes no certified DeepSeek
+role and contextual resolution rejects execution with `ROLE_NOT_CERTIFIED`, even if the
+executable, version, help surface and authentication probe all look valid.
+
 ## Execution authority
 
 DeepSeek receives a transcript-independent Execution Packet inside an isolated Execution
@@ -30,7 +36,9 @@ Workspace. The command cannot pre-supply caller flags. ARTIFEX independently has
 artifacts and rejects any change outside Envelope-owned paths. A provider result is an
 executor claim only. Validation evidence, Acceptance Authority and Project Authority
 promotion remain separate, and only an accepted and promoted result can create an
-EXECUTION_IMPLEMENTER certification receipt.
+EXECUTION_IMPLEMENTER certification receipt. A live-eligible DeepSeek receipt also binds
+the provider version, executable digest, semantic authentication-probe digest and installed
+shipping-wheel digest. Missing or partial bindings cannot advance the certification ladder.
 
 The current boundary is not a host security sandbox. Network, tool and credential access
 must also be explicitly present in the approved Execution Envelope and local deployment

@@ -88,6 +88,13 @@ def validate_public_outcome(value: dict[str, Any]) -> None:
         raise ValueError("M8C supported DeepSeek version range drifted")
     if value.get("status") != "PASS" and role.get("state") == "LIVE_ROLE_CERTIFIED":
         raise ValueError("blocked M8C evidence inherited a live certification")
+    graph = value.get("capability_graph")
+    resolution = value.get("contextual_resolution")
+    if value.get("status") != "PASS":
+        if not isinstance(graph, dict) or graph.get("certified_roles") != []:
+            raise ValueError("blocked M8C evidence granted default dispatch authority")
+        if not isinstance(resolution, dict) or resolution.get("eligible") is not False:
+            raise ValueError("blocked M8C evidence remained contextually dispatchable")
 
 
 def validate(repo_root: Path) -> dict[str, Any]:
@@ -112,6 +119,12 @@ def validate(repo_root: Path) -> dict[str, Any]:
     acceptance = _yaml(root / "implementation/ACCEPTANCE/M8C.yaml")
     if acceptance.get("contract_digest") != M8C_CONTRACT_DIGEST:
         raise ValueError("M8C acceptance contract digest is invalid")
+    if acceptance.get("implementation_baseline_commit") != M8C_BASE:
+        raise ValueError("M8C implementation baseline is invalid")
+    if "canonical_base_commit" in acceptance:
+        raise ValueError("M8C acceptance uses a noncanonical baseline key")
+    if acceptance.get("acceptance_commit") is not None:
+        raise ValueError("blocked M8C cannot carry an acceptance commit")
     if tuple(acceptance.get("evidence_classes", {})) != ACCEPTANCE_CLASSES:
         raise ValueError("M8C acceptance omits or reorders an evidence class")
     if acceptance.get("mandatory_journeys") != []:

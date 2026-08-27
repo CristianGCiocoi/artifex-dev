@@ -349,6 +349,7 @@ class ProviderCompositionLoader:
         }
         state = ReadinessState.NOT_DETECTED
         detail = detection.detail or "DeepSeek was not detected"
+        assertion = AuthenticationAssertion(False, "not-probed", detail)
         if detection.installed:
             state = ReadinessState.DETECTED
             state = ReadinessState.CONFIGURED
@@ -369,6 +370,15 @@ class ProviderCompositionLoader:
                     "DeepSeek stable headless structured-output boundary is unavailable; "
                     f"{detection.detail}"
                 )
+        auth_probe_sha256 = _sha256_json(
+            {
+                "provider_id": "deepseek",
+                "version": detection.version,
+                "authenticated": assertion.authenticated,
+                "method": assertion.method,
+                "stable_headless_boundary": detection.stable_headless,
+            }
+        )
         readiness = ProviderReadiness(
             "deepseek",
             state,
@@ -377,6 +387,8 @@ class ProviderCompositionLoader:
             command,
             detection.version,
             detail,
+            auth_probe_sha256,
+            _file_sha256(detection.executable),
         )
         certified = self.certified_roles.get("deepseek", frozenset())
         return ProviderInstance(
@@ -481,7 +493,15 @@ class ProviderCompositionLoader:
                 "deepseek-native-session",
                 f"authentication probe failed: {type(exc).__name__}",
             )
-        authenticated = completed.returncode == 0
+        authenticated = False
+        if completed.returncode == 0:
+            try:
+                status = json.loads(completed.stdout)
+            except (TypeError, json.JSONDecodeError):
+                status = None
+            authenticated = (
+                isinstance(status, Mapping) and status.get("authenticated") is True
+            )
         return AuthenticationAssertion(
             authenticated,
             "deepseek-native-session",

@@ -16,6 +16,7 @@ from artifex.capabilities import (
     CLAUDE_DISPATCH_AUTHORIZED_ROLES,
     CODEX_DISPATCH_AUTHORIZED_ROLES,
     DEEPSEEK_DISPATCH_AUTHORIZED_ROLES,
+    DEEPSEEK_PRODUCTIZED_ROLES,
     ActorContext,
     CapabilityGraph,
     CapabilityRequest,
@@ -407,7 +408,7 @@ class Application:
             authorized_roles = CLAUDE_DISPATCH_AUTHORIZED_ROLES
             projection_factory = claude_certification_projection
         elif provider_id == "deepseek":
-            authorized_roles = DEEPSEEK_DISPATCH_AUTHORIZED_ROLES
+            authorized_roles = DEEPSEEK_PRODUCTIZED_ROLES
             projection_factory = deepseek_certification_projection
         else:
             raise ValueError(f"provider certification is unsupported: {provider_id}")
@@ -2116,6 +2117,11 @@ def _record_promoted_provider_certification(
     provider_version, executable_hash, auth_hash, artifact_hash = (
         _provider_certification_binding(provider)
     )
+    if provider_id == "deepseek" and any(
+        item is None
+        for item in (provider_version, executable_hash, auth_hash, artifact_hash)
+    ):
+        return None
     receipt = record_execution_implementer_evidence(
         project_id=promoted.project_id,
         project_job_id=project_job_id,
@@ -2135,6 +2141,11 @@ def _record_promoted_provider_certification(
 def _provider_certification_binding(
     provider: ProviderInstance,
 ) -> tuple[str | None, str | None, str | None, str | None]:
+    if (
+        not provider.globally_available
+        or provider.readiness.checks.get("authenticated") is not True
+    ):
+        return (None,) * 4
     values = (
         provider.readiness.version,
         provider.readiness.executable_sha256,

@@ -16,7 +16,11 @@ CLAUDE_DISPATCH_AUTHORIZED_ROLES = frozenset(
     {ProviderRole.INTERACTION, ProviderRole.EXECUTION_IMPLEMENTER}
 )
 DEEPSEEK_SUPPORTED_VERSION_RANGE = ">=1.0.0,<2"
-DEEPSEEK_DISPATCH_AUTHORIZED_ROLES = frozenset({ProviderRole.EXECUTION_IMPLEMENTER})
+# M8C remains blocked until independently anchored LIVE_ROLE_CERTIFIED evidence exists.
+# Productized roles describe the public candidate boundary; dispatch authority is a
+# separate release decision and must stay empty in the blocked source composition.
+DEEPSEEK_PRODUCTIZED_ROLES = frozenset({ProviderRole.EXECUTION_IMPLEMENTER})
+DEEPSEEK_DISPATCH_AUTHORIZED_ROLES: frozenset[ProviderRole] = frozenset()
 CERTIFICATION_LADDER = (
     "ADAPTER_IMPLEMENTED",
     "ROLE_CONFORMANCE_VERIFIED",
@@ -58,7 +62,7 @@ def deepseek_certification_projection(
     projection = provider_certification_projection(
         provider_id="deepseek",
         supported_version_range=DEEPSEEK_SUPPORTED_VERSION_RANGE,
-        authorized_roles=DEEPSEEK_DISPATCH_AUTHORIZED_ROLES,
+        authorized_roles=DEEPSEEK_PRODUCTIZED_ROLES,
         live_evidence=live_evidence,
     )
     projection["release_status"] = "EXPERIMENTAL"

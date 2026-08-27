@@ -205,8 +205,13 @@ def qualify(python: Path, wheel: Path) -> dict[str, Any]:
         execution = roles[0]
         if execution.get("role") != "EXECUTION_IMPLEMENTER":
             raise AssertionError("DeepSeek projection conflated provider roles")
-        if execution.get("state") == "LIVE_ROLE_CERTIFIED":
+        live_certified = execution.get("state") == "LIVE_ROLE_CERTIFIED"
+        if live_certified:
             raise AssertionError("non-live qualification inherited stale live evidence")
+        if "EXECUTION_IMPLEMENTER" in node.get("certified_roles", []):
+            raise AssertionError("blocked M8C source granted DeepSeek dispatch authority")
+        if decision.get("eligible") is not False:
+            raise AssertionError("uncertified DeepSeek candidate became dispatchable")
         omitted = certification.get("omitted_roles")
         if not isinstance(omitted, list) or {
             item.get("role") for item in omitted if isinstance(item, dict)
@@ -237,22 +242,21 @@ def qualify(python: Path, wheel: Path) -> dict[str, Any]:
             raise AssertionError("V1 DeepSeek setup did not migrate to a secret-free reference")
 
         available = readiness.get("state") == "AVAILABLE"
-        blocker = (
-            None
-            if available
-            else {
-                "id": "BLK-M8C-DEEPSEEK-LIVE-PREREQUISITES",
-                "class": "EXTERNAL_PREREQUISITE",
-                "detail": readiness.get("detail"),
-            }
-        )
+        dispatch_authorized = live_certified and decision.get("eligible") is True
+        blocker = {
+            "id": "BLK-M8C-DEEPSEEK-LIVE-PREREQUISITES",
+            "class": "EXTERNAL_PREREQUISITE",
+            "detail": (
+                "independently anchored DeepSeek LIVE_ROLE_CERTIFIED evidence is absent"
+                if available
+                else readiness.get("detail")
+            ),
+        }
         return {
             "schema_version": "1.0",
             "milestone": "M8C",
             "status": (
-                "READY_FOR_LIVE_EXECUTION_QUALIFICATION"
-                if available
-                else "BLOCKED_EXTERNAL_PREREQUISITE"
+                "PASS" if dispatch_authorized else "BLOCKED_EXTERNAL_PREREQUISITE"
             ),
             "composition": "CLEAN_INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS",
             "shipping_artifact": "INSTALLED_WHEEL",
@@ -290,7 +294,7 @@ def qualify(python: Path, wheel: Path) -> dict[str, Any]:
                 "INTERACTION": "EXPERIMENTAL_NOT_CLAIMED",
                 "HARNESS": "EXPERIMENTAL_NOT_CLAIMED",
             },
-            "blockers": [] if blocker is None else [blocker],
+            "blockers": [] if dispatch_authorized else [blocker],
         }
 
 

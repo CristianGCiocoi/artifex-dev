@@ -16,7 +16,7 @@ source_quality:
 focused_validation:
   command: uv run pytest tests/artifex2_m8c tests/test_optional_providers.py -q
   result: PASS
-  passed: 22
+  passed: 23
   failed: 0
 domain_integration:
   command: uv run pytest -q --ignore=tests/test_release.py
@@ -27,10 +27,14 @@ domain_integration:
   duration_seconds: 824.53
 public_composition:
   artifact: artifex_dev-1.0.0-py3-none-any.whl
-  artifact_sha256: 94855b621348d75fc4a4ea7778e7bc450f550466cfe56b9b86d10b9354ff25d5
+  artifact_sha256: e00cad69a3319ec8bb969abdfcff371b4301f7611533e5606220542d24ee927e
   composition: CLEAN_INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS
   evidence: EVIDENCE/M8C-PUBLIC-OUTCOME.json
   status: PASS_NONLIVE
+provider_compatibility_validation:
+  command: uv run pytest tests/artifex2_m8c tests/test_optional_providers.py tests/artifex2_m3/test_provider_interaction.py tests/artifex2_m3/test_public_runtime_provider.py tests/artifex2_m6a -q
+  result: PASS
+  passed: 39
 role_certification:
   EXECUTION_IMPLEMENTER: PUBLIC_COMPOSITION_VERIFIED
   INTERACTION: EXPERIMENTAL_NOT_CLAIMED
@@ -48,6 +52,10 @@ security_authority:
   contextual_resolver_excludes_unavailable_provider: PASS
   unsupported_version_fails_closed: PASS
   unauthenticated_provider_fails_closed: PASS
+  semantic_authentication_status_required: PASS
+  default_dispatch_requires_live_certification: PASS
+  unbound_receipt_excluded_from_live_certification: PASS
+  live_receipt_provider_and_shipping_bindings_required: PASS
   command_prefix_flags_rejected: PASS
   isolated_execution_workspace: PASS
   unowned_workspace_mutation_forces_unknown: PASS
