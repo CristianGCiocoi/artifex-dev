@@ -154,6 +154,28 @@ contracts:
   - EVIDENCE/M2-VALIDATION.yaml
   implementation_state: ACCEPTED
   m0_baseline_state: NOT_APPLICABLE
+- id: M3-CONTRACT
+  title: M3 — Capability Composition + Codex Productization
+  type: MILESTONE_CONTRACT
+  digest: 4c715b81581f4688f3b38d34829a967760e7f862f8408a477f37245f886d07eb
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: e1e4cd5e07aac4b8b380111807259cad7a550c0f
+  dependencies:
+  - M2-CONTRACT
+  authority_sources:
+  - MILESTONES/M3.md
+  acceptance_criteria:
+  - Fresh process consumes persisted Codex setup into the public Capability Graph
+  - Codex INTERACTION and EXECUTION_IMPLEMENTER roles are independently certified
+  - Contextual AVAILABLE_FOR excludes healthy but ineligible providers
+  - Automation Security and Authority Gate passes before autonomous execution
+  - A real Codex ProjectJob produces evidence, is separately accepted and is promoted by Project Authority
+  - J01 and J16 pass through installed-wheel public composition without custom factories or provider injection
+  evidence_references:
+  - EVIDENCE/M3-VALIDATION.yaml
+  implementation_state: ACTIVE
+  m0_baseline_state: NOT_APPLICABLE
 adrs:
 - id: ADR-T001
   title: ADR-T001 — Project Authority vs Portable Semantic Representation
@@ -292,7 +314,7 @@ adrs:
   - Any implementation need to alter this decision is an Architect escalation.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: NOT_STARTED
+  implementation_state: ACTIVE_M3
   m0_baseline_state: CAPTURED
 - id: ADR-T008
   title: ADR-T008 — Execution Envelope
@@ -452,7 +474,7 @@ adrs:
   - Any implementation need to alter this decision is an Architect escalation.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: NOT_STARTED
+  implementation_state: ACTIVE_M3
   m0_baseline_state: CAPTURED
 - id: ADR-T016
   title: ADR-T016 — Control-plane RunStore Scaling
@@ -613,7 +635,7 @@ adrs:
   - Any implementation need to alter this decision is an Architect escalation.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: M2_ACCEPTED_MINIMUM
+  implementation_state: ACTIVE_M3_CREDENTIALS_AND_ATTRIBUTION
   m0_baseline_state: CAPTURED
 - id: ADR-T024
   title: ADR-T024 — Provider Claim & Capability Certification
@@ -635,7 +657,7 @@ adrs:
   - Any implementation need to alter this decision is an Architect escalation.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: NOT_STARTED
+  implementation_state: ACTIVE_M3
   m0_baseline_state: CAPTURED
 invariants:
 - id: INV-F01
@@ -977,7 +999,7 @@ invariants:
   - Detected-only provider cannot dispatch.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: NOT_STARTED
+  implementation_state: ACTIVE_M3
   m0_baseline_state: CAPTURED
   statement: Detected/configured/authenticated/healthy/registered/available are distinct.
 - id: INV-F21
@@ -994,7 +1016,7 @@ invariants:
   - Healthy but policy-ineligible provider is excluded.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: NOT_STARTED
+  implementation_state: ACTIVE_M3
   m0_baseline_state: CAPTURED
   statement: Globally available does not imply eligibility for every ProjectJob.
 - id: INV-F22
@@ -1011,7 +1033,7 @@ invariants:
   - Interaction-only client cannot execute/approve beyond delegation.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: NOT_STARTED
+  implementation_state: ACTIVE_M3
   m0_baseline_state: CAPTURED
   statement: Interaction role does not grant execution or approval authority.
 - id: INV-F23
@@ -1028,7 +1050,7 @@ invariants:
   - Secret scanning finds no values in semantic/docs/evidence artifacts.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: NOT_STARTED
+  implementation_state: ACTIVE_M3
   m0_baseline_state: CAPTURED
   statement: Secrets are external to Project Git/docs/general context.
 - id: INV-F24
@@ -1113,7 +1135,7 @@ invariants:
   - Provider success cannot mutate accepted semantic revision directly.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: NOT_STARTED
+  implementation_state: ACTIVE_M3
   m0_baseline_state: CAPTURED
   statement: ARTIFEX owns Project semantics and Project acceptance.
 - id: INV-F29
@@ -1199,7 +1221,7 @@ invariants:
   - Unit-only adapter cannot be marked delivered.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: NOT_STARTED
+  implementation_state: ACTIVE_M3
   m0_baseline_state: CAPTURED
   statement: Component implementation does not equal delivered capability.
 - id: INV-F34
@@ -1216,6 +1238,6 @@ invariants:
   - Custom internal composition cannot satisfy release Journey.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: NOT_STARTED
+  implementation_state: ACTIVE_M3_PUBLIC_COMPOSITION
   m0_baseline_state: CAPTURED
   statement: Release-critical claims require actual shipping-composition outcomes.

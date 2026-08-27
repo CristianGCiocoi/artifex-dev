@@ -49,12 +49,18 @@ def validate(repo_root: Path) -> dict[str, Any]:
     state = derive(root)
     program = state["program"]
     milestones = {item["id"]: item for item in state["milestones"]}
-    if program["current_milestone"] != "M2" or program["current_status"] != "ACCEPTED":
-        raise ValueError("M2 is not the current accepted milestone")
     if not program["m2_started"] or milestones["M2"]["state"] != "ACCEPTED":
         raise ValueError("M2 acceptance state is incomplete")
-    if milestones["M3"]["state"] != "READY" or milestones["M3"]["started"]:
-        raise ValueError("M3 must be READY and unstarted after M2 acceptance")
+    if program["current_milestone"] == "M2":
+        if program["current_status"] != "ACCEPTED":
+            raise ValueError("M2 current milestone state is not accepted")
+        if milestones["M3"]["state"] != "READY" or milestones["M3"]["started"]:
+            raise ValueError("M3 must be READY and unstarted immediately after M2 acceptance")
+    elif not milestones["M3"]["started"] or milestones["M3"]["state"] not in {
+        "ACTIVE",
+        "ACCEPTED",
+    }:
+        raise ValueError("later milestone state does not preserve accepted M2 provenance")
 
     _require_ancestor(root, CANONICAL_M1_BASE)
     _require_ancestor(root, M2_IMPLEMENTATION_BASELINE)

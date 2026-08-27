@@ -1,0 +1,26 @@
+schema_version: '1.0'
+milestone: M3
+contract_digest: 4c715b81581f4688f3b38d34829a967760e7f862f8408a477f37245f886d07eb
+implementation_baseline_commit: null
+frozen_architecture_baseline: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+mandatory_work_complete: false
+blocked: []
+superseded: []
+evidence_classes:
+  DESIGN_CONFORMANCE: {required_m3: true, status: PENDING, evidence: []}
+  COMPONENT: {required_m3: true, status: PENDING, evidence: []}
+  DOMAIN_INTEGRATION: {required_m3: true, status: PENDING, evidence: []}
+  PUBLIC_COMPOSITION: {required_m3: true, status: PENDING, evidence: []}
+  BLACK_BOX_OUTCOME: {required_m3: true, status: PENDING, evidence: []}
+  SECURITY_AUTHORITY: {required_m3: true, status: PENDING, evidence: []}
+  DOCUMENTATION: {required_m3: true, status: PENDING, evidence: []}
+  DASHBOARD: {required_m3: true, status: PENDING, evidence: []}
+  MIGRATION: {required_m3: true, status: PENDING, evidence: []}
+  PROVIDER_CERTIFICATION: {required_m3: true, status: PENDING, evidence: []}
+mandatory_journeys: [J01, J16]
+unresolved_contradiction: null
+provider_claim_changes:
+- codex/INTERACTION
+- codex/EXECUTION_IMPLEMENTER
+migration: PROVIDER_SETUP_SCHEMA_ENGINEERING
+verdict: IN_PROGRESS

@@ -1,93 +1,76 @@
 {
   "acceptance": {
-    "acceptance_commit": "87b6e88e55725b6451c12eeeb3b58b97a6d61748",
     "blocked": [],
-    "contract_digest": "2165c197747cf55f9b7a8aebc3c2dc29e1a6f59a9390d4a0db5d6769ba6a8401",
+    "contract_digest": "4c715b81581f4688f3b38d34829a967760e7f862f8408a477f37245f886d07eb",
     "evidence_classes": {
       "BLACK_BOX_OUTCOME": {
-        "evidence": [
-          "EVIDENCE/M2-VALIDATION.yaml"
-        ],
-        "required_m2": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m3": true,
+        "status": "PENDING"
       },
       "COMPONENT": {
-        "evidence": [
-          "EVIDENCE/M2-VALIDATION.yaml"
-        ],
-        "required_m2": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m3": true,
+        "status": "PENDING"
       },
       "DASHBOARD": {
-        "evidence": [
-          "EVIDENCE/M2-VALIDATION.yaml"
-        ],
-        "required_m2": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m3": true,
+        "status": "PENDING"
       },
       "DESIGN_CONFORMANCE": {
-        "evidence": [
-          "EVIDENCE/M2-VALIDATION.yaml"
-        ],
-        "required_m2": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m3": true,
+        "status": "PENDING"
       },
       "DOCUMENTATION": {
-        "evidence": [
-          "EVIDENCE/M2-VALIDATION.yaml"
-        ],
-        "required_m2": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m3": true,
+        "status": "PENDING"
       },
       "DOMAIN_INTEGRATION": {
-        "evidence": [
-          "EVIDENCE/M2-VALIDATION.yaml"
-        ],
-        "required_m2": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m3": true,
+        "status": "PENDING"
       },
       "MIGRATION": {
-        "evidence": [
-          "EVIDENCE/M2-VALIDATION.yaml"
-        ],
-        "required_m2": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m3": true,
+        "status": "PENDING"
       },
       "PROVIDER_CERTIFICATION": {
         "evidence": [],
-        "required_m2": false,
-        "status": "NOT_APPLICABLE"
+        "required_m3": true,
+        "status": "PENDING"
       },
       "PUBLIC_COMPOSITION": {
-        "evidence": [
-          "EVIDENCE/M2-VALIDATION.yaml"
-        ],
-        "required_m2": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m3": true,
+        "status": "PENDING"
       },
       "SECURITY_AUTHORITY": {
-        "evidence": [
-          "EVIDENCE/M2-VALIDATION.yaml"
-        ],
-        "required_m2": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m3": true,
+        "status": "PENDING"
       }
     },
     "frozen_architecture_baseline": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
-    "implementation_baseline_commit": "1547cd295e06b2c05546c1c9f2c157969c59531f",
+    "implementation_baseline_commit": null,
     "mandatory_journeys": [
-      "J05",
-      "J15",
-      "J18"
+      "J01",
+      "J16"
     ],
-    "mandatory_work_complete": true,
-    "migration": "M2_ACCEPTED_EMPTY_RUNSTORE",
-    "milestone": "M2",
-    "provider_claim_changes": [],
+    "mandatory_work_complete": false,
+    "migration": "PROVIDER_SETUP_SCHEMA_ENGINEERING",
+    "milestone": "M3",
+    "provider_claim_changes": [
+      "codex/INTERACTION",
+      "codex/EXECUTION_IMPLEMENTER"
+    ],
     "schema_version": "1.0",
     "superseded": [],
     "unresolved_contradiction": null,
-    "verdict": "ACCEPTED"
+    "verdict": "IN_PROGRESS"
   },
   "adrs": [
     {
@@ -266,7 +249,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "ADR-T007",
-      "implementation_state": "NOT_STARTED",
+      "implementation_state": "ACTIVE_M3",
       "m0_baseline_state": "CAPTURED",
       "title": "ADR-T007 — Contextual Capability Graph",
       "type": "FROZEN_ADR"
@@ -474,7 +457,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "ADR-T015",
-      "implementation_state": "NOT_STARTED",
+      "implementation_state": "ACTIVE_M3",
       "m0_baseline_state": "CAPTURED",
       "title": "ADR-T015 — Provider Composition at Bootstrap",
       "type": "FROZEN_ADR"
@@ -683,7 +666,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "ADR-T023",
-      "implementation_state": "M2_ACCEPTED_MINIMUM",
+      "implementation_state": "ACTIVE_M3_CREDENTIALS_AND_ATTRIBUTION",
       "m0_baseline_state": "CAPTURED",
       "title": "ADR-T023 — Actor Identity, Trust & Credential Handling",
       "type": "FROZEN_ADR"
@@ -711,7 +694,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "ADR-T024",
-      "implementation_state": "NOT_STARTED",
+      "implementation_state": "ACTIVE_M3",
       "m0_baseline_state": "CAPTURED",
       "title": "ADR-T024 — Provider Claim & Capability Certification",
       "type": "FROZEN_ADR"
@@ -1190,7 +1173,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "INV-F20",
-      "implementation_state": "NOT_STARTED",
+      "implementation_state": "ACTIVE_M3",
       "m0_baseline_state": "CAPTURED",
       "statement": "Detected/configured/authenticated/healthy/registered/available are distinct.",
       "title": "Provider readiness explicit",
@@ -1212,7 +1195,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "INV-F21",
-      "implementation_state": "NOT_STARTED",
+      "implementation_state": "ACTIVE_M3",
       "m0_baseline_state": "CAPTURED",
       "statement": "Globally available does not imply eligibility for every ProjectJob.",
       "title": "Contextual provider eligibility",
@@ -1234,7 +1217,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "INV-F22",
-      "implementation_state": "NOT_STARTED",
+      "implementation_state": "ACTIVE_M3",
       "m0_baseline_state": "CAPTURED",
       "statement": "Interaction role does not grant execution or approval authority.",
       "title": "UI and provider authority distinct",
@@ -1256,7 +1239,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "INV-F23",
-      "implementation_state": "NOT_STARTED",
+      "implementation_state": "ACTIVE_M3",
       "m0_baseline_state": "CAPTURED",
       "statement": "Secrets are external to Project Git/docs/general context.",
       "title": "Secret exclusion",
@@ -1366,7 +1349,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "INV-F28",
-      "implementation_state": "NOT_STARTED",
+      "implementation_state": "ACTIVE_M3",
       "m0_baseline_state": "CAPTURED",
       "statement": "ARTIFEX owns Project semantics and Project acceptance.",
       "title": "ARTIFEX Project authority",
@@ -1476,7 +1459,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "INV-F33",
-      "implementation_state": "NOT_STARTED",
+      "implementation_state": "ACTIVE_M3",
       "m0_baseline_state": "CAPTURED",
       "statement": "Component implementation does not equal delivered capability.",
       "title": "Component evidence not delivery",
@@ -1498,7 +1481,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "INV-F34",
-      "implementation_state": "NOT_STARTED",
+      "implementation_state": "ACTIVE_M3_PUBLIC_COMPOSITION",
       "m0_baseline_state": "CAPTURED",
       "statement": "Release-critical claims require actual shipping-composition outcomes.",
       "title": "Black-box release acceptance",
@@ -1663,7 +1646,7 @@
       "title": "J15 — Promotion Conflict"
     },
     {
-      "blocker": "M0 has no mandatory journeys; milestone dependencies not accepted",
+      "blocker": "M3 active; installed-wheel fresh-process provider setup persistence not yet qualified",
       "environment": null,
       "evidence": [],
       "id": "J16",
@@ -1804,10 +1787,10 @@
     "fixture": "MIGRATION/V1-RELEASE-FIXTURE.yaml",
     "fixture_state": "M0_BASELINE_ACCEPTED",
     "migration_execution": "M2_ACCEPTED_EMPTY_RUNSTORE",
-    "milestone": "M2",
-    "mode": "M2_ACCEPTED_EMPTY_RUNSTORE",
+    "milestone": "M3",
+    "mode": "PROVIDER_SETUP_SCHEMA_ENGINEERING",
     "project_mutation": false,
-    "rollback": "DELETE_NEW_EMPTY_RUNSTORE_ONLY",
+    "rollback": "REMOVE_NEW_PROVIDER_SETUP_STORE_ONLY; accepted M2 RunStore remains authoritative",
     "schema_version": "1.0"
   },
   "milestones": [
@@ -1849,8 +1832,8 @@
       ],
       "id": "M3",
       "mandatory_for_core_ga": true,
-      "started": false,
-      "state": "READY",
+      "started": true,
+      "state": "ACTIVE",
       "title": "Capability Composition + Codex Productization"
     },
     {
@@ -2009,9 +1992,9 @@
   ],
   "program": {
     "architecture_status": "FROZEN",
-    "branch": "main",
-    "current_milestone": "M2",
-    "current_status": "ACCEPTED",
+    "branch": "codex/artifex-2-m3",
+    "current_milestone": "M3",
+    "current_status": "ACTIVE",
     "dashboard_state": "CURRENT",
     "directory_variance": "PACKAGING_NAME_VARIANCE_ACCEPTED",
     "handoff_declared_directory": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF",
@@ -2024,7 +2007,8 @@
     "latest_accepted_commit": "87b6e88e55725b6451c12eeeb3b58b97a6d61748",
     "m1_started": true,
     "m2_started": true,
-    "next_integration_point": "M3 readiness; M3 not started",
+    "m3_started": true,
+    "next_integration_point": "M3 Codex public-composition and J01/J16 acceptance gates",
     "recorded_date": "2026-08-27",
     "target_release": "2.0.0"
   },
@@ -2289,7 +2273,7 @@
   "summary": {
     "active_blockers": 0,
     "adr_count": 24,
-    "current_milestone": "M2",
+    "current_milestone": "M3",
     "evidence_items": 7,
     "invariant_count": 34,
     "journey_states": {
@@ -2297,16 +2281,15 @@
       "PASS": 4
     },
     "milestones_accepted": 3,
-    "milestones_started": 3,
+    "milestones_started": 4,
     "milestones_total": 16,
     "provider_step_states": {
       "NOT_STARTED": 95
     },
-    "ready_milestones": [
-      "M3"
-    ],
+    "ready_milestones": [],
     "workstream_states": {
-      "COMPLETE": 7
+      "COMPLETE": 7,
+      "IN_PROGRESS": 4
     }
   },
   "target_system": {
@@ -2466,6 +2449,78 @@
       ],
       "state": "COMPLETE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m2"
+    },
+    {
+      "base_commit": "e1e4cd5e07aac4b8b380111807259cad7a550c0f",
+      "blockers": [],
+      "branch": "codex/artifex-2-m3-provider",
+      "id": "WS-M3-CAPABILITY-COMPOSITION",
+      "integration_owner": "ARTIFEX_2_ORCHESTRATOR",
+      "milestone": "M3",
+      "owner_subagent": "m3_provider_analysis",
+      "purpose": "Implement Codex setup persistence, bootstrap composition, Capability Graph and contextual Resolver",
+      "shared_contracts": [
+        "M3-CONTRACT",
+        "ADR-T007",
+        "ADR-T015",
+        "ADR-T023",
+        "ADR-T024"
+      ],
+      "state": "IN_PROGRESS",
+      "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m3-provider"
+    },
+    {
+      "base_commit": "e1e4cd5e07aac4b8b380111807259cad7a550c0f",
+      "blockers": [],
+      "branch": "codex/artifex-2-m3-security",
+      "id": "WS-M3-SECURITY-AUTHORITY",
+      "integration_owner": "ARTIFEX_2_ORCHESTRATOR",
+      "milestone": "M3",
+      "owner_subagent": "m3_security_analysis",
+      "purpose": "Prove envelope, workspace, actor, credential, permission, audit, baseline and acceptance boundaries",
+      "shared_contracts": [
+        "M3-CONTRACT",
+        "ADR-T008",
+        "ADR-T021",
+        "ADR-T022",
+        "ADR-T023"
+      ],
+      "state": "IN_PROGRESS",
+      "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m3-security"
+    },
+    {
+      "base_commit": "e1e4cd5e07aac4b8b380111807259cad7a550c0f",
+      "blockers": [],
+      "branch": "codex/artifex-2-m3-outcomes",
+      "id": "WS-M3-PUBLIC-OUTCOMES",
+      "integration_owner": "ARTIFEX_2_ORCHESTRATOR",
+      "milestone": "M3",
+      "owner_subagent": "m3_outcome_analysis",
+      "purpose": "Qualify installed-wheel public Codex vertical slice and mandatory J01 and J16 outcomes",
+      "shared_contracts": [
+        "M3-CONTRACT",
+        "J01",
+        "J16",
+        "OUTCOME-ACCEPTANCE-POLICY"
+      ],
+      "state": "IN_PROGRESS",
+      "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m3-outcomes"
+    },
+    {
+      "base_commit": "e1e4cd5e07aac4b8b380111807259cad7a550c0f",
+      "blockers": [],
+      "branch": "codex/artifex-2-m3",
+      "id": "WS-M3-INTEGRATION-DOCS",
+      "integration_owner": "ARTIFEX_2_ORCHESTRATOR",
+      "milestone": "M3",
+      "owner_subagent": "ARTIFEX_2_ORCHESTRATOR",
+      "purpose": "Integrate authority-sensitive changes, documentation, evidence and dashboard projections",
+      "shared_contracts": [
+        "M3-CONTRACT",
+        "FROZEN-INVARIANTS"
+      ],
+      "state": "IN_PROGRESS",
+      "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m3"
     }
   ]
 }

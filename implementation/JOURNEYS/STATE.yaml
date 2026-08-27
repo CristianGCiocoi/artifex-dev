@@ -131,7 +131,7 @@ journeys:
   public_shipping_composition: null
   evidence: []
   last_run: null
-  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+  blocker: M3 active; installed-wheel fresh-process provider setup persistence not yet qualified
 - id: J17
   title: J17 — ATLAS Governed Execution
   status: NOT_STARTED

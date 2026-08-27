@@ -104,3 +104,47 @@ workstreams:
   state: COMPLETE
   blockers: []
   integration_owner: ARTIFEX_2_ORCHESTRATOR
+- id: WS-M3-CAPABILITY-COMPOSITION
+  milestone: M3
+  purpose: Implement Codex setup persistence, bootstrap composition, Capability Graph and contextual Resolver
+  owner_subagent: m3_provider_analysis
+  worktree: C:\aidev\artifex-worktrees\artifex-2-m3-provider
+  branch: codex/artifex-2-m3-provider
+  base_commit: e1e4cd5e07aac4b8b380111807259cad7a550c0f
+  shared_contracts: [M3-CONTRACT, ADR-T007, ADR-T015, ADR-T023, ADR-T024]
+  state: IN_PROGRESS
+  blockers: []
+  integration_owner: ARTIFEX_2_ORCHESTRATOR
+- id: WS-M3-SECURITY-AUTHORITY
+  milestone: M3
+  purpose: Prove envelope, workspace, actor, credential, permission, audit, baseline and acceptance boundaries
+  owner_subagent: m3_security_analysis
+  worktree: C:\aidev\artifex-worktrees\artifex-2-m3-security
+  branch: codex/artifex-2-m3-security
+  base_commit: e1e4cd5e07aac4b8b380111807259cad7a550c0f
+  shared_contracts: [M3-CONTRACT, ADR-T008, ADR-T021, ADR-T022, ADR-T023]
+  state: IN_PROGRESS
+  blockers: []
+  integration_owner: ARTIFEX_2_ORCHESTRATOR
+- id: WS-M3-PUBLIC-OUTCOMES
+  milestone: M3
+  purpose: Qualify installed-wheel public Codex vertical slice and mandatory J01 and J16 outcomes
+  owner_subagent: m3_outcome_analysis
+  worktree: C:\aidev\artifex-worktrees\artifex-2-m3-outcomes
+  branch: codex/artifex-2-m3-outcomes
+  base_commit: e1e4cd5e07aac4b8b380111807259cad7a550c0f
+  shared_contracts: [M3-CONTRACT, J01, J16, OUTCOME-ACCEPTANCE-POLICY]
+  state: IN_PROGRESS
+  blockers: []
+  integration_owner: ARTIFEX_2_ORCHESTRATOR
+- id: WS-M3-INTEGRATION-DOCS
+  milestone: M3
+  purpose: Integrate authority-sensitive changes, documentation, evidence and dashboard projections
+  owner_subagent: ARTIFEX_2_ORCHESTRATOR
+  worktree: C:\aidev\artifex-worktrees\artifex-2-m3
+  branch: codex/artifex-2-m3
+  base_commit: e1e4cd5e07aac4b8b380111807259cad7a550c0f
+  shared_contracts: [M3-CONTRACT, FROZEN-INVARIANTS]
+  state: IN_PROGRESS
+  blockers: []
+  integration_owner: ARTIFEX_2_ORCHESTRATOR
