@@ -9,13 +9,13 @@
 - Handoff: `ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1`
 - Intake baseline: `5cc5dcfeb420a6df171a44426c04a0f08fa1e877`
 - Branch: `codex/artifex-2-wave4`
-- Current milestone: `M4`
+- Current milestone: `M5`
 - Current status: `ACTIVE_PARALLEL_WAVE`
-- Accepted milestones: `M0, M1, M2, M3`
+- Accepted milestones: `M0, M1, M2, M3, M4`
 - Ready milestones: `none`
 - Latest accepted commit: `d3a57311e069a887e69e4037969170f554026cc4`
 - Next integration point: `Integrate and independently gate M4, M5 and M6A; preserve M6B as READY_UNCLAIMED`
-- M4 started: `true`
+- M5 started: `true`
 
 ## Work
 
@@ -27,7 +27,7 @@
 
 ## Acceptance
 
-- M4 verdict: `IN_PROGRESS`
+- M5 verdict: `IN_PROGRESS`
 - Mandatory work complete: `false`
-- Mandatory journeys: `J04, J06, J07, J19`
+- Mandatory journeys: `J08, J14`
 - Next integration point: `Integrate and independently gate M4, M5 and M6A; preserve M6B as READY_UNCLAIMED`

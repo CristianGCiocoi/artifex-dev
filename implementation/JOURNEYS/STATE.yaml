@@ -29,12 +29,13 @@ journeys:
   blocker: null
 - id: J04
   title: J04 — Multi-session
-  status: NOT_STARTED
-  environment: null
-  public_shipping_composition: null
-  evidence: []
-  last_run: null
-  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+  status: PASS
+  environment: CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS
+  public_shipping_composition: INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS
+  evidence:
+  - EVIDENCE/M4-PUBLIC-OUTCOME.json
+  last_run: '2026-08-27'
+  blocker: null
 - id: J05
   title: J05 — Persistent Execution
   status: PASS
@@ -46,20 +47,22 @@ journeys:
   blocker: null
 - id: J06
   title: J06 — Material Decision
-  status: NOT_STARTED
-  environment: null
-  public_shipping_composition: null
-  evidence: []
-  last_run: null
-  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+  status: PASS
+  environment: CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS
+  public_shipping_composition: INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS
+  evidence:
+  - EVIDENCE/M4-PUBLIC-OUTCOME.json
+  last_run: '2026-08-27'
+  blocker: null
 - id: J07
   title: J07 — Safe Pause / Recovery
-  status: NOT_STARTED
-  environment: null
-  public_shipping_composition: null
-  evidence: []
-  last_run: null
-  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+  status: PASS
+  environment: CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS
+  public_shipping_composition: INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS
+  evidence:
+  - EVIDENCE/M4-PUBLIC-OUTCOME.json
+  last_run: '2026-08-27'
+  blocker: null
 - id: J08
   title: J08 — Documentation / Dashboard
   status: NOT_STARTED
@@ -153,12 +156,13 @@ journeys:
   blocker: null
 - id: J19
   title: J19 — IDEA → APPROVED PLAN
-  status: NOT_STARTED
-  environment: null
-  public_shipping_composition: null
-  evidence: []
-  last_run: null
-  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+  status: PASS
+  environment: CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS
+  public_shipping_composition: INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS
+  evidence:
+  - EVIDENCE/M4-PUBLIC-OUTCOME.json
+  last_run: '2026-08-27'
+  blocker: null
 - id: J20
   title: J20 — FULL ARTIFEX PROJECT LIFECYCLE
   status: NOT_STARTED

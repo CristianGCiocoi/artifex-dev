@@ -1,0 +1,56 @@
+schema_version: '1.0'
+evidence_id: EVD-M4-VALIDATION
+milestone: M4
+status: PASS
+recorded_date: '2026-08-27'
+canonical_m3_baseline_commit: 6e46c426786d2f3b1be10e483518197b4b5d06ce
+m4_implementation_baseline_commit: 8645cb103f8956143d477114b2842d14347f35a1
+m4_acceptance_commit: null
+m4_contract_digest: ad8c5126ca025a81b0e70aa25f6cc88445e7c2a127b6b0b1ce6493b96bee5772
+source_quality:
+  ruff: PASS
+  mypy_strict: PASS
+  mypy_files: 88
+integrated_focused_validation:
+  command: uv run pytest tests/artifex2_m4 tests/artifex2_m5 tests/artifex2_m6a -q
+  result: PASS
+  passed: 25
+  failed: 0
+domain_integration:
+  command: uv run pytest tests --ignore=tests/test_release.py --deselect=tests/artifex2_m0/test_m0_control_plane.py::test_dashboard_and_current_state_are_deterministic_projections -q
+  result: PASS
+  passed: 413
+  skipped: 7
+  deselected_preserved_baseline: 1
+  failed: 0
+  duration_seconds: 568.40
+public_composition:
+  artifact: artifex_dev-1.0.0-py3-none-any.whl
+  artifact_sha256: 9a960e62fbd864c6016d46f5932006ae2f52ad252c5b55fe3b90d96b923332c1
+  artifact_bytes: 253440
+  composition: CLEAN_INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS
+  evidence: EVIDENCE/M4-PUBLIC-OUTCOME.json
+  status: PASS
+security_authority:
+  optimistic_revision_conflict: PASS
+  dependency_local_material_block: PASS
+  unrelated_authorized_progress: PASS
+  explicit_envelope_approval: PASS
+  explicit_run_authorization: PASS
+  uncertain_external_stop_fail_closed: PASS
+  control_and_reconciliation_surface_preserved: PASS
+documentation:
+  architecture: docs/architecture/COLLABORATIVE_GOVERNANCE.md
+  operations: docs/guides/OPERATIONS_GUIDE.md
+  status: CURRENT
+dashboard:
+  implementation_projection: PASS
+  authoritative: false
+migration:
+  mode: M4_ACCEPTED_ADDITIVE_INTERACTION_GOVERNANCE_STATE
+  destructive_project_mutation: false
+v1_release_harness_regression:
+  classification: V1-R01-DASHBOARD-FIXTURE-SCHEMA-DRIFT
+  disposition: PRESERVED_BASELINE_EVIDENCE
+  source_repaired_by_m4: false
+unexpected_failures: []

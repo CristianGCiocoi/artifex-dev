@@ -1,0 +1,35 @@
+{
+  "composition": "CLEAN_INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS",
+  "custom_application_factory_used": false,
+  "journeys": {
+    "J04": {
+      "reconnect": true,
+      "revision_conflict": "SemanticConflictError",
+      "silent_overwrite": false,
+      "status": "PASS"
+    },
+    "J06": {
+      "affected_branch_blocked": true,
+      "status": "PASS",
+      "unrelated_branch_progressed": true,
+      "user_resolution_resumed_branch": true
+    },
+    "J07": {
+      "false_stop_claim": false,
+      "new_dispatch_blocked": "RuntimeAuthorizationError",
+      "status": "PASS",
+      "uncertain_state": "NEEDS_RECONCILIATION"
+    },
+    "J19": {
+      "lifecycle_stage": "APPROVED_PLAN",
+      "manual_specialist_session_shuttle": false,
+      "provider_dispatch": false,
+      "run_authorized": true,
+      "semantic_revision": 9,
+      "status": "PASS"
+    }
+  },
+  "schema_version": "1.0",
+  "source_tree_imported": false,
+  "status": "PASS"
+}

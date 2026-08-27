@@ -2,70 +2,68 @@
   "acceptance": {
     "acceptance_commit": null,
     "blocked": [],
-    "contract_digest": "ad8c5126ca025a81b0e70aa25f6cc88445e7c2a127b6b0b1ce6493b96bee5772",
+    "contract_digest": "adb7e103ce1ca7424f3f62cb9866fdd50886fd0a57bb5f897797487f2da375b7",
     "evidence_classes": {
       "BLACK_BOX_OUTCOME": {
         "evidence": [],
-        "required_m4": true,
+        "required_m5": true,
         "status": "PENDING"
       },
       "COMPONENT": {
         "evidence": [],
-        "required_m4": true,
+        "required_m5": true,
         "status": "PENDING"
       },
       "DASHBOARD": {
         "evidence": [],
-        "required_m4": true,
+        "required_m5": true,
         "status": "PENDING"
       },
       "DESIGN_CONFORMANCE": {
         "evidence": [],
-        "required_m4": true,
+        "required_m5": true,
         "status": "PENDING"
       },
       "DOCUMENTATION": {
         "evidence": [],
-        "required_m4": true,
+        "required_m5": true,
         "status": "PENDING"
       },
       "DOMAIN_INTEGRATION": {
         "evidence": [],
-        "required_m4": true,
+        "required_m5": true,
         "status": "PENDING"
       },
       "MIGRATION": {
         "evidence": [],
-        "required_m4": false,
+        "required_m5": false,
         "status": "NOT_APPLICABLE"
       },
       "PROVIDER_CERTIFICATION": {
         "evidence": [],
-        "required_m4": false,
+        "required_m5": false,
         "status": "NOT_APPLICABLE"
       },
       "PUBLIC_COMPOSITION": {
         "evidence": [],
-        "required_m4": true,
+        "required_m5": true,
         "status": "PENDING"
       },
       "SECURITY_AUTHORITY": {
         "evidence": [],
-        "required_m4": true,
+        "required_m5": true,
         "status": "PENDING"
       }
     },
     "frozen_architecture_baseline": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
     "implementation_baseline_commit": null,
     "mandatory_journeys": [
-      "J04",
-      "J06",
-      "J07",
-      "J19"
+      "J08",
+      "J14"
     ],
     "mandatory_work_complete": false,
-    "migration": "ADDITIVE_TARGET_INTERACTION_GOVERNANCE_STATE_PENDING",
-    "milestone": "M4",
+    "migration": "ADDITIVE_DOC_DASHBOARD_CLASSIFICATION_PENDING",
+    "milestone": "M5",
     "schema_version": "1.0",
     "superseded": [],
     "unresolved_contradiction": null,
@@ -735,6 +733,16 @@
       "bytes": 2629,
       "path": "implementation/EVIDENCE/M3-VALIDATION.yaml",
       "sha256": "556a546d1d58e37af5c132338ef8b7e1fb6bb0707c40086c34633c77fefa280e"
+    },
+    {
+      "bytes": 951,
+      "path": "implementation/EVIDENCE/M4-PUBLIC-OUTCOME.json",
+      "sha256": "9df268c6c12a47f248ec90d9259ce2c460dab35a39e43150d300c63a92bbeea8"
+    },
+    {
+      "bytes": 2006,
+      "path": "implementation/EVIDENCE/M4-VALIDATION.yaml",
+      "sha256": "ec0086c01845810fb16cc18ba1ad1b1d568320df9ef5ad296311e09f9940de27"
     },
     {
       "bytes": 3220,
@@ -1533,13 +1541,15 @@
       "title": "J03 — Project Continuity"
     },
     {
-      "blocker": "M0 has no mandatory journeys; milestone dependencies not accepted",
-      "environment": null,
-      "evidence": [],
+      "blocker": null,
+      "environment": "CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS",
+      "evidence": [
+        "EVIDENCE/M4-PUBLIC-OUTCOME.json"
+      ],
       "id": "J04",
-      "last_run": null,
-      "public_shipping_composition": null,
-      "status": "NOT_STARTED",
+      "last_run": "2026-08-27",
+      "public_shipping_composition": "INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS",
+      "status": "PASS",
       "title": "J04 — Multi-session"
     },
     {
@@ -1555,23 +1565,27 @@
       "title": "J05 — Persistent Execution"
     },
     {
-      "blocker": "M0 has no mandatory journeys; milestone dependencies not accepted",
-      "environment": null,
-      "evidence": [],
+      "blocker": null,
+      "environment": "CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS",
+      "evidence": [
+        "EVIDENCE/M4-PUBLIC-OUTCOME.json"
+      ],
       "id": "J06",
-      "last_run": null,
-      "public_shipping_composition": null,
-      "status": "NOT_STARTED",
+      "last_run": "2026-08-27",
+      "public_shipping_composition": "INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS",
+      "status": "PASS",
       "title": "J06 — Material Decision"
     },
     {
-      "blocker": "M0 has no mandatory journeys; milestone dependencies not accepted",
-      "environment": null,
-      "evidence": [],
+      "blocker": null,
+      "environment": "CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS",
+      "evidence": [
+        "EVIDENCE/M4-PUBLIC-OUTCOME.json"
+      ],
       "id": "J07",
-      "last_run": null,
-      "public_shipping_composition": null,
-      "status": "NOT_STARTED",
+      "last_run": "2026-08-27",
+      "public_shipping_composition": "INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS",
+      "status": "PASS",
       "title": "J07 — Safe Pause / Recovery"
     },
     {
@@ -1691,13 +1705,15 @@
       "title": "J18 — UNKNOWN External Outcome"
     },
     {
-      "blocker": "M0 has no mandatory journeys; milestone dependencies not accepted",
-      "environment": null,
-      "evidence": [],
+      "blocker": null,
+      "environment": "CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS",
+      "evidence": [
+        "EVIDENCE/M4-PUBLIC-OUTCOME.json"
+      ],
       "id": "J19",
-      "last_run": null,
-      "public_shipping_composition": null,
-      "status": "NOT_STARTED",
+      "last_run": "2026-08-27",
+      "public_shipping_composition": "INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS",
+      "status": "PASS",
       "title": "J19 — IDEA → APPROVED PLAN"
     },
     {
@@ -1805,7 +1821,7 @@
     "active_wave_migration_policy": "ADDITIVE_ONLY_PENDING_INDEPENDENT_ACCEPTANCE",
     "fixture": "MIGRATION/V1-RELEASE-FIXTURE.yaml",
     "fixture_state": "M0_BASELINE_ACCEPTED",
-    "m4_target_interaction_governance_state": "PENDING",
+    "m4_target_interaction_governance_state": "M4_ACCEPTED_ADDITIVE_STATE",
     "m5_docs_dashboard_classification": "PENDING",
     "m6a_v1_claude_setup_revalidation": "PENDING",
     "migration_execution": "M2_ACCEPTED_EMPTY_RUNSTORE",
@@ -1860,14 +1876,14 @@
       "title": "Capability Composition + Codex Productization"
     },
     {
-      "accepted": false,
+      "accepted": true,
       "depends_on": [
         "M3"
       ],
       "id": "M4",
       "mandatory_for_core_ga": true,
       "started": true,
-      "state": "ACTIVE",
+      "state": "ACCEPTED",
       "title": "Collaborative Lifecycle, Interaction, Governance & Operational Control"
     },
     {
@@ -2016,7 +2032,7 @@
   "program": {
     "architecture_status": "FROZEN",
     "branch": "codex/artifex-2-wave4",
-    "current_milestone": "M4",
+    "current_milestone": "M5",
     "current_status": "ACTIVE_PARALLEL_WAVE",
     "dashboard_state": "CURRENT",
     "directory_variance": "PACKAGING_NAME_VARIANCE_ACCEPTED",
@@ -2305,15 +2321,15 @@
   "summary": {
     "active_blockers": 0,
     "adr_count": 24,
-    "current_milestone": "M4",
-    "evidence_items": 9,
+    "current_milestone": "M5",
+    "evidence_items": 11,
     "invariant_count": 34,
     "journey_states": {
       "M3_VERTICAL_SLICE_ONLY": 1,
-      "NOT_STARTED": 14,
-      "PASS": 5
+      "NOT_STARTED": 10,
+      "PASS": 9
     },
-    "milestones_accepted": 4,
+    "milestones_accepted": 5,
     "milestones_started": 7,
     "milestones_total": 16,
     "provider_step_states": {
@@ -2322,8 +2338,8 @@
     },
     "ready_milestones": [],
     "workstream_states": {
-      "ACTIVE": 4,
-      "COMPLETE": 11
+      "ACTIVE": 3,
+      "COMPLETE": 12
     }
   },
   "target_system": {
@@ -2569,7 +2585,7 @@
         "M4-CONTRACT",
         "FROZEN-INVARIANTS"
       ],
-      "state": "ACTIVE",
+      "state": "COMPLETE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m4"
     },
     {

@@ -192,8 +192,10 @@ contracts:
   - Multi-session operation is conflict-safe
   - Material blocking remains dependency-local
   - Global Safe Pause and recovery work
-  evidence_references: []
-  implementation_state: ACTIVE
+  evidence_references:
+  - EVIDENCE/M4-VALIDATION.yaml
+  - EVIDENCE/M4-PUBLIC-OUTCOME.json
+  implementation_state: ACCEPTED
   m0_baseline_state: NOT_APPLICABLE
 - id: M5-CONTRACT
   title: M5 — Reality, Documentation & Dashboard Operational Composition

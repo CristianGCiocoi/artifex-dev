@@ -1,24 +1,24 @@
 schema_version: '1.0'
 milestone: M4
 contract_digest: ad8c5126ca025a81b0e70aa25f6cc88445e7c2a127b6b0b1ce6493b96bee5772
-implementation_baseline_commit: null
+implementation_baseline_commit: 8645cb103f8956143d477114b2842d14347f35a1
 acceptance_commit: null
 frozen_architecture_baseline: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
-mandatory_work_complete: false
+mandatory_work_complete: true
 blocked: []
 superseded: []
 evidence_classes:
-  DESIGN_CONFORMANCE: {required_m4: true, status: PENDING, evidence: []}
-  COMPONENT: {required_m4: true, status: PENDING, evidence: []}
-  DOMAIN_INTEGRATION: {required_m4: true, status: PENDING, evidence: []}
-  PUBLIC_COMPOSITION: {required_m4: true, status: PENDING, evidence: []}
-  BLACK_BOX_OUTCOME: {required_m4: true, status: PENDING, evidence: []}
-  SECURITY_AUTHORITY: {required_m4: true, status: PENDING, evidence: []}
-  DOCUMENTATION: {required_m4: true, status: PENDING, evidence: []}
-  DASHBOARD: {required_m4: true, status: PENDING, evidence: []}
+  DESIGN_CONFORMANCE: {required_m4: true, status: PASS, evidence: [EVIDENCE/M4-VALIDATION.yaml]}
+  COMPONENT: {required_m4: true, status: PASS, evidence: [EVIDENCE/M4-VALIDATION.yaml]}
+  DOMAIN_INTEGRATION: {required_m4: true, status: PASS, evidence: [EVIDENCE/M4-VALIDATION.yaml]}
+  PUBLIC_COMPOSITION: {required_m4: true, status: PASS, evidence: [EVIDENCE/M4-PUBLIC-OUTCOME.json]}
+  BLACK_BOX_OUTCOME: {required_m4: true, status: PASS, evidence: [EVIDENCE/M4-PUBLIC-OUTCOME.json]}
+  SECURITY_AUTHORITY: {required_m4: true, status: PASS, evidence: [EVIDENCE/M4-VALIDATION.yaml]}
+  DOCUMENTATION: {required_m4: true, status: PASS, evidence: [EVIDENCE/M4-VALIDATION.yaml]}
+  DASHBOARD: {required_m4: true, status: PASS, evidence: [EVIDENCE/M4-VALIDATION.yaml]}
   MIGRATION: {required_m4: false, status: NOT_APPLICABLE, evidence: []}
   PROVIDER_CERTIFICATION: {required_m4: false, status: NOT_APPLICABLE, evidence: []}
 mandatory_journeys: [J04, J06, J07, J19]
 unresolved_contradiction: null
-migration: ADDITIVE_TARGET_INTERACTION_GOVERNANCE_STATE_PENDING
-verdict: IN_PROGRESS
+migration: M4_ACCEPTED_ADDITIVE_INTERACTION_GOVERNANCE_STATE
+verdict: ACCEPTED
