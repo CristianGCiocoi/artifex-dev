@@ -1,24 +1,24 @@
 schema_version: '1.0'
 milestone: M2
 contract_digest: 2165c197747cf55f9b7a8aebc3c2dc29e1a6f59a9390d4a0db5d6769ba6a8401
-implementation_baseline_commit: null
+implementation_baseline_commit: 1547cd295e06b2c05546c1c9f2c157969c59531f
 frozen_architecture_baseline: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
-mandatory_work_complete: false
+mandatory_work_complete: true
 blocked: []
 superseded: []
 evidence_classes:
-  DESIGN_CONFORMANCE: {required_m2: true, status: PENDING, evidence: []}
-  COMPONENT: {required_m2: true, status: PENDING, evidence: []}
-  DOMAIN_INTEGRATION: {required_m2: true, status: PENDING, evidence: []}
-  PUBLIC_COMPOSITION: {required_m2: true, status: PENDING, evidence: []}
-  BLACK_BOX_OUTCOME: {required_m2: true, status: PENDING, evidence: []}
-  SECURITY_AUTHORITY: {required_m2: true, status: PENDING, evidence: []}
-  DOCUMENTATION: {required_m2: true, status: PENDING, evidence: []}
-  DASHBOARD: {required_m2: true, status: PENDING, evidence: []}
-  MIGRATION: {required_m2: true, status: PENDING, evidence: []}
+  DESIGN_CONFORMANCE: {required_m2: true, status: PASS, evidence: [EVIDENCE/M2-VALIDATION.yaml]}
+  COMPONENT: {required_m2: true, status: PASS, evidence: [EVIDENCE/M2-VALIDATION.yaml]}
+  DOMAIN_INTEGRATION: {required_m2: true, status: PASS, evidence: [EVIDENCE/M2-VALIDATION.yaml]}
+  PUBLIC_COMPOSITION: {required_m2: true, status: PASS, evidence: [EVIDENCE/M2-VALIDATION.yaml]}
+  BLACK_BOX_OUTCOME: {required_m2: true, status: PASS, evidence: [EVIDENCE/M2-VALIDATION.yaml]}
+  SECURITY_AUTHORITY: {required_m2: true, status: PASS, evidence: [EVIDENCE/M2-VALIDATION.yaml]}
+  DOCUMENTATION: {required_m2: true, status: PASS, evidence: [EVIDENCE/M2-VALIDATION.yaml]}
+  DASHBOARD: {required_m2: true, status: PASS, evidence: [EVIDENCE/M2-VALIDATION.yaml]}
+  MIGRATION: {required_m2: true, status: PASS, evidence: [EVIDENCE/M2-VALIDATION.yaml]}
   PROVIDER_CERTIFICATION: {required_m2: false, status: NOT_APPLICABLE, evidence: []}
 mandatory_journeys: [J05, J15, J18]
 unresolved_contradiction: null
 provider_claim_changes: []
-migration: NEW_EMPTY_TARGET_RUNSTORE_ENGINEERING
-verdict: IN_PROGRESS
+migration: M2_ACCEPTED_EMPTY_RUNSTORE
+verdict: ACCEPTED

@@ -1,8 +1,8 @@
 schema_version: '1.0'
 milestone: M2
-mode: NEW_EMPTY_TARGET_RUNSTORE_ENGINEERING
+mode: M2_ACCEPTED_EMPTY_RUNSTORE
 project_mutation: false
 fixture: MIGRATION/V1-RELEASE-FIXTURE.yaml
 fixture_state: M0_BASELINE_ACCEPTED
-migration_execution: ENGINEERING_ACTIVE_NO_LEGACY_RUNTIME_IMPORT
+migration_execution: M2_ACCEPTED_EMPTY_RUNSTORE
 rollback: DELETE_NEW_EMPTY_RUNSTORE_ONLY

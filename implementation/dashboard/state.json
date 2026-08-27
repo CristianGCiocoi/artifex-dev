@@ -4,39 +4,53 @@
     "contract_digest": "2165c197747cf55f9b7a8aebc3c2dc29e1a6f59a9390d4a0db5d6769ba6a8401",
     "evidence_classes": {
       "BLACK_BOX_OUTCOME": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M2-VALIDATION.yaml"
+        ],
         "required_m2": true,
-        "status": "PENDING"
+        "status": "PASS"
       },
       "COMPONENT": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M2-VALIDATION.yaml"
+        ],
         "required_m2": true,
-        "status": "PENDING"
+        "status": "PASS"
       },
       "DASHBOARD": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M2-VALIDATION.yaml"
+        ],
         "required_m2": true,
-        "status": "PENDING"
+        "status": "PASS"
       },
       "DESIGN_CONFORMANCE": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M2-VALIDATION.yaml"
+        ],
         "required_m2": true,
-        "status": "PENDING"
+        "status": "PASS"
       },
       "DOCUMENTATION": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M2-VALIDATION.yaml"
+        ],
         "required_m2": true,
-        "status": "PENDING"
+        "status": "PASS"
       },
       "DOMAIN_INTEGRATION": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M2-VALIDATION.yaml"
+        ],
         "required_m2": true,
-        "status": "PENDING"
+        "status": "PASS"
       },
       "MIGRATION": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M2-VALIDATION.yaml"
+        ],
         "required_m2": true,
-        "status": "PENDING"
+        "status": "PASS"
       },
       "PROVIDER_CERTIFICATION": {
         "evidence": [],
@@ -44,31 +58,35 @@
         "status": "NOT_APPLICABLE"
       },
       "PUBLIC_COMPOSITION": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M2-VALIDATION.yaml"
+        ],
         "required_m2": true,
-        "status": "PENDING"
+        "status": "PASS"
       },
       "SECURITY_AUTHORITY": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M2-VALIDATION.yaml"
+        ],
         "required_m2": true,
-        "status": "PENDING"
+        "status": "PASS"
       }
     },
     "frozen_architecture_baseline": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
-    "implementation_baseline_commit": null,
+    "implementation_baseline_commit": "1547cd295e06b2c05546c1c9f2c157969c59531f",
     "mandatory_journeys": [
       "J05",
       "J15",
       "J18"
     ],
-    "mandatory_work_complete": false,
-    "migration": "NEW_EMPTY_TARGET_RUNSTORE_ENGINEERING",
+    "mandatory_work_complete": true,
+    "migration": "M2_ACCEPTED_EMPTY_RUNSTORE",
     "milestone": "M2",
     "provider_claim_changes": [],
     "schema_version": "1.0",
     "superseded": [],
     "unresolved_contradiction": null,
-    "verdict": "IN_PROGRESS"
+    "verdict": "ACCEPTED"
   },
   "adrs": [
     {
@@ -117,7 +135,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "ADR-T002",
-      "implementation_state": "ACTIVE_M2",
+      "implementation_state": "M2_ACCEPTED",
       "m0_baseline_state": "CAPTURED",
       "title": "ADR-T002 — Standalone RunStore",
       "type": "FROZEN_ADR"
@@ -143,7 +161,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "ADR-T003",
-      "implementation_state": "ACTIVE_M2",
+      "implementation_state": "M2_ACCEPTED",
       "m0_baseline_state": "CAPTURED",
       "title": "ADR-T003 — Persistent Runtime Hosting",
       "type": "FROZEN_ADR"
@@ -168,7 +186,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "ADR-T004",
-      "implementation_state": "ACTIVE_M2",
+      "implementation_state": "M2_ACCEPTED",
       "m0_baseline_state": "CAPTURED",
       "title": "ADR-T004 — Runtime Execution Hierarchy",
       "type": "FROZEN_ADR"
@@ -221,7 +239,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "ADR-T006",
-      "implementation_state": "ACTIVE_M2_LEASES_AND_FENCING",
+      "implementation_state": "M2_ACCEPTED_LEASES_AND_FENCING",
       "m0_baseline_state": "CAPTURED",
       "title": "ADR-T006 — Concurrency Model",
       "type": "FROZEN_ADR"
@@ -273,7 +291,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "ADR-T008",
-      "implementation_state": "ACTIVE_M2_MINIMUM",
+      "implementation_state": "M2_ACCEPTED_MINIMUM",
       "m0_baseline_state": "CAPTURED",
       "title": "ADR-T008 — Execution Envelope",
       "type": "FROZEN_ADR"
@@ -611,7 +629,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "ADR-T021",
-      "implementation_state": "ACTIVE_M2",
+      "implementation_state": "M2_ACCEPTED",
       "m0_baseline_state": "CAPTURED",
       "title": "ADR-T021 — Execution Workspace & Result Promotion",
       "type": "FROZEN_ADR"
@@ -637,7 +655,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "ADR-T022",
-      "implementation_state": "ACTIVE_M2",
+      "implementation_state": "M2_ACCEPTED",
       "m0_baseline_state": "CAPTURED",
       "title": "ADR-T022 — Acceptance Authority Boundary",
       "type": "FROZEN_ADR"
@@ -664,7 +682,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "ADR-T023",
-      "implementation_state": "ACTIVE_M2_MINIMUM",
+      "implementation_state": "M2_ACCEPTED_MINIMUM",
       "m0_baseline_state": "CAPTURED",
       "title": "ADR-T023 — Actor Identity, Trust & Credential Handling",
       "type": "FROZEN_ADR"
@@ -719,6 +737,11 @@
       "bytes": 2617,
       "path": "implementation/EVIDENCE/M1-VALIDATION.yaml",
       "sha256": "19ed19d6a2080b999da0052adb518f504a3da6c64d33105745faffb1fd62fce0"
+    },
+    {
+      "bytes": 3522,
+      "path": "implementation/EVIDENCE/M2-VALIDATION.yaml",
+      "sha256": "8dbb8d8493a2705a5598e90aaeb68e09bba31d0623f223156933b4b6ab3157bb"
     },
     {
       "bytes": 3220,
@@ -1525,13 +1548,15 @@
       "title": "J04 — Multi-session"
     },
     {
-      "blocker": "M2 implementation active; persistent runtime composition not yet qualified",
-      "environment": null,
-      "evidence": [],
+      "blocker": null,
+      "environment": "CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS_PYTHON_3_12",
+      "evidence": [
+        "EVIDENCE/M2-VALIDATION.yaml"
+      ],
       "id": "J05",
-      "last_run": null,
-      "public_shipping_composition": null,
-      "status": "NOT_STARTED",
+      "last_run": "2026-08-27",
+      "public_shipping_composition": "INSTALLED_WHEEL_CLI_MULTI_PROCESS_MANAGED_RUNTIME",
+      "status": "PASS",
       "title": "J05 — Persistent Execution"
     },
     {
@@ -1625,13 +1650,15 @@
       "title": "J14 — External Reality Drift"
     },
     {
-      "blocker": "M2 implementation active; promotion-conflict composition not yet qualified",
-      "environment": null,
-      "evidence": [],
+      "blocker": null,
+      "environment": "CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS_PYTHON_3_12",
+      "evidence": [
+        "EVIDENCE/M2-VALIDATION.yaml"
+      ],
       "id": "J15",
-      "last_run": null,
-      "public_shipping_composition": null,
-      "status": "NOT_STARTED",
+      "last_run": "2026-08-27",
+      "public_shipping_composition": "INSTALLED_WHEEL_CLI_ISOLATED_WORKSPACES",
+      "status": "PASS",
       "title": "J15 — Promotion Conflict"
     },
     {
@@ -1655,13 +1682,15 @@
       "title": "J17 — ATLAS Governed Execution"
     },
     {
-      "blocker": "M2 implementation active; UNKNOWN recovery composition not yet qualified",
-      "environment": null,
-      "evidence": [],
+      "blocker": null,
+      "environment": "CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS_PYTHON_3_12",
+      "evidence": [
+        "EVIDENCE/M2-VALIDATION.yaml"
+      ],
       "id": "J18",
-      "last_run": null,
-      "public_shipping_composition": null,
-      "status": "NOT_STARTED",
+      "last_run": "2026-08-27",
+      "public_shipping_composition": "INSTALLED_WHEEL_CLI_MULTI_PROCESS_RECONCILIATION",
+      "status": "PASS",
       "title": "J18 — UNKNOWN External Outcome"
     },
     {
@@ -1773,9 +1802,9 @@
   "migration": {
     "fixture": "MIGRATION/V1-RELEASE-FIXTURE.yaml",
     "fixture_state": "M0_BASELINE_ACCEPTED",
-    "migration_execution": "ENGINEERING_ACTIVE_NO_LEGACY_RUNTIME_IMPORT",
+    "migration_execution": "M2_ACCEPTED_EMPTY_RUNSTORE",
     "milestone": "M2",
-    "mode": "NEW_EMPTY_TARGET_RUNSTORE_ENGINEERING",
+    "mode": "M2_ACCEPTED_EMPTY_RUNSTORE",
     "project_mutation": false,
     "rollback": "DELETE_NEW_EMPTY_RUNSTORE_ONLY",
     "schema_version": "1.0"
@@ -1802,14 +1831,14 @@
       "title": "Project Authority, Catalog & Semantic Continuity"
     },
     {
-      "accepted": false,
+      "accepted": true,
       "depends_on": [
         "M1"
       ],
       "id": "M2",
       "mandatory_for_core_ga": true,
       "started": true,
-      "state": "ACTIVE",
+      "state": "ACCEPTED",
       "title": "Durable Runtime, Coordinator Fencing, Workspace & Acceptance"
     },
     {
@@ -1820,7 +1849,7 @@
       "id": "M3",
       "mandatory_for_core_ga": true,
       "started": false,
-      "state": "BLOCKED_DEPENDENCY",
+      "state": "READY",
       "title": "Capability Composition + Codex Productization"
     },
     {
@@ -1981,7 +2010,7 @@
     "architecture_status": "FROZEN",
     "branch": "codex/artifex-2-m2",
     "current_milestone": "M2",
-    "current_status": "ACTIVE",
+    "current_status": "ACCEPTED",
     "dashboard_state": "CURRENT",
     "directory_variance": "PACKAGING_NAME_VARIANCE_ACCEPTED",
     "handoff_declared_directory": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF",
@@ -1991,10 +2020,10 @@
     "id": "ARTIFEX-2.0-IMPLEMENTATION",
     "implementation_plan_status": "FROZEN",
     "intake_commit": "5cc5dcfeb420a6df171a44426c04a0f08fa1e877",
-    "latest_accepted_commit": "cdb83f69dca72a691363dcbcb5d9eb7b085b65f0",
+    "latest_accepted_commit": "1547cd295e06b2c05546c1c9f2c157969c59531f",
     "m1_started": true,
     "m2_started": true,
-    "next_integration_point": "M2 public-composition and J05/J15/J18 acceptance gates",
+    "next_integration_point": "M3 readiness; M3 not started",
     "recorded_date": "2026-08-27",
     "target_release": "2.0.0"
   },
@@ -2260,22 +2289,23 @@
     "active_blockers": 0,
     "adr_count": 24,
     "current_milestone": "M2",
-    "evidence_items": 6,
+    "evidence_items": 7,
     "invariant_count": 34,
     "journey_states": {
-      "NOT_STARTED": 19,
-      "PASS": 1
+      "NOT_STARTED": 16,
+      "PASS": 4
     },
-    "milestones_accepted": 2,
+    "milestones_accepted": 3,
     "milestones_started": 3,
     "milestones_total": 16,
     "provider_step_states": {
       "NOT_STARTED": 95
     },
-    "ready_milestones": [],
+    "ready_milestones": [
+      "M3"
+    ],
     "workstream_states": {
-      "COMPLETE": 6,
-      "IN_PROGRESS": 1
+      "COMPLETE": 7
     }
   },
   "target_system": {
@@ -2433,7 +2463,7 @@
         "ADR-T022",
         "ADR-T023"
       ],
-      "state": "IN_PROGRESS",
+      "state": "COMPLETE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m2"
     }
   ]

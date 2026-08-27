@@ -36,12 +36,13 @@ journeys:
   blocker: M0 has no mandatory journeys; milestone dependencies not accepted
 - id: J05
   title: J05 — Persistent Execution
-  status: NOT_STARTED
-  environment: null
-  public_shipping_composition: null
-  evidence: []
-  last_run: null
-  blocker: M2 implementation active; persistent runtime composition not yet qualified
+  status: PASS
+  environment: CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS_PYTHON_3_12
+  public_shipping_composition: INSTALLED_WHEEL_CLI_MULTI_PROCESS_MANAGED_RUNTIME
+  evidence:
+  - EVIDENCE/M2-VALIDATION.yaml
+  last_run: '2026-08-27'
+  blocker: null
 - id: J06
   title: J06 — Material Decision
   status: NOT_STARTED
@@ -116,12 +117,13 @@ journeys:
   blocker: M0 has no mandatory journeys; milestone dependencies not accepted
 - id: J15
   title: J15 — Promotion Conflict
-  status: NOT_STARTED
-  environment: null
-  public_shipping_composition: null
-  evidence: []
-  last_run: null
-  blocker: M2 implementation active; promotion-conflict composition not yet qualified
+  status: PASS
+  environment: CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS_PYTHON_3_12
+  public_shipping_composition: INSTALLED_WHEEL_CLI_ISOLATED_WORKSPACES
+  evidence:
+  - EVIDENCE/M2-VALIDATION.yaml
+  last_run: '2026-08-27'
+  blocker: null
 - id: J16
   title: J16 — Provider Setup Persistence
   status: NOT_STARTED
@@ -140,12 +142,13 @@ journeys:
   blocker: M0 has no mandatory journeys; milestone dependencies not accepted
 - id: J18
   title: J18 — UNKNOWN External Outcome
-  status: NOT_STARTED
-  environment: null
-  public_shipping_composition: null
-  evidence: []
-  last_run: null
-  blocker: M2 implementation active; UNKNOWN recovery composition not yet qualified
+  status: PASS
+  environment: CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS_PYTHON_3_12
+  public_shipping_composition: INSTALLED_WHEEL_CLI_MULTI_PROCESS_RECONCILIATION
+  evidence:
+  - EVIDENCE/M2-VALIDATION.yaml
+  last_run: '2026-08-27'
+  blocker: null
 - id: J19
   title: J19 — IDEA → APPROVED PLAN
   status: NOT_STARTED

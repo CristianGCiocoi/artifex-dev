@@ -112,6 +112,7 @@ def validate(repo_root: Path) -> dict[str, Any]:
     allowed_migration_states = {"V1_MODEL_ADAPTER_BASELINE_QUALIFIED"}
     if program["m2_started"]:
         allowed_migration_states.add("ENGINEERING_ACTIVE_NO_LEGACY_RUNTIME_IMPORT")
+        allowed_migration_states.add("M2_ACCEPTED_EMPTY_RUNSTORE")
     if migration["migration_execution"] not in allowed_migration_states:
         raise ValueError("migration state is incompatible with accepted M1 provenance")
     if migration["project_mutation"]:

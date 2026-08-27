@@ -10,16 +10,16 @@
 - Intake baseline: `5cc5dcfeb420a6df171a44426c04a0f08fa1e877`
 - Branch: `codex/artifex-2-m2`
 - Current milestone: `M2`
-- Current status: `ACTIVE`
-- Accepted milestones: `M0, M1`
-- Ready milestones: `none`
-- Latest accepted commit: `cdb83f69dca72a691363dcbcb5d9eb7b085b65f0`
-- Next integration point: `M2 public-composition and J05/J15/J18 acceptance gates`
+- Current status: `ACCEPTED`
+- Accepted milestones: `M0, M1, M2`
+- Ready milestones: `M3`
+- Latest accepted commit: `1547cd295e06b2c05546c1c9f2c157969c59531f`
+- Next integration point: `M3 readiness; M3 not started`
 - M2 started: `true`
 
 ## Work
 
-- Active workstreams: `WS-M2-DURABLE-RUNTIME`
+- Active workstreams: `none`
 - Active blockers: `0`
 - Dashboard state: `CURRENT`
 - V1 regression state: `PASS`
@@ -27,7 +27,7 @@
 
 ## Acceptance
 
-- M2 verdict: `IN_PROGRESS`
-- Mandatory work complete: `false`
+- M2 verdict: `ACCEPTED`
+- Mandatory work complete: `true`
 - Mandatory journeys: `J05, J15, J18`
-- Next integration point: `M2 public-composition and J05/J15/J18 acceptance gates`
+- Next integration point: `M3 readiness; M3 not started`

@@ -1,0 +1,104 @@
+schema_version: '1.0'
+evidence_id: EVD-M2-VALIDATION
+milestone: M2
+status: PASS
+recorded_date: '2026-08-27'
+canonical_m1_baseline_commit: 0b77fd4fb0c6ed93b943917fb511e809ecc06740
+m2_implementation_baseline_commit: 1547cd295e06b2c05546c1c9f2c157969c59531f
+m2_contract_digest: 2165c197747cf55f9b7a8aebc3c2dc29e1a6f59a9390d4a0db5d6769ba6a8401
+source_quality:
+  ruff: PASS
+  mypy_strict: PASS
+component:
+  command: uv run --frozen pytest tests/artifex2_m2 -q
+  result: PASS
+  passed: 11
+domain_integration:
+  command: uv run --frozen pytest tests --ignore=tests/test_release.py -q
+  result: PASS
+  passed: 347
+  skipped: 7
+  skip_reason: Windows symlink creation unavailable
+public_composition:
+  artifact: artifex_dev-1.0.0-py3-none-any.whl
+  artifact_sha256: 0ef69c32a85d59d99a62c584611e2cd4a13b174b75b30855002ba05f7db851e7
+  environment: CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS_PYTHON_3_12
+  public_entry_surface: installed artifex call CLI
+  process_model: DISTINCT_FRONTEND_PROCESS_PER_TRANSITION
+  composition: CLEAN_INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS
+black_box_outcome:
+  status: PASS
+  journeys:
+    J05:
+      status: PASS
+      frontend_processes: 6
+      coordinator_generations: [1, 2, 3, 4, 5, 6]
+      audit_events: 21
+      final_run_state: COMPLETED
+      final_project_job_state: ACCEPTED
+      foreign_coordinator_fenced: true
+    J15:
+      status: PASS
+      workspace_a_revision: 2
+      workspace_b_state: PROMOTION_CONFLICT
+      silent_overwrite: false
+    J18:
+      status: PASS
+      unknown_run_state: WAITING_RECONCILIATION
+      blind_retry_rejected: true
+      recovered_attempt_state: FINISHED
+      accepted_after_recovery: false
+      audit_events: 22
+security_authority:
+  standalone_runstore: SQLite
+  single_coordinator_fencing: PASS
+  restart_generation_fences_prior_process: PASS
+  transaction_rollback_on_partial_transition: PASS
+  approved_versioned_envelope_required: PASS
+  provider_codex_capability_rejected: PASS
+  explicit_actor_audit: PASS
+  attempt_finished_self_acceptance: REJECTED
+  acceptance_authority_separate: PASS
+  project_authority_promotion_required: PASS
+  secrets_in_project_or_runstore_contract: false
+documentation:
+  durable_runtime_authority: docs/architecture/DURABLE_RUNTIME.md
+  public_controls_documented: true
+  state: CURRENT
+dashboard:
+  implementation_projection: PASS
+  runtime_projection: PASS
+  authoritative: false
+  derived_from: SQLiteRunStore
+migration:
+  mode: M2_ACCEPTED_EMPTY_RUNSTORE
+  legacy_runtime_history_imported: false
+  project_semantics_mutated: false
+  rollback: DELETE_NEW_EMPTY_RUNSTORE_ONLY
+provider_claim_changes: []
+automated_codex_execution: false
+provider_dispatch: false
+m1_provenance:
+  acceptance_files_changed: false
+  evidence_files_changed: false
+v1_release_harness_regression:
+  test: tests/test_release.py::test_candidate_passes_without_optional_m10_gate
+  result: EXPECTED_BASELINE_FAILURE
+  duration_seconds: 197.35
+  assertion: verify_release(tmp_path).passed was false
+  classification: V1-R01-DASHBOARD-FIXTURE-SCHEMA-DRIFT
+  signature_matches_m0_and_m1: true
+  source_repaired_by_m2: false
+  evidence: EVIDENCE/V1-RELEASE-HARNESS-REGRESSION.yaml
+full_suite_diagnostic:
+  command: uv run --frozen pytest -q
+  duration_seconds: 14749.63
+  passed: 417
+  skipped: 11
+  failed: 7
+  m2_failures: 0
+  historical_validator_progression_failure: FIXED_BY_M2_CONTROL_PLANE
+  release_schema_drift_family_failures: 5
+  environment_no_build_isolation_failure: 1
+  disposition: NOT_M2_ACCEPTANCE_GATE
+unexpected_failures: []
