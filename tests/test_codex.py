@@ -823,6 +823,8 @@ def test_codex_process_runner_materializes_secure_bounded_exec_and_parses_result
         observed.update(kwargs)
         schema_path = Path(arguments[arguments.index("--output-schema") + 1])
         result_path = Path(arguments[arguments.index("--output-last-message") + 1])
+        assert schema_path.resolve().is_relative_to(root.resolve())
+        assert result_path.resolve().is_relative_to(root.resolve())
         schema = json.loads(schema_path.read_text(encoding="utf-8"))
         assert schema["properties"]["base_commit"]["const"] == packet.base_commit
         result_path.write_text(

@@ -410,7 +410,13 @@ class CodexProcessRunner:
             raise CodexProcessError("prepared command does not match the bound execution plan")
 
         schema = _codex_execution_result_schema(plan.packet)
-        with tempfile.TemporaryDirectory(prefix="artifex-codex-") as temporary:
+        # Keep Codex-managed structured I/O inside the already authorized
+        # Execution Workspace.  In the supported Windows unelevated sandbox,
+        # an arbitrary system-temp result path is outside the filesystem ACL
+        # boundary and cannot be written by the worker process.
+        with tempfile.TemporaryDirectory(
+            prefix=".artifex-codex-", dir=root, ignore_cleanup_errors=True
+        ) as temporary:
             temporary_root = Path(temporary)
             schema_path = temporary_root / "execution-result.schema.json"
             result_path = temporary_root / "execution-result.json"
