@@ -65,6 +65,7 @@ from artifex.integrations.claude import (
     ClaudeProcessRunner,
 )
 from artifex.integrations.codex import CodexIntegration, CodexProcessRunner
+from artifex.integrations.pandora import PandoraResearchService
 from artifex.knowledge import (
     KnowledgeApplicability,
     KnowledgeItem,
@@ -231,6 +232,10 @@ class Application:
         self.register("manual.result.submit", self._manual_result_submit)
         self.register("research.request.validate", self._research_request_validate)
         self.register("research.bundle.validate", self._research_bundle_validate)
+        self.register("research.pandora.readiness", self._pandora_readiness)
+        self.register("research.pandora.request", self._pandora_request)
+        self.register("research.pandora.import", self._pandora_import)
+        self.register("research.pandora.adoption.propose", self._pandora_adoption_propose)
         self.register("distribution.discover", self._distribution_discover)
         self.register("distribution.presentation", self._distribution_presentation)
         self.register("distribution.setup.plan", self._distribution_setup_plan)
@@ -1376,6 +1381,55 @@ class Application:
                 "canonical_decision": False,
             },
         )
+
+    @staticmethod
+    def _pandora_service(request: OperationRequest) -> PandoraResearchService:
+        certification_path = request.arguments.get("certification_path")
+        if certification_path is not None and not isinstance(certification_path, str):
+            raise TypeError("certification_path must be a string")
+        return PandoraResearchService(
+            _required_string(request.arguments, "exchange_root"),
+            certification_path=certification_path,
+        )
+
+    @classmethod
+    def _pandora_readiness(cls, request: OperationRequest) -> OperationResult:
+        readiness = cls._pandora_service(request).readiness()
+        return OperationResult(ok=True, value=readiness.to_dict())
+
+    @classmethod
+    def _pandora_request(cls, request: OperationRequest) -> OperationResult:
+        research_request = ResearchRequest.from_dict(
+            _required_mapping(request.arguments, "request")
+        )
+        return OperationResult(
+            ok=True,
+            value=cls._pandora_service(request).export_request(research_request),
+        )
+
+    @classmethod
+    def _pandora_import(cls, request: OperationRequest) -> OperationResult:
+        research_request = ResearchRequest.from_dict(
+            _required_mapping(request.arguments, "request")
+        )
+        return OperationResult(
+            ok=True,
+            value=cls._pandora_service(request).import_evidence(research_request),
+        )
+
+    @classmethod
+    def _pandora_adoption_propose(cls, request: OperationRequest) -> OperationResult:
+        research_request = ResearchRequest.from_dict(
+            _required_mapping(request.arguments, "request")
+        )
+        value = cls._pandora_service(request).propose_adoption(
+            project_root=_project_root(request),
+            request=research_request,
+            expected_revision=_required_int(request.arguments, "expected_revision"),
+            actor=request.context.actor,
+            proposed_at=_optional_string(request.arguments, "proposed_at"),
+        )
+        return OperationResult(ok=True, value=value)
 
     @staticmethod
     def _distribution_discover(request: OperationRequest) -> OperationResult:

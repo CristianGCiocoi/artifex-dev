@@ -200,6 +200,7 @@ class ProjectControlService:
             entities=current.model.entities,
             governance=current.model.governance.advance(contribution),
             knowledge_adoptions=current.model.knowledge_adoptions,
+            research_adoptions=current.model.research_adoptions,
             schema_version=current.model.schema_version,
         )
         proposal = authority.propose(
