@@ -8,26 +8,26 @@
 - Target release: `2.0.0`
 - Handoff: `ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1`
 - Intake baseline: `5cc5dcfeb420a6df171a44426c04a0f08fa1e877`
-- Branch: `codex/artifex-2-m7`
+- Branch: `codex/artifex-2-m7-qualification-live`
 - Current milestone: `M7`
-- Current status: `BLOCKED_PRODUCT_DECISION`
+- Current status: `ACTIVE`
 - Accepted milestones: `M0, M1, M2, M3, M4, M5, M6A, M8A`
 - Ready milestones: `none`
 - Latest accepted commit: `d7fa3c4ad419bd97e401ad765128dc3560484d90`
-- Next integration point: `Product Owner defines the official M7 supported-platform matrix; then qualify J01, J02, J10 and J16 on every applicable cell`
+- Next integration point: `Qualify the three official Windows 11 25H2 x64 clean-VM cells through the shipping installer and public managed-service composition`
 - M7 started: `true`
 
 ## Work
 
-- Active workstreams: `none`
-- Active blockers: `3`
+- Active workstreams: `WS-M7-CLEAN-MACHINE-QUALIFICATION, WS-M7-WINDOWS-SERVICE-INTEGRATION`
+- Active blockers: `2`
 - Dashboard state: `CURRENT`
 - V1 regression state: `PASS`
 - Migration state: `M0_BASELINE_ACCEPTED`
 
 ## Acceptance
 
-- M7 verdict: `BLOCKED_PRODUCT_DECISION`
+- M7 verdict: `ACTIVE`
 - Mandatory work complete: `false`
 - Mandatory journeys: `J01, J02, J10, J16`
-- Next integration point: `Product Owner defines the official M7 supported-platform matrix; then qualify J01, J02, J10 and J16 on every applicable cell`
+- Next integration point: `Qualify the three official Windows 11 25H2 x64 clean-VM cells through the shipping installer and public managed-service composition`

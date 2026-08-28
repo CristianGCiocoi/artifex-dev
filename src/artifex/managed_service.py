@@ -9,15 +9,18 @@ manager without changing its authority or transport contract.
 from __future__ import annotations
 
 import argparse
+import csv
 import ctypes
 import hmac
 import json
 import os
+import re
 import secrets
 import signal
 import socket
 import socketserver
 import stat
+import subprocess
 import sys
 import threading
 import uuid
@@ -76,11 +79,14 @@ class ServicePaths:
 
     def prepare(self) -> None:
         self.state_root.mkdir(mode=0o700, parents=True, exist_ok=True)
-        self.workspace_root.mkdir(mode=0o700, parents=True, exist_ok=True)
-        if not self.state_root.is_dir() or not self.workspace_root.is_dir():
-            raise ManagedServiceError("managed service state paths must be directories")
+        if not self.state_root.is_dir():
+            raise ManagedServiceError("managed service state root must be a directory")
         _restrict_directory(self.state_root)
-        _restrict_directory(self.workspace_root)
+        self.workspace_root.mkdir(mode=0o700, parents=True, exist_ok=True)
+        if not self.workspace_root.is_dir():
+            raise ManagedServiceError("managed service workspace root must be a directory")
+        if os.name != "nt":
+            _restrict_directory(self.workspace_root)
 
 
 @dataclass(frozen=True, slots=True)
@@ -260,7 +266,11 @@ class ManagedServiceHost:
                 )
                 self._application = Application(runtime_service=self._runtime)
                 self._transport_token = secrets.token_urlsafe(48)
-                _write_private_text(self.paths.transport_token, self._transport_token)
+                _write_private_text(
+                    self.paths.transport_token,
+                    self._transport_token,
+                    enforce_windows_acl=True,
+                )
                 self._server = _LoopbackServer(
                     (self.host, self.requested_port), self._handler_type()
                 )
@@ -411,11 +421,8 @@ class ManagedServiceHost:
             application = self._application
             if application is None:
                 raise ServiceUnavailableError("managed service application is unavailable")
-            actor = context.get("actor", "local-client")
             project_root = context.get("project_root")
             correlation_id = context.get("correlation_id")
-            if not isinstance(actor, str):
-                raise TypeError("context actor must be a string")
             if project_root is not None and not isinstance(project_root, str):
                 raise TypeError("context project_root must be a string")
             if correlation_id is not None and not isinstance(correlation_id, str):
@@ -425,7 +432,11 @@ class ManagedServiceHost:
                     OperationRequest(
                         operation,
                         dict(arguments),
-                        OperationContext(project_root, actor, correlation_id),
+                        OperationContext(
+                            project_root,
+                            "managed-service-local-client",
+                            correlation_id,
+                        ),
                     )
                 ).to_dict()
         return {
@@ -471,7 +482,6 @@ class LocalServiceClient:
         operation: str,
         arguments: Mapping[str, object] | None = None,
         *,
-        actor: str = "local-client",
         project_root: str | None = None,
         correlation_id: str | None = None,
     ) -> Mapping[str, object]:
@@ -498,7 +508,6 @@ class LocalServiceClient:
             "operation": operation,
             "arguments": dict(arguments or {}),
             "context": {
-                "actor": actor,
                 "project_root": project_root,
                 "correlation_id": correlation_id,
             },
@@ -592,13 +601,17 @@ def _default_state_root() -> Path:
 
 
 def _restrict_directory(path: Path) -> None:
-    if os.name != "nt":
-        path.chmod(0o700)
-        if stat.S_IMODE(path.stat().st_mode) & 0o077:
-            raise ManagedServiceError("managed service directory is not private")
+    if os.name == "nt":
+        _enforce_windows_private_acl(path, directory=True)
+        return
+    path.chmod(0o700)
+    if stat.S_IMODE(path.stat().st_mode) & 0o077:
+        raise ManagedServiceError("managed service directory is not private")
 
 
-def _write_private_text(path: Path, value: str) -> None:
+def _write_private_text(
+    path: Path, value: str, *, enforce_windows_acl: bool = False
+) -> None:
     path.unlink(missing_ok=True)
     descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     try:
@@ -607,12 +620,148 @@ def _write_private_text(path: Path, value: str) -> None:
     finally:
         os.close(descriptor)
     _verify_private_file(path)
+    if enforce_windows_acl and os.name == "nt":
+        try:
+            _enforce_windows_private_acl(path, directory=False)
+        except Exception:
+            path.unlink(missing_ok=True)
+            raise
 
 
 def _verify_private_file(path: Path) -> None:
     if os.name != "nt" and stat.S_IMODE(path.stat().st_mode) & 0o077:
         path.unlink(missing_ok=True)
         raise ManagedServiceError("managed service private file permissions are unsafe")
+
+
+def _enforce_windows_private_acl(path: Path, *, directory: bool) -> None:
+    """Restrict a Windows path to the current user and LocalSystem."""
+
+    if os.name != "nt":
+        raise ManagedServiceError("Windows ACL enforcement is unavailable on this platform")
+    current_sid = _windows_current_user_sid()
+    inheritance = "(OI)(CI)F" if directory else "F"
+    grants = [f"*{current_sid}:{inheritance}"]
+    if current_sid != "S-1-5-18":
+        grants.append(f"*S-1-5-18:{inheritance}")
+    _run_windows_command(
+        (
+            "icacls.exe",
+            str(path),
+            "/inheritance:r",
+            "/grant:r",
+            *grants,
+        )
+    )
+    _run_windows_command(
+        (
+            "icacls.exe",
+            str(path),
+            "/remove:g",
+            "*S-1-5-32-544",
+            "*S-1-3-4",
+        )
+    )
+    _run_windows_command(("icacls.exe", str(path), "/verify"))
+    _verify_windows_private_acl(path, current_sid=current_sid, directory=directory)
+
+
+def _windows_current_user_sid() -> str:
+    output = _run_windows_command(("whoami.exe", "/user", "/fo", "csv", "/nh"))
+    try:
+        row = next(csv.reader(output.splitlines()))
+    except (StopIteration, csv.Error) as exc:
+        raise ManagedServiceError("Windows user SID lookup returned invalid data") from exc
+    sid = row[-1].strip() if row else ""
+    if re.fullmatch(r"S-1-(?:\d+-)+\d+", sid, flags=re.IGNORECASE) is None:
+        raise ManagedServiceError("Windows user SID lookup returned invalid data")
+    return sid.upper()
+
+
+def _run_windows_command(arguments: Sequence[str]) -> str:
+    """Run one reviewed Windows utility argument vector without a shell."""
+
+    creation_flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+    try:
+        completed = subprocess.run(
+            list(arguments),
+            check=False,
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=15,
+            shell=False,
+            creationflags=creation_flags,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise ManagedServiceError("Windows ACL utility could not be executed") from exc
+    if completed.returncode != 0:
+        raise ManagedServiceError("Windows ACL utility rejected the requested operation")
+    return completed.stdout
+
+
+def _verify_windows_private_acl(
+    path: Path, *, current_sid: str, directory: bool
+) -> None:
+    acl_file = path.parent / f".artifex-acl-{uuid.uuid4().hex}.txt"
+    try:
+        _run_windows_command(("icacls.exe", str(path), "/save", str(acl_file)))
+        raw = acl_file.read_bytes()
+    except OSError as exc:
+        raise ManagedServiceError("Windows ACL verification data is unavailable") from exc
+    finally:
+        acl_file.unlink(missing_ok=True)
+    sddl = _decode_icacls_acl(raw)
+    _validate_windows_private_sddl(sddl, current_sid=current_sid, directory=directory)
+
+
+def _decode_icacls_acl(raw: bytes) -> str:
+    encodings = ("utf-16", "utf-16-le", "utf-8-sig")
+    for encoding in encodings:
+        try:
+            value = raw.decode(encoding)
+        except UnicodeDecodeError:
+            continue
+        if "D:" in value:
+            return value
+    raise ManagedServiceError("Windows ACL verification data has an invalid encoding")
+
+
+def _validate_windows_private_sddl(
+    value: str, *, current_sid: str, directory: bool
+) -> None:
+    match = re.search(r"D:([^\r\n]+)", value)
+    if match is None:
+        raise ManagedServiceError("Windows ACL verification did not return a DACL")
+    dacl = match.group(0)
+    prefix = dacl.split("(", 1)[0]
+    if "P" not in prefix[2:]:
+        raise ManagedServiceError("Windows ACL inheritance remains enabled")
+    entries = re.findall(r"\(([^()]*)\)", dacl)
+    required_sids = {current_sid.upper(), "S-1-5-18"}
+    if len(entries) != len(required_sids):
+        raise ManagedServiceError("Windows ACL contains an unexpected principal")
+    expected_sids = {current_sid.upper(), "S-1-5-18", "SY"}
+    observed: set[str] = set()
+    for entry in entries:
+        fields = entry.split(";")
+        if len(fields) != 6:
+            raise ManagedServiceError("Windows ACL contains an invalid entry")
+        ace_type, flags, rights, _object_id, _inherit_id, sid = fields
+        normalized_sid = sid.upper()
+        if ace_type != "A" or normalized_sid not in expected_sids:
+            raise ManagedServiceError("Windows ACL contains an unexpected principal")
+        if "ID" in flags or rights.upper() not in {"FA", "F", "0X1F01FF"}:
+            raise ManagedServiceError("Windows ACL does not grant explicit full control")
+        if directory and not {"OI", "CI"} <= set(re.findall(r".{2}", flags)):
+            raise ManagedServiceError("Windows directory ACL does not protect child objects")
+        if not directory and flags:
+            raise ManagedServiceError("Windows token ACL has unexpected inheritance flags")
+        observed.add("S-1-5-18" if normalized_sid == "SY" else normalized_sid)
+    if observed != required_sids:
+        raise ManagedServiceError("Windows ACL principals are incomplete")
 
 
 def _write_json_atomic(path: Path, value: Mapping[str, object]) -> None:

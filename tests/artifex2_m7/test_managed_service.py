@@ -94,14 +94,12 @@ def test_j01_j02_runtime_survives_frontend_exit_and_service_restart(tmp_path: Pa
     first_state = first_host.start()
     first_client = LocalServiceClient(root)
 
-    bootstrapped = first_client.call(
-        "runtime.bootstrap", _bootstrap_arguments(), actor="operator"
-    )
+    bootstrapped = first_client.call("runtime.bootstrap", _bootstrap_arguments())
     assert bootstrapped["ok"] is True
     del first_client  # frontend lifetime is not runtime authority
 
     reconnected = LocalServiceClient(root)
-    running = reconnected.call("runtime.status", {"run_id": "m7-run"}, actor="observer")
+    running = reconnected.call("runtime.status", {"run_id": "m7-run"})
     assert running["value"]["attempts"][0]["state"] == "RUNNING"
     first_host.stop(reason="CONTROLLED_RESTART")
 
@@ -112,17 +110,16 @@ def test_j01_j02_runtime_survives_frontend_exit_and_service_restart(tmp_path: Pa
         assert second_state.coordinator_generation > first_state.coordinator_generation
 
         after_restart = LocalServiceClient(root).call(
-            "runtime.status", {"run_id": "m7-run"}, actor="observer"
+            "runtime.status", {"run_id": "m7-run"}
         )
         assert after_restart["value"]["attempts"][0]["state"] == "RUNNING"
         finished = LocalServiceClient(root).call(
             "runtime.attempt.finish",
             {"attempt_id": "m7-attempt", "result_claim": "restart preserved authority"},
-            actor="worker",
         )
         assert finished["ok"] is True
         final = LocalServiceClient(root).call(
-            "runtime.status", {"run_id": "m7-run"}, actor="observer"
+            "runtime.status", {"run_id": "m7-run"}
         )
         assert final["value"]["attempts"][0]["state"] == "FINISHED"
     finally:
@@ -174,7 +171,6 @@ def test_hosted_runtime_rejects_authority_path_overrides(tmp_path: Path) -> None
                 **_bootstrap_arguments(),
                 "store_path": str(tmp_path / "attacker.sqlite3"),
             },
-            actor="operator",
         )
         assert result["ok"] is False
         assert result["error"]["code"] == "OPERATION_FAILED"

@@ -39,8 +39,10 @@ from artifex.distribution.presentation import (
 )
 from artifex.distribution.service_registration import (
     SERVICE_REGISTRATION_MANIFEST_NAME,
+    WINDOWS_11_CORE_PLATFORM_ID,
     ServiceRegistrationAdapter,
     ServiceRegistrationDriftError,
+    ServiceRegistrationError,
     ServiceRegistrationManager,
     ServiceRegistrationManifest,
     ServiceRegistrationObservation,
@@ -50,6 +52,8 @@ from artifex.distribution.service_registration import (
     ServiceRegistrationSpec,
     UnsupportedServicePlatformError,
     UnsupportedServiceRegistrationAdapter,
+    WindowsTaskSchedulerRegistrationAdapter,
+    read_service_registration_manifest,
     select_service_registration_adapter,
 )
 from artifex.distribution.setup import apply_integration_setup, plan_integration_setup
@@ -58,6 +62,7 @@ __all__ = [
     "ARTIFACT_MANIFEST_NAME",
     "SERVICE_REGISTRATION_MANIFEST_NAME",
     "SUPPORTED_TOOLS",
+    "WINDOWS_11_CORE_PLATFORM_ID",
     "ApprovalStore",
     "BeginnerJourneyResult",
     "DecisionExplanation",
@@ -70,6 +75,7 @@ __all__ = [
     "RiskLevel",
     "ServiceRegistrationAdapter",
     "ServiceRegistrationDriftError",
+    "ServiceRegistrationError",
     "ServiceRegistrationManager",
     "ServiceRegistrationManifest",
     "ServiceRegistrationObservation",
@@ -83,6 +89,7 @@ __all__ = [
     "UnsupportedServicePlatformError",
     "UnsupportedServiceRegistrationAdapter",
     "VerifiedArtifact",
+    "WindowsTaskSchedulerRegistrationAdapter",
     "apply_integration_setup",
     "complete_deferred_uninstall",
     "create_artifact_manifest",
@@ -93,6 +100,7 @@ __all__ = [
     "install_plan",
     "plan_integration_setup",
     "presentation_policy",
+    "read_service_registration_manifest",
     "require_approval",
     "run_distribution_doctor",
     "select_service_registration_adapter",

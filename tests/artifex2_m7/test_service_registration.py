@@ -2,20 +2,114 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
+import subprocess
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
 from artifex.distribution import (
     ServiceRegistrationDriftError,
+    ServiceRegistrationError,
     ServiceRegistrationManager,
     ServiceRegistrationManifest,
     ServiceRegistrationObservation,
+    ServiceRegistrationRollbackError,
     ServiceRegistrationSpec,
     UnsupportedServicePlatformError,
+    WindowsTaskSchedulerRegistrationAdapter,
     select_service_registration_adapter,
     service_registration,
 )
+
+
+class FakeTaskScheduler:
+    def __init__(self) -> None:
+        self.tasks: dict[str, str] = {}
+        self.commands: list[tuple[str, ...]] = []
+        self.running = False
+        self.shutdown_success = True
+        self.end_returncode = 0
+
+    def run(
+        self, command: tuple[str, ...], timeout_seconds: float
+    ) -> subprocess.CompletedProcess[str]:
+        del timeout_seconds
+        self.commands.append(command)
+        arguments = command[1:]
+        if arguments == ("/user", "/fo", "csv", "/nh"):
+            return self._result(command, 0, '"ARTIFEX\\operator","S-1-5-21-42"\n')
+        if arguments[:1] == ("/Query",) and "/TN" in arguments and "/XML" in arguments:
+            task_name = arguments[arguments.index("/TN") + 1]
+            task_xml = self.tasks.get(task_name)
+            if task_xml is None:
+                return self._result(command, 1, stderr="task not found")
+            return self._result(command, 0, task_xml)
+        if arguments[:1] == ("/Query",) and "/TN" in arguments and "/V" in arguments:
+            task_name = arguments[arguments.index("/TN") + 1]
+            if task_name not in self.tasks:
+                return self._result(command, 1, stderr="task not found")
+            state = "Running" if self.running else "Ready"
+            return self._result(command, 0, f'"{task_name}","N/A","{state}"\n')
+        if arguments == ("/Query", "/FO", "CSV", "/NH"):
+            listing = "".join(f'"{name}","Ready"\n' for name in self.tasks)
+            return self._result(command, 0, listing)
+        if arguments[:1] == ("/Create",):
+            task_name = arguments[arguments.index("/TN") + 1]
+            task_path = Path(arguments[arguments.index("/XML") + 1])
+            replace = "/F" in arguments
+            if task_name in self.tasks and not replace:
+                return self._result(command, 1, stderr="task already exists")
+            self.tasks[task_name] = task_path.read_text(encoding="utf-16")
+            return self._result(command, 0)
+        if arguments[:1] == ("/Delete",):
+            task_name = arguments[arguments.index("/TN") + 1]
+            self.tasks.pop(task_name, None)
+            self.running = False
+            return self._result(command, 0)
+        if arguments[:1] == ("/Run",):
+            self.running = True
+            return self._result(command, 0)
+        if arguments[:1] == ("/End",):
+            if self.end_returncode:
+                return self._result(command, self.end_returncode, stderr="end failed")
+            self.running = False
+            return self._result(command, 0)
+        return self._result(command, 1, stderr="unexpected command")
+
+    def shutdown(self, _: Path) -> bool:
+        if self.shutdown_success:
+            self.running = False
+        return self.shutdown_success
+
+    @staticmethod
+    def _result(
+        command: tuple[str, ...],
+        returncode: int,
+        stdout: str = "",
+        stderr: str = "",
+    ) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(command, returncode, stdout, stderr)
+
+
+def _windows_adapter(
+    scheduler: FakeTaskScheduler,
+    *,
+    readiness_probe: object | None = None,
+) -> WindowsTaskSchedulerRegistrationAdapter:
+    return WindowsTaskSchedulerRegistrationAdapter(
+        runner=scheduler.run,
+        user_sid="S-1-5-21-42",
+        schtasks_executable=r"C:\Windows\System32\schtasks.exe",
+        whoami_executable=r"C:\Windows\System32\whoami.exe",
+        readiness_probe=(
+            readiness_probe
+            if callable(readiness_probe)
+            else lambda _: scheduler.running
+        ),
+        shutdown_probe=scheduler.shutdown,
+    )
 
 
 class RecordingAdapter:
@@ -55,6 +149,16 @@ class RecordingAdapter:
         self.actions.append(("unregister", manifest.manifest_sha256))
         self._fail("unregister")
 
+    def start_and_wait(
+        self, manifest: ServiceRegistrationManifest, *, timeout_seconds: float
+    ) -> None:
+        del manifest, timeout_seconds
+
+    def stop_and_wait(
+        self, manifest: ServiceRegistrationManifest, *, timeout_seconds: float
+    ) -> None:
+        del manifest, timeout_seconds
+
     def _fail(self, action: str) -> None:
         if self.fail_after == action:
             self.fail_after = None
@@ -69,7 +173,14 @@ def _spec(tmp_path: Path, version: str, content: bytes) -> ServiceRegistrationSp
         service_version=version,
         executable=str(executable.resolve()),
         executable_sha256=hashlib.sha256(content).hexdigest(),
-        arguments=("service", "run"),
+        arguments=(
+            "service",
+            "serve",
+            "--state-root",
+            str((tmp_path / "state").resolve()),
+            "--service-id",
+            "artifex-runtime",
+        ),
         working_directory=str((tmp_path / "runtime").resolve()),
         state_root=str((tmp_path / "state").resolve()),
     )
@@ -261,3 +372,233 @@ def test_drift_and_executable_substitution_fail_before_mutation(tmp_path: Path) 
     adapter.current = None
     with pytest.raises(ServiceRegistrationDriftError, match="OS service is absent"):
         manager.plan_uninstall("artifex-runtime")
+
+
+@pytest.mark.integration
+def test_windows_task_scheduler_registration_is_owned_and_deterministic(
+    tmp_path: Path,
+) -> None:
+    scheduler = FakeTaskScheduler()
+    adapter = _windows_adapter(scheduler)
+    manifest_path = tmp_path / "state" / "service-registration.json"
+    manager = ServiceRegistrationManager(
+        manifest_path,
+        adapter=adapter,
+        readiness_timeout_seconds=0.5,
+    )
+    spec = _spec(tmp_path, "2.0.0", b"service-v1")
+
+    installed = manager.install(manager.plan_install(spec))
+
+    assert installed.status == "APPLIED"
+    assert scheduler.running is True
+    assert len(scheduler.tasks) == 1
+    task_xml = next(iter(scheduler.tasks.values()))
+    assert "InteractiveToken" in task_xml
+    assert "LeastPrivilege" in task_xml
+    assert "RestartOnFailure" in task_xml
+    assert "service serve" in task_xml
+    assert str((tmp_path / "state").resolve()) in task_xml
+    assert adapter.inspect("artifex-runtime").manifest_sha256 == (
+        spec.manifest().manifest_sha256
+    )
+    create_commands = [command for command in scheduler.commands if "/Create" in command]
+    assert len(create_commands) == 1
+    assert "/F" not in create_commands[0]
+
+    repeated = manager.install(manager.plan_install(spec))
+    assert repeated.status == "NOOP"
+    assert len([command for command in scheduler.commands if "/Create" in command]) == 1
+
+
+@pytest.mark.integration
+def test_windows_task_scheduler_upgrade_and_uninstall_are_bounded_and_idempotent(
+    tmp_path: Path,
+) -> None:
+    scheduler = FakeTaskScheduler()
+    manager = ServiceRegistrationManager(
+        tmp_path / "state" / "service-registration.json",
+        adapter=_windows_adapter(scheduler),
+        readiness_timeout_seconds=0.5,
+    )
+    initial = _spec(tmp_path, "2.0.0", b"service-v1")
+    manager.install(manager.plan_install(initial))
+
+    upgraded = _spec(tmp_path, "2.1.0", b"service-v2")
+    result = manager.upgrade(manager.plan_upgrade(upgraded))
+    assert result.status == "APPLIED"
+    replace_commands = [
+        command
+        for command in scheduler.commands
+        if "/Create" in command and "/F" in command
+    ]
+    assert len(replace_commands) == 1
+    assert scheduler.running is True
+
+    removed = manager.uninstall(manager.plan_uninstall("artifex-runtime"))
+    assert removed.status == "APPLIED"
+    assert scheduler.tasks == {}
+    assert scheduler.running is False
+    assert manager.uninstall(manager.plan_uninstall("artifex-runtime")).status == "NOOP"
+
+
+@pytest.mark.adversarial
+def test_windows_task_scheduler_drift_blocks_overwrite_and_delete(tmp_path: Path) -> None:
+    scheduler = FakeTaskScheduler()
+    adapter = _windows_adapter(scheduler)
+    manager = ServiceRegistrationManager(
+        tmp_path / "state" / "service-registration.json",
+        adapter=adapter,
+        readiness_timeout_seconds=0.5,
+    )
+    spec = _spec(tmp_path, "2.0.0", b"service-v1")
+    manager.install(manager.plan_install(spec))
+    task_name = next(iter(scheduler.tasks))
+    scheduler.tasks[task_name] = re.sub(
+        r"(<Command>).*?(</Command>)",
+        r"\1C:\\unowned\\service.exe\2",
+        scheduler.tasks[task_name],
+        count=1,
+    )
+    mutations_before = tuple(
+        command
+        for command in scheduler.commands
+        if any(action in command for action in ("/Create", "/Delete"))
+    )
+
+    with pytest.raises(ServiceRegistrationDriftError, match="Command"):
+        manager.plan_upgrade(_spec(tmp_path, "2.1.0", b"service-v2"))
+    with pytest.raises(ServiceRegistrationDriftError, match="Command"):
+        manager.plan_uninstall("artifex-runtime")
+
+    mutations_after = tuple(
+        command
+        for command in scheduler.commands
+        if any(action in command for action in ("/Create", "/Delete"))
+    )
+    assert mutations_after == mutations_before
+
+
+@pytest.mark.adversarial
+def test_windows_task_scheduler_readiness_timeout_rolls_back_registration(
+    tmp_path: Path,
+) -> None:
+    scheduler = FakeTaskScheduler()
+    adapter = _windows_adapter(scheduler, readiness_probe=lambda _: False)
+    manifest_path = tmp_path / "state" / "service-registration.json"
+    manager = ServiceRegistrationManager(
+        manifest_path,
+        adapter=adapter,
+        readiness_timeout_seconds=0.01,
+    )
+
+    with pytest.raises(TimeoutError, match="did not become ready"):
+        manager.install(manager.plan_install(_spec(tmp_path, "2.0.0", b"service-v1")))
+
+    assert scheduler.tasks == {}
+    assert scheduler.running is False
+    assert not manifest_path.exists()
+
+
+@pytest.mark.adversarial
+def test_endpoint_loss_cannot_substitute_for_program_termination(tmp_path: Path) -> None:
+    scheduler = FakeTaskScheduler()
+    scheduler.shutdown_success = False
+    adapter = _windows_adapter(scheduler, readiness_probe=lambda _: False)
+    manifest = _spec(tmp_path, "2.0.0", b"service-v1").manifest()
+    adapter.register(manifest)
+    scheduler.running = True
+
+    adapter.stop_and_wait(manifest, timeout_seconds=0.01)
+
+    assert scheduler.running is False
+    assert any("/End" in command for command in scheduler.commands)
+
+
+@pytest.mark.adversarial
+def test_failed_forced_stop_blocks_registration_rollback(tmp_path: Path) -> None:
+    scheduler = FakeTaskScheduler()
+    scheduler.end_returncode = 5
+    manager = ServiceRegistrationManager(
+        tmp_path / "state" / "service-registration.json",
+        adapter=_windows_adapter(scheduler, readiness_probe=lambda _: False),
+        readiness_timeout_seconds=0.01,
+    )
+
+    with pytest.raises(ServiceRegistrationRollbackError, match="rollback"):
+        manager.install(manager.plan_install(_spec(tmp_path, "2.0.0", b"service-v1")))
+
+    assert scheduler.running is True
+    assert scheduler.tasks
+
+
+@pytest.mark.adversarial
+def test_augmented_task_xml_is_not_installer_owned(tmp_path: Path) -> None:
+    scheduler = FakeTaskScheduler()
+    adapter = _windows_adapter(scheduler)
+    manifest = _spec(tmp_path, "2.0.0", b"service-v1").manifest()
+    adapter.register(manifest)
+    task_name = next(iter(scheduler.tasks))
+    scheduler.tasks[task_name] = scheduler.tasks[task_name].replace(
+        "</Actions>",
+        "<ComHandler><ClassId>{00000000-0000-0000-0000-000000000000}</ClassId>"
+        "</ComHandler></Actions>",
+    )
+
+    with pytest.raises(ServiceRegistrationDriftError, match="Actions"):
+        adapter.inspect(manifest.service_id)
+
+
+@pytest.mark.adversarial
+def test_running_task_cannot_be_unregistered(tmp_path: Path) -> None:
+    scheduler = FakeTaskScheduler()
+    adapter = _windows_adapter(scheduler)
+    manifest = _spec(tmp_path, "2.0.0", b"service-v1").manifest()
+    adapter.register(manifest)
+    scheduler.running = True
+
+    with pytest.raises(ServiceRegistrationError, match="while its program is running"):
+        adapter.unregister(manifest)
+
+    assert scheduler.tasks
+
+
+@pytest.mark.parametrize("build", [26200, 26100])
+def test_windows_platform_guard_accepts_each_authorized_build(
+    build: int, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(service_registration.sys, "platform", "win32")
+    monkeypatch.setattr(service_registration.platform, "machine", lambda: "AMD64")
+    monkeypatch.setattr(
+        service_registration.sys,
+        "getwindowsversion",
+        lambda: SimpleNamespace(build=build, product_type=1),
+    )
+    assert service_registration._is_qualified_windows_11_x64() is True
+
+
+@pytest.mark.parametrize("build", [26099, 26101, 26199, 26201])
+def test_windows_platform_guard_rejects_unqualified_builds(
+    build: int, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(service_registration.sys, "platform", "win32")
+    monkeypatch.setattr(service_registration.platform, "machine", lambda: "AMD64")
+    monkeypatch.setattr(
+        service_registration.sys,
+        "getwindowsversion",
+        lambda: SimpleNamespace(build=build, product_type=1),
+    )
+    assert service_registration._is_qualified_windows_11_x64() is False
+
+
+def test_windows_platform_guard_rejects_server_product_type(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(service_registration.sys, "platform", "win32")
+    monkeypatch.setattr(service_registration.platform, "machine", lambda: "AMD64")
+    monkeypatch.setattr(
+        service_registration.sys,
+        "getwindowsversion",
+        lambda: SimpleNamespace(build=26200, product_type=3),
+    )
+    assert service_registration._is_qualified_windows_11_x64() is False

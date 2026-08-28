@@ -1,24 +1,24 @@
 {
   "acceptance": {
     "acceptance_commit": null,
-    "blocked": [
-      "BLK-M7-SUPPORTED-PLATFORM-MATRIX-UNDEFINED"
-    ],
+    "blocked": [],
     "contract_digest": "3eac41de4cacf7be80aab12e478b99ec7c5066dccddfff6ca00a03cf5a157d48",
     "evidence_classes": {
       "BLACK_BOX_OUTCOME": {
         "evidence": [
+          "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
           "EVIDENCE/M7-FOUNDATION-OUTCOME.json"
         ],
         "required_m7": true,
-        "status": "PENDING_PRODUCT_DECISION"
+        "status": "PENDING_LIVE_CELL_QUALIFICATION"
       },
       "COMPONENT": {
         "evidence": [
-          "EVIDENCE/M7-FOUNDATION-VALIDATION.yaml"
+          "EVIDENCE/M7-FOUNDATION-VALIDATION.yaml",
+          "EVIDENCE/M7-WINDOWS-SERVICE-SOURCE-VALIDATION.yaml"
         ],
         "required_m7": true,
-        "status": "PASS_FOUNDATION"
+        "status": "PASS_SOURCE_CANDIDATE"
       },
       "DASHBOARD": {
         "evidence": [
@@ -57,10 +57,11 @@
       },
       "PROVIDER_CERTIFICATION": {
         "evidence": [
+          "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
           "EVIDENCE/M7-FOUNDATION-OUTCOME.json"
         ],
         "required_m7": true,
-        "status": "PENDING_PRODUCT_DECISION"
+        "status": "PENDING_LIVE_CELL_QUALIFICATION"
       },
       "PUBLIC_COMPOSITION": {
         "evidence": [
@@ -71,14 +72,15 @@
       },
       "SECURITY_AUTHORITY": {
         "evidence": [
-          "EVIDENCE/M7-FOUNDATION-VALIDATION.yaml"
+          "EVIDENCE/M7-FOUNDATION-VALIDATION.yaml",
+          "EVIDENCE/M7-WINDOWS-SERVICE-SOURCE-VALIDATION.yaml"
         ],
         "required_m7": true,
-        "status": "PASS_FOUNDATION"
+        "status": "PASS_SOURCE_CANDIDATE"
       }
     },
     "frozen_architecture_baseline": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
-    "implementation_baseline_commit": "14da51f530bd859afebf1ce2d9ed0348a8832f33",
+    "implementation_baseline_commit": "cc1980ca02857b27276b489efddd30b4be74660f",
     "mandatory_journeys": [
       "J01",
       "J02",
@@ -91,7 +93,7 @@
     "schema_version": "1.0",
     "superseded": [],
     "unresolved_contradiction": null,
-    "verdict": "BLOCKED_PRODUCT_DECISION"
+    "verdict": "ACTIVE"
   },
   "adrs": [
     {
@@ -723,21 +725,6 @@
   ],
   "blockers": [
     {
-      "class": "MISSING_PRODUCT_DECISION",
-      "evidence": [
-        "ACCEPTANCE/M7.yaml",
-        "EVIDENCE/M7-FOUNDATION-VALIDATION.yaml",
-        "EVIDENCE/M7-FOUNDATION-OUTCOME.json"
-      ],
-      "id": "BLK-M7-SUPPORTED-PLATFORM-MATRIX-UNDEFINED",
-      "required_authority": "PRODUCT_OWNER",
-      "resolution": "Define supported OS or VM cells, architecture and Core support tier, with J01, J02, J10 and J16 applicability and whether provider support is per-cell or required in every cell",
-      "scope": "M7_ACCEPTANCE",
-      "status": "OPEN",
-      "summary": "The official ARTIFEX 2.0 Core supported OS, version, architecture and provider journey matrix is not defined by canonical authority",
-      "unrelated_work_may_continue": true
-    },
-    {
       "class": "EXTERNAL_PREREQUISITE",
       "evidence": [
         "EVIDENCE/M8C-PUBLIC-OUTCOME.json"
@@ -849,6 +836,21 @@
       "bytes": 2950,
       "path": "implementation/EVIDENCE/M7-FOUNDATION-VALIDATION.yaml",
       "sha256": "e112850d892471470973433de3be277222c25d503582726da083204a6d72737e"
+    },
+    {
+      "bytes": 2217,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CLEAN-VM-BASE.yaml",
+      "sha256": "4a66e1140da3f9c92ab3201fbb0b074f55dac371f1db3c27b992e3c17c3b8bce"
+    },
+    {
+      "bytes": 1931,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
+      "sha256": "29b9521690cb83c8fa90bde07aaf9e68a33f6173411cd4e7767f56c64af9d8ce"
+    },
+    {
+      "bytes": 2288,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-SERVICE-SOURCE-VALIDATION.yaml",
+      "sha256": "b357982dce12a313d772dd7cbdc3b691287eec44fe734cc68a009f9148b20273"
     },
     {
       "bytes": 3506,
@@ -1653,29 +1655,31 @@
   ],
   "journeys": [
     {
-      "blocker": "BLK-M7-SUPPORTED-PLATFORM-MATRIX-UNDEFINED",
-      "environment": "CLEAN_INSTALLED_WHEEL_WINDOWS_PYTHON_3_12_REAL_CODEX",
+      "blocker": null,
+      "environment": "WINDOWS_11_25H2_X64_CLEAN_VM_CODEX_ONLY",
       "evidence": [
         "EVIDENCE/M3-PUBLIC-OUTCOME.json",
-        "EVIDENCE/M7-FOUNDATION-OUTCOME.json"
+        "EVIDENCE/M7-FOUNDATION-OUTCOME.json",
+        "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml"
       ],
       "id": "J01",
       "last_run": "2026-08-27",
       "public_shipping_composition": "INSTALLED_WHEEL_PUBLIC_CLI_REAL_CODEX_VERTICAL_SLICE",
-      "status": "M7_FOUNDATION_PASS_LIVE_PLATFORM_CELL_PENDING",
+      "status": "M7_WIN_CODEX_LIVE_CELL_PENDING",
       "title": "J01 — Fresh Machine + Codex"
     },
     {
-      "blocker": "BLK-M7-SUPPORTED-PLATFORM-MATRIX-UNDEFINED",
-      "environment": "CLEAN_INSTALLED_WHEEL_WINDOWS_REAL_CLAUDE_PROVIDER_SLICE",
+      "blocker": null,
+      "environment": "WINDOWS_11_25H2_X64_CLEAN_VM_CLAUDE_ONLY",
       "evidence": [
         "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json",
-        "EVIDENCE/M7-FOUNDATION-OUTCOME.json"
+        "EVIDENCE/M7-FOUNDATION-OUTCOME.json",
+        "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml"
       ],
       "id": "J02",
       "last_run": "2026-08-28",
       "public_shipping_composition": "INSTALLED_WHEEL_PUBLIC_CLI_REAL_CLAUDE_MULTI_PROCESS",
-      "status": "M7_FOUNDATION_PASS_LIVE_PLATFORM_CELL_PENDING",
+      "status": "M7_WIN_CLAUDE_LIVE_CELL_PENDING",
       "title": "J02 — Fresh Machine + Claude"
     },
     {
@@ -1761,15 +1765,16 @@
       "title": "J09 — V1 Migration"
     },
     {
-      "blocker": "BLK-M7-SUPPORTED-PLATFORM-MATRIX-UNDEFINED",
-      "environment": "CLEAN_INSTALLED_WHEEL_WINDOWS_PYTHON_3_12_NO_AUTOMATED_PROVIDER",
+      "blocker": null,
+      "environment": "WINDOWS_11_25H2_X64_CLEAN_VM_NO_AUTOMATED_PROVIDER",
       "evidence": [
-        "EVIDENCE/M7-FOUNDATION-OUTCOME.json"
+        "EVIDENCE/M7-FOUNDATION-OUTCOME.json",
+        "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml"
       ],
       "id": "J10",
       "last_run": "2026-08-28",
       "public_shipping_composition": "INSTALLED_WHEEL_PUBLIC_MANAGED_SERVICE_MULTI_PROCESS",
-      "status": "NONLIVE_FOUNDATION_PASS_PLATFORM_CELL_PENDING",
+      "status": "M7_WIN_NOPROVIDER_LIVE_CELL_PENDING",
       "title": "J10 — No Automated Provider"
     },
     {
@@ -1833,16 +1838,17 @@
       "title": "J15 — Promotion Conflict"
     },
     {
-      "blocker": "BLK-M7-SUPPORTED-PLATFORM-MATRIX-UNDEFINED",
-      "environment": "CLEAN_INSTALLED_WHEEL_WINDOWS_PYTHON_3_12_REAL_CODEX",
+      "blocker": null,
+      "environment": "WINDOWS_11_25H2_X64_SEPARATE_CLEAN_PROVIDER_CELLS",
       "evidence": [
         "EVIDENCE/M3-PUBLIC-OUTCOME.json",
-        "EVIDENCE/M7-FOUNDATION-OUTCOME.json"
+        "EVIDENCE/M7-FOUNDATION-OUTCOME.json",
+        "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml"
       ],
       "id": "J16",
       "last_run": "2026-08-27",
       "public_shipping_composition": "INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS_PROVIDER_SETUP",
-      "status": "M7_FRESH_RUNTIME_CONSUMPTION_PASS_LIVE_PLATFORM_CELL_PENDING",
+      "status": "M7_WIN_CODEX_AND_CLAUDE_LIVE_CELLS_PENDING",
       "title": "J16 — Provider Setup Persistence"
     },
     {
@@ -2095,7 +2101,7 @@
       "id": "M7",
       "mandatory_for_core_ga": true,
       "started": true,
-      "state": "BLOCKED_PRODUCT_DECISION",
+      "state": "ACTIVE",
       "title": "Fresh-Machine Installation & Bootstrap"
     },
     {
@@ -2186,6 +2192,16 @@
   "observations": [
     {
       "evidence": [
+        "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml"
+      ],
+      "id": "BLK-M7-SUPPORTED-PLATFORM-MATRIX-UNDEFINED",
+      "required_authority": "PRODUCT_OWNER",
+      "scope": "M7_ACCEPTANCE",
+      "state": "RESOLVED_PRODUCT_DECISION",
+      "unrelated_work_may_continue": true
+    },
+    {
+      "evidence": [
         "EVIDENCE/M6A-NONLIVE-QUALIFICATION.json",
         "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json"
       ],
@@ -2218,10 +2234,10 @@
   ],
   "program": {
     "architecture_status": "FROZEN",
-    "branch": "codex/artifex-2-m7",
-    "canonical_integration_baseline": "14da51f530bd859afebf1ce2d9ed0348a8832f33",
+    "branch": "codex/artifex-2-m7-qualification-live",
+    "canonical_integration_baseline": "cc1980ca02857b27276b489efddd30b4be74660f",
     "current_milestone": "M7",
-    "current_status": "BLOCKED_PRODUCT_DECISION",
+    "current_status": "ACTIVE",
     "dashboard_state": "CURRENT",
     "directory_variance": "PACKAGING_NAME_VARIANCE_ACCEPTED",
     "handoff_declared_directory": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF",
@@ -2242,7 +2258,7 @@
     "m8a_started": true,
     "m8b_started": true,
     "m8c_started": true,
-    "next_integration_point": "Product Owner defines the official M7 supported-platform matrix; then qualify J01, J02, J10 and J16 on every applicable cell",
+    "next_integration_point": "Qualify the three official Windows 11 25H2 x64 clean-VM cells through the shipping installer and public managed-service composition",
     "recorded_date": "2026-08-28",
     "target_release": "2.0.0"
   },
@@ -2527,16 +2543,17 @@
   },
   "schema_version": "1.0",
   "summary": {
-    "active_blockers": 3,
+    "active_blockers": 2,
     "adr_count": 24,
     "current_milestone": "M7",
-    "evidence_items": 27,
+    "evidence_items": 30,
     "invariant_count": 34,
     "journey_states": {
       "BLOCKED_EXTERNAL_PREREQUISITE": 1,
-      "M7_FOUNDATION_PASS_LIVE_PLATFORM_CELL_PENDING": 2,
-      "M7_FRESH_RUNTIME_CONSUMPTION_PASS_LIVE_PLATFORM_CELL_PENDING": 1,
-      "NONLIVE_FOUNDATION_PASS_PLATFORM_CELL_PENDING": 1,
+      "M7_WIN_CLAUDE_LIVE_CELL_PENDING": 1,
+      "M7_WIN_CODEX_AND_CLAUDE_LIVE_CELLS_PENDING": 1,
+      "M7_WIN_CODEX_LIVE_CELL_PENDING": 1,
+      "M7_WIN_NOPROVIDER_LIVE_CELL_PENDING": 1,
       "NOT_STARTED": 3,
       "PASS": 12
     },
@@ -2552,8 +2569,8 @@
     "ready_milestones": [],
     "workstream_states": {
       "BLOCKED_EXTERNAL_PREREQUISITE": 2,
-      "BLOCKED_PRODUCT_DECISION_FOUNDATION_COMPLETE": 1,
-      "COMPLETE": 18
+      "COMPLETE": 18,
+      "IN_PROGRESS": 2
     }
   },
   "target_system": {
@@ -2951,11 +2968,9 @@
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m7"
     },
     {
-      "base_commit": "14da51f530bd859afebf1ce2d9ed0348a8832f33",
-      "blockers": [
-        "BLK-M7-SUPPORTED-PLATFORM-MATRIX-UNDEFINED"
-      ],
-      "branch": "codex/artifex-2-m7",
+      "base_commit": "cc1980ca02857b27276b489efddd30b4be74660f",
+      "blockers": [],
+      "branch": "codex/artifex-2-m7-qualification-live",
       "id": "WS-M7-CLEAN-MACHINE-QUALIFICATION",
       "integration_owner": "ARTIFEX_2_ORCHESTRATOR",
       "milestone": "M7",
@@ -2969,8 +2984,26 @@
         "J16",
         "OUTCOME-ACCEPTANCE-POLICY"
       ],
-      "state": "BLOCKED_PRODUCT_DECISION_FOUNDATION_COMPLETE",
-      "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m7"
+      "state": "IN_PROGRESS",
+      "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m7-qualification-live"
+    },
+    {
+      "base_commit": "cc1980ca02857b27276b489efddd30b4be74660f",
+      "blockers": [],
+      "branch": "codex/artifex-2-m7-qualification-live",
+      "id": "WS-M7-WINDOWS-SERVICE-INTEGRATION",
+      "integration_owner": "ARTIFEX_2_ORCHESTRATOR",
+      "milestone": "M7",
+      "owner_subagent": "ARTIFEX_2_ORCHESTRATOR",
+      "purpose": "Implement and qualify the Windows 11 Core service-registration adapter through public install, upgrade and uninstall paths",
+      "shared_contracts": [
+        "M7-CONTRACT",
+        "ADR-T003",
+        "ADR-T015",
+        "FROZEN-INVARIANTS"
+      ],
+      "state": "IN_PROGRESS",
+      "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m7-qualification-live"
     }
   ]
 }

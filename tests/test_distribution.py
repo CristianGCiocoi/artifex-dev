@@ -20,6 +20,8 @@ from artifex.distribution import (
     ApprovalStore,
     ExperienceMode,
     ResourceEnvelope,
+    ServiceRegistrationManifest,
+    ServiceRegistrationObservation,
     apply_integration_setup,
     artifact,
     complete_deferred_uninstall,
@@ -1138,28 +1140,34 @@ def test_application_lifecycle_routes_explicit_arguments(
             return {"operation": self.operation}
 
     monkeypatch.setattr(
-        application_api, "install_plan", lambda source, root: Stub("install-plan")
+        application_api,
+        "install_plan",
+        lambda source, root, **kwargs: Stub("install-plan"),
     )
     monkeypatch.setattr(
         application_api,
         "install",
-        lambda source, root, confirmation_token: Stub("install"),
+        lambda source, root, confirmation_token, **kwargs: Stub("install"),
     )
     monkeypatch.setattr(
-        application_api, "upgrade_plan", lambda source, root: Stub("upgrade-plan")
+        application_api,
+        "upgrade_plan",
+        lambda source, root, **kwargs: Stub("upgrade-plan"),
     )
     monkeypatch.setattr(
         application_api,
         "upgrade",
-        lambda source, root, confirmation_token: Stub("upgrade"),
+        lambda source, root, confirmation_token, **kwargs: Stub("upgrade"),
     )
     monkeypatch.setattr(
-        application_api, "uninstall_plan", lambda root: Stub("uninstall-plan")
+        application_api,
+        "uninstall_plan",
+        lambda root, **kwargs: Stub("uninstall-plan"),
     )
     monkeypatch.setattr(
         application_api,
         "uninstall",
-        lambda root, confirmation_token: {"operation": "uninstall"},
+        lambda root, confirmation_token, **kwargs: {"operation": "uninstall"},
     )
     monkeypatch.setattr(
         application_api,
@@ -1218,6 +1226,315 @@ def test_application_lifecycle_routes_explicit_arguments(
         "uninstall",
         "setup-apply",
     ]
+
+
+@pytest.mark.integration
+def test_public_distribution_lifecycle_owns_managed_service_transaction(
+    tmp_path: Path,
+) -> None:
+    class Adapter:
+        platform_id = "test-managed-service"
+
+        def __init__(self) -> None:
+            self.current: ServiceRegistrationManifest | None = None
+            self.running = False
+
+        def inspect(self, service_id: str) -> ServiceRegistrationObservation:
+            if self.current is None:
+                return ServiceRegistrationObservation(False)
+            assert self.current.service_id == service_id
+            return ServiceRegistrationObservation(
+                True, self.current.manifest_sha256
+            )
+
+        def register(self, manifest: ServiceRegistrationManifest) -> None:
+            self.current = manifest
+
+        def replace(
+            self,
+            current: ServiceRegistrationManifest,
+            desired: ServiceRegistrationManifest,
+        ) -> None:
+            assert self.current == current
+            self.current = desired
+
+        def unregister(self, manifest: ServiceRegistrationManifest) -> None:
+            assert self.current == manifest
+            self.current = None
+
+        def start_and_wait(
+            self,
+            manifest: ServiceRegistrationManifest,
+            *,
+            timeout_seconds: float,
+        ) -> None:
+            del timeout_seconds
+            assert self.current == manifest
+            self.running = True
+
+        def stop_and_wait(
+            self,
+            manifest: ServiceRegistrationManifest,
+            *,
+            timeout_seconds: float,
+        ) -> None:
+            del timeout_seconds
+            assert self.current == manifest
+            self.running = False
+
+    adapter = Adapter()
+    approvals = ApprovalStore(tmp_path / "approvals")
+    security = tmp_path / "security"
+    state_root = tmp_path / "service-state"
+    source = _write_test_artifact(tmp_path / "release", b"v1")
+    root = tmp_path / "installed"
+    service_id = "qualified-runtime"
+
+    install_decision = install_plan(
+        source,
+        root,
+        approval_store=approvals,
+        identity_probe=_test_identity_probe,
+        managed_service=True,
+        service_state_root=state_root,
+        service_id=service_id,
+        service_readiness_timeout_seconds=0.5,
+    )
+    installed = install(
+        source,
+        root,
+        confirmation_token=install_decision.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+        managed_service=True,
+        service_state_root=state_root,
+        service_id=service_id,
+        service_adapter=adapter,
+        service_readiness_timeout_seconds=0.5,
+    )
+    assert adapter.running is True
+    assert adapter.current is not None
+    assert adapter.current.arguments[:2] == ("service", "serve")
+    assert installed.service_registration is not None
+
+    _write_test_artifact(source.parent, b"v2")
+    upgrade_decision = upgrade_plan(
+        source,
+        root,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+        service_readiness_timeout_seconds=0.5,
+    )
+    upgraded = upgrade(
+        source,
+        root,
+        confirmation_token=upgrade_decision.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+        force_deferred=False,
+        service_adapter=adapter,
+        service_readiness_timeout_seconds=0.5,
+    )
+    assert Path(upgraded.executable).read_bytes() == b"v2"
+    assert adapter.running is True
+    assert adapter.current is not None
+    assert adapter.current.executable_sha256 == hashlib.sha256(b"v2").hexdigest()
+
+    uninstall_decision = uninstall_plan(
+        root,
+        approval_store=approvals,
+        security_root=security,
+        service_readiness_timeout_seconds=0.5,
+    )
+    removed = uninstall(
+        root,
+        confirmation_token=uninstall_decision.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        force_deferred=False,
+        service_adapter=adapter,
+        service_readiness_timeout_seconds=0.5,
+    )
+    assert removed["status"] == "COMPLETE"
+    assert adapter.current is None
+    assert adapter.running is False
+    assert not Path(installed.manifest).exists()
+
+
+@pytest.mark.unit
+def test_application_routes_managed_service_lifecycle_arguments(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    class Stub:
+        def __init__(self, operation: str) -> None:
+            self.operation = operation
+
+        def to_dict(self) -> dict[str, str]:
+            return {"operation": self.operation}
+
+    captured: dict[str, dict[str, Any]] = {}
+
+    def capture_install(
+        source: str, root: str, confirmation_token: str | None, **kwargs: Any
+    ) -> Stub:
+        captured["install"] = {
+            "source": source,
+            "root": root,
+            "confirmation_token": confirmation_token,
+            **kwargs,
+        }
+        return Stub("install")
+
+    def capture_upgrade(
+        source: str, root: str, confirmation_token: str | None, **kwargs: Any
+    ) -> Stub:
+        captured["upgrade"] = {
+            "source": source,
+            "root": root,
+            "confirmation_token": confirmation_token,
+            **kwargs,
+        }
+        return Stub("upgrade")
+
+    def capture_uninstall(
+        root: str, confirmation_token: str | None, **kwargs: Any
+    ) -> dict[str, str]:
+        captured["uninstall"] = {
+            "root": root,
+            "confirmation_token": confirmation_token,
+            **kwargs,
+        }
+        return {"operation": "uninstall"}
+
+    monkeypatch.setattr(application_api, "install", capture_install)
+    monkeypatch.setattr(application_api, "upgrade", capture_upgrade)
+    monkeypatch.setattr(application_api, "uninstall", capture_uninstall)
+    application = Application()
+    context = OperationContext(project_root=str(tmp_path), actor="test")
+    source = str(tmp_path / "artifact.exe")
+    root = str(tmp_path / "installed")
+    state_root = str(tmp_path / "service-state")
+    common = {
+        "source_executable": source,
+        "install_root": root,
+        "confirmation_token": "token",
+        "managed_service": True,
+        "service_state_root": state_root,
+        "service_id": "qualified-runtime",
+        "service_readiness_timeout_seconds": 17,
+    }
+
+    assert application.dispatch(
+        OperationRequest("distribution.install", common, context)
+    ).ok
+    assert application.dispatch(
+        OperationRequest("distribution.upgrade", common, context)
+    ).ok
+    assert application.dispatch(
+        OperationRequest(
+            "distribution.uninstall",
+            {
+                "install_root": root,
+                "confirmation_token": "token",
+                "managed_service": True,
+                "service_id": "qualified-runtime",
+                "service_readiness_timeout_seconds": 17,
+            },
+            context,
+        )
+    ).ok
+
+    for operation in ("install", "upgrade"):
+        assert captured[operation]["managed_service"] is True
+        assert captured[operation]["service_state_root"] == state_root
+        assert captured[operation]["service_id"] == "qualified-runtime"
+        assert captured[operation]["service_readiness_timeout_seconds"] == 17.0
+    assert captured["uninstall"]["managed_service"] is True
+    assert captured["uninstall"]["service_id"] == "qualified-runtime"
+    assert captured["uninstall"]["service_readiness_timeout_seconds"] == 17.0
+
+
+@pytest.mark.unit
+def test_cli_routes_managed_service_lifecycle_arguments(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    emitted: list[tuple[str, dict[str, Any]]] = []
+
+    def capture(
+        operation: str,
+        arguments: dict[str, Any] | None = None,
+        *,
+        project_root: str | None = None,
+    ) -> None:
+        del project_root
+        emitted.append((operation, arguments or {}))
+
+    monkeypatch.setattr(cli_module, "_emit", capture)
+    runner = CliRunner()
+    source = str(tmp_path / "artifact.exe")
+    root = str(tmp_path / "installed")
+    state_root = str(tmp_path / "service-state")
+    commands = (
+        [
+            "install",
+            "--apply",
+            "--install-root",
+            root,
+            "--source-executable",
+            source,
+            "--managed-service",
+            "--service-state-root",
+            state_root,
+            "--service-id",
+            "qualified-runtime",
+            "--service-readiness-timeout-seconds",
+            "17",
+        ],
+        [
+            "upgrade",
+            "--apply",
+            "--install-root",
+            root,
+            "--source-executable",
+            source,
+            "--managed-service",
+            "--service-state-root",
+            state_root,
+            "--service-id",
+            "qualified-runtime",
+            "--service-readiness-timeout-seconds",
+            "17",
+        ],
+        [
+            "uninstall",
+            "--apply",
+            "--install-root",
+            root,
+            "--managed-service",
+            "--service-id",
+            "qualified-runtime",
+            "--service-readiness-timeout-seconds",
+            "17",
+        ],
+    )
+    for command in commands:
+        result = runner.invoke(app, command)
+        assert result.exit_code == 0, result.stdout
+
+    assert [operation for operation, _ in emitted] == [
+        "distribution.install",
+        "distribution.upgrade",
+        "distribution.uninstall",
+    ]
+    for _, arguments in emitted:
+        assert arguments["managed_service"] is True
+        assert arguments["service_id"] == "qualified-runtime"
+        assert arguments["service_readiness_timeout_seconds"] == 17
+    assert emitted[0][1]["service_state_root"] == state_root
+    assert emitted[1][1]["service_state_root"] == state_root
 
 
 @pytest.mark.integration

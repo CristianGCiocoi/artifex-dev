@@ -1,0 +1,57 @@
+schema_version: '1.0'
+evidence_id: EVD-M7-OFFICIAL-WINDOWS-CORE-MATRIX
+recorded_date: '2026-08-28'
+authority: PRODUCT_OWNER
+authority_source:
+- OFFICIAL_PRODUCT_DECISION_M7_QUALIFICATION_MATRIX
+- PRODUCT_OWNER_AMENDMENT_2026-08-28_WINDOWS_25H2_ELIGIBLE
+decision: M7_PRODUCT_DECISION_RESOLVED
+core_ga_baseline:
+  os: Windows 11
+  eligible_versions: [24H2, 25H2]
+  preferred_version: 25H2
+  selected_qualification_version: 25H2
+  architecture: x64
+  environment: CLEAN_VM
+  support_tier: Core
+cells:
+- id: M7-WIN-CODEX
+  provider_state:
+    codex: INSTALLED_CONFIGURED_AUTHENTICATED
+    claude: ABSENT
+  mandatory_journeys: [J01, J16]
+  qualification_status: PENDING
+- id: M7-WIN-CLAUDE
+  provider_state:
+    codex: ABSENT
+    claude: INSTALLED_CONFIGURED_AUTHENTICATED
+  mandatory_journeys: [J02, J16]
+  qualification_status: PENDING
+- id: M7-WIN-NOPROVIDER
+  provider_state:
+    codex: ABSENT
+    claude: ABSENT
+  mandatory_journeys: [J10]
+  qualification_status: PENDING
+constraints:
+  provider_coexistence_required: false
+  combined_provider_qualification_owned_by: [J11, M12]
+  developer_machine_evidence_eligible: false
+  combined_provider_inference_eligible: false
+  journey_weakening_permitted: false
+  linux_macos_core_ga_blocking: false
+  linux_macos_claims_require_explicit_release_manifest_cells: true
+  per_user_service_logon_model: INTERACTIVE_TOKEN
+  interactive_user_logon_required_for_each_cell: true
+  headless_pre_logon_service_start_claimed: false
+implementation_observation:
+  canonical_base_commit: cc1980ca02857b27276b489efddd30b4be74660f
+  windows_service_registration_adapter: IMPLEMENTED_PENDING_CANDIDATE_QUALIFICATION
+  public_distribution_lifecycle_wiring: IMPLEMENTED_PENDING_CANDIDATE_QUALIFICATION
+  clean_vm_qualification: PENDING
+  selected_clean_vm:
+    hypervisor: Proxmox VE 9.2.3
+    vm_id: 104
+    os_build: 26200.8037
+    network_state: DHCP_VM_SPECIFIC_MAC
+verdict: MATRIX_ACCEPTED_M7_ACTIVE

@@ -160,6 +160,14 @@ def actor_principal(actor: ActorLike) -> ActorPrincipal:
     value = actor.strip()
     if not value or value.casefold() == "anonymous":
         return ActorPrincipal(value or "anonymous", ActorType.INTERACTION_CLIENT, False, "")
+    if value == "managed-service-local-client":
+        return ActorPrincipal(
+            value,
+            ActorType.USER,
+            True,
+            "authenticated-local-transport",
+            direct_permissions=(),
+        )
     return ActorPrincipal(
         value,
         ActorType.ARTIFEX_SERVICE,

@@ -31,6 +31,16 @@ from artifex.distribution.artifact import (
     verify_artifact,
 )
 from artifex.distribution.presentation import explain_decision, require_approval
+from artifex.distribution.service_registration import (
+    SERVICE_REGISTRATION_MANIFEST_NAME,
+    ServiceRegistrationAdapter,
+    ServiceRegistrationManager,
+    ServiceRegistrationManifest,
+    ServiceRegistrationPlan,
+    ServiceRegistrationRollbackError,
+    ServiceRegistrationSpec,
+    read_service_registration_manifest,
+)
 
 MANIFEST_NAME = "artifex-install-manifest.json"
 MANIFEST_SCHEMA_VERSION = "3.0"
@@ -50,8 +60,9 @@ class InstallResult:
     backup: str | None = None
     status: str = "COMPLETE"
     deferred_request: str | None = None
+    service_registration: Mapping[str, Any] | None = None
 
-    def to_dict(self) -> dict[str, str | None]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "operation": self.operation,
             "install_root": self.install_root,
@@ -60,6 +71,11 @@ class InstallResult:
             "backup": self.backup,
             "status": self.status,
             "deferred_request": self.deferred_request,
+            "service_registration": (
+                dict(self.service_registration)
+                if self.service_registration is not None
+                else None
+            ),
         }
 
 
@@ -70,6 +86,10 @@ def install_plan(
     approval_store: ApprovalStore | None = None,
     issue_token: bool = True,
     identity_probe: IdentityProbe | None = None,
+    managed_service: bool = False,
+    service_state_root: str | Path | None = None,
+    service_id: str = "artifex-managed-service",
+    service_readiness_timeout_seconds: float = 30.0,
 ) -> Any:
     root = Path(install_root).resolve()
     verified = verify_artifact(source_executable, identity_probe=identity_probe)
@@ -78,6 +98,10 @@ def install_plan(
         root,
         approval_store=approval_store,
         issue_token=issue_token,
+        managed_service=managed_service,
+        service_state_root=service_state_root,
+        service_id=service_id,
+        service_readiness_timeout_seconds=service_readiness_timeout_seconds,
     )
 
 
@@ -87,12 +111,26 @@ def _install_decision(
     *,
     approval_store: ApprovalStore | None,
     issue_token: bool,
+    managed_service: bool,
+    service_state_root: str | Path | None,
+    service_id: str,
+    service_readiness_timeout_seconds: float,
 ) -> Any:
     source = verified.source
+    _validate_service_readiness_timeout(service_readiness_timeout_seconds)
+    state_root = _service_state_root(service_state_root) if managed_service else None
+    effects = [f"copy {source.name} into {root}", f"write authenticated {MANIFEST_NAME}"]
+    if managed_service:
+        effects.extend(
+            (
+                "register one per-user Windows Task Scheduler managed service",
+                f"start and verify managed service under {state_root}",
+            )
+        )
     return explain_decision(
         "install ARTIFEX",
         "REVERSIBLE",
-        effects=(f"copy {source.name} into {root}", f"write authenticated {MANIFEST_NAME}"),
+        effects=tuple(effects),
         rollback=f"remove only newly created files under {root}",
         binding={
             "operation": "install",
@@ -102,6 +140,12 @@ def _install_decision(
             "destination": _native_executable_name(),
             "manifest_schema": MANIFEST_SCHEMA_VERSION,
             "artifex_version": __version__,
+            "managed_service": managed_service,
+            "service_state_root": str(state_root) if state_root is not None else None,
+            "service_id": service_id if managed_service else None,
+            "service_readiness_timeout_seconds": (
+                service_readiness_timeout_seconds if managed_service else None
+            ),
         },
         approval_store=approval_store,
         issue_token=issue_token,
@@ -116,13 +160,25 @@ def install(
     approval_store: ApprovalStore | None = None,
     security_root: str | Path | None = None,
     identity_probe: IdentityProbe | None = None,
+    managed_service: bool = False,
+    service_state_root: str | Path | None = None,
+    service_id: str = "artifex-managed-service",
+    service_adapter: ServiceRegistrationAdapter | None = None,
+    service_readiness_timeout_seconds: float = 30.0,
 ) -> InstallResult:
     verified = verify_artifact(source_executable, identity_probe=identity_probe)
     root = Path(install_root).resolve()
     if root == Path(root.anchor) or len(root.parts) < 2:
         raise ValueError("refusing broad install root")
     decision = _install_decision(
-        verified, root, approval_store=approval_store, issue_token=False
+        verified,
+        root,
+        approval_store=approval_store,
+        issue_token=False,
+        managed_service=managed_service,
+        service_state_root=service_state_root,
+        service_id=service_id,
+        service_readiness_timeout_seconds=service_readiness_timeout_seconds,
     )
     destination = root / str(verified.manifest["artifact"])
     manifest_path = root / MANIFEST_NAME
@@ -135,6 +191,18 @@ def install(
     root.mkdir(parents=True, exist_ok=True)
     key_path = _key_path(root, security_root)
     key: bytes | None = None
+    service_result: Mapping[str, Any] | None = None
+    service_spec = (
+        _service_spec(
+            destination,
+            str(verified.manifest["sha256"]),
+            service_state_root,
+            service_id,
+            __version__,
+        )
+        if managed_service
+        else None
+    )
     try:
         key = _create_install_key(key_path)
         _copy_verified_bundle(verified, root)
@@ -147,10 +215,23 @@ def install(
                 "backups": [],
                 "artifact_manifest": dict(verified.manifest),
                 "artifact_manifest_fingerprint": verified.manifest_fingerprint,
+                "service_registration": (
+                    service_spec.manifest().to_dict() if service_spec is not None else None
+                ),
             },
             key,
         )
         _write_manifest(manifest_path, manifest)
+        if managed_service:
+            registration = _service_manager(
+                root,
+                adapter=service_adapter,
+                readiness_timeout_seconds=service_readiness_timeout_seconds,
+            )
+            assert service_spec is not None
+            service_result = registration.install(
+                registration.plan_install(service_spec)
+            ).to_dict()
     except Exception:
         manifest_path.unlink(missing_ok=True)
         _remove_manifest_paths(root, verified.files)
@@ -160,7 +241,13 @@ def install(
             with suppress(OSError):
                 root.rmdir()
         raise
-    return InstallResult("install", str(root), str(destination), str(manifest_path))
+    return InstallResult(
+        "install",
+        str(root),
+        str(destination),
+        str(manifest_path),
+        service_registration=service_result,
+    )
 
 
 def upgrade_plan(
@@ -171,9 +258,19 @@ def upgrade_plan(
     security_root: str | Path | None = None,
     issue_token: bool = True,
     identity_probe: IdentityProbe | None = None,
+    managed_service: bool = False,
+    service_state_root: str | Path | None = None,
+    service_id: str = "artifex-managed-service",
+    service_readiness_timeout_seconds: float = 30.0,
 ) -> Any:
     verified = verify_artifact(source_executable, identity_probe=identity_probe)
     root, _, manifest, _ = _load_manifest(install_root, security_root=security_root)
+    managed_service, service_state_root, service_id = _resolve_managed_service_request(
+        manifest,
+        managed_service=managed_service,
+        service_state_root=service_state_root,
+        service_id=service_id,
+    )
     destination = _managed_executable(root, manifest)
     return _upgrade_decision(
         verified,
@@ -182,6 +279,10 @@ def upgrade_plan(
         destination,
         approval_store=approval_store,
         issue_token=issue_token,
+        managed_service=managed_service,
+        service_state_root=service_state_root,
+        service_id=service_id,
+        service_readiness_timeout_seconds=service_readiness_timeout_seconds,
     )
 
 
@@ -193,12 +294,20 @@ def _upgrade_decision(
     *,
     approval_store: ApprovalStore | None,
     issue_token: bool,
+    managed_service: bool,
+    service_state_root: str | Path | None,
+    service_id: str,
+    service_readiness_timeout_seconds: float,
 ) -> Any:
     source = verified.source
+    _validate_service_readiness_timeout(service_readiness_timeout_seconds)
+    effects = [f"replace manifest-owned file {destination.name}"]
+    if managed_service:
+        effects.append("stop, replace, restart and verify the per-user managed service")
     return explain_decision(
         "upgrade ARTIFEX",
         "REVERSIBLE",
-        effects=(f"replace manifest-owned file {destination.name}",),
+        effects=tuple(effects),
         rollback="restore the authenticated pre-upgrade artifact and manifest",
         binding={
             "operation": "upgrade",
@@ -207,6 +316,14 @@ def _upgrade_decision(
             "artifact_manifest_fingerprint": verified.manifest_fingerprint,
             "manifest_fingerprint": _manifest_fingerprint(manifest),
             "destination": destination.name,
+            "managed_service": managed_service,
+            "service_state_root": (
+                str(_service_state_root(service_state_root)) if managed_service else None
+            ),
+            "service_id": service_id if managed_service else None,
+            "service_readiness_timeout_seconds": (
+                service_readiness_timeout_seconds if managed_service else None
+            ),
         },
         approval_store=approval_store,
         issue_token=issue_token,
@@ -224,10 +341,21 @@ def upgrade(
     running_executable: str | Path | None = None,
     force_deferred: bool | None = None,
     deferred_launcher: DeferredLauncher | None = None,
+    managed_service: bool = False,
+    service_state_root: str | Path | None = None,
+    service_id: str = "artifex-managed-service",
+    service_adapter: ServiceRegistrationAdapter | None = None,
+    service_readiness_timeout_seconds: float = 30.0,
 ) -> InstallResult:
     verified = verify_artifact(source_executable, identity_probe=identity_probe)
     root, manifest_path, manifest, key = _load_manifest(
         install_root, security_root=security_root
+    )
+    managed_service, service_state_root, service_id = _resolve_managed_service_request(
+        manifest,
+        managed_service=managed_service,
+        service_state_root=service_state_root,
+        service_id=service_id,
     )
     _verify_managed_checksums(root, manifest)
     destination = _managed_executable(root, manifest)
@@ -238,12 +366,21 @@ def upgrade(
         destination,
         approval_store=approval_store,
         issue_token=False,
+        managed_service=managed_service,
+        service_state_root=service_state_root,
+        service_id=service_id,
+        service_readiness_timeout_seconds=service_readiness_timeout_seconds,
     )
     require_approval(decision, confirmation_token, approval_store=approval_store)
     current = Path(running_executable or sys.executable).resolve()
     self_managed = _same_file(current, destination)
     defer = (os.name == "nt" and self_managed) if force_deferred is None else force_deferred
     if defer:
+        if managed_service:
+            raise ValueError(
+                "managed-service upgrade must run from the new shipping candidate "
+                "outside the active installation"
+            )
         request_file = _prepare_deferred_upgrade(
             root,
             manifest,
@@ -262,9 +399,99 @@ def upgrade(
             status="DEFERRED",
             deferred_request=str(request_file),
         )
-    backup = _perform_upgrade(root, manifest_path, manifest, key, verified)
+    registration: ServiceRegistrationManager | None = None
+    prior_service: ServiceRegistrationManifest | None = None
+    if managed_service:
+        registration = _service_manager(
+            root,
+            adapter=service_adapter,
+            readiness_timeout_seconds=service_readiness_timeout_seconds,
+        )
+        prior_service = read_service_registration_manifest(
+            root / SERVICE_REGISTRATION_MANIFEST_NAME
+        )
+        if prior_service is None or prior_service.service_id != service_id:
+            raise ValueError("managed service registration is missing or has the wrong identity")
+        registration.adapter.stop_and_wait(
+            prior_service, timeout_seconds=service_readiness_timeout_seconds
+        )
+    old_manifest_bytes = manifest_path.read_bytes()
+    try:
+        desired_registration = (
+            _service_spec(
+                destination,
+                str(verified.manifest["sha256"]),
+                service_state_root,
+                service_id,
+                __version__,
+            ).manifest()
+            if managed_service
+            else None
+        )
+        backup = _perform_upgrade(
+            root,
+            manifest_path,
+            manifest,
+            key,
+            verified,
+            service_registration=desired_registration,
+        )
+    except Exception as exc:
+        if registration is not None and prior_service is not None:
+            try:
+                registration.adapter.start_and_wait(
+                    prior_service, timeout_seconds=service_readiness_timeout_seconds
+                )
+            except Exception as rollback_exc:
+                raise ServiceRegistrationRollbackError(
+                    "artifact upgrade failed and managed service restart also failed"
+                ) from rollback_exc
+        raise exc
+    service_result: Mapping[str, Any] | None = None
+    if registration is not None and prior_service is not None:
+        assert desired_registration is not None
+        desired_service = ServiceRegistrationSpec(
+            service_id=desired_registration.service_id,
+            service_version=desired_registration.service_version,
+            executable=desired_registration.executable,
+            executable_sha256=desired_registration.executable_sha256,
+            arguments=desired_registration.arguments,
+            working_directory=desired_registration.working_directory,
+            state_root=desired_registration.state_root,
+            activation_policy=desired_registration.activation_policy,
+        )
+        try:
+            plan = registration.plan_upgrade(
+                desired_service, allow_current_executable_transition=True
+            )
+            service_result = registration.upgrade(
+                plan,
+                allow_current_executable_transition=True,
+                service_already_stopped=True,
+            ).to_dict()
+        except Exception:
+            with suppress(Exception):
+                registration.adapter.stop_and_wait(
+                    prior_service, timeout_seconds=service_readiness_timeout_seconds
+                )
+            _rollback_completed_upgrade(
+                root,
+                manifest_path,
+                old_manifest_bytes,
+                manifest,
+                backup,
+            )
+            registration.adapter.start_and_wait(
+                prior_service, timeout_seconds=service_readiness_timeout_seconds
+            )
+            raise
     return InstallResult(
-        "upgrade", str(root), str(destination), str(manifest_path), str(backup)
+        "upgrade",
+        str(root),
+        str(destination),
+        str(manifest_path),
+        str(backup),
+        service_registration=service_result,
     )
 
 
@@ -274,6 +501,8 @@ def _perform_upgrade(
     manifest: dict[str, Any],
     key: bytes,
     verified: VerifiedArtifact,
+    *,
+    service_registration: ServiceRegistrationManifest | None,
 ) -> Path:
     old_manifest = manifest_path.read_bytes()
     transaction = uuid.uuid4().hex
@@ -316,6 +545,11 @@ def _perform_upgrade(
                 "backups": previous_backups,
                 "artifact_manifest": dict(verified.manifest),
                 "artifact_manifest_fingerprint": verified.manifest_fingerprint,
+                "service_registration": (
+                    service_registration.to_dict()
+                    if service_registration is not None
+                    else None
+                ),
             },
             key,
         )
@@ -350,27 +584,76 @@ def _perform_upgrade(
     return backup
 
 
+def _rollback_completed_upgrade(
+    root: Path,
+    manifest_path: Path,
+    old_manifest_bytes: bytes,
+    old_manifest: Mapping[str, Any],
+    backup: Path,
+) -> None:
+    current = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if not isinstance(current, Mapping):
+        raise ValueError("upgraded install manifest is invalid during rollback")
+    new_entries = _manifest_entries(current, "files", required=True)
+    old_entries = _manifest_entries(old_manifest, "files", required=True)
+    _remove_manifest_paths(root, new_entries)
+    for item in _copy_order(old_entries):
+        source = _safe_child(backup, item["path"])
+        destination = _safe_child(root, item["path"])
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        _copy_manifest_entry(source, destination, item, source_root=backup)
+    if not all(
+        _entry_matches(root, _safe_child(root, item["path"]), item)
+        for item in old_entries
+    ):
+        raise ValueError("managed-service upgrade rollback verification failed")
+    _write_bytes_atomic(manifest_path, old_manifest_bytes)
+    shutil.rmtree(backup, ignore_errors=True)
+    with suppress(OSError):
+        backup.parent.rmdir()
+
+
 def uninstall_plan(
     install_root: str | Path,
     *,
     approval_store: ApprovalStore | None = None,
     security_root: str | Path | None = None,
     issue_token: bool = True,
+    managed_service: bool = False,
+    service_id: str = "artifex-managed-service",
+    service_readiness_timeout_seconds: float = 30.0,
 ) -> Any:
     root, _, manifest, _ = _load_manifest(install_root, security_root=security_root)
+    installed_service = _installed_service_registration(manifest)
+    if installed_service is not None:
+        if managed_service and service_id != installed_service.service_id:
+            raise ValueError("managed service request does not match installed ownership")
+        managed_service = True
+        service_id = installed_service.service_id
+    elif managed_service:
+        raise ValueError("installation does not own a managed service")
     managed = _manifest_files(root, manifest) + _manifest_files(
         root, manifest, field="backups", required=False
     )
+    _validate_service_readiness_timeout(service_readiness_timeout_seconds)
+    effects = [f"remove authenticated manifest-owned file {path.name}" for path in managed]
+    if managed_service:
+        effects.insert(0, "stop and unregister the per-user managed service")
     return explain_decision(
         "uninstall ARTIFEX",
         "REVERSIBLE",
-        effects=tuple(f"remove authenticated manifest-owned file {path.name}" for path in managed),
+        effects=tuple(effects),
         rollback="reinstall the frozen artifact; unrelated files remain untouched",
         binding={
             "operation": "uninstall",
             "install_root": str(root),
             "manifest_fingerprint": _manifest_fingerprint(manifest),
             "managed_files": [path.name for path in managed],
+            "managed_service": managed_service,
+            "service_id": service_id if managed_service else None,
+            "service_readiness_timeout_seconds": (
+                service_readiness_timeout_seconds if managed_service else None
+            ),
         },
         approval_store=approval_store,
         issue_token=issue_token,
@@ -386,16 +669,31 @@ def uninstall(
     running_executable: str | Path | None = None,
     force_deferred: bool | None = None,
     deferred_launcher: DeferredLauncher | None = None,
+    managed_service: bool = False,
+    service_id: str = "artifex-managed-service",
+    service_adapter: ServiceRegistrationAdapter | None = None,
+    service_readiness_timeout_seconds: float = 30.0,
 ) -> dict[str, Any]:
     root, manifest_path, manifest, key = _load_manifest(
         install_root, security_root=security_root
     )
+    installed_service = _installed_service_registration(manifest)
+    if installed_service is not None:
+        if managed_service and service_id != installed_service.service_id:
+            raise ValueError("managed service request does not match installed ownership")
+        managed_service = True
+        service_id = installed_service.service_id
+    elif managed_service:
+        raise ValueError("installation does not own a managed service")
     _verify_managed_checksums(root, manifest)
     decision = uninstall_plan(
         root,
         approval_store=approval_store,
         security_root=security_root,
         issue_token=False,
+        managed_service=managed_service,
+        service_id=service_id,
+        service_readiness_timeout_seconds=service_readiness_timeout_seconds,
     )
     require_approval(decision, confirmation_token, approval_store=approval_store)
     targets = _manifest_files(root, manifest) + _manifest_files(
@@ -404,31 +702,68 @@ def uninstall(
     current = Path(running_executable or sys.executable).resolve()
     self_managed = any(_same_file(current, target) for target in targets)
     defer = (os.name == "nt" and self_managed) if force_deferred is None else force_deferred
-    if defer:
-        request_file = _prepare_deferred_uninstall(
+    registration: ServiceRegistrationManager | None = None
+    prior_service: ServiceRegistrationManifest | None = None
+    service_result: Mapping[str, Any] | None = None
+    if managed_service:
+        registration = _service_manager(
             root,
-            manifest,
-            key,
-            security_root=security_root,
-            parent_pid=os.getpid(),
+            adapter=service_adapter,
+            readiness_timeout_seconds=service_readiness_timeout_seconds,
         )
-        launcher = deferred_launcher or _launch_deferred_helper
-        launcher(current, request_file, os.getpid())
+        prior_service = read_service_registration_manifest(
+            root / SERVICE_REGISTRATION_MANIFEST_NAME
+        )
+        if prior_service is None or prior_service.service_id != service_id:
+            raise ValueError("managed service registration is missing or has the wrong identity")
+        if not defer:
+            service_result = registration.uninstall(
+                registration.plan_uninstall(service_id)
+            ).to_dict()
+    if defer:
+        request_file: Path | None = None
+        try:
+            request_file = _prepare_deferred_uninstall(
+                root,
+                manifest,
+                key,
+                security_root=security_root,
+                parent_pid=os.getpid(),
+                service_readiness_timeout_seconds=service_readiness_timeout_seconds,
+            )
+            launcher = deferred_launcher or _launch_deferred_helper
+            launcher(current, request_file, os.getpid())
+        except Exception as exc:
+            if request_file is not None:
+                request_file.unlink(missing_ok=True)
+            raise exc
+        assert request_file is not None
         return {
             "operation": "uninstall",
             "install_root": str(root),
             "status": "DEFERRED",
             "removed": [],
             "deferred_request": str(request_file),
+            "service_registration": {
+                "status": "DEFERRED_TO_AUTHENTICATED_HELPER"
+            }
+            if prior_service is not None
+            else None,
         }
-    removed = _perform_uninstall(
-        root, manifest_path, manifest, security_root=security_root
-    )
+    try:
+        removed = _perform_uninstall(
+            root, manifest_path, manifest, security_root=security_root
+        )
+    except Exception:
+        if registration is not None and prior_service is not None:
+            _restore_service_registration(registration, prior_service)
+        raise
     return {
         "operation": "uninstall",
         "install_root": str(root),
         "status": "COMPLETE",
         "removed": removed,
+        "service_registration": service_result,
     }
 
 
@@ -438,6 +773,7 @@ def complete_deferred_uninstall(
     security_root: str | Path | None = None,
     wait_timeout_seconds: float = 30.0,
     parent_checker: ParentChecker | None = None,
+    service_adapter: ServiceRegistrationAdapter | None = None,
 ) -> dict[str, Any]:
     request_path = Path(request_file).resolve()
     try:
@@ -470,9 +806,35 @@ def complete_deferred_uninstall(
         time.sleep(0.1)
     _verify_managed_checksums(root, manifest)
     if kind == "ARTIFEX_DEFERRED_UNINSTALL":
-        removed = _perform_uninstall(
-            root, manifest_path, manifest, security_root=security_root
-        )
+        installed_service = _installed_service_registration(manifest)
+        registration: ServiceRegistrationManager | None = None
+        if installed_service is not None:
+            timeout_value = request.get("service_readiness_timeout_seconds")
+            if not isinstance(timeout_value, (int, float)):
+                raise ValueError("deferred managed-service timeout is invalid")
+            timeout_seconds = float(timeout_value)
+            _validate_service_readiness_timeout(timeout_seconds)
+            recorded = read_service_registration_manifest(
+                root / SERVICE_REGISTRATION_MANIFEST_NAME
+            )
+            if recorded != installed_service:
+                raise ValueError("deferred managed-service ownership is inconsistent")
+            registration = _service_manager(
+                root,
+                adapter=service_adapter,
+                readiness_timeout_seconds=timeout_seconds,
+            )
+            registration.uninstall(
+                registration.plan_uninstall(installed_service.service_id)
+            )
+        try:
+            removed = _perform_uninstall(
+                root, manifest_path, manifest, security_root=security_root
+            )
+        except Exception:
+            if registration is not None and installed_service is not None:
+                _restore_service_registration(registration, installed_service)
+            raise
         result: dict[str, Any] = {
             "operation": "uninstall",
             "install_root": str(root),
@@ -505,7 +867,14 @@ def complete_deferred_uninstall(
             file_entries,
         )
         try:
-            backup = _perform_upgrade(root, manifest_path, manifest, key, verified)
+            backup = _perform_upgrade(
+                root,
+                manifest_path,
+                manifest,
+                key,
+                verified,
+                service_registration=_installed_service_registration(manifest),
+            )
         finally:
             _remove_staged_bundle(stage_bundle, staging_root)
         result = {
@@ -566,6 +935,7 @@ def _prepare_deferred_uninstall(
     *,
     security_root: str | Path | None,
     parent_pid: int,
+    service_readiness_timeout_seconds: float,
 ) -> Path:
     helper_root = _security_root(security_root) / "uninstall-requests"
     helper_root.mkdir(parents=True, exist_ok=True)
@@ -577,6 +947,7 @@ def _prepare_deferred_uninstall(
             "install_root": str(root),
             "manifest_fingerprint": _manifest_fingerprint(manifest),
             "parent_pid": parent_pid,
+            "service_readiness_timeout_seconds": service_readiness_timeout_seconds,
             "expires_at": (
                 datetime.now(UTC) + timedelta(seconds=_DEFERRED_REQUEST_TTL_SECONDS)
             ).isoformat(),
@@ -791,6 +1162,115 @@ def _managed_executable(root: Path, manifest: Mapping[str, Any]) -> Path:
     if executable not in _manifest_files(root, manifest):
         raise ValueError("installed executable is not manifest managed")
     return executable
+
+
+def _service_state_root(value: str | Path | None) -> Path:
+    if value is not None:
+        selected = Path(value).expanduser()
+    elif os.name == "nt" and os.environ.get("LOCALAPPDATA"):
+        selected = Path(os.environ["LOCALAPPDATA"]) / "ARTIFEX" / "state"
+    else:
+        selected = user_state_root() / "managed-service"
+    resolved = selected.resolve()
+    if resolved.parent == resolved:
+        raise ValueError("managed service state root cannot be a filesystem root")
+    return resolved
+
+
+def _installed_service_registration(
+    manifest: Mapping[str, Any],
+) -> ServiceRegistrationManifest | None:
+    value = manifest.get("service_registration")
+    if value is None:
+        return None
+    if not isinstance(value, Mapping):
+        raise ValueError("installed managed-service identity is invalid")
+    try:
+        return ServiceRegistrationManifest.from_dict(value)
+    except ValueError as exc:
+        raise ValueError("installed managed-service identity is invalid") from exc
+
+
+def _resolve_managed_service_request(
+    manifest: Mapping[str, Any],
+    *,
+    managed_service: bool,
+    service_state_root: str | Path | None,
+    service_id: str,
+) -> tuple[bool, str | Path | None, str]:
+    installed = _installed_service_registration(manifest)
+    if installed is None:
+        if managed_service:
+            raise ValueError("installation does not own a managed service")
+        return False, service_state_root, service_id
+    if managed_service and service_id != installed.service_id:
+        raise ValueError("managed service request does not match installed ownership")
+    if service_state_root is not None and _service_state_root(service_state_root) != Path(
+        installed.state_root
+    ).resolve():
+        raise ValueError("managed service state root does not match installed ownership")
+    return True, installed.state_root, installed.service_id
+
+
+def _validate_service_readiness_timeout(value: float) -> None:
+    if not 0 < value <= 300:
+        raise ValueError("service readiness timeout must be between 0 and 300 seconds")
+
+
+def _service_manager(
+    install_root: Path,
+    *,
+    adapter: ServiceRegistrationAdapter | None,
+    readiness_timeout_seconds: float,
+) -> ServiceRegistrationManager:
+    return ServiceRegistrationManager(
+        install_root / SERVICE_REGISTRATION_MANIFEST_NAME,
+        adapter=adapter,
+        readiness_timeout_seconds=readiness_timeout_seconds,
+    )
+
+
+def _service_spec(
+    executable: Path,
+    executable_sha256: str,
+    state_root: str | Path | None,
+    service_id: str,
+    service_version: str,
+) -> ServiceRegistrationSpec:
+    resolved_state = _service_state_root(state_root)
+    return ServiceRegistrationSpec(
+        service_id=service_id,
+        service_version=service_version,
+        executable=str(executable.resolve()),
+        executable_sha256=executable_sha256,
+        arguments=(
+            "service",
+            "serve",
+            "--state-root",
+            str(resolved_state),
+            "--service-id",
+            service_id,
+        ),
+        working_directory=str(executable.resolve().parent),
+        state_root=str(resolved_state),
+        activation_policy="PLATFORM_MANAGED",
+    )
+
+
+def _restore_service_registration(
+    manager: ServiceRegistrationManager,
+    manifest: ServiceRegistrationManifest,
+) -> None:
+    manager.install(
+        ServiceRegistrationPlan(
+            operation="INSTALL",
+            service_id=manifest.service_id,
+            platform_id=manager.adapter.platform_id,
+            current_manifest_sha256=None,
+            desired_manifest=manifest,
+            no_op=False,
+        )
+    )
 
 
 def _verify_managed_checksums(root: Path, manifest: Mapping[str, Any]) -> None:

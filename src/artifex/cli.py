@@ -112,7 +112,6 @@ def service_call(
     arguments: str = typer.Option("{}", "--arguments"),
     state_root: str | None = typer.Option(None, "--state-root"),
     project_root: str | None = typer.Option(None, "--project-root"),
-    actor: str = typer.Option("cli", "--actor"),
 ) -> None:
     """Call an Application operation through the persistent managed service."""
 
@@ -128,7 +127,6 @@ def service_call(
         LocalServiceClient(state_root).call(
             operation,
             value,
-            actor=actor,
             project_root=project_root,
         )
     )
@@ -236,6 +234,12 @@ def install_command(
     source_executable: str = typer.Option(sys.executable, "--source-executable"),
     apply: bool = typer.Option(False, "--apply"),
     confirm: str | None = typer.Option(None, "--confirm"),
+    managed_service: bool = typer.Option(False, "--managed-service/--no-managed-service"),
+    service_state_root: str | None = typer.Option(None, "--service-state-root"),
+    service_id: str = typer.Option("artifex-managed-service", "--service-id"),
+    service_readiness_timeout_seconds: int = typer.Option(
+        30, "--service-readiness-timeout-seconds", min=1, max=300
+    ),
 ) -> None:
     """Plan or install the current frozen executable with a managed manifest."""
 
@@ -246,6 +250,10 @@ def install_command(
             "source_executable": source_executable,
             "install_root": install_root,
             "confirmation_token": confirm,
+            "managed_service": managed_service,
+            "service_state_root": service_state_root,
+            "service_id": service_id,
+            "service_readiness_timeout_seconds": service_readiness_timeout_seconds,
         },
     )
 
@@ -256,6 +264,12 @@ def upgrade_command(
     source_executable: str = typer.Option(sys.executable, "--source-executable"),
     apply: bool = typer.Option(False, "--apply"),
     confirm: str | None = typer.Option(None, "--confirm"),
+    managed_service: bool = typer.Option(False, "--managed-service/--no-managed-service"),
+    service_state_root: str | None = typer.Option(None, "--service-state-root"),
+    service_id: str = typer.Option("artifex-managed-service", "--service-id"),
+    service_readiness_timeout_seconds: int = typer.Option(
+        30, "--service-readiness-timeout-seconds", min=1, max=300
+    ),
 ) -> None:
     """Plan or perform a backed-up, rollback-capable executable upgrade."""
 
@@ -263,6 +277,10 @@ def upgrade_command(
     arguments: dict[str, Any] = {
         "install_root": install_root,
         "source_executable": source_executable,
+        "managed_service": managed_service,
+        "service_state_root": service_state_root,
+        "service_id": service_id,
+        "service_readiness_timeout_seconds": service_readiness_timeout_seconds,
     }
     if apply:
         arguments["confirmation_token"] = confirm
@@ -274,13 +292,24 @@ def uninstall_command(
     install_root: str = typer.Option(..., "--install-root"),
     apply: bool = typer.Option(False, "--apply"),
     confirm: str | None = typer.Option(None, "--confirm"),
+    managed_service: bool = typer.Option(False, "--managed-service/--no-managed-service"),
+    service_id: str = typer.Option("artifex-managed-service", "--service-id"),
+    service_readiness_timeout_seconds: int = typer.Option(
+        30, "--service-readiness-timeout-seconds", min=1, max=300
+    ),
 ) -> None:
     """Plan or remove only checksum-verified, manifest-owned files."""
 
     operation = "distribution.uninstall" if apply else "distribution.uninstall.plan"
     _emit(
         operation,
-        {"install_root": install_root, "confirmation_token": confirm},
+        {
+            "install_root": install_root,
+            "confirmation_token": confirm,
+            "managed_service": managed_service,
+            "service_id": service_id,
+            "service_readiness_timeout_seconds": service_readiness_timeout_seconds,
+        },
     )
 
 

@@ -1,0 +1,67 @@
+schema_version: '1.0'
+evidence_id: EVD-M7-WINDOWS-25H2-CLEAN-VM-BASE
+recorded_date: '2026-08-28'
+scope: M7_CORE_CLEAN_VM_BASE
+hypervisor:
+  product: Proxmox VE
+  manager_version: 9.2.3
+  vm_id: 104
+  vm_name: m7-win25h2-base
+  source_vm_modified: false
+  source_snapshot: VM101/clean-windows-base
+  clone_mode: FULL
+snapshot:
+  name: m7-clean-25h2-x64-base
+  unix_time: 1787891259
+  powered_off: true
+  config_sha256: 5bb62e2e59a4ec5c5f791a77486e790d338dfc1785bf7b74ca17fa2a6a87fba1
+  immutable_cell_reset_source: true
+platform:
+  product: Windows 11 Pro
+  display_version: 25H2
+  build: 26200
+  ubr: 8037
+  architecture: x64
+  qemu_guest_agent_machine: x86_64
+  selected_preferred_m7_baseline: true
+resources:
+  vcpu: 4
+  memory_mib: 8192
+  storage: local-lvm
+  network: DHCP_VM_SPECIFIC_MAC
+cleanliness:
+  computer_name: M7-WIN-BASE
+  artifex_installed: false
+  artifex_state_present: false
+  artifex_service_present: false
+  artifex_source_checkout_present: false
+  codex_installed_or_state_present: false
+  claude_installed_or_state_present: false
+  node_installed: false
+  developer_machine_evidence_used: false
+  provider_coexistence_used: false
+common_prerequisites:
+  python:
+    version: 3.12.10
+    installer_source: https://www.python.org/ftp/python/3.12.10/python-3.12.10-amd64.exe
+    installer_sha256: 67b5635e80ea51072b87941312d00ec8927c4db9ba18938f7ad2d27b328b95fb
+    authenticode_status: VALID
+    signer: Python Software Foundation
+  git:
+    version: 2.55.0.windows.3
+    installer_source: https://github.com/git-for-windows/git/releases/download/v2.55.0.windows.3/Git-2.55.0.3-64-bit.exe
+    installer_sha256: af12577d0fdff74243a5988197aa49b957d5044edc17004f6ddf0768996f1dca
+    authenticode_status: VALID
+    signer: Johannes Schindelin
+security:
+  credential_values_read_or_persisted: false
+  provider_account_identity_persisted: false
+  pii_persisted: false
+  temporary_installers_removed: true
+qualification_policy:
+  each_cell_begins_from_snapshot: true
+  reset_between_cells_required: true
+  cell_results_may_not_be_inferred: true
+  interactive_logon_required_before_service_activation: true
+  pre_logon_headless_activation_in_scope: false
+verdict: READY_FOR_SEPARATE_M7_CELL_QUALIFICATION

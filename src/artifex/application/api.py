@@ -1582,48 +1582,112 @@ class Application:
 
     @staticmethod
     def _distribution_install_plan(request: OperationRequest) -> OperationResult:
+        managed_service = _optional_bool(request.arguments, "managed_service", False)
+        readiness_timeout = _optional_int(
+            request.arguments, "service_readiness_timeout_seconds"
+        )
         decision = install_plan(
             _required_string(request.arguments, "source_executable"),
             _required_string(request.arguments, "install_root"),
+            managed_service=managed_service,
+            service_state_root=_optional_string(request.arguments, "service_state_root"),
+            service_id=_optional_string(request.arguments, "service_id")
+            or "artifex-managed-service",
+            service_readiness_timeout_seconds=float(
+                readiness_timeout if readiness_timeout is not None else 30
+            ),
         )
         return OperationResult(ok=True, value=decision.to_dict())
 
     @staticmethod
     def _distribution_install(request: OperationRequest) -> OperationResult:
+        managed_service = _optional_bool(request.arguments, "managed_service", False)
+        readiness_timeout = _optional_int(
+            request.arguments, "service_readiness_timeout_seconds"
+        )
         result = install(
             _required_string(request.arguments, "source_executable"),
             _required_string(request.arguments, "install_root"),
             confirmation_token=_optional_string(request.arguments, "confirmation_token"),
+            managed_service=managed_service,
+            service_state_root=_optional_string(request.arguments, "service_state_root"),
+            service_id=_optional_string(request.arguments, "service_id")
+            or "artifex-managed-service",
+            service_readiness_timeout_seconds=float(
+                readiness_timeout if readiness_timeout is not None else 30
+            ),
         )
         return OperationResult(ok=True, value=result.to_dict())
 
     @staticmethod
     def _distribution_upgrade(request: OperationRequest) -> OperationResult:
+        managed_service = _optional_bool(request.arguments, "managed_service", False)
+        readiness_timeout = _optional_int(
+            request.arguments, "service_readiness_timeout_seconds"
+        )
         result = upgrade(
             _required_string(request.arguments, "source_executable"),
             _required_string(request.arguments, "install_root"),
             confirmation_token=_optional_string(request.arguments, "confirmation_token"),
+            managed_service=managed_service,
+            service_state_root=_optional_string(request.arguments, "service_state_root"),
+            service_id=_optional_string(request.arguments, "service_id")
+            or "artifex-managed-service",
+            service_readiness_timeout_seconds=float(
+                readiness_timeout if readiness_timeout is not None else 30
+            ),
         )
         return OperationResult(ok=True, value=result.to_dict())
 
     @staticmethod
     def _distribution_upgrade_plan(request: OperationRequest) -> OperationResult:
+        managed_service = _optional_bool(request.arguments, "managed_service", False)
+        readiness_timeout = _optional_int(
+            request.arguments, "service_readiness_timeout_seconds"
+        )
         decision = upgrade_plan(
             _required_string(request.arguments, "source_executable"),
             _required_string(request.arguments, "install_root"),
+            managed_service=managed_service,
+            service_state_root=_optional_string(request.arguments, "service_state_root"),
+            service_id=_optional_string(request.arguments, "service_id")
+            or "artifex-managed-service",
+            service_readiness_timeout_seconds=float(
+                readiness_timeout if readiness_timeout is not None else 30
+            ),
         )
         return OperationResult(ok=True, value=decision.to_dict())
 
     @staticmethod
     def _distribution_uninstall_plan(request: OperationRequest) -> OperationResult:
-        decision = uninstall_plan(_required_string(request.arguments, "install_root"))
+        readiness_timeout = _optional_int(
+            request.arguments, "service_readiness_timeout_seconds"
+        )
+        decision = uninstall_plan(
+            _required_string(request.arguments, "install_root"),
+            managed_service=_optional_bool(request.arguments, "managed_service", False),
+            service_id=_optional_string(request.arguments, "service_id")
+            or "artifex-managed-service",
+            service_readiness_timeout_seconds=float(
+                readiness_timeout if readiness_timeout is not None else 30
+            ),
+        )
         return OperationResult(ok=True, value=decision.to_dict())
 
     @staticmethod
     def _distribution_uninstall(request: OperationRequest) -> OperationResult:
+        readiness_timeout = _optional_int(
+            request.arguments, "service_readiness_timeout_seconds"
+        )
         value = uninstall(
             _required_string(request.arguments, "install_root"),
             confirmation_token=_optional_string(request.arguments, "confirmation_token"),
+            managed_service=_optional_bool(request.arguments, "managed_service", False),
+            service_id=_optional_string(request.arguments, "service_id")
+            or "artifex-managed-service",
+            service_readiness_timeout_seconds=float(
+                readiness_timeout if readiness_timeout is not None else 30
+            ),
         )
         return OperationResult(ok=True, value=value)
 
