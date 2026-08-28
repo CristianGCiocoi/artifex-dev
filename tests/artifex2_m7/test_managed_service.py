@@ -7,7 +7,9 @@ import time
 from pathlib import Path
 
 import pytest
+from typer.testing import CliRunner
 
+from artifex.cli import app
 from artifex.managed_service import (
     LOCAL_TRANSPORT_PROTOCOL,
     LocalServiceClient,
@@ -205,3 +207,37 @@ def test_public_status_and_controlled_shutdown_operations(tmp_path: Path) -> Non
     assert not (root / ".local-transport-token").exists()
     with pytest.raises(ServiceUnavailableError, match="not running"):
         LocalServiceClient(root).status()
+
+
+@pytest.mark.integration
+def test_public_cli_routes_application_calls_through_managed_service(tmp_path: Path) -> None:
+    root = tmp_path / "state"
+    host = ManagedServiceHost(root)
+    host.start()
+    runner = CliRunner()
+    try:
+        status = runner.invoke(app, ["service", "status", "--state-root", str(root)])
+        assert status.exit_code == 0, status.stdout
+        status_value = json.loads(status.stdout)
+        assert status_value["value"]["lifecycle_state"] == "RUNNING"
+
+        health = runner.invoke(
+            app,
+            [
+                "service",
+                "call",
+                "system.health",
+                "--state-root",
+                str(root),
+                "--arguments",
+                "{}",
+            ],
+        )
+        assert health.exit_code == 0, health.stdout
+        assert json.loads(health.stdout)["ok"] is True
+
+        stopped = runner.invoke(app, ["service", "stop", "--state-root", str(root)])
+        assert stopped.exit_code == 0, stopped.stdout
+        assert json.loads(stopped.stdout)["value"] == {"shutdown_requested": True}
+    finally:
+        host.stop()
