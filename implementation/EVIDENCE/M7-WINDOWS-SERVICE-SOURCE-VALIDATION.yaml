@@ -3,7 +3,7 @@ evidence_id: EVD-M7-WINDOWS-SERVICE-SOURCE-VALIDATION
 recorded_date: '2026-08-28'
 scope: M7_WINDOWS_SERVICE_AND_QUALIFICATION_CANDIDATE_SOURCE
 canonical_base_commit: cc1980ca02857b27276b489efddd30b4be74660f
-validated_source_commit: f9906ea606c73ad1d5c8070be7f5525da9c83e6c
+validated_source_commit: 867d37acc1e820c6e862301807c4e1e5170ea481
 platform_contract:
   preferred_cell: WINDOWS_11_25H2_X64_BUILD_26200
   eligible_compatibility_cell: WINDOWS_11_24H2_X64_BUILD_26100
@@ -31,7 +31,7 @@ focused_validation:
   result: PASS
   passed: 103
   skipped: 7
-  duration_seconds: 76.53
+  duration_seconds: 76.56
 modern_combined_suite:
   command: uv run pytest --ignore=tests/test_release.py --deselect=tests/artifex2_m0/test_m0_control_plane.py::test_dashboard_and_current_state_are_deterministic_projections -q
   result: PASS
