@@ -9,17 +9,17 @@ blocked:
 - BLK-M7-SUPPORTED-PLATFORM-MATRIX-UNDEFINED
 superseded: []
 evidence_classes:
-  DESIGN_CONFORMANCE: {required_m7: true, status: PENDING, evidence: []}
-  COMPONENT: {required_m7: true, status: PENDING, evidence: []}
-  DOMAIN_INTEGRATION: {required_m7: true, status: PENDING, evidence: []}
-  PUBLIC_COMPOSITION: {required_m7: true, status: PENDING, evidence: []}
-  BLACK_BOX_OUTCOME: {required_m7: true, status: PENDING_PRODUCT_DECISION, evidence: []}
-  SECURITY_AUTHORITY: {required_m7: true, status: PENDING, evidence: []}
-  DOCUMENTATION: {required_m7: true, status: PENDING, evidence: []}
-  DASHBOARD: {required_m7: true, status: PENDING, evidence: []}
-  MIGRATION: {required_m7: true, status: PENDING, evidence: []}
-  PROVIDER_CERTIFICATION: {required_m7: true, status: PENDING_PRODUCT_DECISION, evidence: []}
+  DESIGN_CONFORMANCE: {required_m7: true, status: PASS_FOUNDATION, evidence: [EVIDENCE/M7-FOUNDATION-VALIDATION.yaml]}
+  COMPONENT: {required_m7: true, status: PASS_FOUNDATION, evidence: [EVIDENCE/M7-FOUNDATION-VALIDATION.yaml]}
+  DOMAIN_INTEGRATION: {required_m7: true, status: PASS_FOUNDATION, evidence: [EVIDENCE/M7-FOUNDATION-VALIDATION.yaml]}
+  PUBLIC_COMPOSITION: {required_m7: true, status: PASS_FOUNDATION, evidence: [EVIDENCE/M7-FOUNDATION-OUTCOME.json]}
+  BLACK_BOX_OUTCOME: {required_m7: true, status: PENDING_PRODUCT_DECISION, evidence: [EVIDENCE/M7-FOUNDATION-OUTCOME.json]}
+  SECURITY_AUTHORITY: {required_m7: true, status: PASS_FOUNDATION, evidence: [EVIDENCE/M7-FOUNDATION-VALIDATION.yaml]}
+  DOCUMENTATION: {required_m7: true, status: PASS_FOUNDATION, evidence: [EVIDENCE/M7-FOUNDATION-VALIDATION.yaml]}
+  DASHBOARD: {required_m7: true, status: PASS_FOUNDATION, evidence: [EVIDENCE/M7-FOUNDATION-VALIDATION.yaml]}
+  MIGRATION: {required_m7: true, status: PASS_FOUNDATION, evidence: [EVIDENCE/M7-FOUNDATION-VALIDATION.yaml]}
+  PROVIDER_CERTIFICATION: {required_m7: true, status: PENDING_PRODUCT_DECISION, evidence: [EVIDENCE/M7-FOUNDATION-OUTCOME.json]}
 mandatory_journeys: [J01, J02, J10, J16]
 unresolved_contradiction: null
 migration: SHIPPING_UPGRADE_PATH_FOUNDATION_ACTIVE
-verdict: ACTIVE
+verdict: BLOCKED_PRODUCT_DECISION

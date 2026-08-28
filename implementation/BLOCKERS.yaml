@@ -7,6 +7,8 @@ blockers:
   summary: The official ARTIFEX 2.0 Core supported OS, version, architecture and provider journey matrix is not defined by canonical authority
   evidence:
   - ACCEPTANCE/M7.yaml
+  - EVIDENCE/M7-FOUNDATION-VALIDATION.yaml
+  - EVIDENCE/M7-FOUNDATION-OUTCOME.json
   required_authority: PRODUCT_OWNER
   resolution: Define supported OS or VM cells, architecture and Core support tier, with J01, J02, J10 and J16 applicability and whether provider support is per-cell or required in every cell
   unrelated_work_may_continue: true

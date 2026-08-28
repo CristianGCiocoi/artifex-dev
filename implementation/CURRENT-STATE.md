@@ -10,11 +10,11 @@
 - Intake baseline: `5cc5dcfeb420a6df171a44426c04a0f08fa1e877`
 - Branch: `codex/artifex-2-m7`
 - Current milestone: `M7`
-- Current status: `ACTIVE`
+- Current status: `BLOCKED_PRODUCT_DECISION`
 - Accepted milestones: `M0, M1, M2, M3, M4, M5, M6A, M8A`
 - Ready milestones: `none`
 - Latest accepted commit: `d7fa3c4ad419bd97e401ad765128dc3560484d90`
-- Next integration point: `Implement and qualify the M7 platform-neutral service, installer, bootstrap, doctor and clean-machine harness foundation`
+- Next integration point: `Product Owner defines the official M7 supported-platform matrix; then qualify J01, J02, J10 and J16 on every applicable cell`
 - M7 started: `true`
 
 ## Work
@@ -27,7 +27,7 @@
 
 ## Acceptance
 
-- M7 verdict: `ACTIVE`
+- M7 verdict: `BLOCKED_PRODUCT_DECISION`
 - Mandatory work complete: `false`
 - Mandatory journeys: `J01, J02, J10, J16`
-- Next integration point: `Implement and qualify the M7 platform-neutral service, installer, bootstrap, doctor and clean-machine harness foundation`
+- Next integration point: `Product Owner defines the official M7 supported-platform matrix; then qualify J01, J02, J10 and J16 on every applicable cell`

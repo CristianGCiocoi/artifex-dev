@@ -1,0 +1,61 @@
+schema_version: '1.0'
+evidence_id: EVD-M7-PLATFORM-NEUTRAL-FOUNDATION
+recorded_date: '2026-08-28'
+canonical_base_commit: 14da51f530bd859afebf1ce2d9ed0348a8832f33
+implementation_commits:
+- fe6397f
+- b5ebc45
+- 23b24e7
+- 97a9d1f
+- 6f31436
+scope: M7_PLATFORM_NEUTRAL_FOUNDATION_ONLY
+shipping_artifact:
+  name: artifex_dev-1.0.0-py3-none-any.whl
+  sha256: ab858302d81c1ba822a916703f9b51eed924ff6fc52052081e319d6f001871e0
+  environment: CLEAN_WINDOWS_PYTHON_3_12_VENV
+  source_tree_imported: false
+black_box_foundation:
+  harness: tools/artifex2/qualify_m7_foundation.py
+  result: PASS_FOUNDATION_BLOCKED_PRODUCT_DECISION
+  composition: CLEAN_INSTALLED_WHEEL_PUBLIC_MANAGED_SERVICE_MULTI_PROCESS
+  raw_outcome: EVIDENCE/M7-FOUNDATION-OUTCOME.json
+  raw_outcome_sha256: 07a78c5db1b328fb687b644195a65035e4d9dccbc26c247c999cb6b2d87e35bc
+  raw_outcome_bytes: 1369
+  public_managed_service: PASS
+  public_cli_transport: PASS
+  frontend_independent: true
+  authenticated_loopback_transport: true
+  restart_advanced_coordinator_generation: true
+  fresh_runtime_consumed_setup: true
+  project_docs_dashboard_baseline: PASS
+  doctor_secret_safe: true
+  default_os_registration_adapter: FAIL_CLOSED_UNQUALIFIED
+source_quality:
+  ruff: PASS
+  mypy_strict: PASS
+  mypy_files: 92
+focused_tests:
+  m7: {passed: 22, result: PASS}
+  combined_m7_m2_application_cli_capability_distribution_mcp: {passed: 92, skipped: 7, duration_seconds: 89.50, result: PASS}
+authority_boundaries:
+  project_authority_unchanged: true
+  runstore_is_runtime_authority_only: true
+  acceptance_authority_separate: true
+  frontend_lifecycle_authoritative: false
+  no_live_os_service_mutation: true
+  no_platform_support_claim: true
+  no_atlas_runtime: true
+security:
+  credential_files_read: false
+  pii_persisted: false
+  transport_token_in_state_projection: false
+  bounded_request_bytes: 1048576
+  stale_lock_recovery: PROVEN_DEAD_PID_ONE_RETRY_ONLY
+journeys:
+  J01: FOUNDATION_PASS_LIVE_PLATFORM_CELL_PENDING
+  J02: FOUNDATION_PASS_LIVE_PLATFORM_CELL_PENDING
+  J10: NONLIVE_FOUNDATION_PASS
+  J16: FRESH_RUNTIME_CONSUMPTION_PASS_LIVE_PROVIDER_CELL_PENDING
+blocker: BLK-M7-SUPPORTED-PLATFORM-MATRIX-UNDEFINED
+verdict: BLOCKED_PRODUCT_DECISION
+unexpected_failures: []

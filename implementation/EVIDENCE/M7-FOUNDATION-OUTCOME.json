@@ -1,0 +1,37 @@
+{
+  "blocker": {
+    "class": "MISSING_PRODUCT_DECISION",
+    "id": "BLK-M7-SUPPORTED-PLATFORM-MATRIX-UNDEFINED",
+    "required_authority": "PRODUCT_OWNER"
+  },
+  "composition": "CLEAN_INSTALLED_WHEEL_PUBLIC_MANAGED_SERVICE_MULTI_PROCESS",
+  "credential_files_read": false,
+  "foundation": {
+    "authenticated_loopback_transport": true,
+    "default_os_registration_adapter": "FAIL_CLOSED_UNQUALIFIED",
+    "doctor_secret_safe": true,
+    "fresh_runtime_consumed_setup": true,
+    "frontend_independent": true,
+    "managed_service": "PASS",
+    "project_docs_dashboard_baseline": "PASS",
+    "single_coordinator_restart_generation": "PASS"
+  },
+  "journeys": {
+    "J01": "FOUNDATION_PASS_LIVE_PLATFORM_CELL_PENDING",
+    "J02": "FOUNDATION_PASS_LIVE_PLATFORM_CELL_PENDING",
+    "J10": "NONLIVE_FOUNDATION_PASS",
+    "J16": "FRESH_RUNTIME_CONSUMPTION_PASS_LIVE_PROVIDER_CELL_PENDING"
+  },
+  "pii_persisted": false,
+  "platform_observation": {
+    "machine": "AMD64",
+    "official_support_cell_claimed": false,
+    "system": "Windows"
+  },
+  "python_executable_sha256": "a639f7e00b79eba6626dce5ea77a78afa05aa40dddb0b50d564b30eb29251d85",
+  "schema_version": "1.0",
+  "shipping_artifact": "INSTALLED_WHEEL",
+  "source_tree_imported": false,
+  "status": "BLOCKED_PRODUCT_DECISION",
+  "wheel_sha256": "ab858302d81c1ba822a916703f9b51eed924ff6fc52052081e319d6f001871e0"
+}

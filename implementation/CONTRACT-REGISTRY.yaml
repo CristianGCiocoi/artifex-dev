@@ -257,7 +257,9 @@ contracts:
   - Fresh runtime consumes persisted provider setup
   evidence_references:
   - ACCEPTANCE/M7.yaml
-  implementation_state: ACTIVE
+  - EVIDENCE/M7-FOUNDATION-VALIDATION.yaml
+  - EVIDENCE/M7-FOUNDATION-OUTCOME.json
+  implementation_state: BLOCKED_PRODUCT_DECISION
   m0_baseline_state: NOT_APPLICABLE
 - id: M8A-CONTRACT
   title: M8A — Organizational Knowledge
