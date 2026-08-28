@@ -1232,8 +1232,16 @@ def _command_text(value: str | bytes, *, xml: bool = False) -> str:
         return value.decode("utf-16")
     if value.startswith(b"\xef\xbb\xbf"):
         return value.decode("utf-8-sig")
-    if xml and b"encoding=\"utf-16\"" in value[:160].lower():
-        return value.decode("utf-16")
+    if xml:
+        # ``schtasks /Query /XML`` can emit UTF-8 bytes while retaining the
+        # task document's ``encoding="UTF-16"`` declaration.  The declaration
+        # describes the stored task XML, not necessarily the redirected byte
+        # stream.  Prefer byte-order evidence over that stale declaration.
+        if value.startswith(b"<\x00?\x00x\x00m\x00l\x00"):
+            return value.decode("utf-16-le")
+        if value.startswith(b"\x00<\x00?\x00x\x00m\x00l"):
+            return value.decode("utf-16-be")
+        return value.decode("utf-8", errors="strict")
     encoding = "utf-8" if xml else locale.getpreferredencoding(False)
     return value.decode(encoding, errors="strict")
 

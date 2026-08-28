@@ -22,6 +22,7 @@ from artifex.distribution import (
     select_service_registration_adapter,
     service_registration,
 )
+from artifex.distribution.service_registration import _command_text
 
 
 class FakeTaskScheduler:
@@ -132,6 +133,20 @@ def test_windows_adapter_discovers_user_sid_from_native_byte_output() -> None:
     )
 
     assert adapter._user_sid == "S-1-5-21-42"
+
+
+def test_windows_task_xml_uses_stream_encoding_over_stale_declaration() -> None:
+    rendered = '<?xml version="1.0" encoding="UTF-16"?><Task></Task>\n'
+    native_output = rendered.encode("utf-8")
+
+    assert len(native_output) % 2 == 1
+    assert _command_text(native_output, xml=True) == rendered
+
+
+def test_windows_task_xml_still_accepts_bomless_utf16_stream() -> None:
+    rendered = '<?xml version="1.0" encoding="UTF-16"?><Task></Task>'
+
+    assert _command_text(rendered.encode("utf-16-le"), xml=True) == rendered
 
 
 class RecordingAdapter:
