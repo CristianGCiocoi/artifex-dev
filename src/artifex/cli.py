@@ -12,6 +12,7 @@ import typer
 
 from artifex.application import Application, OperationContext, OperationRequest
 from artifex.distribution import complete_deferred_uninstall
+from artifex.policy import scrub_secrets
 
 app = typer.Typer(help="ARTIFEX development continuity and validation control plane.")
 system_app = typer.Typer(help="Inspect the ARTIFEX installation.")
@@ -325,13 +326,25 @@ def complete_uninstall_command(
     value = json.loads(Path(request_file).read_text(encoding="utf-8"))
     if not isinstance(value, dict) or value.get("parent_pid") != parent_pid:
         raise typer.BadParameter("parent PID does not match signed request")
-    typer.echo(
-        json.dumps(
-            complete_deferred_uninstall(request_file),
-            sort_keys=True,
-            ensure_ascii=False,
+    try:
+        result = complete_deferred_uninstall(request_file)
+    except Exception as exc:
+        failure_path = Path(request_file).with_suffix(".failure.json")
+        failure_path.write_text(
+            json.dumps(
+                {
+                    "schema_version": "artifex.deferred-lifecycle-failure/v1",
+                    "exception_type": type(exc).__name__,
+                    "detail": scrub_secrets(str(exc))[:500],
+                },
+                sort_keys=True,
+                ensure_ascii=False,
+            )
+            + "\n",
+            encoding="utf-8",
         )
-    )
+        raise
+    typer.echo(json.dumps(result, sort_keys=True, ensure_ascii=False))
 
 
 @app.command("call")
