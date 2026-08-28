@@ -6,6 +6,7 @@ import hashlib
 import json
 from collections.abc import Callable, Mapping, Sequence
 from contextlib import suppress
+from contextvars import ContextVar
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from time import time
@@ -116,6 +117,10 @@ from artifex.workflow import ExecutionBaseline, ExecutionStatus
 CodexRunnerFactory = Callable[[tuple[str, ...]], CodexProcessRunner]
 ClaudeRunnerFactory = Callable[[tuple[str, ...]], ClaudeProcessRunner]
 
+_HOSTED_RUNTIME_SERVICE: ContextVar[ManagedRuntimeService | None] = ContextVar(
+    "artifex_hosted_runtime_service", default=None
+)
+
 
 @dataclass(frozen=True, slots=True)
 class OperationContext:
@@ -171,6 +176,7 @@ class Application:
         codex_runner_factory: CodexRunnerFactory | None = None,
         claude_runner_factory: ClaudeRunnerFactory | None = None,
         deepseek_runner: DeepSeekRunner | None = None,
+        runtime_service: ManagedRuntimeService | None = None,
     ) -> None:
         self._operations: dict[str, Operation] = {}
         self._project_root = project_root
@@ -185,6 +191,7 @@ class Application:
         self._codex_runner_factory = codex_runner_factory or _codex_process_runner
         self._claude_runner_factory = claude_runner_factory or _claude_process_runner
         self._deepseek_runner = deepseek_runner
+        self._hosted_runtime_service = runtime_service
         self.registry = (
             IntegrationRegistry((ManualIntegration(),)) if registry is None else registry
         )
@@ -281,6 +288,7 @@ class Application:
                     "OPERATION_NOT_FOUND", f"unknown operation {request.operation!r}"
                 ),
             )
+        token = _HOSTED_RUNTIME_SERVICE.set(self._hosted_runtime_service)
         try:
             return operation(request)
         except Exception as exc:  # semantic boundary: normalize transport errors
@@ -288,6 +296,8 @@ class Application:
                 ok=False,
                 error=OperationError("OPERATION_FAILED", str(exc), {"type": type(exc).__name__}),
             )
+        finally:
+            _HOSTED_RUNTIME_SERVICE.reset(token)
 
     @property
     def operation_names(self) -> tuple[str, ...]:
@@ -1722,6 +1732,27 @@ def _project_service(request: OperationRequest) -> ProjectControlService:
 
 
 def _runtime_service(request: OperationRequest) -> ManagedRuntimeService:
+    hosted = _HOSTED_RUNTIME_SERVICE.get()
+    if hosted is not None:
+        requested_store = request.arguments.get("store_path")
+        if requested_store is not None and (
+            not isinstance(requested_store, str)
+            or Path(requested_store).expanduser().resolve() != hosted.store.path
+        ):
+            raise ValueError("store_path cannot override the managed service authority")
+        requested_service_id = request.arguments.get("service_id")
+        if (
+            requested_service_id is not None
+            and requested_service_id != hosted.coordinator.holder_id
+        ):
+            raise ValueError("service_id cannot override the managed service authority")
+        requested_workspace = request.arguments.get("workspace_root")
+        if requested_workspace is not None and (
+            not isinstance(requested_workspace, str)
+            or Path(requested_workspace).expanduser().resolve() != hosted.workspaces.root
+        ):
+            raise ValueError("workspace_root cannot override the managed service authority")
+        return hosted
     store_path = _required_string(request.arguments, "store_path")
     service_id = str(request.arguments.get("service_id", "artifex-managed-service"))
     workspace_root = _optional_string(request.arguments, "workspace_root")
