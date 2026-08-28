@@ -225,3 +225,36 @@ workstreams:
   state: BLOCKED_EXTERNAL_PREREQUISITE
   blockers: [BLK-M8B-PANDORA-RUNTIME-UNAVAILABLE]
   integration_owner: ARTIFEX_2_ORCHESTRATOR
+- id: WS-M7-SERVICE-FOUNDATION
+  milestone: M7
+  purpose: Implement the platform-neutral managed-service lifecycle and frontend-independent public transport
+  owner_subagent: ARTIFEX_2_ORCHESTRATOR
+  worktree: C:\aidev\artifex-worktrees\artifex-2-m7
+  branch: codex/artifex-2-m7
+  base_commit: 14da51f530bd859afebf1ce2d9ed0348a8832f33
+  shared_contracts: [M7-CONTRACT, ADR-T003, FROZEN-INVARIANTS]
+  state: ACTIVE
+  blockers: []
+  integration_owner: ARTIFEX_2_ORCHESTRATOR
+- id: WS-M7-INSTALL-BOOTSTRAP-DOCTOR
+  milestone: M7
+  purpose: Implement transactional installation registration, fresh-runtime bootstrap consumption, doctor and manual fallback
+  owner_subagent: ARTIFEX_2_ORCHESTRATOR
+  worktree: C:\aidev\artifex-worktrees\artifex-2-m7
+  branch: codex/artifex-2-m7
+  base_commit: 14da51f530bd859afebf1ce2d9ed0348a8832f33
+  shared_contracts: [M7-CONTRACT, ADR-T015, J10, J16]
+  state: ACTIVE
+  blockers: []
+  integration_owner: ARTIFEX_2_ORCHESTRATOR
+- id: WS-M7-CLEAN-MACHINE-QUALIFICATION
+  milestone: M7
+  purpose: Build the shipping-composition journey harness and qualify declared supported platform cells
+  owner_subagent: ARTIFEX_2_ORCHESTRATOR
+  worktree: C:\aidev\artifex-worktrees\artifex-2-m7
+  branch: codex/artifex-2-m7
+  base_commit: 14da51f530bd859afebf1ce2d9ed0348a8832f33
+  shared_contracts: [M7-CONTRACT, J01, J02, J10, J16, OUTCOME-ACCEPTANCE-POLICY]
+  state: ACTIVE_FOUNDATION_ONLY
+  blockers: [BLK-M7-SUPPORTED-PLATFORM-MATRIX-UNDEFINED]
+  integration_owner: ARTIFEX_2_ORCHESTRATOR

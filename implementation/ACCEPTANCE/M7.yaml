@@ -1,0 +1,25 @@
+schema_version: '1.0'
+milestone: M7
+contract_digest: 3eac41de4cacf7be80aab12e478b99ec7c5066dccddfff6ca00a03cf5a157d48
+implementation_baseline_commit: 14da51f530bd859afebf1ce2d9ed0348a8832f33
+acceptance_commit: null
+frozen_architecture_baseline: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+mandatory_work_complete: false
+blocked:
+- BLK-M7-SUPPORTED-PLATFORM-MATRIX-UNDEFINED
+superseded: []
+evidence_classes:
+  DESIGN_CONFORMANCE: {required_m7: true, status: PENDING, evidence: []}
+  COMPONENT: {required_m7: true, status: PENDING, evidence: []}
+  DOMAIN_INTEGRATION: {required_m7: true, status: PENDING, evidence: []}
+  PUBLIC_COMPOSITION: {required_m7: true, status: PENDING, evidence: []}
+  BLACK_BOX_OUTCOME: {required_m7: true, status: PENDING_PRODUCT_DECISION, evidence: []}
+  SECURITY_AUTHORITY: {required_m7: true, status: PENDING, evidence: []}
+  DOCUMENTATION: {required_m7: true, status: PENDING, evidence: []}
+  DASHBOARD: {required_m7: true, status: PENDING, evidence: []}
+  MIGRATION: {required_m7: true, status: PENDING, evidence: []}
+  PROVIDER_CERTIFICATION: {required_m7: true, status: PENDING_PRODUCT_DECISION, evidence: []}
+mandatory_journeys: [J01, J02, J10, J16]
+unresolved_contradiction: null
+migration: SHIPPING_UPGRADE_PATH_FOUNDATION_ACTIVE
+verdict: ACTIVE

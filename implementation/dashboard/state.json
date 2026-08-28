@@ -1,95 +1,77 @@
 {
   "acceptance": {
-    "acceptance_commit": "d7fa3c4ad419bd97e401ad765128dc3560484d90",
-    "blocked": [],
-    "contract_digest": "e7c7a02ee61e64bfda4b3a18660b460967b8d167fa0734723907ca64316c82f5",
+    "acceptance_commit": null,
+    "blocked": [
+      "BLK-M7-SUPPORTED-PLATFORM-MATRIX-UNDEFINED"
+    ],
+    "contract_digest": "3eac41de4cacf7be80aab12e478b99ec7c5066dccddfff6ca00a03cf5a157d48",
     "evidence_classes": {
       "BLACK_BOX_OUTCOME": {
-        "evidence": [
-          "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json"
-        ],
-        "required_m6a": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m7": true,
+        "status": "PENDING_PRODUCT_DECISION"
       },
       "COMPONENT": {
-        "evidence": [
-          "EVIDENCE/M6A-VALIDATION.yaml"
-        ],
-        "required_m6a": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m7": true,
+        "status": "PENDING"
       },
       "DASHBOARD": {
-        "evidence": [
-          "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json"
-        ],
-        "required_m6a": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m7": true,
+        "status": "PENDING"
       },
       "DESIGN_CONFORMANCE": {
-        "evidence": [
-          "EVIDENCE/M6A-VALIDATION.yaml"
-        ],
-        "required_m6a": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m7": true,
+        "status": "PENDING"
       },
       "DOCUMENTATION": {
-        "evidence": [
-          "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json"
-        ],
-        "required_m6a": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m7": true,
+        "status": "PENDING"
       },
       "DOMAIN_INTEGRATION": {
-        "evidence": [
-          "EVIDENCE/M6A-VALIDATION.yaml"
-        ],
-        "required_m6a": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m7": true,
+        "status": "PENDING"
       },
       "MIGRATION": {
-        "evidence": [
-          "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json"
-        ],
-        "required_m6a": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m7": true,
+        "status": "PENDING"
       },
       "PROVIDER_CERTIFICATION": {
-        "evidence": [
-          "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json"
-        ],
-        "required_m6a": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m7": true,
+        "status": "PENDING_PRODUCT_DECISION"
       },
       "PUBLIC_COMPOSITION": {
-        "evidence": [
-          "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json"
-        ],
-        "required_m6a": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m7": true,
+        "status": "PENDING"
       },
       "SECURITY_AUTHORITY": {
-        "evidence": [
-          "EVIDENCE/M6A-VALIDATION.yaml"
-        ],
-        "required_m6a": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m7": true,
+        "status": "PENDING"
       }
     },
     "frozen_architecture_baseline": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
-    "implementation_baseline_commit": "99415edfc200f1288f1f3e046fb89f8c80dabd06",
+    "implementation_baseline_commit": "14da51f530bd859afebf1ce2d9ed0348a8832f33",
     "mandatory_journeys": [
+      "J01",
       "J02",
-      "J11"
+      "J10",
+      "J16"
     ],
-    "mandatory_work_complete": true,
-    "migration": "V1_CLAUDE_SETUP_REVALIDATED_WITH_REAL_READINESS",
-    "milestone": "M6A",
+    "mandatory_work_complete": false,
+    "migration": "SHIPPING_UPGRADE_PATH_FOUNDATION_ACTIVE",
+    "milestone": "M7",
     "schema_version": "1.0",
-    "superseded": [
-      "BLK-M6A-CLAUDE-CODE-UNAVAILABLE"
-    ],
+    "superseded": [],
     "unresolved_contradiction": null,
-    "verdict": "ACCEPTED"
+    "verdict": "ACTIVE"
   },
   "adrs": [
     {
@@ -720,6 +702,19 @@
     }
   ],
   "blockers": [
+    {
+      "class": "MISSING_PRODUCT_DECISION",
+      "evidence": [
+        "ACCEPTANCE/M7.yaml"
+      ],
+      "id": "BLK-M7-SUPPORTED-PLATFORM-MATRIX-UNDEFINED",
+      "required_authority": "PRODUCT_OWNER",
+      "resolution": "Define supported OS or VM cells, architecture and Core support tier, with J01, J02, J10 and J16 applicability and whether provider support is per-cell or required in every cell",
+      "scope": "M7_ACCEPTANCE",
+      "status": "OPEN",
+      "summary": "The official ARTIFEX 2.0 Core supported OS, version, architecture and provider journey matrix is not defined by canonical authority",
+      "unrelated_work_may_continue": true
+    },
     {
       "class": "EXTERNAL_PREREQUISITE",
       "evidence": [
@@ -1955,6 +1950,7 @@
     "m4_target_interaction_governance_state": "M4_ACCEPTED_ADDITIVE_STATE",
     "m5_docs_dashboard_classification": "M5_ACCEPTED_CURRENT_STALE_MISSING_CLASSIFICATION",
     "m6a_v1_claude_setup_revalidation": "PASS_FRESH_PROCESS_REAL_CLAUDE_READINESS",
+    "m7_shipping_upgrade_foundation": "ACTIVE_FROM_CANONICAL_BASELINE_14DA51F",
     "m8a_v1_instance_knowledge_promotion": "CLASSIFICATION_QUARANTINE_ONLY_ACCEPTANCE_NA",
     "m8c_v1_deepseek_setup_revalidation": "PASS_FAIL_CLOSED_NOT_DETECTED_NO_STALE_CLAIM",
     "migration_execution": "M2_ACCEPTED_EMPTY_RUNSTORE",
@@ -2061,8 +2057,8 @@
       ],
       "id": "M7",
       "mandatory_for_core_ga": true,
-      "started": false,
-      "state": "READY",
+      "started": true,
+      "state": "ACTIVE",
       "title": "Fresh-Machine Installation & Bootstrap"
     },
     {
@@ -2185,9 +2181,10 @@
   ],
   "program": {
     "architecture_status": "FROZEN",
-    "branch": "codex/artifex-2-m6a-live",
-    "current_milestone": "M6A",
-    "current_status": "ACCEPTED",
+    "branch": "codex/artifex-2-m7",
+    "canonical_integration_baseline": "14da51f530bd859afebf1ce2d9ed0348a8832f33",
+    "current_milestone": "M7",
+    "current_status": "ACTIVE",
     "dashboard_state": "CURRENT",
     "directory_variance": "PACKAGING_NAME_VARIANCE_ACCEPTED",
     "handoff_declared_directory": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF",
@@ -2204,10 +2201,11 @@
     "m4_started": true,
     "m5_started": true,
     "m6a_started": true,
+    "m7_started": true,
     "m8a_started": true,
     "m8b_started": true,
     "m8c_started": true,
-    "next_integration_point": "Reconcile fail-closed M8B/M8C provider branches on the accepted M6A baseline, then activate M7 platform-neutral foundation",
+    "next_integration_point": "Implement and qualify the M7 platform-neutral service, installer, bootstrap, doctor and clean-machine harness foundation",
     "recorded_date": "2026-08-28",
     "target_release": "2.0.0"
   },
@@ -2492,9 +2490,9 @@
   },
   "schema_version": "1.0",
   "summary": {
-    "active_blockers": 2,
+    "active_blockers": 3,
     "adr_count": 24,
-    "current_milestone": "M6A",
+    "current_milestone": "M7",
     "evidence_items": 25,
     "invariant_count": 34,
     "journey_states": {
@@ -2505,7 +2503,7 @@
       "PASS": 13
     },
     "milestones_accepted": 8,
-    "milestones_started": 10,
+    "milestones_started": 11,
     "milestones_total": 16,
     "provider_step_states": {
       "IN_PROGRESS": 2,
@@ -2513,10 +2511,10 @@
       "NOT_STARTED": 55,
       "PASS": 28
     },
-    "ready_milestones": [
-      "M7"
-    ],
+    "ready_milestones": [],
     "workstream_states": {
+      "ACTIVE": 2,
+      "ACTIVE_FOUNDATION_ONLY": 1,
       "BLOCKED_EXTERNAL_PREREQUISITE": 2,
       "COMPLETE": 16
     }
@@ -2879,6 +2877,63 @@
       ],
       "state": "BLOCKED_EXTERNAL_PREREQUISITE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m8b"
+    },
+    {
+      "base_commit": "14da51f530bd859afebf1ce2d9ed0348a8832f33",
+      "blockers": [],
+      "branch": "codex/artifex-2-m7",
+      "id": "WS-M7-SERVICE-FOUNDATION",
+      "integration_owner": "ARTIFEX_2_ORCHESTRATOR",
+      "milestone": "M7",
+      "owner_subagent": "ARTIFEX_2_ORCHESTRATOR",
+      "purpose": "Implement the platform-neutral managed-service lifecycle and frontend-independent public transport",
+      "shared_contracts": [
+        "M7-CONTRACT",
+        "ADR-T003",
+        "FROZEN-INVARIANTS"
+      ],
+      "state": "ACTIVE",
+      "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m7"
+    },
+    {
+      "base_commit": "14da51f530bd859afebf1ce2d9ed0348a8832f33",
+      "blockers": [],
+      "branch": "codex/artifex-2-m7",
+      "id": "WS-M7-INSTALL-BOOTSTRAP-DOCTOR",
+      "integration_owner": "ARTIFEX_2_ORCHESTRATOR",
+      "milestone": "M7",
+      "owner_subagent": "ARTIFEX_2_ORCHESTRATOR",
+      "purpose": "Implement transactional installation registration, fresh-runtime bootstrap consumption, doctor and manual fallback",
+      "shared_contracts": [
+        "M7-CONTRACT",
+        "ADR-T015",
+        "J10",
+        "J16"
+      ],
+      "state": "ACTIVE",
+      "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m7"
+    },
+    {
+      "base_commit": "14da51f530bd859afebf1ce2d9ed0348a8832f33",
+      "blockers": [
+        "BLK-M7-SUPPORTED-PLATFORM-MATRIX-UNDEFINED"
+      ],
+      "branch": "codex/artifex-2-m7",
+      "id": "WS-M7-CLEAN-MACHINE-QUALIFICATION",
+      "integration_owner": "ARTIFEX_2_ORCHESTRATOR",
+      "milestone": "M7",
+      "owner_subagent": "ARTIFEX_2_ORCHESTRATOR",
+      "purpose": "Build the shipping-composition journey harness and qualify declared supported platform cells",
+      "shared_contracts": [
+        "M7-CONTRACT",
+        "J01",
+        "J02",
+        "J10",
+        "J16",
+        "OUTCOME-ACCEPTANCE-POLICY"
+      ],
+      "state": "ACTIVE_FOUNDATION_ONLY",
+      "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m7"
     }
   ]
 }
