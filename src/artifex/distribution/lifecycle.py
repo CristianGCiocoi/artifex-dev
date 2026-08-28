@@ -505,8 +505,9 @@ def _perform_upgrade(
     service_registration: ServiceRegistrationManifest | None,
 ) -> Path:
     old_manifest = manifest_path.read_bytes()
-    transaction = uuid.uuid4().hex
-    backup = root / ".artifex-backups" / transaction
+    transaction = uuid.uuid4().hex[:16]
+    backup = root / ".b" / transaction
+    backup.mkdir(parents=True, exist_ok=False)
     backup_entries: list[dict[str, str]] = []
     old_entries = _manifest_entries(manifest, "files", required=True)
     new_entries = tuple(dict(item) for item in verified.files)

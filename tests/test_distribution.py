@@ -916,13 +916,13 @@ def test_deferred_self_upgrade_completes_without_running_file_replacement(
     )
     assert deferred.status == "DEFERRED"
     assert Path(installed.executable).read_bytes() == b"v1"
-    assert not (root / ".artifex-backups").exists()
+    assert not (root / ".b").exists()
     completed = complete_deferred_uninstall(
         launched[0][1], security_root=security, parent_checker=lambda _: False
     )
     assert completed["operation"] == "upgrade"
     assert Path(installed.executable).read_bytes() == b"v2"
-    assert len(list((root / ".artifex-backups").glob("*"))) == 1
+    assert len(list((root / ".b").glob("*"))) == 1
     persisted = json.loads(Path(installed.manifest).read_text(encoding="utf-8"))
     assert persisted["artifact_manifest"]["sha256"] == hashlib.sha256(b"v2").hexdigest()
 
@@ -980,7 +980,7 @@ def test_deferred_upgrade_failure_leaves_no_orphan_and_restores_manifest(
         )
     assert Path(installed.executable).read_bytes() == b"v1"
     assert Path(installed.manifest).read_bytes() == original_manifest
-    assert not (root / ".artifex-backups").exists()
+    assert not (root / ".b").exists()
     assert not list((security / "staged-artifacts").glob("*"))
 
 
@@ -1048,7 +1048,7 @@ def test_upgrade_token_is_source_bound_and_failure_restores_state(
         )
     assert executable.read_bytes() == b"v1"
     assert manifest.read_bytes() == original_manifest
-    assert not (root / ".artifex-backups").exists()
+    assert not (root / ".b").exists()
 
 
 @pytest.mark.integration
