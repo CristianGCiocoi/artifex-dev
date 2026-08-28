@@ -18,6 +18,14 @@ focused_integration:
   result: PASS
   passed: 72
   duration_seconds: 213.44
+modern_combined_suite:
+  command: uv run pytest --ignore=tests/test_release.py --deselect=tests/artifex2_m0/test_m0_control_plane.py::test_dashboard_and_current_state_are_deterministic_projections -q
+  result: PASS
+  passed: 432
+  skipped: 7
+  deselected: 1
+  duration_seconds: 679.86
+  collection_collision_corrected: tests/artifex2_m8c/test_m8c_public_outcomes.py
 m6a_revalidation:
   status: PASS
   raw_outcome_sha256: 7eec5445b780072dbb7b9a214d43cac9bf3e848924eee71e88ca15348c5946a0
@@ -69,4 +77,10 @@ known_v1_regression:
   classification: V1-R01-DASHBOARD-FIXTURE-SCHEMA-DRIFT
   disposition: PRESERVED_BASELINE_EVIDENCE
   repaired_by_m8_integration: false
+  command: uv run pytest -q tests/test_release.py::test_candidate_passes_without_optional_m10_gate
+  result: EXPECTED_BASELINE_FAILURE_REPRODUCED
+  location: tests/test_release.py:1702
+  observed_assertion: verify_release(tmp_path).passed is false
+  failed: 1
+  duration_seconds: 211.84
 unexpected_failures: []
