@@ -121,6 +121,7 @@ class ProjectRepository:
             entities=model.entities,
             governance=model.governance,
             knowledge_adoptions=model.knowledge_adoptions,
+            research_adoptions=model.research_adoptions,
             schema_version=model.schema_version,
         )
         self.save(updated)

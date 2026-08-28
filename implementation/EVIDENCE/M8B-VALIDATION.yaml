@@ -1,0 +1,87 @@
+schema_version: '1.0'
+evidence_id: EVD-M8B-VALIDATION
+milestone: M8B
+status: BLOCKED_EXTERNAL_PREREQUISITE
+recorded_date: '2026-08-28'
+canonical_base_commit: 77aeb189e3359f8a54ff1f4056dd3c8409747ef7
+m8b_implementation_commit: 332ee5d640a4a4509273d4897daab6278bbb80e9
+m8b_acceptance_commit: null
+m8b_contract_digest: 3ef2cefbdbce0e0d14f3484fb2dc3683be93ccc7f0980d12c643dd353392d7f9
+authority_inputs:
+  handoff_files: 84
+  missing: 0
+  digest_mismatches: 0
+source_quality:
+  ruff: PASS
+  mypy_strict: PASS
+  mypy_files: 89
+focused_validation:
+  command: uv run pytest -q tests/artifex2_m8b tests/test_optional_providers.py tests/test_project_model.py tests/test_application.py tests/artifex2_m8a
+  result: PASS
+  passed: 50
+  failed: 0
+domain_integration:
+  command: uv run pytest --ignore=tests/test_release.py --deselect=tests/artifex2_m0/test_m0_control_plane.py::test_dashboard_and_current_state_are_deterministic_projections -q
+  result: PASS
+  passed: 424
+  skipped: 7
+  deselected_projection_test_run_separately: 1
+  failed: 0
+  duration_seconds: 816.60
+control_plane_validation:
+  command: uv run pytest -q tests/artifex2_m0/test_m0_control_plane.py
+  result: PASS
+  passed: 7
+  failed: 0
+public_composition:
+  artifact: artifex_dev-1.0.0-py3-none-any.whl
+  artifact_sha256: a639f7e00b79eba6626dce5ea77a78afa05aa40dddb0b50d564b30eb29251d85
+  environment: CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS_PYTHON_3_12
+  source_tree_imported: false
+  custom_application_factory_used: false
+  nonlive_boundary_qualification: PASS
+  live_role_certification: BLOCKED_EXTERNAL_PREREQUISITE
+  evidence: EVIDENCE/M8B-NONLIVE-QUALIFICATION.json
+security_authority:
+  provider_role_limited_to_research: PASS
+  provider_can_mutate_project_truth: false
+  request_and_import_change_project_revision: false
+  caller_self_issued_hash_receipt_rejected: PASS
+  adoption_unreachable_without_independent_certification_authority: PASS
+  project_authority_proposal_path: DESIGNED_NOT_LIVE_QUALIFIED
+  separate_project_accept_path: DESIGNED_NOT_LIVE_QUALIFIED
+  unsafe_paths_fail_closed: PASS
+  forged_provider_lineage_fails_closed: PASS
+independent_audit_remediation:
+  finding: CALLER_SELF_ISSUED_HASH_ONLY_CERTIFICATION_COULD_UNLOCK_ADOPTION
+  disposition: FIXED_FAIL_CLOSED
+  local_receipt_issuer_present: false
+  caller_supplied_certification_path_accepted: false
+  independent_certification_authority_configured: false
+  adoption_unlockable: false
+migration:
+  existing_configuration_reused_without_revalidation: false
+  real_readiness_revalidation: BLOCKED_EXTERNAL_PREREQUISITE
+provider_certification:
+  pandora_research: PUBLIC_COMPOSITION_VERIFIED
+  live_evidence_present: false
+external_gate:
+  blocker_id: BLK-M8B-PANDORA-RUNTIME-UNAVAILABLE
+  real_runtime_reachable: false
+  supported_exchange_configured: false
+  independent_live_evidence_present: false
+v1_release_harness_regression:
+  classification: V1-R01-DASHBOARD-FIXTURE-SCHEMA-DRIFT
+  disposition: PRESERVED_BASELINE_EVIDENCE
+  source_repaired_by_m8b: false
+  canonical_test: tests/test_release.py::test_candidate_passes_without_optional_m10_gate
+  command: uv run pytest -q tests/test_release.py::test_candidate_passes_without_optional_m10_gate
+  result: EXPECTED_BASELINE_FAILURE
+  assertion: verify_release(tmp_path).passed was false
+  primary_blocker: dashboard fixture is missing required release property
+  additionally_missing: [quality, artifacts, recent_activity]
+  duration_seconds: 222.06
+unexpected_failures: []
+integration_revalidation:
+  evidence: EVIDENCE/M8-INTEGRATION-VALIDATION.yaml
+  result: PASS_FAIL_CLOSED

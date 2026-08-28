@@ -15,6 +15,12 @@ CLAUDE_SUPPORTED_VERSION_RANGE = ">=2.1.3,<3"
 CLAUDE_DISPATCH_AUTHORIZED_ROLES = frozenset(
     {ProviderRole.INTERACTION, ProviderRole.EXECUTION_IMPLEMENTER}
 )
+DEEPSEEK_SUPPORTED_VERSION_RANGE = ">=1.0.0,<2"
+# M8C remains blocked until independently anchored LIVE_ROLE_CERTIFIED evidence exists.
+# Productized roles describe the public candidate boundary; dispatch authority is a
+# separate release decision and must stay empty in the blocked source composition.
+DEEPSEEK_PRODUCTIZED_ROLES = frozenset({ProviderRole.EXECUTION_IMPLEMENTER})
+DEEPSEEK_DISPATCH_AUTHORIZED_ROLES: frozenset[ProviderRole] = frozenset()
 CERTIFICATION_LADDER = (
     "ADAPTER_IMPLEMENTED",
     "ROLE_CONFORMANCE_VERIFIED",
@@ -46,6 +52,30 @@ def claude_certification_projection(
         authorized_roles=CLAUDE_DISPATCH_AUTHORIZED_ROLES,
         live_evidence=live_evidence,
     )
+
+
+def deepseek_certification_projection(
+    live_evidence: Mapping[ProviderRole, tuple[str, ...]] | None = None,
+) -> dict[str, Any]:
+    """Project the one M8C role claimed by the stable headless boundary."""
+
+    projection = provider_certification_projection(
+        provider_id="deepseek",
+        supported_version_range=DEEPSEEK_SUPPORTED_VERSION_RANGE,
+        authorized_roles=DEEPSEEK_PRODUCTIZED_ROLES,
+        live_evidence=live_evidence,
+    )
+    projection["release_status"] = "EXPERIMENTAL"
+    projection["omitted_roles"] = [
+        {
+            "provider": "deepseek",
+            "role": role.value,
+            "state": "EXPERIMENTAL_NOT_CLAIMED",
+            "reason": "no frozen stable public role boundary",
+        }
+        for role in (ProviderRole.INTERACTION, ProviderRole.HARNESS)
+    ]
+    return projection
 
 
 def provider_certification_projection(

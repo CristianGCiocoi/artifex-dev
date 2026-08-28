@@ -1,0 +1,25 @@
+schema_version: '1.0'
+milestone: M8C
+contract_digest: 686191f28ba33b59db39cc67ea654d71766365c6d587041c8b0c7badb6c66929
+implementation_baseline_commit: 77aeb189e3359f8a54ff1f4056dd3c8409747ef7
+acceptance_commit: null
+frozen_architecture_baseline: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+mandatory_work_complete: false
+blocked:
+- BLK-M8C-DEEPSEEK-LIVE-PREREQUISITES
+superseded: []
+evidence_classes:
+  DESIGN_CONFORMANCE: {required_m8c: true, status: PASS, evidence: [EVIDENCE/M8C-EXECUTABLE-CONTRACT.yaml, EVIDENCE/M8C-VALIDATION.yaml]}
+  COMPONENT: {required_m8c: true, status: PASS, evidence: [EVIDENCE/M8C-VALIDATION.yaml]}
+  DOMAIN_INTEGRATION: {required_m8c: true, status: PASS, evidence: [EVIDENCE/M8C-VALIDATION.yaml]}
+  PUBLIC_COMPOSITION: {required_m8c: true, status: PASS, evidence: [EVIDENCE/M8C-PUBLIC-OUTCOME.json]}
+  BLACK_BOX_OUTCOME: {required_m8c: true, status: BLOCKED_EXTERNAL_PREREQUISITE, evidence: [EVIDENCE/M8C-PUBLIC-OUTCOME.json]}
+  SECURITY_AUTHORITY: {required_m8c: true, status: PASS, evidence: [EVIDENCE/M8C-VALIDATION.yaml]}
+  DOCUMENTATION: {required_m8c: true, status: PASS, evidence: [EVIDENCE/M8C-VALIDATION.yaml]}
+  DASHBOARD: {required_m8c: true, status: PASS, evidence: [EVIDENCE/M8C-VALIDATION.yaml]}
+  MIGRATION: {required_m8c: true, status: PASS, evidence: [EVIDENCE/M8C-PUBLIC-OUTCOME.json]}
+  PROVIDER_CERTIFICATION: {required_m8c: true, status: BLOCKED_EXTERNAL_PREREQUISITE, evidence: [EVIDENCE/M8C-PUBLIC-OUTCOME.json]}
+mandatory_journeys: []
+unresolved_contradiction: null
+migration: V1_DEEPSEEK_SETUP_REVALIDATED_FAIL_CLOSED_NO_STALE_CERTIFICATION
+verdict: BLOCKED_EXTERNAL_PREREQUISITE

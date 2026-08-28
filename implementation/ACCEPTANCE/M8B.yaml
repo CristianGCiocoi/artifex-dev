@@ -1,0 +1,24 @@
+schema_version: '1.0'
+milestone: M8B
+contract_digest: 3ef2cefbdbce0e0d14f3484fb2dc3683be93ccc7f0980d12c643dd353392d7f9
+implementation_baseline_commit: 332ee5d640a4a4509273d4897daab6278bbb80e9
+acceptance_commit: null
+frozen_architecture_baseline: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+mandatory_work_complete: false
+blocked: [BLK-M8B-PANDORA-RUNTIME-UNAVAILABLE]
+superseded: []
+evidence_classes:
+  DESIGN_CONFORMANCE: {required_m8b: true, status: PASS, evidence: [EVIDENCE/M8B-VALIDATION.yaml]}
+  COMPONENT: {required_m8b: true, status: PASS, evidence: [EVIDENCE/M8B-VALIDATION.yaml]}
+  DOMAIN_INTEGRATION: {required_m8b: true, status: PASS, evidence: [EVIDENCE/M8B-VALIDATION.yaml]}
+  PUBLIC_COMPOSITION: {required_m8b: true, status: PASS, evidence: [EVIDENCE/M8B-NONLIVE-QUALIFICATION.json]}
+  BLACK_BOX_OUTCOME: {required_m8b: true, status: BLOCKED_EXTERNAL_PREREQUISITE, evidence: [EVIDENCE/M8B-NONLIVE-QUALIFICATION.json]}
+  SECURITY_AUTHORITY: {required_m8b: true, status: PASS, evidence: [EVIDENCE/M8B-VALIDATION.yaml]}
+  DOCUMENTATION: {required_m8b: true, status: PASS, evidence: [EVIDENCE/M8B-VALIDATION.yaml]}
+  DASHBOARD: {required_m8b: true, status: PASS, evidence: [EVIDENCE/M8B-VALIDATION.yaml]}
+  MIGRATION: {required_m8b: true, status: BLOCKED_EXTERNAL_PREREQUISITE, evidence: [EVIDENCE/M8B-NONLIVE-QUALIFICATION.json]}
+  PROVIDER_CERTIFICATION: {required_m8b: true, status: BLOCKED_EXTERNAL_PREREQUISITE, evidence: [EVIDENCE/M8B-NONLIVE-QUALIFICATION.json]}
+mandatory_journeys: [J13]
+unresolved_contradiction: null
+migration: EXISTING_PANDORA_CONFIGURATION_REVALIDATION_BLOCKED_UNTIL_REAL_READINESS
+verdict: BLOCKED_EXTERNAL_PREREQUISITE

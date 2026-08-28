@@ -18,6 +18,7 @@ integration_app = typer.Typer(help="Inspect and select replaceable integrations.
 manual_app = typer.Typer(help="Exchange portable manual execution packets and results.")
 project_app = typer.Typer(help="Read semantic project state.")
 research_app = typer.Typer(help="Validate provider-neutral research contracts.")
+pandora_app = typer.Typer(help="Use the optional Pandora RESEARCH provider boundary.")
 documentation_app = typer.Typer(help="Inspect and selectively regenerate Project documentation.")
 dashboard_app = typer.Typer(help="Inspect Project and Platform operational views.")
 reality_app = typer.Typer(help="Inspect sourced Observed Reality and divergences.")
@@ -26,6 +27,7 @@ app.add_typer(integration_app, name="integration")
 app.add_typer(manual_app, name="manual")
 app.add_typer(project_app, name="project")
 app.add_typer(research_app, name="research")
+research_app.add_typer(pandora_app, name="pandora")
 app.add_typer(documentation_app, name="documentation")
 app.add_typer(dashboard_app, name="dashboard")
 app.add_typer(reality_app, name="reality")
@@ -481,6 +483,61 @@ def research_bundle_validate(bundle_file: Path) -> None:
     """Validate a ResearchBundle without treating it as a Core decision."""
 
     _emit("research.bundle.validate", {"bundle": _load_object(bundle_file)})
+
+
+@pandora_app.command("readiness")
+def pandora_readiness(
+    exchange_root: str = typer.Option(..., "--exchange-root"),
+) -> None:
+    """Report contract identity separately from live RESEARCH certification."""
+
+    _emit("research.pandora.readiness", {"exchange_root": exchange_root})
+
+
+@pandora_app.command("request")
+def pandora_request(
+    request_file: Path,
+    exchange_root: str = typer.Option(..., "--exchange-root"),
+) -> None:
+    """Atomically export one provider-neutral request to Pandora."""
+
+    _emit(
+        "research.pandora.request",
+        {"exchange_root": exchange_root, "request": _load_object(request_file)},
+    )
+
+
+@pandora_app.command("import")
+def pandora_import(
+    request_file: Path,
+    exchange_root: str = typer.Option(..., "--exchange-root"),
+) -> None:
+    """Import validated evidence without mutating Project truth."""
+
+    _emit(
+        "research.pandora.import",
+        {"exchange_root": exchange_root, "request": _load_object(request_file)},
+    )
+
+
+@pandora_app.command("propose-adoption")
+def pandora_propose_adoption(
+    request_file: Path,
+    project_root: str = typer.Option(..., "--project-root"),
+    exchange_root: str = typer.Option(..., "--exchange-root"),
+    expected_revision: int = typer.Option(..., "--expected-revision"),
+) -> None:
+    """Create a Project Authority proposal; acceptance remains a separate command."""
+
+    _emit(
+        "research.pandora.adoption.propose",
+        {
+            "exchange_root": exchange_root,
+            "request": _load_object(request_file),
+            "expected_revision": expected_revision,
+        },
+        project_root=project_root,
+    )
 
 
 if __name__ == "__main__":

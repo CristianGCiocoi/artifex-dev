@@ -300,6 +300,107 @@ class ProjectKnowledgeAdoption:
 
 
 @dataclass(frozen=True, slots=True)
+class ProjectResearchAdoption:
+    """Research evidence explicitly accepted into Project semantic history.
+
+    The external provider remains evidence-only.  This record exists only after a
+    SemanticProposal is accepted by Project Authority.
+    """
+
+    provider_id: str
+    provider_role: str
+    provider_instance_id: str
+    provider_version: str
+    certification_receipt_id: str
+    request_id: str
+    bundle_id: str
+    request_sha256: str
+    bundle_sha256: str
+    report_sha256: str
+    source_manifest_sha256: str
+    findings: tuple[str, ...]
+    source_uris: tuple[str, ...]
+    proposed_by: str
+    proposed_at: str
+
+    def __post_init__(self) -> None:
+        required = (
+            self.provider_id,
+            self.provider_role,
+            self.provider_instance_id,
+            self.provider_version,
+            self.certification_receipt_id,
+            self.request_id,
+            self.bundle_id,
+            self.proposed_by,
+            self.proposed_at,
+        )
+        if not all(value.strip() for value in required):
+            raise ValueError("research adoption identity and attribution are required")
+        if self.provider_id != "pandora" or self.provider_role != "RESEARCH":
+            raise ValueError("M8B research adoption requires Pandora RESEARCH authority")
+        digests = (
+            self.certification_receipt_id,
+            self.request_sha256,
+            self.bundle_sha256,
+            self.report_sha256,
+            self.source_manifest_sha256,
+        )
+        if any(
+            len(value) != 64
+            or any(character not in "0123456789abcdef" for character in value)
+            for value in digests
+        ):
+            raise ValueError("research adoption bindings must be canonical SHA-256 digests")
+        if not self.findings or any(not value.strip() for value in self.findings):
+            raise ValueError("research adoption requires non-empty findings")
+        if not self.source_uris or any(not value.strip() for value in self.source_uris):
+            raise ValueError("research adoption requires source provenance")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "provider_id": self.provider_id,
+            "provider_role": self.provider_role,
+            "provider_instance_id": self.provider_instance_id,
+            "provider_version": self.provider_version,
+            "certification_receipt_id": self.certification_receipt_id,
+            "request_id": self.request_id,
+            "bundle_id": self.bundle_id,
+            "request_sha256": self.request_sha256,
+            "bundle_sha256": self.bundle_sha256,
+            "report_sha256": self.report_sha256,
+            "source_manifest_sha256": self.source_manifest_sha256,
+            "findings": list(self.findings),
+            "source_uris": list(self.source_uris),
+            "proposed_by": self.proposed_by,
+            "proposed_at": self.proposed_at,
+            "authority": "PROJECT_AUTHORITY",
+        }
+
+    @classmethod
+    def from_dict(cls, value: Mapping[str, Any]) -> ProjectResearchAdoption:
+        if value.get("authority", "PROJECT_AUTHORITY") != "PROJECT_AUTHORITY":
+            raise ValueError("research adoption cannot claim external semantic authority")
+        return cls(
+            provider_id=str(value["provider_id"]),
+            provider_role=str(value["provider_role"]),
+            provider_instance_id=str(value["provider_instance_id"]),
+            provider_version=str(value["provider_version"]),
+            certification_receipt_id=str(value["certification_receipt_id"]),
+            request_id=str(value["request_id"]),
+            bundle_id=str(value["bundle_id"]),
+            request_sha256=str(value["request_sha256"]),
+            bundle_sha256=str(value["bundle_sha256"]),
+            report_sha256=str(value["report_sha256"]),
+            source_manifest_sha256=str(value["source_manifest_sha256"]),
+            findings=tuple(_string_sequence(value.get("findings", []), "findings")),
+            source_uris=tuple(_string_sequence(value.get("source_uris", []), "source_uris")),
+            proposed_by=str(value["proposed_by"]),
+            proposed_at=str(value["proposed_at"]),
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class Provenance:
     path: str
     commit: str | None = None
@@ -443,6 +544,7 @@ class ProjectModel:
     entities: tuple[StructuredEntity, ...] = ()
     governance: ProjectGovernanceState = field(default_factory=ProjectGovernanceState)
     knowledge_adoptions: tuple[ProjectKnowledgeAdoption, ...] = ()
+    research_adoptions: tuple[ProjectResearchAdoption, ...] = ()
     schema_version: str = SCHEMA_VERSION
 
     def __post_init__(self) -> None:
@@ -468,6 +570,9 @@ class ProjectModel:
         knowledge_ids = [item.organizational_knowledge_id for item in self.knowledge_adoptions]
         if len(set(knowledge_ids)) != len(knowledge_ids):
             raise ValueError("organizational knowledge may be adopted only once per Project")
+        research_ids = [item.bundle_id for item in self.research_adoptions]
+        if len(set(research_ids)) != len(research_ids):
+            raise ValueError("a research bundle may be adopted only once per Project")
 
     def to_dict(self) -> dict[str, Any]:
         value: dict[str, Any] = {
@@ -483,6 +588,8 @@ class ProjectModel:
             value["governance"] = self.governance.to_dict()
         if self.knowledge_adoptions:
             value["knowledge_adoptions"] = [item.to_dict() for item in self.knowledge_adoptions]
+        if self.research_adoptions:
+            value["research_adoptions"] = [item.to_dict() for item in self.research_adoptions]
         return value
 
     @classmethod
@@ -494,6 +601,9 @@ class ProjectModel:
         governance_value = _mapping(value.get("governance", {}), "governance")
         adoption_values = _mapping_sequence(
             value.get("knowledge_adoptions", []), "knowledge_adoptions"
+        )
+        research_values = _mapping_sequence(
+            value.get("research_adoptions", []), "research_adoptions"
         )
         remote_values = _mapping_sequence(git_value.get("remotes", []), "git.remotes")
         project = ProjectInfo(
@@ -519,6 +629,9 @@ class ProjectModel:
             governance=ProjectGovernanceState.from_dict(governance_value),
             knowledge_adoptions=tuple(
                 ProjectKnowledgeAdoption.from_dict(item) for item in adoption_values
+            ),
+            research_adoptions=tuple(
+                ProjectResearchAdoption.from_dict(item) for item in research_values
             ),
             schema_version=str(value.get("schema_version", SCHEMA_VERSION)),
         )

@@ -20,7 +20,7 @@
 ## Work
 
 - Active workstreams: `none`
-- Active blockers: `0`
+- Active blockers: `2`
 - Dashboard state: `CURRENT`
 - V1 regression state: `PASS`
 - Migration state: `M0_BASELINE_ACCEPTED`

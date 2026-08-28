@@ -57,7 +57,10 @@ def _scrub(text: str) -> str:
         r"\1<redacted>",
         value,
     )
-    return value[:_MAX_EXCERPT]
+    if len(value) <= _MAX_EXCERPT:
+        return value
+    half = _MAX_EXCERPT // 2
+    return f"{value[:half]}\n[DIAGNOSTIC TRUNCATED]\n{value[-half:]}"
 
 
 def _qualification_temporary_parent(repo_root: Path | None) -> Path | None:

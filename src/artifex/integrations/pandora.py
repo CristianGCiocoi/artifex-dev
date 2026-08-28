@@ -8,6 +8,7 @@ import os
 import uuid
 from collections.abc import Mapping
 from dataclasses import dataclass
+from datetime import datetime
 from enum import StrEnum
 from pathlib import Path
 from typing import Any, Protocol
@@ -28,6 +29,98 @@ from artifex.project.model import WorkflowDepth
 
 _MAX_BUNDLE_BYTES = 16 * 1024 * 1024
 _MAX_REPORT_BYTES = 16 * 1024 * 1024
+_PROVIDER_MANIFEST = "pandora-provider.json"
+
+
+def _canonical_sha256(value: object) -> str:
+    encoded = json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+        allow_nan=False,
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+@dataclass(frozen=True, slots=True)
+class PandoraProviderManifest:
+    """Provider-written identity for the filesystem exchange contract.
+
+    A valid manifest proves contract identity only.  It is deliberately not live
+    role certification.
+    """
+
+    instance_id: str
+    version: str
+    contract: str
+    issued_at: str
+    schema_version: str = "1.0"
+
+    def __post_init__(self) -> None:
+        if self.schema_version != "1.0":
+            raise IntegrationError("unsupported Pandora provider manifest schema")
+        if not all(
+            item.strip() for item in (self.instance_id, self.version, self.contract, self.issued_at)
+        ):
+            raise IntegrationError("Pandora provider manifest identity is incomplete")
+        if self.contract != "filesystem-contract-v1":
+            raise IntegrationError("Pandora provider manifest contract is unsupported")
+        try:
+            parsed = datetime.fromisoformat(self.issued_at.replace("Z", "+00:00"))
+        except ValueError as exc:
+            raise IntegrationError("Pandora provider manifest timestamp is invalid") from exc
+        if parsed.tzinfo is None:
+            raise IntegrationError("Pandora provider manifest timestamp must be timezone-aware")
+
+    def to_dict(self) -> dict[str, str]:
+        return {
+            "schema_version": self.schema_version,
+            "provider_id": "pandora",
+            "role": "RESEARCH",
+            "instance_id": self.instance_id,
+            "version": self.version,
+            "contract": self.contract,
+            "issued_at": self.issued_at,
+        }
+
+    @classmethod
+    def from_dict(cls, value: Mapping[str, Any]) -> PandoraProviderManifest:
+        if value.get("provider_id") != "pandora" or value.get("role") != "RESEARCH":
+            raise IntegrationError("Pandora manifest may declare only the RESEARCH role")
+        return cls(
+            instance_id=str(value.get("instance_id", "")),
+            version=str(value.get("version", "")),
+            contract=str(value.get("contract", "")),
+            issued_at=str(value.get("issued_at", "")),
+            schema_version=str(value.get("schema_version", "")),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class PandoraReadiness:
+    state: str
+    checks: Mapping[str, bool]
+    manifest: PandoraProviderManifest | None
+    detail: str
+
+    @property
+    def available_for_research(self) -> bool:
+        return self.state == "AVAILABLE" and all(self.checks.values())
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "provider_id": "pandora",
+            "role": "RESEARCH",
+            "state": self.state,
+            "checks": dict(sorted(self.checks.items())),
+            "globally_available": self.available_for_research,
+            "available_for": "RESEARCH" if self.available_for_research else None,
+            "manifest": self.manifest.to_dict() if self.manifest else None,
+            "certification": None,
+            "certification_authority": "UNAVAILABLE",
+            "detail": self.detail,
+        }
 
 
 class ResearchTransport(Protocol):
@@ -243,6 +336,118 @@ class PandoraResearchAdapter:
         )
 
 
+class PandoraResearchService:
+    """M8B product surface over the V1 evidence transport.
+
+    Request export and evidence import never mutate a Project.  Adoption creates a
+    semantic proposal and deliberately leaves acceptance to Project Authority.
+    """
+
+    def __init__(
+        self,
+        exchange_root: str | Path,
+    ) -> None:
+        self.transport = FilesystemResearchTransport(exchange_root)
+        self.adapter = PandoraResearchAdapter(self.transport)
+
+    def readiness(self) -> PandoraReadiness:
+        root = self.transport.exchange_root
+        checks = {
+            "exchange_root_safe": root.is_dir() and not root.is_symlink(),
+            "provider_manifest_valid": False,
+            "independent_certification_authority_configured": False,
+            "live_role_certified": False,
+        }
+        manifest: PandoraProviderManifest | None = None
+        if checks["exchange_root_safe"]:
+            try:
+                manifest = _read_provider_manifest(root)
+                checks["provider_manifest_valid"] = True
+            except IntegrationError:
+                manifest = None
+        state = "CONFIGURED" if checks["exchange_root_safe"] else "NOT_DETECTED"
+        detail = (
+            "Pandora filesystem contract is configured, but no independently anchored "
+            "certification authority is available; caller-supplied receipts are forbidden"
+            if state == "CONFIGURED"
+            else "Pandora exchange root is unavailable"
+        )
+        return PandoraReadiness(state, checks, manifest, detail)
+
+    def export_request(self, request: ResearchRequest) -> dict[str, Any]:
+        manifest = _read_provider_manifest(self.transport.exchange_root)
+        path = self.adapter.export_request(request)
+        request_sha256 = _canonical_sha256(request.to_dict())
+        return {
+            "request": request.to_dict(),
+            "request_path": str(path),
+            "request_sha256": request_sha256,
+            "provider_manifest": manifest.to_dict(),
+            "canonical": False,
+            "authority": "research-request-only",
+        }
+
+    def import_evidence(self, request: ResearchRequest) -> dict[str, Any]:
+        manifest = _read_provider_manifest(self.transport.exchange_root)
+        imported = self.adapter.import_bundle(request)
+        _validate_provider_generation(imported.bundle, manifest)
+        return {
+            "imported": imported.to_dict(),
+            "request_sha256": _canonical_sha256(request.to_dict()),
+            "source_manifest_sha256": _canonical_sha256(
+                [source.to_dict() for source in imported.bundle.source_manifest]
+            ),
+            "provider_manifest": manifest.to_dict(),
+            "canonical": False,
+            "authority": "research-evidence-only",
+        }
+
+    def propose_adoption(
+        self,
+        *,
+        project_root: str | Path,
+        request: ResearchRequest,
+        expected_revision: int,
+        actor: str,
+        proposed_at: str | None = None,
+    ) -> dict[str, Any]:
+        readiness = self.readiness()
+        if not readiness.available_for_research:
+            raise IntegrationError(
+                "Pandora lacks independently anchored LIVE_ROLE_CERTIFIED authority and "
+                "cannot supply an adoption proposal"
+            )
+        assert readiness.manifest is not None
+        raise AssertionError("unreachable until an independent certification authority exists")
+
+
+def _read_provider_manifest(root: Path) -> PandoraProviderManifest:
+    path = root / _PROVIDER_MANIFEST
+    raw = _read_regular_file(path, maximum=64 * 1024)
+    try:
+        value = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise IntegrationError("Pandora provider manifest must be UTF-8 JSON") from exc
+    if not isinstance(value, Mapping):
+        raise IntegrationError("Pandora provider manifest must be an object")
+    return PandoraProviderManifest.from_dict(value)
+
+
+def _validate_provider_generation(
+    bundle: ResearchBundle, manifest: PandoraProviderManifest
+) -> None:
+    metadata = bundle.generation_metadata
+    expected = {
+        "provider_id": "pandora",
+        "provider_instance_id": manifest.instance_id,
+        "provider_version": manifest.version,
+        "provider_role": "RESEARCH",
+    }
+    for key, value in expected.items():
+        if metadata.get(key) != value:
+            raise IntegrationError(f"Pandora bundle generation metadata mismatches {key}")
+
+
 def _validate_identifier(value: str) -> None:
     # ResearchRequest already enforces this, but the transport seam is callable directly.
     portable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-"
@@ -341,7 +546,10 @@ def _read_regular_file(path: Path, *, maximum: int) -> bytes:
 __all__ = [
     "FilesystemResearchTransport",
     "ImportedResearch",
+    "PandoraProviderManifest",
+    "PandoraReadiness",
     "PandoraResearchAdapter",
+    "PandoraResearchService",
     "ResearchPolicyDecision",
     "ResearchRoute",
     "ResearchTransport",

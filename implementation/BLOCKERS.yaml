@@ -1,5 +1,25 @@
 schema_version: '1.0'
-blockers: []
+blockers:
+- id: BLK-M8C-DEEPSEEK-LIVE-PREREQUISITES
+  scope: M8C
+  class: EXTERNAL_PREREQUISITE
+  status: OPEN
+  summary: Stable DeepSeek CLI, native authentication, endpoint and model are not qualified
+  evidence:
+  - EVIDENCE/M8C-PUBLIC-OUTCOME.json
+  required_authority: HUMAN_ENVIRONMENT_OWNER
+  resolution: Provide a supported DeepSeek 1.x CLI and an approved authenticated provider boundary, then run the installed-wheel live execution qualifier
+  unrelated_work_may_continue: true
+- id: BLK-M8B-PANDORA-RUNTIME-UNAVAILABLE
+  scope: M8B
+  class: EXTERNAL_PREREQUISITE
+  status: OPEN
+  summary: A real reachable Pandora RESEARCH runtime and live public-composition evidence are unavailable
+  evidence:
+  - EVIDENCE/M8B-NONLIVE-QUALIFICATION.json
+  required_authority: HUMAN_ENVIRONMENT_OWNER
+  resolution: Provide a real Pandora runtime, supported RESEARCH exchange identity, and independent live qualification evidence
+  unrelated_work_may_continue: true
 observations:
 - id: BLK-M6A-CLAUDE-CODE-UNAVAILABLE
   scope: M6A

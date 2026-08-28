@@ -719,7 +719,34 @@
       "type": "FROZEN_ADR"
     }
   ],
-  "blockers": [],
+  "blockers": [
+    {
+      "class": "EXTERNAL_PREREQUISITE",
+      "evidence": [
+        "EVIDENCE/M8C-PUBLIC-OUTCOME.json"
+      ],
+      "id": "BLK-M8C-DEEPSEEK-LIVE-PREREQUISITES",
+      "required_authority": "HUMAN_ENVIRONMENT_OWNER",
+      "resolution": "Provide a supported DeepSeek 1.x CLI and an approved authenticated provider boundary, then run the installed-wheel live execution qualifier",
+      "scope": "M8C",
+      "status": "OPEN",
+      "summary": "Stable DeepSeek CLI, native authentication, endpoint and model are not qualified",
+      "unrelated_work_may_continue": true
+    },
+    {
+      "class": "EXTERNAL_PREREQUISITE",
+      "evidence": [
+        "EVIDENCE/M8B-NONLIVE-QUALIFICATION.json"
+      ],
+      "id": "BLK-M8B-PANDORA-RUNTIME-UNAVAILABLE",
+      "required_authority": "HUMAN_ENVIRONMENT_OWNER",
+      "resolution": "Provide a real Pandora runtime, supported RESEARCH exchange identity, and independent live qualification evidence",
+      "scope": "M8B",
+      "status": "OPEN",
+      "summary": "A real reachable Pandora RESEARCH runtime and live public-composition evidence are unavailable",
+      "unrelated_work_may_continue": true
+    }
+  ],
   "evidence": [
     {
       "bytes": 9924,
@@ -797,6 +824,11 @@
       "sha256": "768167e32f511cb7b4cbff79719c8ca7754e202e50689fd1446a91265f9f61f1"
     },
     {
+      "bytes": 3506,
+      "path": "implementation/EVIDENCE/M8-INTEGRATION-VALIDATION.yaml",
+      "sha256": "b64a626aff37502734baae73ef3c37c2ca896383f0f83a636d67ff1236b7e76f"
+    },
+    {
       "bytes": 952,
       "path": "implementation/EVIDENCE/M8A-PUBLIC-OUTCOME.json",
       "sha256": "f227f743aad9c14a004a5457665579dab81d75332e1d308eaeea2d28af8523c5"
@@ -805,6 +837,31 @@
       "bytes": 1979,
       "path": "implementation/EVIDENCE/M8A-VALIDATION.yaml",
       "sha256": "8838b99b4041cd16cba9d5bf672f72fc92f07a89d38566fafea1d02c38251cb6"
+    },
+    {
+      "bytes": 1478,
+      "path": "implementation/EVIDENCE/M8B-NONLIVE-QUALIFICATION.json",
+      "sha256": "124d120eb136aed026d583a2d03cb18f0ecf4abed00b1ee9878ff6fa8fa7fb82"
+    },
+    {
+      "bytes": 3570,
+      "path": "implementation/EVIDENCE/M8B-VALIDATION.yaml",
+      "sha256": "f79f84d3bb193e9c23fcad1047bc8ef7599aa288a7e9cf997b92f5a64808378e"
+    },
+    {
+      "bytes": 2431,
+      "path": "implementation/EVIDENCE/M8C-EXECUTABLE-CONTRACT.yaml",
+      "sha256": "93597852093b05c46854951e74a7d9baa89f6670db4a9f092733ef551e13128f"
+    },
+    {
+      "bytes": 3599,
+      "path": "implementation/EVIDENCE/M8C-PUBLIC-OUTCOME.json",
+      "sha256": "4eb7fcd2e3572b67c4283670b9f4ce2a17298515304df3c36c8f95105deb1f0e"
+    },
+    {
+      "bytes": 3570,
+      "path": "implementation/EVIDENCE/M8C-VALIDATION.yaml",
+      "sha256": "0de9cf5564ebf056e870522a7bfbe459f380fc615bed75f3fca7ca492efa93f8"
     },
     {
       "bytes": 3220,
@@ -1709,13 +1766,15 @@
       "title": "J12 — Organizational Knowledge"
     },
     {
-      "blocker": "M0 has no mandatory journeys; milestone dependencies not accepted",
-      "environment": null,
-      "evidence": [],
+      "blocker": "BLK-M8B-PANDORA-RUNTIME-UNAVAILABLE",
+      "environment": "CLEAN_TEMPORARY_WHEEL_VENV_WINDOWS_PANDORA_RUNTIME_ABSENT",
+      "evidence": [
+        "EVIDENCE/M8B-NONLIVE-QUALIFICATION.json"
+      ],
       "id": "J13",
-      "last_run": null,
-      "public_shipping_composition": null,
-      "status": "NOT_STARTED",
+      "last_run": "2026-08-28",
+      "public_shipping_composition": "INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS_NON_LIVE",
+      "status": "BLOCKED_EXTERNAL_PREREQUISITE",
       "title": "J13 — Pandora Research"
     },
     {
@@ -1897,6 +1956,7 @@
     "m5_docs_dashboard_classification": "M5_ACCEPTED_CURRENT_STALE_MISSING_CLASSIFICATION",
     "m6a_v1_claude_setup_revalidation": "PASS_FRESH_PROCESS_REAL_CLAUDE_READINESS",
     "m8a_v1_instance_knowledge_promotion": "CLASSIFICATION_QUARANTINE_ONLY_ACCEPTANCE_NA",
+    "m8c_v1_deepseek_setup_revalidation": "PASS_FAIL_CLOSED_NOT_DETECTED_NO_STALE_CLAIM",
     "migration_execution": "M2_ACCEPTED_EMPTY_RUNSTORE",
     "milestone": "M3",
     "mode": "M3_ACCEPTED_PROVIDER_SETUP_SCHEMA",
@@ -2023,8 +2083,8 @@
       ],
       "id": "M8B",
       "mandatory_for_core_ga": false,
-      "started": false,
-      "state": "READY_UNCLAIMED",
+      "started": true,
+      "state": "BLOCKED_EXTERNAL_PREREQUISITE",
       "title": "Pandora Productization"
     },
     {
@@ -2034,8 +2094,8 @@
       ],
       "id": "M8C",
       "mandatory_for_core_ga": false,
-      "started": false,
-      "state": "READY_UNCLAIMED",
+      "started": true,
+      "state": "BLOCKED_EXTERNAL_PREREQUISITE",
       "title": "DeepSeek Productization / Experimental Certification"
     },
     {
@@ -2145,6 +2205,8 @@
     "m5_started": true,
     "m6a_started": true,
     "m8a_started": true,
+    "m8b_started": true,
+    "m8c_started": true,
     "next_integration_point": "Reconcile fail-closed M8B/M8C provider branches on the accepted M6A baseline, then activate M7 platform-neutral foundation",
     "recorded_date": "2026-08-28",
     "target_release": "2.0.0"
@@ -2325,55 +2387,65 @@
         }
       },
       {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M8B-VALIDATION.yaml",
+          "EVIDENCE/M8B-NONLIVE-QUALIFICATION.json"
+        ],
         "provider": "pandora",
         "requirement": "OPTIONAL_IF_CLAIMED",
         "role": "RESEARCH",
         "steps": {
-          "ADAPTER_IMPLEMENTED": "NOT_STARTED",
-          "LIVE_ROLE_CERTIFIED": "NOT_STARTED",
-          "PACKAGED": "NOT_STARTED",
-          "PUBLIC_COMPOSITION_VERIFIED": "NOT_STARTED",
-          "ROLE_CONFORMANCE_VERIFIED": "NOT_STARTED"
+          "ADAPTER_IMPLEMENTED": "PASS",
+          "LIVE_ROLE_CERTIFIED": "IN_PROGRESS",
+          "PACKAGED": "PASS",
+          "PUBLIC_COMPOSITION_VERIFIED": "PASS",
+          "ROLE_CONFORMANCE_VERIFIED": "PASS"
         }
       },
       {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M8C-PUBLIC-OUTCOME.json"
+        ],
         "provider": "deepseek",
-        "requirement": "OPTIONAL_IF_CLAIMED",
+        "requirement": "EXPERIMENTAL_OMITTED",
         "role": "INTERACTION",
         "steps": {
-          "ADAPTER_IMPLEMENTED": "NOT_STARTED",
-          "LIVE_ROLE_CERTIFIED": "NOT_STARTED",
-          "PACKAGED": "NOT_STARTED",
-          "PUBLIC_COMPOSITION_VERIFIED": "NOT_STARTED",
-          "ROLE_CONFORMANCE_VERIFIED": "NOT_STARTED"
+          "ADAPTER_IMPLEMENTED": "NOT_APPLICABLE",
+          "LIVE_ROLE_CERTIFIED": "NOT_APPLICABLE",
+          "PACKAGED": "NOT_APPLICABLE",
+          "PUBLIC_COMPOSITION_VERIFIED": "NOT_APPLICABLE",
+          "ROLE_CONFORMANCE_VERIFIED": "NOT_APPLICABLE"
         }
       },
       {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M8C-VALIDATION.yaml",
+          "EVIDENCE/M8C-PUBLIC-OUTCOME.json"
+        ],
         "provider": "deepseek",
         "requirement": "OPTIONAL_IF_CLAIMED",
         "role": "EXECUTION_IMPLEMENTER",
         "steps": {
-          "ADAPTER_IMPLEMENTED": "NOT_STARTED",
-          "LIVE_ROLE_CERTIFIED": "NOT_STARTED",
-          "PACKAGED": "NOT_STARTED",
-          "PUBLIC_COMPOSITION_VERIFIED": "NOT_STARTED",
-          "ROLE_CONFORMANCE_VERIFIED": "NOT_STARTED"
+          "ADAPTER_IMPLEMENTED": "PASS",
+          "LIVE_ROLE_CERTIFIED": "IN_PROGRESS",
+          "PACKAGED": "PASS",
+          "PUBLIC_COMPOSITION_VERIFIED": "PASS",
+          "ROLE_CONFORMANCE_VERIFIED": "PASS"
         }
       },
       {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M8C-PUBLIC-OUTCOME.json"
+        ],
         "provider": "deepseek",
-        "requirement": "OPTIONAL_IF_CLAIMED",
+        "requirement": "EXPERIMENTAL_OMITTED",
         "role": "HARNESS",
         "steps": {
-          "ADAPTER_IMPLEMENTED": "NOT_STARTED",
-          "LIVE_ROLE_CERTIFIED": "NOT_STARTED",
-          "PACKAGED": "NOT_STARTED",
-          "PUBLIC_COMPOSITION_VERIFIED": "NOT_STARTED",
-          "ROLE_CONFORMANCE_VERIFIED": "NOT_STARTED"
+          "ADAPTER_IMPLEMENTED": "NOT_APPLICABLE",
+          "LIVE_ROLE_CERTIFIED": "NOT_APPLICABLE",
+          "PACKAGED": "NOT_APPLICABLE",
+          "PUBLIC_COMPOSITION_VERIFIED": "NOT_APPLICABLE",
+          "ROLE_CONFORMANCE_VERIFIED": "NOT_APPLICABLE"
         }
       },
       {
@@ -2420,28 +2492,32 @@
   },
   "schema_version": "1.0",
   "summary": {
-    "active_blockers": 0,
+    "active_blockers": 2,
     "adr_count": 24,
     "current_milestone": "M6A",
-    "evidence_items": 19,
+    "evidence_items": 25,
     "invariant_count": 34,
     "journey_states": {
+      "BLOCKED_EXTERNAL_PREREQUISITE": 1,
       "M3_VERTICAL_SLICE_ONLY": 1,
       "M6A_LIVE_PROVIDER_SLICE_PASS": 1,
-      "NOT_STARTED": 5,
+      "NOT_STARTED": 4,
       "PASS": 13
     },
     "milestones_accepted": 8,
-    "milestones_started": 8,
+    "milestones_started": 10,
     "milestones_total": 16,
     "provider_step_states": {
-      "NOT_STARTED": 75,
-      "PASS": 20
+      "IN_PROGRESS": 2,
+      "NOT_APPLICABLE": 10,
+      "NOT_STARTED": 55,
+      "PASS": 28
     },
     "ready_milestones": [
       "M7"
     ],
     "workstream_states": {
+      "BLOCKED_EXTERNAL_PREREQUISITE": 2,
       "COMPLETE": 16
     }
   },
@@ -2756,6 +2832,53 @@
       ],
       "state": "COMPLETE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m8a"
+    },
+    {
+      "base_commit": "77aeb189e3359f8a54ff1f4056dd3c8409747ef7",
+      "blockers": [
+        "BLK-M8C-DEEPSEEK-LIVE-PREREQUISITES"
+      ],
+      "branch": "codex/artifex-2-m8c",
+      "id": "WS-M8C-DEEPSEEK-PRODUCTIZATION",
+      "integration_owner": "ARTIFEX_2_ORCHESTRATOR",
+      "milestone": "M8C",
+      "owner_subagent": "m5_reality_docs",
+      "purpose": "Productize the stable DeepSeek execution boundary and qualify role-specific claims",
+      "shared_contracts": [
+        "M8C-CONTRACT",
+        "ADR-T007",
+        "ADR-T008",
+        "ADR-T015",
+        "ADR-T018",
+        "ADR-T021",
+        "ADR-T022",
+        "ADR-T023",
+        "ADR-T024"
+      ],
+      "state": "BLOCKED_EXTERNAL_PREREQUISITE",
+      "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m8c"
+    },
+    {
+      "base_commit": "77aeb189e3359f8a54ff1f4056dd3c8409747ef7",
+      "blockers": [
+        "BLK-M8B-PANDORA-RUNTIME-UNAVAILABLE"
+      ],
+      "branch": "codex/artifex-2-m8b",
+      "id": "WS-M8B-PANDORA-RESEARCH",
+      "integration_owner": "ARTIFEX_2_ORCHESTRATOR",
+      "milestone": "M8B",
+      "owner_subagent": "m8b_pandora",
+      "purpose": "Productize Pandora RESEARCH composition, explicit Project adoption, and J13 qualification",
+      "shared_contracts": [
+        "M8B-CONTRACT",
+        "ADR-T007",
+        "ADR-T008",
+        "ADR-T023",
+        "ADR-T024",
+        "J13"
+      ],
+      "state": "BLOCKED_EXTERNAL_PREREQUISITE",
+      "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m8b"
     }
   ]
 }
