@@ -85,6 +85,8 @@ def system_operations() -> None:
 @app.command("doctor")
 def doctor(
     project_root: str | None = typer.Option(None, "--project-root"),
+    runstore_path: str | None = typer.Option(None, "--runstore-path"),
+    service_state_path: str | None = typer.Option(None, "--service-state-path"),
     fix: bool = typer.Option(False, "--fix"),
     apply: bool = typer.Option(False, "--apply"),
 ) -> None:
@@ -92,9 +94,21 @@ def doctor(
 
     _emit(
         "distribution.doctor",
-        {"fix": fix, "apply": apply},
+        {
+            "fix": fix,
+            "apply": apply,
+            "runstore_path": runstore_path,
+            "service_state_path": service_state_path,
+        },
         project_root=project_root,
     )
+
+
+@app.command("bootstrap")
+def bootstrap(project_root: str = typer.Option(..., "--project-root")) -> None:
+    """Consume persisted setup in this process and show the public provider path."""
+
+    _emit("distribution.bootstrap", project_root=project_root)
 
 
 @app.command("discover")
