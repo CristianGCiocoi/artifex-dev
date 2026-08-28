@@ -1,95 +1,97 @@
 {
   "acceptance": {
-    "acceptance_commit": "d7fa3c4ad419bd97e401ad765128dc3560484d90",
-    "blocked": [],
-    "contract_digest": "e7c7a02ee61e64bfda4b3a18660b460967b8d167fa0734723907ca64316c82f5",
+    "acceptance_commit": null,
+    "blocked": [
+      "BLK-M7-SUPPORTED-PLATFORM-MATRIX-UNDEFINED"
+    ],
+    "contract_digest": "3eac41de4cacf7be80aab12e478b99ec7c5066dccddfff6ca00a03cf5a157d48",
     "evidence_classes": {
       "BLACK_BOX_OUTCOME": {
         "evidence": [
-          "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json"
+          "EVIDENCE/M7-FOUNDATION-OUTCOME.json"
         ],
-        "required_m6a": true,
-        "status": "PASS"
+        "required_m7": true,
+        "status": "PENDING_PRODUCT_DECISION"
       },
       "COMPONENT": {
         "evidence": [
-          "EVIDENCE/M6A-VALIDATION.yaml"
+          "EVIDENCE/M7-FOUNDATION-VALIDATION.yaml"
         ],
-        "required_m6a": true,
-        "status": "PASS"
+        "required_m7": true,
+        "status": "PASS_FOUNDATION"
       },
       "DASHBOARD": {
         "evidence": [
-          "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json"
+          "EVIDENCE/M7-FOUNDATION-VALIDATION.yaml"
         ],
-        "required_m6a": true,
-        "status": "PASS"
+        "required_m7": true,
+        "status": "PASS_FOUNDATION"
       },
       "DESIGN_CONFORMANCE": {
         "evidence": [
-          "EVIDENCE/M6A-VALIDATION.yaml"
+          "EVIDENCE/M7-FOUNDATION-VALIDATION.yaml"
         ],
-        "required_m6a": true,
-        "status": "PASS"
+        "required_m7": true,
+        "status": "PASS_FOUNDATION"
       },
       "DOCUMENTATION": {
         "evidence": [
-          "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json"
+          "EVIDENCE/M7-FOUNDATION-VALIDATION.yaml"
         ],
-        "required_m6a": true,
-        "status": "PASS"
+        "required_m7": true,
+        "status": "PASS_FOUNDATION"
       },
       "DOMAIN_INTEGRATION": {
         "evidence": [
-          "EVIDENCE/M6A-VALIDATION.yaml"
+          "EVIDENCE/M7-FOUNDATION-VALIDATION.yaml"
         ],
-        "required_m6a": true,
-        "status": "PASS"
+        "required_m7": true,
+        "status": "PASS_FOUNDATION"
       },
       "MIGRATION": {
         "evidence": [
-          "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json"
+          "EVIDENCE/M7-FOUNDATION-VALIDATION.yaml"
         ],
-        "required_m6a": true,
-        "status": "PASS"
+        "required_m7": true,
+        "status": "PASS_FOUNDATION"
       },
       "PROVIDER_CERTIFICATION": {
         "evidence": [
-          "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json"
+          "EVIDENCE/M7-FOUNDATION-OUTCOME.json"
         ],
-        "required_m6a": true,
-        "status": "PASS"
+        "required_m7": true,
+        "status": "PENDING_PRODUCT_DECISION"
       },
       "PUBLIC_COMPOSITION": {
         "evidence": [
-          "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json"
+          "EVIDENCE/M7-FOUNDATION-OUTCOME.json"
         ],
-        "required_m6a": true,
-        "status": "PASS"
+        "required_m7": true,
+        "status": "PASS_FOUNDATION"
       },
       "SECURITY_AUTHORITY": {
         "evidence": [
-          "EVIDENCE/M6A-VALIDATION.yaml"
+          "EVIDENCE/M7-FOUNDATION-VALIDATION.yaml"
         ],
-        "required_m6a": true,
-        "status": "PASS"
+        "required_m7": true,
+        "status": "PASS_FOUNDATION"
       }
     },
     "frozen_architecture_baseline": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
-    "implementation_baseline_commit": "99415edfc200f1288f1f3e046fb89f8c80dabd06",
+    "implementation_baseline_commit": "14da51f530bd859afebf1ce2d9ed0348a8832f33",
     "mandatory_journeys": [
+      "J01",
       "J02",
-      "J11"
+      "J10",
+      "J16"
     ],
-    "mandatory_work_complete": true,
-    "migration": "V1_CLAUDE_SETUP_REVALIDATED_WITH_REAL_READINESS",
-    "milestone": "M6A",
+    "mandatory_work_complete": false,
+    "migration": "SHIPPING_UPGRADE_PATH_FOUNDATION_ACTIVE",
+    "milestone": "M7",
     "schema_version": "1.0",
-    "superseded": [
-      "BLK-M6A-CLAUDE-CODE-UNAVAILABLE"
-    ],
+    "superseded": [],
     "unresolved_contradiction": null,
-    "verdict": "ACCEPTED"
+    "verdict": "BLOCKED_PRODUCT_DECISION"
   },
   "adrs": [
     {
@@ -721,6 +723,21 @@
   ],
   "blockers": [
     {
+      "class": "MISSING_PRODUCT_DECISION",
+      "evidence": [
+        "ACCEPTANCE/M7.yaml",
+        "EVIDENCE/M7-FOUNDATION-VALIDATION.yaml",
+        "EVIDENCE/M7-FOUNDATION-OUTCOME.json"
+      ],
+      "id": "BLK-M7-SUPPORTED-PLATFORM-MATRIX-UNDEFINED",
+      "required_authority": "PRODUCT_OWNER",
+      "resolution": "Define supported OS or VM cells, architecture and Core support tier, with J01, J02, J10 and J16 applicability and whether provider support is per-cell or required in every cell",
+      "scope": "M7_ACCEPTANCE",
+      "status": "OPEN",
+      "summary": "The official ARTIFEX 2.0 Core supported OS, version, architecture and provider journey matrix is not defined by canonical authority",
+      "unrelated_work_may_continue": true
+    },
+    {
       "class": "EXTERNAL_PREREQUISITE",
       "evidence": [
         "EVIDENCE/M8C-PUBLIC-OUTCOME.json"
@@ -822,6 +839,16 @@
       "bytes": 3304,
       "path": "implementation/EVIDENCE/M6A-VALIDATION.yaml",
       "sha256": "768167e32f511cb7b4cbff79719c8ca7754e202e50689fd1446a91265f9f61f1"
+    },
+    {
+      "bytes": 1369,
+      "path": "implementation/EVIDENCE/M7-FOUNDATION-OUTCOME.json",
+      "sha256": "07a78c5db1b328fb687b644195a65035e4d9dccbc26c247c999cb6b2d87e35bc"
+    },
+    {
+      "bytes": 2950,
+      "path": "implementation/EVIDENCE/M7-FOUNDATION-VALIDATION.yaml",
+      "sha256": "e112850d892471470973433de3be277222c25d503582726da083204a6d72737e"
     },
     {
       "bytes": 3506,
@@ -1626,27 +1653,29 @@
   ],
   "journeys": [
     {
-      "blocker": "Full clean-machine installer and managed-service Journey remains M7-owned",
+      "blocker": "BLK-M7-SUPPORTED-PLATFORM-MATRIX-UNDEFINED",
       "environment": "CLEAN_INSTALLED_WHEEL_WINDOWS_PYTHON_3_12_REAL_CODEX",
       "evidence": [
-        "EVIDENCE/M3-PUBLIC-OUTCOME.json"
+        "EVIDENCE/M3-PUBLIC-OUTCOME.json",
+        "EVIDENCE/M7-FOUNDATION-OUTCOME.json"
       ],
       "id": "J01",
       "last_run": "2026-08-27",
       "public_shipping_composition": "INSTALLED_WHEEL_PUBLIC_CLI_REAL_CODEX_VERTICAL_SLICE",
-      "status": "M3_VERTICAL_SLICE_ONLY",
+      "status": "M7_FOUNDATION_PASS_LIVE_PLATFORM_CELL_PENDING",
       "title": "J01 — Fresh Machine + Codex"
     },
     {
-      "blocker": "Full clean-machine installer and managed-service Journey remains M7-owned",
+      "blocker": "BLK-M7-SUPPORTED-PLATFORM-MATRIX-UNDEFINED",
       "environment": "CLEAN_INSTALLED_WHEEL_WINDOWS_REAL_CLAUDE_PROVIDER_SLICE",
       "evidence": [
-        "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json"
+        "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json",
+        "EVIDENCE/M7-FOUNDATION-OUTCOME.json"
       ],
       "id": "J02",
       "last_run": "2026-08-28",
       "public_shipping_composition": "INSTALLED_WHEEL_PUBLIC_CLI_REAL_CLAUDE_MULTI_PROCESS",
-      "status": "M6A_LIVE_PROVIDER_SLICE_PASS",
+      "status": "M7_FOUNDATION_PASS_LIVE_PLATFORM_CELL_PENDING",
       "title": "J02 — Fresh Machine + Claude"
     },
     {
@@ -1732,13 +1761,15 @@
       "title": "J09 — V1 Migration"
     },
     {
-      "blocker": "M0 has no mandatory journeys; milestone dependencies not accepted",
-      "environment": null,
-      "evidence": [],
+      "blocker": "BLK-M7-SUPPORTED-PLATFORM-MATRIX-UNDEFINED",
+      "environment": "CLEAN_INSTALLED_WHEEL_WINDOWS_PYTHON_3_12_NO_AUTOMATED_PROVIDER",
+      "evidence": [
+        "EVIDENCE/M7-FOUNDATION-OUTCOME.json"
+      ],
       "id": "J10",
-      "last_run": null,
-      "public_shipping_composition": null,
-      "status": "NOT_STARTED",
+      "last_run": "2026-08-28",
+      "public_shipping_composition": "INSTALLED_WHEEL_PUBLIC_MANAGED_SERVICE_MULTI_PROCESS",
+      "status": "NONLIVE_FOUNDATION_PASS_PLATFORM_CELL_PENDING",
       "title": "J10 — No Automated Provider"
     },
     {
@@ -1802,15 +1833,16 @@
       "title": "J15 — Promotion Conflict"
     },
     {
-      "blocker": null,
+      "blocker": "BLK-M7-SUPPORTED-PLATFORM-MATRIX-UNDEFINED",
       "environment": "CLEAN_INSTALLED_WHEEL_WINDOWS_PYTHON_3_12_REAL_CODEX",
       "evidence": [
-        "EVIDENCE/M3-PUBLIC-OUTCOME.json"
+        "EVIDENCE/M3-PUBLIC-OUTCOME.json",
+        "EVIDENCE/M7-FOUNDATION-OUTCOME.json"
       ],
       "id": "J16",
       "last_run": "2026-08-27",
       "public_shipping_composition": "INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS_PROVIDER_SETUP",
-      "status": "PASS",
+      "status": "M7_FRESH_RUNTIME_CONSUMPTION_PASS_LIVE_PLATFORM_CELL_PENDING",
       "title": "J16 — Provider Setup Persistence"
     },
     {
@@ -1955,6 +1987,7 @@
     "m4_target_interaction_governance_state": "M4_ACCEPTED_ADDITIVE_STATE",
     "m5_docs_dashboard_classification": "M5_ACCEPTED_CURRENT_STALE_MISSING_CLASSIFICATION",
     "m6a_v1_claude_setup_revalidation": "PASS_FRESH_PROCESS_REAL_CLAUDE_READINESS",
+    "m7_shipping_upgrade_foundation": "IMPLEMENTED_PLATFORM_NEUTRAL_PLATFORM_MATRIX_PENDING",
     "m8a_v1_instance_knowledge_promotion": "CLASSIFICATION_QUARANTINE_ONLY_ACCEPTANCE_NA",
     "m8c_v1_deepseek_setup_revalidation": "PASS_FAIL_CLOSED_NOT_DETECTED_NO_STALE_CLAIM",
     "migration_execution": "M2_ACCEPTED_EMPTY_RUNSTORE",
@@ -2061,8 +2094,8 @@
       ],
       "id": "M7",
       "mandatory_for_core_ga": true,
-      "started": false,
-      "state": "READY",
+      "started": true,
+      "state": "BLOCKED_PRODUCT_DECISION",
       "title": "Fresh-Machine Installation & Bootstrap"
     },
     {
@@ -2185,9 +2218,10 @@
   ],
   "program": {
     "architecture_status": "FROZEN",
-    "branch": "codex/artifex-2-m6a-live",
-    "current_milestone": "M6A",
-    "current_status": "ACCEPTED",
+    "branch": "codex/artifex-2-m7",
+    "canonical_integration_baseline": "14da51f530bd859afebf1ce2d9ed0348a8832f33",
+    "current_milestone": "M7",
+    "current_status": "BLOCKED_PRODUCT_DECISION",
     "dashboard_state": "CURRENT",
     "directory_variance": "PACKAGING_NAME_VARIANCE_ACCEPTED",
     "handoff_declared_directory": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF",
@@ -2204,10 +2238,11 @@
     "m4_started": true,
     "m5_started": true,
     "m6a_started": true,
+    "m7_started": true,
     "m8a_started": true,
     "m8b_started": true,
     "m8c_started": true,
-    "next_integration_point": "Reconcile fail-closed M8B/M8C provider branches on the accepted M6A baseline, then activate M7 platform-neutral foundation",
+    "next_integration_point": "Product Owner defines the official M7 supported-platform matrix; then qualify J01, J02, J10 and J16 on every applicable cell",
     "recorded_date": "2026-08-28",
     "target_release": "2.0.0"
   },
@@ -2492,20 +2527,21 @@
   },
   "schema_version": "1.0",
   "summary": {
-    "active_blockers": 2,
+    "active_blockers": 3,
     "adr_count": 24,
-    "current_milestone": "M6A",
-    "evidence_items": 25,
+    "current_milestone": "M7",
+    "evidence_items": 27,
     "invariant_count": 34,
     "journey_states": {
       "BLOCKED_EXTERNAL_PREREQUISITE": 1,
-      "M3_VERTICAL_SLICE_ONLY": 1,
-      "M6A_LIVE_PROVIDER_SLICE_PASS": 1,
-      "NOT_STARTED": 4,
-      "PASS": 13
+      "M7_FOUNDATION_PASS_LIVE_PLATFORM_CELL_PENDING": 2,
+      "M7_FRESH_RUNTIME_CONSUMPTION_PASS_LIVE_PLATFORM_CELL_PENDING": 1,
+      "NONLIVE_FOUNDATION_PASS_PLATFORM_CELL_PENDING": 1,
+      "NOT_STARTED": 3,
+      "PASS": 12
     },
     "milestones_accepted": 8,
-    "milestones_started": 10,
+    "milestones_started": 11,
     "milestones_total": 16,
     "provider_step_states": {
       "IN_PROGRESS": 2,
@@ -2513,12 +2549,11 @@
       "NOT_STARTED": 55,
       "PASS": 28
     },
-    "ready_milestones": [
-      "M7"
-    ],
+    "ready_milestones": [],
     "workstream_states": {
       "BLOCKED_EXTERNAL_PREREQUISITE": 2,
-      "COMPLETE": 16
+      "BLOCKED_PRODUCT_DECISION_FOUNDATION_COMPLETE": 1,
+      "COMPLETE": 18
     }
   },
   "target_system": {
@@ -2879,6 +2914,63 @@
       ],
       "state": "BLOCKED_EXTERNAL_PREREQUISITE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m8b"
+    },
+    {
+      "base_commit": "14da51f530bd859afebf1ce2d9ed0348a8832f33",
+      "blockers": [],
+      "branch": "codex/artifex-2-m7",
+      "id": "WS-M7-SERVICE-FOUNDATION",
+      "integration_owner": "ARTIFEX_2_ORCHESTRATOR",
+      "milestone": "M7",
+      "owner_subagent": "m7_service",
+      "purpose": "Implement the platform-neutral managed-service lifecycle and frontend-independent public transport",
+      "shared_contracts": [
+        "M7-CONTRACT",
+        "ADR-T003",
+        "FROZEN-INVARIANTS"
+      ],
+      "state": "COMPLETE",
+      "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m7"
+    },
+    {
+      "base_commit": "14da51f530bd859afebf1ce2d9ed0348a8832f33",
+      "blockers": [],
+      "branch": "codex/artifex-2-m7",
+      "id": "WS-M7-INSTALL-BOOTSTRAP-DOCTOR",
+      "integration_owner": "ARTIFEX_2_ORCHESTRATOR",
+      "milestone": "M7",
+      "owner_subagent": "m7_installer+m7_bootstrap",
+      "purpose": "Implement transactional installation registration, fresh-runtime bootstrap consumption, doctor and manual fallback",
+      "shared_contracts": [
+        "M7-CONTRACT",
+        "ADR-T015",
+        "J10",
+        "J16"
+      ],
+      "state": "COMPLETE",
+      "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m7"
+    },
+    {
+      "base_commit": "14da51f530bd859afebf1ce2d9ed0348a8832f33",
+      "blockers": [
+        "BLK-M7-SUPPORTED-PLATFORM-MATRIX-UNDEFINED"
+      ],
+      "branch": "codex/artifex-2-m7",
+      "id": "WS-M7-CLEAN-MACHINE-QUALIFICATION",
+      "integration_owner": "ARTIFEX_2_ORCHESTRATOR",
+      "milestone": "M7",
+      "owner_subagent": "ARTIFEX_2_ORCHESTRATOR",
+      "purpose": "Build the shipping-composition journey harness and qualify declared supported platform cells",
+      "shared_contracts": [
+        "M7-CONTRACT",
+        "J01",
+        "J02",
+        "J10",
+        "J16",
+        "OUTCOME-ACCEPTANCE-POLICY"
+      ],
+      "state": "BLOCKED_PRODUCT_DECISION_FOUNDATION_COMPLETE",
+      "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m7"
     }
   ]
 }

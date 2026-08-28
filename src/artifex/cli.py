@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import sys
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -22,6 +23,7 @@ pandora_app = typer.Typer(help="Use the optional Pandora RESEARCH provider bound
 documentation_app = typer.Typer(help="Inspect and selectively regenerate Project documentation.")
 dashboard_app = typer.Typer(help="Inspect Project and Platform operational views.")
 reality_app = typer.Typer(help="Inspect sourced Observed Reality and divergences.")
+service_app = typer.Typer(help="Use the frontend-independent ARTIFEX managed service.")
 app.add_typer(system_app, name="system")
 app.add_typer(integration_app, name="integration")
 app.add_typer(manual_app, name="manual")
@@ -31,6 +33,7 @@ research_app.add_typer(pandora_app, name="pandora")
 app.add_typer(documentation_app, name="documentation")
 app.add_typer(dashboard_app, name="dashboard")
 app.add_typer(reality_app, name="reality")
+app.add_typer(service_app, name="service")
 
 
 def _emit(
@@ -61,6 +64,76 @@ def _load_object(path: Path) -> dict[str, Any]:
     return value
 
 
+def _emit_service_result(value: Mapping[str, object]) -> None:
+    rendered = dict(value)
+    typer.echo(json.dumps(rendered, sort_keys=True, ensure_ascii=False))
+    if rendered.get("ok") is False:
+        raise typer.Exit(1)
+
+
+@service_app.command("serve")
+def service_serve(
+    state_root: str | None = typer.Option(None, "--state-root"),
+    service_id: str = typer.Option("artifex-managed-service", "--service-id"),
+    port: int = typer.Option(0, "--port"),
+) -> None:
+    """Run the managed service in the current service-manager process."""
+
+    from artifex.managed_service import ManagedServiceHost
+
+    ManagedServiceHost(state_root, service_id=service_id, port=port).serve_forever()
+
+
+@service_app.command("status")
+def service_status(
+    state_root: str | None = typer.Option(None, "--state-root"),
+) -> None:
+    """Read service status through the authenticated local transport."""
+
+    from artifex.managed_service import LocalServiceClient
+
+    _emit_service_result(LocalServiceClient(state_root).status())
+
+
+@service_app.command("stop")
+def service_stop(
+    state_root: str | None = typer.Option(None, "--state-root"),
+) -> None:
+    """Request a controlled managed-service shutdown."""
+
+    from artifex.managed_service import LocalServiceClient
+
+    _emit_service_result(LocalServiceClient(state_root).shutdown())
+
+
+@service_app.command("call")
+def service_call(
+    operation: str,
+    arguments: str = typer.Option("{}", "--arguments"),
+    state_root: str | None = typer.Option(None, "--state-root"),
+    project_root: str | None = typer.Option(None, "--project-root"),
+    actor: str = typer.Option("cli", "--actor"),
+) -> None:
+    """Call an Application operation through the persistent managed service."""
+
+    from artifex.managed_service import LocalServiceClient
+
+    try:
+        value = json.loads(arguments)
+    except json.JSONDecodeError as exc:
+        raise typer.BadParameter(f"arguments are not valid JSON: {exc}") from exc
+    if not isinstance(value, dict):
+        raise typer.BadParameter("arguments must be a JSON object")
+    _emit_service_result(
+        LocalServiceClient(state_root).call(
+            operation,
+            value,
+            actor=actor,
+            project_root=project_root,
+        )
+    )
+
+
 @system_app.command("health")
 def system_health() -> None:
     """Report normalized Core health."""
@@ -85,6 +158,8 @@ def system_operations() -> None:
 @app.command("doctor")
 def doctor(
     project_root: str | None = typer.Option(None, "--project-root"),
+    runstore_path: str | None = typer.Option(None, "--runstore-path"),
+    service_state_path: str | None = typer.Option(None, "--service-state-path"),
     fix: bool = typer.Option(False, "--fix"),
     apply: bool = typer.Option(False, "--apply"),
 ) -> None:
@@ -92,9 +167,21 @@ def doctor(
 
     _emit(
         "distribution.doctor",
-        {"fix": fix, "apply": apply},
+        {
+            "fix": fix,
+            "apply": apply,
+            "runstore_path": runstore_path,
+            "service_state_path": service_state_path,
+        },
         project_root=project_root,
     )
+
+
+@app.command("bootstrap")
+def bootstrap(project_root: str = typer.Option(..., "--project-root")) -> None:
+    """Consume persisted setup in this process and show the public provider path."""
+
+    _emit("distribution.bootstrap", project_root=project_root)
 
 
 @app.command("discover")

@@ -6,6 +6,7 @@ import hashlib
 import json
 from collections.abc import Callable, Mapping, Sequence
 from contextlib import suppress
+from contextvars import ContextVar
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from time import time
@@ -26,6 +27,7 @@ from artifex.capabilities import (
     ProviderInstance,
     ProviderInteractionService,
     ProviderRole,
+    ProviderSetupError,
     claude_certification_projection,
     codex_certification_projection,
     deepseek_certification_projection,
@@ -48,6 +50,8 @@ from artifex.distribution import (
     upgrade_plan,
 )
 from artifex.distribution.artifact import runtime_release_identity
+from artifex.distribution.bootstrap import build_distribution_bootstrap_report
+from artifex.distribution.setup import SETUP_STATE_PATH
 from artifex.integrations import (
     ExecutionPacket,
     ExecutionResult,
@@ -113,6 +117,10 @@ from artifex.workflow import ExecutionBaseline, ExecutionStatus
 CodexRunnerFactory = Callable[[tuple[str, ...]], CodexProcessRunner]
 ClaudeRunnerFactory = Callable[[tuple[str, ...]], ClaudeProcessRunner]
 
+_HOSTED_RUNTIME_SERVICE: ContextVar[ManagedRuntimeService | None] = ContextVar(
+    "artifex_hosted_runtime_service", default=None
+)
+
 
 @dataclass(frozen=True, slots=True)
 class OperationContext:
@@ -168,6 +176,7 @@ class Application:
         codex_runner_factory: CodexRunnerFactory | None = None,
         claude_runner_factory: ClaudeRunnerFactory | None = None,
         deepseek_runner: DeepSeekRunner | None = None,
+        runtime_service: ManagedRuntimeService | None = None,
     ) -> None:
         self._operations: dict[str, Operation] = {}
         self._project_root = project_root
@@ -182,6 +191,7 @@ class Application:
         self._codex_runner_factory = codex_runner_factory or _codex_process_runner
         self._claude_runner_factory = claude_runner_factory or _claude_process_runner
         self._deepseek_runner = deepseek_runner
+        self._hosted_runtime_service = runtime_service
         self.registry = (
             IntegrationRegistry((ManualIntegration(),)) if registry is None else registry
         )
@@ -255,6 +265,7 @@ class Application:
         self.register("distribution.setup.plan", self._distribution_setup_plan)
         self.register("distribution.setup.apply", self._distribution_setup_apply)
         self.register("distribution.doctor", self._distribution_doctor)
+        self.register("distribution.bootstrap", self._distribution_bootstrap)
         self.register("distribution.install.plan", self._distribution_install_plan)
         self.register("distribution.install", self._distribution_install)
         self.register("distribution.upgrade", self._distribution_upgrade)
@@ -277,6 +288,7 @@ class Application:
                     "OPERATION_NOT_FOUND", f"unknown operation {request.operation!r}"
                 ),
             )
+        token = _HOSTED_RUNTIME_SERVICE.set(self._hosted_runtime_service)
         try:
             return operation(request)
         except Exception as exc:  # semantic boundary: normalize transport errors
@@ -284,6 +296,8 @@ class Application:
                 ok=False,
                 error=OperationError("OPERATION_FAILED", str(exc), {"type": type(exc).__name__}),
             )
+        finally:
+            _HOSTED_RUNTIME_SERVICE.reset(token)
 
     @property
     def operation_names(self) -> tuple[str, ...]:
@@ -1535,15 +1549,34 @@ class Application:
             value=apply_integration_setup(plan, confirmation_token=token).to_dict(),
         )
 
-    @staticmethod
-    def _distribution_doctor(request: OperationRequest) -> OperationResult:
+    def _distribution_doctor(self, request: OperationRequest) -> OperationResult:
         root = request.arguments.get("project_root", request.context.project_root)
         if root is not None and not isinstance(root, str):
             raise TypeError("project_root must be a string")
+        graph: CapabilityGraph | None = None
+        provider_error: str | None = None
+        if root is not None:
+            try:
+                graph = self._provider_loader.load(root)
+            except ProviderSetupError as exc:
+                provider_error = type(exc).__name__
         report = run_distribution_doctor(
             root,
             fix=_optional_bool(request.arguments, "fix", False),
             apply=_optional_bool(request.arguments, "apply", False),
+            capability_graph=graph,
+            provider_error=provider_error,
+            runstore_path=_optional_string(request.arguments, "runstore_path"),
+            service_state_path=_optional_string(request.arguments, "service_state_path"),
+        )
+        return OperationResult(ok=True, value=report.to_dict())
+
+    def _distribution_bootstrap(self, request: OperationRequest) -> OperationResult:
+        root = _project_root(request)
+        graph = self._provider_loader.load(root)
+        report = build_distribution_bootstrap_report(
+            graph,
+            setup_present=(Path(root) / SETUP_STATE_PATH).is_file(),
         )
         return OperationResult(ok=True, value=report.to_dict())
 
@@ -1699,6 +1732,27 @@ def _project_service(request: OperationRequest) -> ProjectControlService:
 
 
 def _runtime_service(request: OperationRequest) -> ManagedRuntimeService:
+    hosted = _HOSTED_RUNTIME_SERVICE.get()
+    if hosted is not None:
+        requested_store = request.arguments.get("store_path")
+        if requested_store is not None and (
+            not isinstance(requested_store, str)
+            or Path(requested_store).expanduser().resolve() != hosted.store.path
+        ):
+            raise ValueError("store_path cannot override the managed service authority")
+        requested_service_id = request.arguments.get("service_id")
+        if (
+            requested_service_id is not None
+            and requested_service_id != hosted.coordinator.holder_id
+        ):
+            raise ValueError("service_id cannot override the managed service authority")
+        requested_workspace = request.arguments.get("workspace_root")
+        if requested_workspace is not None and (
+            not isinstance(requested_workspace, str)
+            or Path(requested_workspace).expanduser().resolve() != hosted.workspaces.root
+        ):
+            raise ValueError("workspace_root cannot override the managed service authority")
+        return hosted
     store_path = _required_string(request.arguments, "store_path")
     service_id = str(request.arguments.get("service_id", "artifex-managed-service"))
     workspace_root = _optional_string(request.arguments, "workspace_root")
@@ -2114,12 +2168,11 @@ def _record_promoted_provider_certification(
     promoted = ProjectAuthority(str(workspace["project_root"])).current()
     if promoted.number != revision:
         raise ValueError("provider certification revision does not match Project Authority")
-    provider_version, executable_hash, auth_hash, artifact_hash = (
-        _provider_certification_binding(provider)
+    provider_version, executable_hash, auth_hash, artifact_hash = _provider_certification_binding(
+        provider
     )
     if provider_id == "deepseek" and any(
-        item is None
-        for item in (provider_version, executable_hash, auth_hash, artifact_hash)
+        item is None for item in (provider_version, executable_hash, auth_hash, artifact_hash)
     ):
         return None
     receipt = record_execution_implementer_evidence(

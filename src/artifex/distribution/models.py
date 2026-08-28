@@ -146,13 +146,15 @@ class DoctorFinding:
     status: str
     summary: str
     remediation_id: str | None = None
+    details: Mapping[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> dict[str, str | None]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.finding_id,
             "status": self.status,
             "summary": self.summary,
             "remediation_id": self.remediation_id,
+            "details": dict(self.details),
         }
 
 

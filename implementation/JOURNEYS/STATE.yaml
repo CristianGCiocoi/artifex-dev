@@ -3,22 +3,24 @@ m0_mandatory: []
 journeys:
 - id: J01
   title: J01 — Fresh Machine + Codex
-  status: M3_VERTICAL_SLICE_ONLY
+  status: M7_FOUNDATION_PASS_LIVE_PLATFORM_CELL_PENDING
   environment: CLEAN_INSTALLED_WHEEL_WINDOWS_PYTHON_3_12_REAL_CODEX
   public_shipping_composition: INSTALLED_WHEEL_PUBLIC_CLI_REAL_CODEX_VERTICAL_SLICE
   evidence:
   - EVIDENCE/M3-PUBLIC-OUTCOME.json
+  - EVIDENCE/M7-FOUNDATION-OUTCOME.json
   last_run: '2026-08-27'
-  blocker: Full clean-machine installer and managed-service Journey remains M7-owned
+  blocker: BLK-M7-SUPPORTED-PLATFORM-MATRIX-UNDEFINED
 - id: J02
   title: J02 — Fresh Machine + Claude
-  status: M6A_LIVE_PROVIDER_SLICE_PASS
+  status: M7_FOUNDATION_PASS_LIVE_PLATFORM_CELL_PENDING
   environment: CLEAN_INSTALLED_WHEEL_WINDOWS_REAL_CLAUDE_PROVIDER_SLICE
   public_shipping_composition: INSTALLED_WHEEL_PUBLIC_CLI_REAL_CLAUDE_MULTI_PROCESS
   evidence:
   - EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json
+  - EVIDENCE/M7-FOUNDATION-OUTCOME.json
   last_run: '2026-08-28'
-  blocker: Full clean-machine installer and managed-service Journey remains M7-owned
+  blocker: BLK-M7-SUPPORTED-PLATFORM-MATRIX-UNDEFINED
 - id: J03
   title: J03 — Project Continuity
   status: PASS
@@ -83,12 +85,13 @@ journeys:
   blocker: M0 has no mandatory journeys; milestone dependencies not accepted
 - id: J10
   title: J10 — No Automated Provider
-  status: NOT_STARTED
-  environment: null
-  public_shipping_composition: null
-  evidence: []
-  last_run: null
-  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+  status: NONLIVE_FOUNDATION_PASS_PLATFORM_CELL_PENDING
+  environment: CLEAN_INSTALLED_WHEEL_WINDOWS_PYTHON_3_12_NO_AUTOMATED_PROVIDER
+  public_shipping_composition: INSTALLED_WHEEL_PUBLIC_MANAGED_SERVICE_MULTI_PROCESS
+  evidence:
+  - EVIDENCE/M7-FOUNDATION-OUTCOME.json
+  last_run: '2026-08-28'
+  blocker: BLK-M7-SUPPORTED-PLATFORM-MATRIX-UNDEFINED
 - id: J11
   title: J11 — Cross-provider Continuity
   status: PASS
@@ -136,13 +139,14 @@ journeys:
   blocker: null
 - id: J16
   title: J16 — Provider Setup Persistence
-  status: PASS
+  status: M7_FRESH_RUNTIME_CONSUMPTION_PASS_LIVE_PLATFORM_CELL_PENDING
   environment: CLEAN_INSTALLED_WHEEL_WINDOWS_PYTHON_3_12_REAL_CODEX
   public_shipping_composition: INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS_PROVIDER_SETUP
   evidence:
   - EVIDENCE/M3-PUBLIC-OUTCOME.json
+  - EVIDENCE/M7-FOUNDATION-OUTCOME.json
   last_run: '2026-08-27'
-  blocker: null
+  blocker: BLK-M7-SUPPORTED-PLATFORM-MATRIX-UNDEFINED
 - id: J17
   title: J17 — ATLAS Governed Execution
   status: NOT_STARTED
