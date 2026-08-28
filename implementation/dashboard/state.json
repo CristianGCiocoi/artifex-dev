@@ -839,24 +839,24 @@
       "sha256": "e112850d892471470973433de3be277222c25d503582726da083204a6d72737e"
     },
     {
-      "bytes": 1334,
+      "bytes": 1343,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CANDIDATE-ARTIFACT.yaml",
-      "sha256": "b00b6dbd5fddb948a610309efcdeac01339ca0db0f20ae317c4a0ad846ec57db"
+      "sha256": "89cf0844c9dd653ebf48737698056c8d2ca3b01ad36eccf3ef81f953e01f385a"
     },
     {
-      "bytes": 440,
+      "bytes": 443,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION.json",
-      "sha256": "3eb91db62dc2b985d078ab5a27ce4a07dd4c43bebbc09f63b31056e223cf6ae9"
+      "sha256": "8ed66e3e97dd8a668f116be0a333be9f5a161d5a01f66dc55410fa84a559265b"
     },
     {
-      "bytes": 3772,
+      "bytes": 4419,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CLEAN-VM-BASE.yaml",
-      "sha256": "bd68e2b56f1c680bf4d799a4fd71be062baea340df0ec636ced7830a4ecf5831"
+      "sha256": "39f99e68eb0e9d980e15433e03453958896850d234d0af92d4c2945203a43f4e"
     },
     {
-      "bytes": 2146,
+      "bytes": 2149,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
-      "sha256": "9d59c4ba846617ea8a4428b741480e63d2879684bb5fd468bc69ed8000198c66"
+      "sha256": "b68c070dd7f8142f471b1a68280470d34accff50f919af8fe29aba5f3959d673"
     },
     {
       "bytes": 2310,
@@ -2269,7 +2269,7 @@
     "m8a_started": true,
     "m8b_started": true,
     "m8c_started": true,
-    "next_integration_point": "Execute M7-WIN-NOPROVIDER J10 from m7-qualified-25h2-x64-cell-base, then reset and qualify the independent Codex and Claude cells",
+    "next_integration_point": "Execute M7-WIN-NOPROVIDER J10 from m7-qualified-25h2-x64-cell-base-v3, then reset and qualify the independent Codex and Claude cells",
     "recorded_date": "2026-08-29",
     "target_release": "2.0.0"
   },

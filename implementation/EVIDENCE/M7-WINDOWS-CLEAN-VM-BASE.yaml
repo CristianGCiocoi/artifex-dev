@@ -11,12 +11,12 @@ hypervisor:
   source_snapshot: VM101/clean-windows-base
   clone_mode: FULL
 snapshot:
-  name: m7-qualified-25h2-x64-cell-base
-  unix_time: 1787953799
+  name: m7-qualified-25h2-x64-cell-base-v3
+  unix_time: 1787958191
   powered_off: true
-  config_sha256: 50d117abf61d246813137e62dfdddbabf9569c58c2ceb928d506cc4b0e2132a7
+  config_sha256: c1e71826a08aa23be9fd6c8077999e446b6a23b2f1f19038c3c22a8cb699b742
   immutable_cell_reset_source: true
-  parent: m7-generalized-25h2-x64-base
+  parent: m7-qualified-25h2-x64-cell-base-v2
 snapshot_lineage:
 - name: m7-clean-25h2-x64-base
   unix_time: 1787891259
@@ -30,9 +30,22 @@ snapshot_lineage:
   reason: CONTAINS_ONE_TIME_FIRST_BOOT_AUTOLOGON_ANSWER_FILE
 - name: m7-qualified-25h2-x64-cell-base
   unix_time: 1787953799
-  status: VALID_CELL_RESET_SOURCE
+  status: VALID_PREDECESSOR_NOT_CURRENT_CANDIDATE
   config_sha256: 50d117abf61d246813137e62dfdddbabf9569c58c2ceb928d506cc4b0e2132a7
+  cell_reset_source: false
+  reason: SUPERSEDED_BY_FIXED_FINALIZED_M7_CANDIDATE
+- name: m7-qualified-25h2-x64-cell-base-v2
+  unix_time: 1787957912
+  status: VALID_PREDECESSOR_NOT_CURRENT_CANDIDATE
+  config_sha256: c3b15deb710e91ce0f9ef4f85110c6cb1f4c207daaf4726d99ea40f39d114140
+  cell_reset_source: false
+  reason: CONTAINS_PREFINALIZATION_ARCHIVE_NOT_RELEASE_FINALIZER_OUTPUT
+- name: m7-qualified-25h2-x64-cell-base-v3
+  unix_time: 1787958191
+  status: VALID_CELL_RESET_SOURCE
+  config_sha256: c1e71826a08aa23be9fd6c8077999e446b6a23b2f1f19038c3c22a8cb699b742
   cell_reset_source: true
+  reason: CONTAINS_FIXED_RELEASE_FINALIZED_BF9D4A3_CANDIDATE
 generalization:
   sysprep_mode: VM
   sysprep_status: PASS
@@ -69,7 +82,7 @@ cleanliness:
   claude_installed_or_state_present: false
   node_installed: false
   shipping_candidate_staged: true
-  shipping_candidate_sha256: 4dd71518f8921e9e201799762b65cb6421ac5dbfc0b2574eb74c58ab7ccf786b
+  shipping_candidate_sha256: ea2c4ce0246434a665d632c8238c003648feb84504896bd4164e8f77304a77b1
   temporary_update_payloads_removed: true
   active_user_sessions: 0
   developer_machine_evidence_used: false

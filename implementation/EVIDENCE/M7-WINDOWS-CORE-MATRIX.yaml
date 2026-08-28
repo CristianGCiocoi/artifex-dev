@@ -54,7 +54,7 @@ implementation_observation:
     vm_id: 104
     os_build: 26200.9168
     network_state: DHCP_VM_SPECIFIC_MAC
-    reset_snapshot: m7-qualified-25h2-x64-cell-base
+    reset_snapshot: m7-qualified-25h2-x64-cell-base-v3
     generalized_provenance_snapshot: m7-generalized-25h2-x64-base
     invalidated_pre_generalization_snapshot: m7-clean-25h2-x64-base
 verdict: MATRIX_ACCEPTED_M7_ACTIVE

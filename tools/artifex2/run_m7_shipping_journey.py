@@ -650,7 +650,10 @@ def _validate_clean_base_attestation(value: Mapping[str, Any]) -> None:
             raise JourneyFailure(f"clean-base attestation {field} is invalid")
     if value.get("providers_absent") is not True or value.get("source_checkout_absent") is not True:
         raise JourneyFailure("clean-base attestation does not prove cell separation")
-    if value.get("vm_id") != 104 or value.get("snapshot_name") != "m7-qualified-25h2-x64-cell-base":
+    if (
+        value.get("vm_id") != 104
+        or value.get("snapshot_name") != "m7-qualified-25h2-x64-cell-base-v3"
+    ):
         raise JourneyFailure("clean-base attestation does not identify the authorized VM104 reset")
 
 

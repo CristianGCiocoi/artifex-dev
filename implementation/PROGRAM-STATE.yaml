@@ -15,7 +15,7 @@ program:
   current_status: ACTIVE
   latest_accepted_commit: d7fa3c4ad419bd97e401ad765128dc3560484d90
   canonical_integration_baseline: cc1980ca02857b27276b489efddd30b4be74660f
-  next_integration_point: Execute M7-WIN-NOPROVIDER J10 from m7-qualified-25h2-x64-cell-base, then reset and qualify the independent Codex and Claude cells
+  next_integration_point: Execute M7-WIN-NOPROVIDER J10 from m7-qualified-25h2-x64-cell-base-v3, then reset and qualify the independent Codex and Claude cells
   m1_started: true
   m2_started: true
   m3_started: true
