@@ -1536,9 +1536,10 @@ def _native_executable_name() -> str:
 
 
 def _copy_atomic(source: Path, destination: Path) -> None:
-    descriptor, name = tempfile.mkstemp(
-        dir=destination.parent, prefix=f".{destination.name}.", suffix=".tmp"
-    )
+    # Keep the temporary leaf short: native one-directory bundles contain deep
+    # schema paths and the Windows helper must remain below legacy MAX_PATH even
+    # when its install root is already long.
+    descriptor, name = tempfile.mkstemp(dir=destination.parent, prefix=".af-")
     os.close(descriptor)
     temporary = Path(name)
     try:
@@ -1553,7 +1554,7 @@ def _write_manifest(path: Path, value: Mapping[str, Any]) -> None:
 
 
 def _write_bytes_atomic(path: Path, content: bytes) -> None:
-    descriptor, name = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
+    descriptor, name = tempfile.mkstemp(dir=path.parent, prefix=".af-")
     temporary = Path(name)
     try:
         with os.fdopen(descriptor, "wb") as stream:
