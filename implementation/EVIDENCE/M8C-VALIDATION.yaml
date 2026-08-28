@@ -87,5 +87,8 @@ v1_release_harness_regression:
   classification: V1-R01-DASHBOARD-FIXTURE-SCHEMA-DRIFT
   source_repaired_by_m8c: false
 unexpected_failures: []
+integration_revalidation:
+  evidence: EVIDENCE/M8-INTEGRATION-VALIDATION.yaml
+  result: PASS_FAIL_CLOSED
 blockers:
 - BLK-M8C-DEEPSEEK-LIVE-PREREQUISITES

@@ -82,3 +82,6 @@ v1_release_harness_regression:
   additionally_missing: [quality, artifacts, recent_activity]
   duration_seconds: 222.06
 unexpected_failures: []
+integration_revalidation:
+  evidence: EVIDENCE/M8-INTEGRATION-VALIDATION.yaml
+  result: PASS_FAIL_CLOSED

@@ -1,0 +1,72 @@
+schema_version: '1.0'
+evidence_id: EVD-M8-PROVIDER-INTEGRATION
+scope: [M6A_REVALIDATION, M8B, M8C]
+recorded_date: '2026-08-28'
+canonical_base_commit: 01d473e6d93b1751b843a42406d57ec99a3d036c
+composition: CLEAN_INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS
+shipping_artifact:
+  name: artifex_dev-1.0.0-py3-none-any.whl
+  sha256: 369295cf22fab3226565eaa19c1247ea9ac0748cbb82486b66116d9c4609d0af
+  environment: CLEAN_WINDOWS_PYTHON_3_12_VENV
+  source_tree_imported: false
+source_quality:
+  ruff: PASS
+  mypy_strict: PASS
+  mypy_files: 89
+focused_integration:
+  command: uv run pytest -q tests/artifex2_m6a tests/artifex2_m8b tests/artifex2_m8c tests/test_claude.py tests/test_optional_providers.py tests/test_application.py tests/test_project_model.py tests/artifex2_m0/test_m0_control_plane.py
+  result: PASS
+  passed: 72
+  duration_seconds: 213.44
+m6a_revalidation:
+  status: PASS
+  raw_outcome_sha256: 7eec5445b780072dbb7b9a214d43cac9bf3e848924eee71e88ca15348c5946a0
+  raw_outcome_bytes: 8418
+  claude_version: 2.1.247
+  codex_version: 0.149.0-alpha.4.1
+  claude_authenticated: true
+  codex_authenticated: true
+  J02: M6A_LIVE_PROVIDER_SLICE_PASS
+  full_clean_machine_status: NOT_CLAIMED
+  J11: PASS
+  interaction_role: LIVE_ROLE_CERTIFIED
+  execution_implementer_role: LIVE_ROLE_CERTIFIED
+  execution_live: true
+  acceptance_authority_separate: true
+  project_authority_promotion_revision: 2
+  v1_setup_fresh_process_real_readiness: PASS
+  credential_files_read: false
+  pii_persisted: false
+m8b_revalidation:
+  status: BLOCKED_EXTERNAL_PREREQUISITE
+  raw_outcome_sha256: a5badc1bfea27095dc97b08a0a867ba318f49fc58b82839c022184834efe1550
+  raw_outcome_bytes: 1576
+  public_composition_verified: true
+  live_role_certified: false
+  caller_self_issued_hash_receipt_rejected: true
+  forged_provider_lineage_rejected: true
+  project_revision_unchanged: true
+  project_bytes_unchanged: true
+  artifact_sha256_is_shipping_wheel: true
+m8c_revalidation:
+  status: BLOCKED_EXTERNAL_PREREQUISITE
+  raw_outcome_sha256: 8fd13497e8674a3b43576170b14380bbfffec3f45684ca5f4460b02db11414a1
+  raw_outcome_bytes: 3605
+  public_composition_verified: true
+  live_role_certified: false
+  certified_roles: []
+  resolver_denial: [NOT_GLOBALLY_AVAILABLE, ROLE_NOT_CERTIFIED, CAPABILITIES_NOT_PROVIDED]
+  credential_material_read: false
+  credential_material_persisted: false
+  experimental_roles_claimed: false
+qualification_diagnostics:
+  final_pass_used_complete_codex_distribution_with_required_command_host: true
+  incomplete_codex_wrapper_rejected: true
+  isolated_v1_catalog_required: true
+  explicit_claude_path_prepend_required_for_v1_literal_command: true
+  acceptance_contract_weakened: false
+known_v1_regression:
+  classification: V1-R01-DASHBOARD-FIXTURE-SCHEMA-DRIFT
+  disposition: PRESERVED_BASELINE_EVIDENCE
+  repaired_by_m8_integration: false
+unexpected_failures: []

@@ -167,6 +167,17 @@ def _bounded_marker_response(value: object, marker: str) -> bool:
     )
 
 
+def _marker_diagnostic(value: object, marker: str) -> str:
+    response = value if isinstance(value, str) else ""
+    return (
+        f"bytes={len(response.encode('utf-8', errors='replace'))}; "
+        f"marker_count={response.count(marker)}; "
+        f"project_id_count={response.count('m6a-live-project')}; "
+        f"revision_token_count={response.count('semantic_revision=1')}; "
+        f"response_sha256={_sha256(response)}"
+    )
+
+
 def _setup(
     cli: PublicCLI,
     *,
@@ -351,9 +362,15 @@ def _live_journeys(
         "interaction",
     )
     if not _bounded_marker_response(codex_interaction.get("response"), marker):
-        raise AssertionError("Codex continuity response did not contain one bounded marker")
+        raise AssertionError(
+            "Codex continuity response did not contain one bounded marker; "
+            + _marker_diagnostic(codex_interaction.get("response"), marker)
+        )
     if not _bounded_marker_response(claude_interaction.get("response"), marker):
-        raise AssertionError("Claude continuity response did not contain one bounded marker")
+        raise AssertionError(
+            "Claude continuity response did not contain one bounded marker; "
+            + _marker_diagnostic(claude_interaction.get("response"), marker)
+        )
     if codex_interaction.get("baseline") != claude_interaction.get("baseline"):
         raise AssertionError("Codex to Claude continuity changed the Project baseline")
 
@@ -551,7 +568,12 @@ def _legacy_revalidation(
     legacy = root / "legacy-project"
     cli.call(
         "project.create",
-        {"project_root": str(legacy), "project_id": "m6a-v1-legacy", "name": "M6A V1 Legacy"},
+        {
+            "project_root": str(legacy),
+            "catalog_path": str(root / "legacy-catalog.sqlite3"),
+            "project_id": "m6a-v1-legacy",
+            "name": "M6A V1 Legacy",
+        },
     )
     setup_path = legacy / ".artifex" / "integrations.json"
     setup_path.write_text(
@@ -611,6 +633,10 @@ def qualify(
         environment["GIT_AUTHOR_EMAIL"] = "artifex-m6a@local.invalid"
         environment["GIT_COMMITTER_NAME"] = "ARTIFEX M6A Outcome"
         environment["GIT_COMMITTER_EMAIL"] = "artifex-m6a@local.invalid"
+        if claude_command and Path(claude_command[0]).is_absolute():
+            environment["PATH"] = os.pathsep.join(
+                (str(Path(claude_command[0]).resolve().parent), environment.get("PATH", ""))
+            )
         for key in tuple(environment):
             if key.startswith("ARTIFEX_TEST_") and _SENSITIVE.search(key):
                 environment.pop(key)

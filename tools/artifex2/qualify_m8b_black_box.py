@@ -106,7 +106,9 @@ def _current(project: Path) -> dict[str, Any]:
     return json.loads(paths[-1].read_text(encoding="utf-8"))
 
 
-def qualify(python: Path) -> dict[str, Any]:
+def qualify(python: Path, wheel: Path) -> dict[str, Any]:
+    if not wheel.is_file() or wheel.suffix.casefold() != ".whl":
+        raise ValueError("shipping wheel is unavailable")
     with tempfile.TemporaryDirectory(prefix="artifex-m8b-") as temporary:
         root = Path(temporary)
         project = root / "project"
@@ -261,16 +263,18 @@ def qualify(python: Path) -> dict[str, Any]:
                     "identity, and independent live public-composition evidence"
                 ),
             },
-            "artifact_sha256": hashlib.sha256(python.read_bytes()).hexdigest(),
+            "artifact_sha256": hashlib.sha256(wheel.read_bytes()).hexdigest(),
+            "python_executable_sha256": hashlib.sha256(python.read_bytes()).hexdigest(),
         }
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--python", type=Path, required=True)
+    parser.add_argument("--wheel", type=Path, required=True)
     parser.add_argument("--output", type=Path)
     arguments = parser.parse_args()
-    result = qualify(arguments.python.resolve())
+    result = qualify(arguments.python.resolve(), arguments.wheel.resolve())
     rendered = json.dumps(result, indent=2, sort_keys=True) + "\n"
     if arguments.output is not None:
         arguments.output.parent.mkdir(parents=True, exist_ok=True)

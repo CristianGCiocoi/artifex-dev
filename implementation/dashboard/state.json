@@ -824,6 +824,11 @@
       "sha256": "768167e32f511cb7b4cbff79719c8ca7754e202e50689fd1446a91265f9f61f1"
     },
     {
+      "bytes": 2853,
+      "path": "implementation/EVIDENCE/M8-INTEGRATION-VALIDATION.yaml",
+      "sha256": "4d4f7d7c3b52840070899f6524f9e55bcf5f873fc8f47bdfa92718c36a7a252e"
+    },
+    {
       "bytes": 952,
       "path": "implementation/EVIDENCE/M8A-PUBLIC-OUTCOME.json",
       "sha256": "f227f743aad9c14a004a5457665579dab81d75332e1d308eaeea2d28af8523c5"
@@ -839,9 +844,9 @@
       "sha256": "124d120eb136aed026d583a2d03cb18f0ecf4abed00b1ee9878ff6fa8fa7fb82"
     },
     {
-      "bytes": 3465,
+      "bytes": 3570,
       "path": "implementation/EVIDENCE/M8B-VALIDATION.yaml",
-      "sha256": "0404b8110d3257bc7459686aba309546f6d198201ca1fd7219c1f423a81b68ae"
+      "sha256": "f79f84d3bb193e9c23fcad1047bc8ef7599aa288a7e9cf997b92f5a64808378e"
     },
     {
       "bytes": 2431,
@@ -854,9 +859,9 @@
       "sha256": "4eb7fcd2e3572b67c4283670b9f4ce2a17298515304df3c36c8f95105deb1f0e"
     },
     {
-      "bytes": 3465,
+      "bytes": 3570,
       "path": "implementation/EVIDENCE/M8C-VALIDATION.yaml",
-      "sha256": "a471896714c27c61da20fc070fbe360a7eea2345ddd0336b5b9b8251d83406b8"
+      "sha256": "0de9cf5564ebf056e870522a7bfbe459f380fc615bed75f3fca7ca492efa93f8"
     },
     {
       "bytes": 3220,
@@ -2490,7 +2495,7 @@
     "active_blockers": 2,
     "adr_count": 24,
     "current_milestone": "M6A",
-    "evidence_items": 24,
+    "evidence_items": 25,
     "invariant_count": 34,
     "journey_states": {
       "BLOCKED_EXTERNAL_PREREQUISITE": 1,
