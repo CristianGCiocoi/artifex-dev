@@ -14,7 +14,7 @@
 - Accepted milestones: `M0, M1, M2, M3, M4, M5, M6A, M8A`
 - Ready milestones: `none`
 - Latest accepted commit: `d7fa3c4ad419bd97e401ad765128dc3560484d90`
-- Next integration point: `Qualify the three official Windows 11 25H2 x64 clean-VM cells through the shipping installer and public managed-service composition`
+- Next integration point: `Execute M7-WIN-NOPROVIDER J10 from m7-qualified-25h2-x64-cell-base, then reset and qualify the independent Codex and Claude cells`
 - M7 started: `true`
 
 ## Work
@@ -30,4 +30,4 @@
 - M7 verdict: `ACTIVE`
 - Mandatory work complete: `false`
 - Mandatory journeys: `J01, J02, J10, J16`
-- Next integration point: `Qualify the three official Windows 11 25H2 x64 clean-VM cells through the shipping installer and public managed-service composition`
+- Next integration point: `Execute M7-WIN-NOPROVIDER J10 from m7-qualified-25h2-x64-cell-base, then reset and qualify the independent Codex and Claude cells`

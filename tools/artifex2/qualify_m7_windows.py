@@ -37,7 +37,7 @@ def qualify_cell(
     capture: Mapping[str, Any],
     *,
     cell_id: str,
-    python: Path,
+    artifex_executable: Path,
     artifact: Path,
     project_root: Path,
     state_root: Path,
@@ -53,12 +53,12 @@ def qualify_cell(
     if cell_id not in CELL_CONTRACTS:
         raise M7EvidenceError(f"unsupported M7 cell: {cell_id}")
     selected_version, selected_build = _selected_windows_target(selected_version, selected_build)
-    python = python.expanduser().resolve()
+    artifex_executable = artifex_executable.expanduser().resolve()
     artifact = artifact.expanduser().resolve()
     project_root = project_root.expanduser().resolve()
     state_root = state_root.expanduser().resolve()
-    if not python.is_file():
-        raise M7EvidenceError("installed Python is unavailable")
+    if not artifex_executable.is_file():
+        raise M7EvidenceError("installed ARTIFEX executable is unavailable")
     if not artifact.is_file():
         raise M7EvidenceError("shipping artifact is unavailable")
 
@@ -95,14 +95,12 @@ def qualify_cell(
     environment.pop("PYTHONPATH", None)
     environment["PYTHONNOUSERSITE"] = "1"
     origin = _installed_origin(
-        python,
-        environment=environment,
-        cwd=project_root.parent,
+        artifex_executable,
+        install_root=artifex_executable.parent,
         repo_root=repo_root,
-        runner=runner,
     )
     probes = _live_public_probes(
-        python,
+        artifex_executable,
         cell_id=cell_id,
         project_root=project_root,
         state_root=state_root,
@@ -175,8 +173,11 @@ def _enforce_official_host(
     if identity.get("system") != "Windows" or identity.get("release") != "11":
         raise M7EvidenceError("official M7 cells require Windows 11")
     product_name = identity.get("product_name")
-    if not isinstance(product_name, str) or not product_name.startswith("Windows 11"):
-        raise M7EvidenceError("Windows product identity is not Windows 11")
+    # Windows 11 can retain the compatibility registry label "Windows 10 Pro".
+    # ``platform.release()`` and the exact authorized build remain the OS-major
+    # authority; ProductName is retained as a corroborating Windows SKU label.
+    if not isinstance(product_name, str) or not product_name.startswith("Windows "):
+        raise M7EvidenceError("Windows product identity is invalid")
     if identity.get("display_version") != selected_version:
         raise M7EvidenceError(f"official M7 cells require selected Windows 11 {selected_version}")
     if identity.get("architecture") != "x86_64":
@@ -206,55 +207,50 @@ def _enforce_provider_separation(cell_id: str, *, which: Callable[[str], str | N
 
 
 def _installed_origin(
-    python: Path,
+    artifex_executable: Path,
     *,
-    environment: Mapping[str, str],
-    cwd: Path,
+    install_root: Path,
     repo_root: Path | None,
-    runner: Runner,
 ) -> str:
-    script = (
-        "import json,pathlib,sys,artifex;"
-        "print(json.dumps({'origin':str(pathlib.Path(artifex.__file__).resolve()),"
-        "'prefix':str(pathlib.Path(sys.prefix).resolve())}))"
-    )
-    completed = runner(
-        [str(python), "-I", "-c", script],
-        cwd=cwd,
-        env=dict(environment),
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        check=False,
-        timeout=30,
-        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
-    )
-    if completed.returncode != 0:
-        raise M7EvidenceError("installed ARTIFEX origin probe failed")
+    origin = artifex_executable.resolve()
+    prefix = install_root.resolve()
+    if origin.parent != prefix:
+        raise M7EvidenceError("ARTIFEX executable is outside the installed distribution root")
+    manifest = prefix / "artifex-install-manifest.json"
+    if not manifest.is_file():
+        raise M7EvidenceError("installed ARTIFEX manifest is unavailable")
     try:
-        value = json.loads(completed.stdout)
-        origin = Path(value["origin"]).resolve()
-        prefix = Path(value["prefix"]).resolve()
-    except (json.JSONDecodeError, KeyError, TypeError) as exc:
-        raise M7EvidenceError("installed ARTIFEX origin probe is invalid") from exc
-    if prefix != origin and prefix not in origin.parents:
-        raise M7EvidenceError("ARTIFEX is outside the installed Python prefix")
+        manifest_value = json.loads(manifest.read_text(encoding="utf-8"))
+        artifact_manifest = manifest_value["artifact_manifest"]
+        files = manifest_value["files"]
+        relative = origin.relative_to(prefix).as_posix()
+        executable_entry = next(item for item in files if item.get("path") == relative)
+    except (OSError, json.JSONDecodeError, KeyError, TypeError, StopIteration, ValueError) as exc:
+        raise M7EvidenceError("installed ARTIFEX manifest is invalid") from exc
+    executable_sha256 = _file_sha256(origin)
+    if (
+        manifest_value.get("install_root") != str(prefix)
+        or artifact_manifest.get("artifact") != relative
+        or artifact_manifest.get("sha256") != executable_sha256
+        or executable_entry.get("sha256") != executable_sha256
+    ):
+        raise M7EvidenceError("installed ARTIFEX manifest does not bind the native executable")
     if repo_root is not None:
         forbidden = repo_root.resolve()
-        if origin == forbidden or forbidden in origin.parents:
-            raise M7EvidenceError("ARTIFEX imported from the source repository")
+        if origin == forbidden or forbidden in origin.parents or prefix == forbidden:
+            raise M7EvidenceError("ARTIFEX executable originated from the source repository")
     return canonical_sha256(
         {
             "origin_sha256": hashlib.sha256(str(origin).encode()).hexdigest(),
             "prefix_sha256": hashlib.sha256(str(prefix).encode()).hexdigest(),
+            "manifest_sha256": _file_sha256(manifest),
             "installed": True,
         }
     )
 
 
 def _live_public_probes(
-    python: Path,
+    artifex_executable: Path,
     *,
     cell_id: str,
     project_root: Path,
@@ -264,7 +260,7 @@ def _live_public_probes(
 ) -> dict[str, str]:
     provider = str(CELL_CONTRACTS[cell_id]["provider"])
     status = _run_json(
-        python,
+        artifex_executable,
         ["service", "status", "--state-root", str(state_root)],
         environment=environment,
         cwd=project_root.parent,
@@ -278,7 +274,7 @@ def _live_public_probes(
 
     def service_call(operation: str, arguments: Mapping[str, Any]) -> Mapping[str, Any]:
         return _run_json(
-            python,
+            artifex_executable,
             [
                 "service",
                 "call",
@@ -348,7 +344,7 @@ def _live_public_probes(
 
 
 def _run_json(
-    python: Path,
+    artifex_executable: Path,
     arguments: Sequence[str],
     *,
     environment: Mapping[str, str],
@@ -356,7 +352,7 @@ def _run_json(
     runner: Runner,
 ) -> Mapping[str, Any]:
     completed = runner(
-        [str(python), "-I", "-m", "artifex.cli", *arguments],
+        [str(artifex_executable), *arguments],
         cwd=cwd,
         env=dict(environment),
         capture_output=True,
@@ -404,7 +400,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--capture", type=Path, required=True)
     parser.add_argument("--cell", choices=sorted(CELL_CONTRACTS), required=True)
-    parser.add_argument("--python", type=Path, required=True)
+    parser.add_argument("--artifex-executable", type=Path, required=True)
     parser.add_argument("--artifact", type=Path, required=True)
     parser.add_argument("--project-root", type=Path, required=True)
     parser.add_argument("--state-root", type=Path, required=True)
@@ -423,7 +419,7 @@ def main() -> None:
         result = qualify_cell(
             _read_object(arguments.capture),
             cell_id=arguments.cell,
-            python=arguments.python,
+            artifex_executable=arguments.artifex_executable,
             artifact=arguments.artifact,
             project_root=arguments.project_root,
             state_root=arguments.state_root,

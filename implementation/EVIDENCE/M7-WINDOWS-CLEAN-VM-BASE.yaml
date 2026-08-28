@@ -1,6 +1,6 @@
 schema_version: '1.0'
 evidence_id: EVD-M7-WINDOWS-25H2-CLEAN-VM-BASE
-recorded_date: '2026-08-28'
+recorded_date: '2026-08-29'
 scope: M7_CORE_CLEAN_VM_BASE
 hypervisor:
   product: Proxmox VE
@@ -11,16 +11,46 @@ hypervisor:
   source_snapshot: VM101/clean-windows-base
   clone_mode: FULL
 snapshot:
-  name: m7-clean-25h2-x64-base
-  unix_time: 1787891259
+  name: m7-qualified-25h2-x64-cell-base
+  unix_time: 1787953799
   powered_off: true
-  config_sha256: 5bb62e2e59a4ec5c5f791a77486e790d338dfc1785bf7b74ca17fa2a6a87fba1
+  config_sha256: 50d117abf61d246813137e62dfdddbabf9569c58c2ceb928d506cc4b0e2132a7
   immutable_cell_reset_source: true
+  parent: m7-generalized-25h2-x64-base
+snapshot_lineage:
+- name: m7-clean-25h2-x64-base
+  unix_time: 1787891259
+  status: INVALID_FOR_M7_EVIDENCE
+  reason: PRE_GENERALIZATION_DUPLICATE_MACHINE_SID
+- name: m7-generalized-25h2-x64-base
+  unix_time: 1787952042
+  status: VALID_GENERALIZATION_PROVENANCE
+  config_sha256: 308ced5e85376452fa5e1a244616ce86d59bc68a22fcc7df6d048deb243b99d5
+  cell_reset_source: false
+  reason: CONTAINS_ONE_TIME_FIRST_BOOT_AUTOLOGON_ANSWER_FILE
+- name: m7-qualified-25h2-x64-cell-base
+  unix_time: 1787953799
+  status: VALID_CELL_RESET_SOURCE
+  config_sha256: 50d117abf61d246813137e62dfdddbabf9569c58c2ceb928d506cc4b0e2132a7
+  cell_reset_source: true
+generalization:
+  sysprep_mode: VM
+  sysprep_status: PASS
+  reserved_storage: DISABLED
+  pre_generalization_account_sid_sha256: 68669b738cba8ce9553f06b27b6e83a1c55ec4aff0c998e1d3482ce28d61bfbb
+  post_generalization_account_sid_sha256: 5c00407e51a59e1b439dffb4136614fdf658946ba313d3b9549390e0455621b9
+  machine_sid_changed: true
+  duplicate_with_qualification_client_before: true
+  duplicate_with_qualification_client_after: false
+  first_boot_completed: true
+  rdp_black_box_status: PASS
+  transient_autologon_removed: true
+  unattend_removed: true
 platform:
   product: Windows 11 Pro
   display_version: 25H2
   build: 26200
-  ubr: 8037
+  ubr: 9168
   architecture: x64
   qemu_guest_agent_machine: x86_64
   selected_preferred_m7_baseline: true
@@ -38,6 +68,10 @@ cleanliness:
   codex_installed_or_state_present: false
   claude_installed_or_state_present: false
   node_installed: false
+  shipping_candidate_staged: true
+  shipping_candidate_sha256: 4dd71518f8921e9e201799762b65cb6421ac5dbfc0b2574eb74c58ab7ccf786b
+  temporary_update_payloads_removed: true
+  active_user_sessions: 0
   developer_machine_evidence_used: false
   provider_coexistence_used: false
 common_prerequisites:
@@ -54,7 +88,10 @@ common_prerequisites:
     authenticode_status: VALID
     signer: Johannes Schindelin
 security:
-  credential_values_read_or_persisted: false
+  credential_values_persisted_in_evidence: false
+  temporary_rdp_credential_used: true
+  temporary_rdp_credential_removed: true
+  current_rdp_credential_persisted: false
   provider_account_identity_persisted: false
   pii_persisted: false
   temporary_installers_removed: true

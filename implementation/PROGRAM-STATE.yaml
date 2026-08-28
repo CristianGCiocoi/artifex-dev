@@ -15,7 +15,7 @@ program:
   current_status: ACTIVE
   latest_accepted_commit: d7fa3c4ad419bd97e401ad765128dc3560484d90
   canonical_integration_baseline: cc1980ca02857b27276b489efddd30b4be74660f
-  next_integration_point: Qualify the three official Windows 11 25H2 x64 clean-VM cells through the shipping installer and public managed-service composition
+  next_integration_point: Execute M7-WIN-NOPROVIDER J10 from m7-qualified-25h2-x64-cell-base, then reset and qualify the independent Codex and Claude cells
   m1_started: true
   m2_started: true
   m3_started: true
@@ -26,7 +26,7 @@ program:
   m8a_started: true
   m8b_started: true
   m8c_started: true
-  recorded_date: '2026-08-28'
+  recorded_date: '2026-08-29'
   dashboard_state: CURRENT
 target_system:
   overview: Persistent project-centric engineering control platform with separate

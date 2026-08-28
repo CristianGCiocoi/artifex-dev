@@ -112,6 +112,28 @@ def _windows_adapter(
     )
 
 
+def test_windows_adapter_discovers_user_sid_from_native_byte_output() -> None:
+    def runner(
+        command: tuple[str, ...], timeout_seconds: float
+    ) -> subprocess.CompletedProcess[bytes]:
+        del timeout_seconds
+        assert command[1:] == ("/user", "/fo", "csv", "/nh")
+        return subprocess.CompletedProcess(
+            command,
+            0,
+            b'"ARTIFEX\\operator","S-1-5-21-42"\r\n',
+            b"",
+        )
+
+    adapter = WindowsTaskSchedulerRegistrationAdapter(
+        runner=runner,
+        schtasks_executable=r"C:\Windows\System32\schtasks.exe",
+        whoami_executable=r"C:\Windows\System32\whoami.exe",
+    )
+
+    assert adapter._user_sid == "S-1-5-21-42"
+
+
 class RecordingAdapter:
     platform_id = "test-explicit-adapter"
 

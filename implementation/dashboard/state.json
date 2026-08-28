@@ -844,14 +844,19 @@
       "sha256": "b00b6dbd5fddb948a610309efcdeac01339ca0db0f20ae317c4a0ad846ec57db"
     },
     {
-      "bytes": 2217,
-      "path": "implementation/EVIDENCE/M7-WINDOWS-CLEAN-VM-BASE.yaml",
-      "sha256": "4a66e1140da3f9c92ab3201fbb0b074f55dac371f1db3c27b992e3c17c3b8bce"
+      "bytes": 440,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION.json",
+      "sha256": "3eb91db62dc2b985d078ab5a27ce4a07dd4c43bebbc09f63b31056e223cf6ae9"
     },
     {
-      "bytes": 1931,
+      "bytes": 3772,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CLEAN-VM-BASE.yaml",
+      "sha256": "bd68e2b56f1c680bf4d799a4fd71be062baea340df0ec636ced7830a4ecf5831"
+    },
+    {
+      "bytes": 2146,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
-      "sha256": "29b9521690cb83c8fa90bde07aaf9e68a33f6173411cd4e7767f56c64af9d8ce"
+      "sha256": "9d59c4ba846617ea8a4428b741480e63d2879684bb5fd468bc69ed8000198c66"
     },
     {
       "bytes": 2310,
@@ -2264,8 +2269,8 @@
     "m8a_started": true,
     "m8b_started": true,
     "m8c_started": true,
-    "next_integration_point": "Qualify the three official Windows 11 25H2 x64 clean-VM cells through the shipping installer and public managed-service composition",
-    "recorded_date": "2026-08-28",
+    "next_integration_point": "Execute M7-WIN-NOPROVIDER J10 from m7-qualified-25h2-x64-cell-base, then reset and qualify the independent Codex and Claude cells",
+    "recorded_date": "2026-08-29",
     "target_release": "2.0.0"
   },
   "projection": {
@@ -2552,7 +2557,7 @@
     "active_blockers": 2,
     "adr_count": 24,
     "current_milestone": "M7",
-    "evidence_items": 31,
+    "evidence_items": 32,
     "invariant_count": 34,
     "journey_states": {
       "BLOCKED_EXTERNAL_PREREQUISITE": 1,

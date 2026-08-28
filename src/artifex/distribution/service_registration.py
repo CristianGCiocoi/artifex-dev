@@ -548,7 +548,7 @@ class WindowsTaskSchedulerRegistrationAdapter:
 
     def _discover_user_sid(self) -> str:
         result = self._checked((self._whoami, "/user", "/fo", "csv", "/nh"))
-        rows = tuple(csv.reader(io.StringIO(result.stdout)))
+        rows = tuple(csv.reader(io.StringIO(_command_text(result.stdout))))
         if len(rows) != 1 or len(rows[0]) < 2:
             raise UnsupportedServicePlatformError("cannot determine current Windows user SID")
         return rows[0][1].strip()

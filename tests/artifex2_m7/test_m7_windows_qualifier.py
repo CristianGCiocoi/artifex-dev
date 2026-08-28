@@ -337,6 +337,8 @@ def test_live_host_gate_defaults_to_exact_windows_11_25h2_build_26200_x64() -> N
         "ubr": 1234,
     }
     _enforce_official_host(identity)
+    compatibility_registry_label = {**identity, "product_name": "Windows 10 Pro"}
+    _enforce_official_host(compatibility_registry_label)
     stale = {**identity, "display_version": "23H2"}
     with pytest.raises(M7EvidenceError, match="25H2"):
         _enforce_official_host(stale)
