@@ -3,7 +3,7 @@ evidence_id: EVD-M7-WINDOWS-SERVICE-SOURCE-VALIDATION
 recorded_date: '2026-08-28'
 scope: M7_WINDOWS_SERVICE_AND_QUALIFICATION_CANDIDATE_SOURCE
 canonical_base_commit: cc1980ca02857b27276b489efddd30b4be74660f
-candidate_commit: PENDING_PROVENANCE_COMMIT
+validated_source_commit: 6deff330f1decf219713c290d8407dc388db3ba9
 platform_contract:
   preferred_cell: WINDOWS_11_25H2_X64_BUILD_26200
   eligible_compatibility_cell: WINDOWS_11_24H2_X64_BUILD_26100
