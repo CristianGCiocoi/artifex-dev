@@ -1,0 +1,36 @@
+schema_version: '1.0'
+evidence_id: EVD-M7-WINDOWS-NATIVE-CANDIDATE
+recorded_date: '2026-08-28'
+scope: SINGLE_CANDIDATE_FOR_ALL_M7_WINDOWS_CORE_CELLS
+artifact:
+  name: artifex-1.0.0-windows-x64.zip
+  sha256: 4dd71518f8921e9e201799762b65cb6421ac5dbfc0b2574eb74c58ab7ccf786b
+  bytes: 15574749
+  kind: native-windows-x64
+  format: pyinstaller-onedir
+  source_commit: cd6adf7fc137d445f737380817ee1b5b8656ffdc
+  executable_sha256: 0cb9f297b252607f8f4a609a4e7c3f4f728efe2a7937a7e5bb4e4c404a03319f
+  product_version: 1.0.0
+  platform: windows
+  architecture: x86_64
+  pyinstaller_version: 6.22.2
+  python_version: 3.14.6
+  file_inventory_count: 73
+build_validation:
+  command: uv run python packaging/build.py --clean --smoke
+  result: PASS
+  system_version: PASS
+  presentation_mode: PASS
+  public_install: PASS
+  self_upgrade: PASS
+  self_uninstall: PASS
+  unmanaged_file_preservation: PASS
+release_finalization:
+  command: uv run python scripts/validate_release.py finalize-native --candidate cd6adf7fc137d445f737380817ee1b5b8656ffdc --input dist/native/artifex --output dist/release --kind native-windows-x64
+  result: PASS
+cell_policy:
+  same_zip_sha256_required: true
+  source_tree_execution_eligible: false
+  per_cell_rebuild_permitted: false
+  provider_result_inference_permitted: false
+verdict: READY_FOR_CLEAN_VM_CELL_QUALIFICATION

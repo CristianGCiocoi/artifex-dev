@@ -65,10 +65,11 @@
       },
       "PUBLIC_COMPOSITION": {
         "evidence": [
-          "EVIDENCE/M7-FOUNDATION-OUTCOME.json"
+          "EVIDENCE/M7-FOUNDATION-OUTCOME.json",
+          "EVIDENCE/M7-WINDOWS-CANDIDATE-ARTIFACT.yaml"
         ],
         "required_m7": true,
-        "status": "PASS_FOUNDATION"
+        "status": "PASS_NATIVE_CANDIDATE"
       },
       "SECURITY_AUTHORITY": {
         "evidence": [
@@ -836,6 +837,11 @@
       "bytes": 2950,
       "path": "implementation/EVIDENCE/M7-FOUNDATION-VALIDATION.yaml",
       "sha256": "e112850d892471470973433de3be277222c25d503582726da083204a6d72737e"
+    },
+    {
+      "bytes": 1334,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CANDIDATE-ARTIFACT.yaml",
+      "sha256": "b00b6dbd5fddb948a610309efcdeac01339ca0db0f20ae317c4a0ad846ec57db"
     },
     {
       "bytes": 2217,
@@ -2546,7 +2552,7 @@
     "active_blockers": 2,
     "adr_count": 24,
     "current_milestone": "M7",
-    "evidence_items": 30,
+    "evidence_items": 31,
     "invariant_count": 34,
     "journey_states": {
       "BLOCKED_EXTERNAL_PREREQUISITE": 1,
