@@ -196,8 +196,13 @@ def probe_artifact_identity(source: Path, timeout_seconds: float) -> Mapping[str
 
 
 def runtime_release_identity() -> dict[str, Any]:
-    executable = Path(sys.executable).resolve()
-    if getattr(sys, "frozen", False):
+    compiled = "__compiled__" in globals()
+    executable = (
+        Path(sys.argv[0]).absolute().resolve()
+        if compiled
+        else Path(sys.executable).resolve()
+    )
+    if compiled or getattr(sys, "frozen", False):
         digest = _sha256(executable)
         operating_system = canonical_platform()
         architecture = canonical_architecture()

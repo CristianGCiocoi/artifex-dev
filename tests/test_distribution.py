@@ -271,6 +271,32 @@ def test_frozen_runtime_identity_is_content_bound(monkeypatch: pytest.MonkeyPatc
     assert str(identity["build_id"]).endswith(str(identity["sha256"])[:16])
 
 
+@pytest.mark.unit
+def test_nuitka_runtime_identity_uses_compiled_launcher(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    executable = tmp_path / "artifex.exe"
+    executable.write_bytes(b"nuitka-launcher")
+    monkeypatch.setitem(artifact.__dict__, "__compiled__", object())
+    monkeypatch.setattr(artifact.sys, "argv", [str(executable), "system", "version"])
+    monkeypatch.delattr(artifact.sys, "frozen", raising=False)
+
+    identity = artifact.runtime_release_identity()
+
+    digest = hashlib.sha256(executable.read_bytes()).hexdigest()
+    assert identity == {
+        "product": "ARTIFEX",
+        "version": "1.0.0",
+        "build_id": f"artifex-1.0.0-{artifact.canonical_platform()}-"
+        f"{artifact.canonical_architecture()}-{digest[:16]}",
+        "format": "nuitka-standalone",
+        "platform": artifact.canonical_platform(),
+        "architecture": artifact.canonical_architecture(),
+        "artifact": "artifex.exe",
+        "sha256": digest,
+    }
+
+
 @pytest.mark.integration
 def test_internal_symlinks_are_inventoried_and_preserved_through_lifecycle(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
