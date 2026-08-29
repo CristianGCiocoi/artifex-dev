@@ -32,6 +32,17 @@ def test_runtime_phase_diagnostics_are_bounded_and_secret_safe() -> None:
     assert journey_runner._ACTIVE_PHASE == "task-scheduler-restart"
 
 
+def test_shipping_cli_os_failure_reports_only_operation_and_code(tmp_path: Path) -> None:
+    def fail(*_: object, **__: object) -> subprocess.CompletedProcess[str]:
+        raise OSError(5, "sensitive local path marker")
+
+    cli = ShippingCLI(tmp_path / "artifex.exe", cwd=tmp_path, runner=fail)
+
+    with pytest.raises(JourneyFailure, match=r"service\.status.*os_code=5") as caught:
+        cli.direct("service.status", ["service", "status"])
+    assert "sensitive local path marker" not in str(caught.value)
+
+
 def test_shipping_zip_extracts_one_native_manifest_bound_bundle(tmp_path: Path) -> None:
     artifact = tmp_path / "candidate.zip"
     with zipfile.ZipFile(artifact, "w") as archive:

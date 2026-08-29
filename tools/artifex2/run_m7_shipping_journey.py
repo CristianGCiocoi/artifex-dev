@@ -96,18 +96,24 @@ class ShippingCLI:
         environment = os.environ.copy()
         environment.pop("PYTHONPATH", None)
         environment["PYTHONNOUSERSITE"] = "1"
-        completed = self.runner(
-            [str(self.executable), *arguments],
-            cwd=self.cwd,
-            env=environment,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            check=False,
-            timeout=self.timeout_seconds,
-            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
-        )
+        try:
+            completed = self.runner(
+                [str(self.executable), *arguments],
+                cwd=self.cwd,
+                env=environment,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=False,
+                timeout=self.timeout_seconds,
+                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+            )
+        except OSError as exc:
+            code = getattr(exc, "winerror", None) or exc.errno or "UNKNOWN"
+            raise JourneyFailure(
+                f"{operation} could not start through the shipping CLI (os_code={code})"
+            ) from exc
         stdout = completed.stdout or ""
         stderr = completed.stderr or ""
         if _SENSITIVE_TEXT.search(stdout) or _SENSITIVE_TEXT.search(stderr):
