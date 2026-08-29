@@ -102,6 +102,7 @@ def _windows_adapter(
     return WindowsTaskSchedulerRegistrationAdapter(
         runner=scheduler.run,
         user_sid="S-1-5-21-42",
+        user_name=r"ARTIFEX\operator",
         schtasks_executable=r"C:\Windows\System32\schtasks.exe",
         whoami_executable=r"C:\Windows\System32\whoami.exe",
         readiness_probe=(
@@ -133,6 +134,7 @@ def test_windows_adapter_discovers_user_sid_from_native_byte_output() -> None:
     )
 
     assert adapter._user_sid == "S-1-5-21-42"
+    assert adapter._user_name == r"ARTIFEX\operator"
 
 
 def test_windows_task_xml_uses_stream_encoding_over_stale_declaration() -> None:
@@ -432,7 +434,9 @@ def test_windows_task_scheduler_registration_is_owned_and_deterministic(
     assert len(scheduler.tasks) == 1
     task_xml = next(iter(scheduler.tasks.values()))
     assert "InteractiveToken" in task_xml
-    assert "LeastPrivilege" in task_xml
+    assert r"ARTIFEX\operator" in task_xml
+    assert "LeastPrivilege" not in task_xml
+    assert "UseUnifiedSchedulingEngine" in task_xml
     assert "RestartOnFailure" in task_xml
     assert "service serve" in task_xml
     assert str((tmp_path / "state").resolve()) in task_xml
@@ -538,6 +542,44 @@ def test_windows_task_scheduler_registration_uri_drift_is_rejected(
 
     with pytest.raises(ServiceRegistrationDriftError, match="registration URI"):
         manager.plan_uninstall("artifex-runtime")
+
+
+@pytest.mark.adversarial
+def test_windows_task_scheduler_trigger_user_drift_is_rejected(
+    tmp_path: Path,
+) -> None:
+    scheduler = FakeTaskScheduler()
+    adapter = _windows_adapter(scheduler)
+    manifest = _spec(tmp_path, "2.0.0", b"service-v1").manifest()
+    adapter.register(manifest)
+    task_name = next(iter(scheduler.tasks))
+    scheduler.tasks[task_name] = re.sub(
+        r"(<LogonTrigger[^>]*>.*?<UserId>).*?(</UserId>)",
+        r"\1ARTIFEX\\unowned\2",
+        scheduler.tasks[task_name],
+        count=1,
+        flags=re.DOTALL,
+    )
+
+    with pytest.raises(ServiceRegistrationDriftError, match="trigger user"):
+        adapter.inspect(manifest.service_id)
+
+
+@pytest.mark.adversarial
+def test_windows_task_scheduler_elevated_run_level_is_rejected(
+    tmp_path: Path,
+) -> None:
+    scheduler = FakeTaskScheduler()
+    adapter = _windows_adapter(scheduler)
+    manifest = _spec(tmp_path, "2.0.0", b"service-v1").manifest()
+    adapter.register(manifest)
+    task_name = next(iter(scheduler.tasks))
+    scheduler.tasks[task_name] = scheduler.tasks[task_name].replace(
+        "</Principal>", "<RunLevel>HighestAvailable</RunLevel></Principal>", count=1
+    )
+
+    with pytest.raises(ServiceRegistrationDriftError, match="Principal definition"):
+        adapter.inspect(manifest.service_id)
 
 
 @pytest.mark.adversarial

@@ -339,6 +339,7 @@ class WindowsTaskSchedulerRegistrationAdapter:
         *,
         runner: TaskCommandRunner | None = None,
         user_sid: str | None = None,
+        user_name: str | None = None,
         schtasks_executable: str | Path | None = None,
         whoami_executable: str | Path | None = None,
         readiness_probe: ServiceProbe | None = None,
@@ -352,9 +353,20 @@ class WindowsTaskSchedulerRegistrationAdapter:
         self._whoami = str(
             Path(whoami_executable or system_root / "System32" / "whoami.exe")
         )
-        self._user_sid = user_sid or self._discover_user_sid()
+        if user_sid is None or user_name is None:
+            discovered_name, discovered_sid = self._discover_user_identity()
+        else:
+            discovered_name, discovered_sid = user_name, user_sid
+        self._user_sid = user_sid or discovered_sid
+        self._user_name = user_name or discovered_name
         if not re.fullmatch(r"S-1-(?:\d+-)+\d+", self._user_sid, flags=re.IGNORECASE):
             raise ValueError("current Windows user SID is invalid")
+        if (
+            not self._user_name
+            or "\\" not in self._user_name
+            or any(ord(character) < 32 for character in self._user_name)
+        ):
+            raise ValueError("current Windows user name is invalid")
         self._readiness_probe = readiness_probe or _default_readiness_probe
         self._shutdown_probe = shutdown_probe or _default_shutdown_probe
 
@@ -546,12 +558,14 @@ class WindowsTaskSchedulerRegistrationAdapter:
             raise ServiceRegistrationError("Windows scheduled task state is unreadable")
         return rows[0][2].strip().casefold() == "running"
 
-    def _discover_user_sid(self) -> str:
+    def _discover_user_identity(self) -> tuple[str, str]:
         result = self._checked((self._whoami, "/user", "/fo", "csv", "/nh"))
         rows = tuple(csv.reader(io.StringIO(_command_text(result.stdout))))
         if len(rows) != 1 or len(rows[0]) < 2:
-            raise UnsupportedServicePlatformError("cannot determine current Windows user SID")
-        return rows[0][1].strip()
+            raise UnsupportedServicePlatformError(
+                "cannot determine current Windows user identity"
+            )
+        return rows[0][0].strip(), rows[0][1].strip()
 
     def _task_name(self, service_id: str) -> str:
         sid_hash = hashlib.sha256(self._user_sid.upper().encode("ascii")).hexdigest()[:16]
@@ -634,33 +648,27 @@ class WindowsTaskSchedulerRegistrationAdapter:
         )
         triggers = ET.SubElement(task, _task_tag("Triggers"))
         trigger = ET.SubElement(triggers, _task_tag("LogonTrigger"), {"id": "UserLogon"})
-        ET.SubElement(trigger, _task_tag("Enabled")).text = "true"
-        ET.SubElement(trigger, _task_tag("UserId")).text = self._user_sid
+        ET.SubElement(trigger, _task_tag("UserId")).text = self._user_name
         principals = ET.SubElement(task, _task_tag("Principals"))
         principal = ET.SubElement(principals, _task_tag("Principal"), {"id": "Author"})
         ET.SubElement(principal, _task_tag("UserId")).text = self._user_sid
         ET.SubElement(principal, _task_tag("LogonType")).text = "InteractiveToken"
-        ET.SubElement(principal, _task_tag("RunLevel")).text = "LeastPrivilege"
         settings = ET.SubElement(task, _task_tag("Settings"))
         for name, value in (
-            ("MultipleInstancesPolicy", "IgnoreNew"),
             ("DisallowStartIfOnBatteries", "false"),
             ("StopIfGoingOnBatteries", "false"),
-            ("AllowHardTerminate", "true"),
-            ("StartWhenAvailable", "true"),
-            ("RunOnlyIfNetworkAvailable", "false"),
-            ("AllowStartOnDemand", "true"),
-            ("Enabled", "true"),
-            ("Hidden", "false"),
-            ("RunOnlyIfIdle", "false"),
-            ("WakeToRun", "false"),
             ("ExecutionTimeLimit", "PT0S"),
-            ("Priority", "7"),
+            ("MultipleInstancesPolicy", "IgnoreNew"),
+            ("StartWhenAvailable", "true"),
         ):
             ET.SubElement(settings, _task_tag(name)).text = value
         restart = ET.SubElement(settings, _task_tag("RestartOnFailure"))
         ET.SubElement(restart, _task_tag("Interval")).text = "PT1M"
         ET.SubElement(restart, _task_tag("Count")).text = "3"
+        idle = ET.SubElement(settings, _task_tag("IdleSettings"))
+        ET.SubElement(idle, _task_tag("StopOnIdleEnd")).text = "true"
+        ET.SubElement(idle, _task_tag("RestartOnIdle")).text = "false"
+        ET.SubElement(settings, _task_tag("UseUnifiedSchedulingEngine")).text = "true"
         actions = ET.SubElement(task, _task_tag("Actions"), {"Context": "Author"})
         action = ET.SubElement(actions, _task_tag("Exec"))
         ET.SubElement(action, _task_tag("Command")).text = manifest.executable
@@ -692,19 +700,22 @@ class WindowsTaskSchedulerRegistrationAdapter:
                 "Windows scheduled task registration URI drifted"
             )
         self._assert_managed_service_manifest(manifest)
-        _require_single_task_element(root, "LogonTrigger")
-        _require_single_task_element(root, "Principal")
+        trigger = _required_task_element(root, "LogonTrigger")
+        principal = _required_task_element(root, "Principal")
         _require_single_task_element(root, "Exec")
         expected = {
             "LogonType": "InteractiveToken",
-            "RunLevel": "LeastPrivilege",
             "Command": manifest.executable,
             "Arguments": subprocess.list2cmdline(list(manifest.arguments)),
             "WorkingDirectory": manifest.working_directory,
             "MultipleInstancesPolicy": "IgnoreNew",
+            "DisallowStartIfOnBatteries": "false",
+            "StopIfGoingOnBatteries": "false",
             "ExecutionTimeLimit": "PT0S",
-            "AllowStartOnDemand": "true",
             "StartWhenAvailable": "true",
+            "UseUnifiedSchedulingEngine": "true",
+            "StopOnIdleEnd": "true",
+            "RestartOnIdle": "false",
         }
         for name, value in expected.items():
             observed = _required_task_text(root, name)
@@ -718,9 +729,11 @@ class WindowsTaskSchedulerRegistrationAdapter:
                 raise ServiceRegistrationDriftError(
                     f"Windows scheduled task {name} does not match installer ownership"
                 )
-        user_ids = _task_texts(root, "UserId")
-        if len(user_ids) != 2 or any(
-            value.casefold() != self._user_sid.casefold() for value in user_ids
+        principal_user = _required_child_text(principal, "UserId")
+        trigger_user = _required_child_text(trigger, "UserId")
+        if (
+            principal_user.casefold() != self._user_sid.casefold()
+            or trigger_user.casefold() != self._user_name.casefold()
         ):
             raise ServiceRegistrationDriftError(
                 "Windows scheduled task principal or trigger user drifted"
@@ -751,11 +764,11 @@ class WindowsTaskSchedulerRegistrationAdapter:
         exact_shapes: tuple[tuple[str, set[str], dict[str, str]], ...] = (
             ("RegistrationInfo", {"Description", "URI"}, {}),
             ("Triggers", {"LogonTrigger"}, {}),
-            ("LogonTrigger", {"Enabled", "UserId"}, {"id": "UserLogon"}),
+            ("LogonTrigger", {"UserId"}, {"id": "UserLogon"}),
             ("Principals", {"Principal"}, {}),
             (
                 "Principal",
-                {"UserId", "LogonType", "RunLevel"},
+                {"UserId", "LogonType"},
                 {"id": "Author"},
             ),
             (
@@ -764,21 +777,16 @@ class WindowsTaskSchedulerRegistrationAdapter:
                     "MultipleInstancesPolicy",
                     "DisallowStartIfOnBatteries",
                     "StopIfGoingOnBatteries",
-                    "AllowHardTerminate",
                     "StartWhenAvailable",
-                    "RunOnlyIfNetworkAvailable",
-                    "AllowStartOnDemand",
-                    "Enabled",
-                    "Hidden",
-                    "RunOnlyIfIdle",
-                    "WakeToRun",
                     "ExecutionTimeLimit",
-                    "Priority",
                     "RestartOnFailure",
+                    "IdleSettings",
+                    "UseUnifiedSchedulingEngine",
                 },
                 {},
             ),
             ("RestartOnFailure", {"Interval", "Count"}, {}),
+            ("IdleSettings", {"StopOnIdleEnd", "RestartOnIdle"}, {}),
             ("Actions", {"Exec"}, {"Context": "Author"}),
             ("Exec", {"Command", "Arguments", "WorkingDirectory"}, {}),
         )
@@ -1305,12 +1313,30 @@ def _required_task_text(root: ET.Element, name: str) -> str:
     return values[0]
 
 
-def _require_single_task_element(root: ET.Element, name: str) -> None:
+def _required_task_element(root: ET.Element, name: str) -> ET.Element:
     values = tuple(element for element in root.iter() if _local_name(element.tag) == name)
     if len(values) != 1:
         raise ServiceRegistrationDriftError(
             f"Windows scheduled task requires exactly one {name} element"
         )
+    return values[0]
+
+
+def _required_child_text(element: ET.Element, name: str) -> str:
+    values = tuple(
+        (child.text or "").strip()
+        for child in element
+        if _local_name(child.tag) == name
+    )
+    if len(values) != 1 or not values[0]:
+        raise ServiceRegistrationDriftError(
+            f"Windows scheduled task requires exactly one {name} child value"
+        )
+    return values[0]
+
+
+def _require_single_task_element(root: ET.Element, name: str) -> None:
+    _required_task_element(root, name)
 
 
 def _task_description(manifest: ServiceRegistrationManifest) -> str:
