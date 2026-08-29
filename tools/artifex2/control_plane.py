@@ -47,6 +47,12 @@ def _counts(values: list[str]) -> dict[str, int]:
     return dict(sorted(Counter(values).items()))
 
 
+def _percentage(completed: int, total: int) -> int:
+    if total <= 0:
+        return 0
+    return round((completed / total) * 100)
+
+
 def derive(repo_root: Path) -> dict[str, Any]:
     root = repo_root.resolve()
     implementation = root / "implementation"
@@ -128,6 +134,17 @@ def derive(repo_root: Path) -> dict[str, Any]:
     provider_step_states = [state for item in providers for state in item.get("steps", {}).values()]
     accepted = [item["id"] for item in milestones if item["accepted"]]
     ready = [item["id"] for item in milestones if item["state"] == "READY"]
+    required_key = f"required_{program['current_milestone'].lower()}"
+    required_acceptance = [
+        value
+        for value in acceptance["evidence_classes"].values()
+        if value.get(required_key, False)
+    ]
+    passing_acceptance = [
+        value
+        for value in required_acceptance
+        if str(value.get("status", "")).startswith("PASS")
+    ]
     return {
         "schema_version": "1.0",
         "projection": {
@@ -140,6 +157,7 @@ def derive(repo_root: Path) -> dict[str, Any]:
         "summary": {
             "milestones_total": len(milestones),
             "milestones_accepted": len(accepted),
+            "program_progress_percent": _percentage(len(accepted), len(milestones)),
             "milestones_started": sum(item["started"] for item in milestones),
             "current_milestone": program["current_milestone"],
             "ready_milestones": ready,
@@ -150,6 +168,11 @@ def derive(repo_root: Path) -> dict[str, Any]:
             "journey_states": _counts([item["status"] for item in journeys]),
             "provider_step_states": _counts(provider_step_states),
             "evidence_items": len(evidence),
+            "acceptance_classes_required": len(required_acceptance),
+            "acceptance_classes_passing": len(passing_acceptance),
+            "current_milestone_progress_percent": _percentage(
+                len(passing_acceptance), len(required_acceptance)
+            ),
         },
         "milestones": milestones,
         "workstreams": workstreams,
@@ -328,6 +351,23 @@ def render_html(state: dict[str, Any]) -> str:
             ("Evidence items", summary["evidence_items"]),
         )
     )
+    progress = "".join(
+        f'''<article class="progress-item"><div><span>{html.escape(label)}</span><strong>{percent}%</strong></div>
+<div class="progress-track" role="progressbar" aria-label="{html.escape(label)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{percent}"><span style="width:{percent}%"></span></div>
+<small>{html.escape(detail)}</small></article>'''
+        for label, percent, detail in (
+            (
+                "Program progress",
+                summary["program_progress_percent"],
+                f"{summary['milestones_accepted']} of {summary['milestones_total']} milestones accepted",
+            ),
+            (
+                f"{program['current_milestone']} evidence progress",
+                summary["current_milestone_progress_percent"],
+                f"{summary['acceptance_classes_passing']} of {summary['acceptance_classes_required']} required evidence classes passing",
+            ),
+        )
+    )
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ARTIFEX 2.0 implementation dashboard</title>
@@ -339,11 +379,12 @@ header,main{{max-width:1500px;margin:auto;padding:24px}}header{{border-bottom:1p
 .notice{{color:var(--warn)}}nav{{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}}nav a{{color:var(--ink);border:1px solid var(--line);padding:6px 10px;border-radius:999px;text-decoration:none}}
 .cards{{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:24px 0}}.card,section{{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}}
 .card span{{display:block;color:var(--muted)}}.card strong{{display:block;font-size:1.7rem;margin-top:5px}}section{{margin:18px 0;overflow:auto}}h2{{margin-top:0}}table{{border-collapse:collapse;width:100%;min-width:720px}}th,td{{padding:9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}}th{{color:var(--accent)}}code{{color:#b9d8ff}}.meta{{color:var(--muted)}}
+.progress-grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin:0 0 24px}}.progress-item{{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}}.progress-item>div:first-child{{display:flex;align-items:baseline;justify-content:space-between;gap:16px}}.progress-item span,.progress-item small{{color:var(--muted)}}.progress-item strong{{font-size:1.7rem}}.progress-track{{height:12px;margin:12px 0 8px;background:#07101d;border:1px solid var(--line);border-radius:999px;overflow:hidden}}.progress-track>span{{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#82b7ff);border-radius:inherit}}
 </style></head><body>
 <header><div class="eyebrow">Implementation control projection · {html.escape(program['current_milestone'])}</div><h1>ARTIFEX 2.0</h1>
 <p>{html.escape(target["overview"])}</p><p class="notice">Derived view only. Machine-readable implementation-control artifacts remain authority.</p>
 <nav>{"".join(f'<a href="#{item}">{item}</a>' for item in ("overview", "milestones", "workstreams", "contracts", "providers", "journeys", "acceptance", "migration", "evidence"))}</nav></header>
-<main><div class="cards">{cards}</div>
+<main><div class="cards">{cards}</div><div class="progress-grid">{progress}</div>
 <section id="overview"><h2>Target system and glossary</h2><p>Standalone baseline: {html.escape(" · ".join(target["standalone_baseline"]))}</p>{glossary}</section>
 <section id="milestones"><h2>Milestone DAG and progress</h2>{milestones}</section>
 <section id="workstreams"><h2>Workstreams, ownership and blockers</h2><p>Active blockers: <strong>{summary["active_blockers"]}</strong></p>{workstreams}</section>

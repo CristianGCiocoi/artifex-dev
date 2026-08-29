@@ -43,6 +43,14 @@ def test_control_plane_covers_frozen_contracts_and_preserves_m0_gate() -> None:
     state = derive(ROOT)
 
     assert state["summary"]["milestones_total"] == 16
+    assert state["summary"]["program_progress_percent"] == round(
+        state["summary"]["milestones_accepted"] / 16 * 100
+    )
+    assert state["summary"]["current_milestone_progress_percent"] == round(
+        state["summary"]["acceptance_classes_passing"]
+        / state["summary"]["acceptance_classes_required"]
+        * 100
+    )
     assert state["summary"]["adr_count"] == 24
     assert state["summary"]["invariant_count"] == 34
     assert len(state["journeys"]) == 20
@@ -72,6 +80,8 @@ def test_dashboard_and_current_state_are_deterministic_projections() -> None:
     assert before == after
     assert state["projection"]["authoritative"] is False
     assert b"Derived view only" in after
+    assert b"Program progress" in after
+    assert b'role="progressbar"' in after
 
 
 def test_evidence_fingerprint_is_checkout_line_ending_independent(tmp_path: Path) -> None:

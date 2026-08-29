@@ -2590,9 +2590,12 @@
   },
   "schema_version": "1.0",
   "summary": {
+    "acceptance_classes_passing": 7,
+    "acceptance_classes_required": 10,
     "active_blockers": 3,
     "adr_count": 24,
     "current_milestone": "M7",
+    "current_milestone_progress_percent": 70,
     "evidence_items": 33,
     "invariant_count": 34,
     "journey_states": {
@@ -2604,6 +2607,7 @@
     "milestones_accepted": 8,
     "milestones_started": 11,
     "milestones_total": 16,
+    "program_progress_percent": 50,
     "provider_step_states": {
       "IN_PROGRESS": 2,
       "NOT_APPLICABLE": 10,
