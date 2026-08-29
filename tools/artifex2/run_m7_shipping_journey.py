@@ -21,9 +21,8 @@ import re
 import shutil
 import subprocess
 import time
-import zipfile
 from collections.abc import Mapping, Sequence
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 from typing import Any
 
 from tools.artifex2.validate_m7 import (
@@ -199,50 +198,13 @@ def run_j10(
     if artifact_sha256 != expected_artifact_sha256:
         raise JourneyFailure("shipping artifact SHA-256 does not match the frozen candidate")
     artifact_bytes = artifact.stat().st_size
-    _mark_phase("artifact-extraction")
-    source_executable = _safe_extract_shipping_zip(artifact, staging_root)
-
-    stage_cli = ShippingCLI(source_executable, cwd=staging_root, runner=runner)
-    _mark_phase("install-plan")
-    plan = stage_cli.direct(
-        "distribution.install.plan",
-        [
-            "install",
-            "--install-root",
-            str(install_root),
-            "--source-executable",
-            str(source_executable),
-            "--managed-service",
-            "--service-state-root",
-            str(state_root),
-        ],
+    _mark_phase("shipping-installer")
+    installed_executable = _install_shipping_candidate(
+        artifact,
+        install_root=install_root,
+        state_root=state_root,
+        runner=runner,
     )
-    token = _value(plan).get("confirmation_token")
-    if not isinstance(token, str) or not token:
-        raise JourneyFailure("shipping installer did not issue a bound confirmation token")
-    _mark_phase("install-apply")
-    installed = stage_cli.direct(
-        "distribution.install",
-        [
-            "install",
-            "--install-root",
-            str(install_root),
-            "--source-executable",
-            str(source_executable),
-            "--managed-service",
-            "--service-state-root",
-            str(state_root),
-            "--apply",
-            "--confirm",
-            token,
-        ],
-    )
-    install_value = _value(installed)
-    installed_executable = Path(str(install_value.get("executable", ""))).resolve()
-    if installed_executable.parent != install_root or not installed_executable.is_file():
-        raise JourneyFailure("shipping installer did not produce the managed native executable")
-    if install_value.get("status") != "COMPLETE":
-        raise JourneyFailure("shipping installation did not complete")
 
     cli = ShippingCLI(installed_executable, cwd=install_root, runner=runner)
     _mark_phase("service-status-before-restart")
@@ -381,7 +343,7 @@ def run_j10(
         raise JourneyFailure("managed installation manifests are unavailable")
     executable_sha256 = _file_sha256(installed_executable)
     transcript_value = {
-        "calls": [*stage_cli.calls, *cli.calls],
+        "calls": cli.calls,
         "assertions": {
             "artifact_bound": True,
             "manual_fallback": True,
@@ -479,7 +441,7 @@ def run_j10(
             "acceptance_authority_separate": True,
             "project_authority_required": True,
         },
-        "public_process_calls": [*stage_cli.calls, *cli.calls],
+        "public_process_calls": cli.calls,
         "transcript": {
             "sha256": hashlib.sha256(transcript_bytes).hexdigest(),
             "bytes": len(transcript_bytes),
@@ -531,25 +493,43 @@ def _require_clean_guest(
         raise JourneyFailure("clean-machine preflight found a prior ARTIFEX executable")
 
 
-def _safe_extract_shipping_zip(artifact: Path, destination: Path) -> Path:
-    destination.mkdir(parents=True, exist_ok=False)
-    root = destination.resolve()
-    with zipfile.ZipFile(artifact) as archive:
-        for info in archive.infolist():
-            relative = PurePosixPath(info.filename)
-            if relative.is_absolute() or not relative.parts or ".." in relative.parts:
-                raise JourneyFailure("shipping ZIP contains an unsafe path")
-            mode = (info.external_attr >> 16) & 0o170000
-            if mode == 0o120000:
-                raise JourneyFailure("shipping ZIP contains a symbolic link")
-            target = destination.joinpath(*relative.parts).resolve()
-            if target != root and root not in target.parents:
-                raise JourneyFailure("shipping ZIP path escapes the staging root")
-        archive.extractall(destination)
-    executables = [path for path in destination.rglob("artifex.exe") if path.is_file()]
-    if len(executables) != 1 or not (executables[0].parent / "artifex-artifact.json").is_file():
-        raise JourneyFailure("shipping ZIP does not contain one verifiable native bundle")
-    return executables[0]
+def _install_shipping_candidate(
+    artifact: Path,
+    *,
+    install_root: Path,
+    state_root: Path,
+    runner: Runner,
+) -> Path:
+    program_files = os.environ.get("PROGRAMW6432") or os.environ.get("PROGRAMFILES")
+    local_app_data = os.environ.get("LOCALAPPDATA")
+    if not program_files or not local_app_data:
+        raise JourneyFailure("standard Windows installation locations are unavailable")
+    expected_install = (Path(program_files) / "ARTIFEX").resolve()
+    expected_state = (Path(local_app_data) / "ARTIFEX" / "runtime").resolve()
+    if install_root != expected_install or state_root != expected_state:
+        raise JourneyFailure("qualification must use the standard ARTIFEX installation locations")
+    completed = runner(
+        [str(artifact), "/S"],
+        cwd=artifact.parent,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+        timeout=180,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+    )
+    if completed.returncode != 0:
+        raise JourneyFailure(
+            f"shipping installer failed with normalized exit code {completed.returncode}"
+        )
+    executable = install_root / "artifex.exe"
+    if not executable.is_file():
+        raise JourneyFailure("shipping installer did not produce the ARTIFEX executable")
+    for name in ("artifex-install-manifest.json", "service-registration.json", "Uninstall.exe"):
+        if not (install_root / name).is_file():
+            raise JourneyFailure(f"shipping installer did not produce required file {name}")
+    return executable
 
 
 def _restart_registered_windows_task(*, runner: Runner) -> None:
@@ -778,7 +758,7 @@ def main() -> None:
             state_root=arguments.state_root,
             project_root=arguments.project_root,
         )
-    except (OSError, ValueError, zipfile.BadZipFile, subprocess.SubprocessError) as exc:
+    except (OSError, ValueError, subprocess.SubprocessError) as exc:
         result = {
             "schema_version": "1.0",
             "status": "FAIL",

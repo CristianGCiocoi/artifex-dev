@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import subprocess
-import zipfile
 from pathlib import Path
 
 import pytest
@@ -12,9 +11,9 @@ from tools.artifex2.qualify_m7_windows import _installed_origin, _run_json
 from tools.artifex2.run_m7_shipping_journey import (
     JourneyFailure,
     ShippingCLI,
+    _install_shipping_candidate,
     _require_clean_guest,
     _require_windows_25h2,
-    _safe_extract_shipping_zip,
     _validate_clean_base_attestation,
     _wait_for_process_exit,
 )
@@ -43,26 +42,57 @@ def test_shipping_cli_os_failure_reports_only_operation_and_code(tmp_path: Path)
     assert "sensitive local path marker" not in str(caught.value)
 
 
-def test_shipping_zip_extracts_one_native_manifest_bound_bundle(tmp_path: Path) -> None:
-    artifact = tmp_path / "candidate.zip"
-    with zipfile.ZipFile(artifact, "w") as archive:
-        archive.writestr("artifex/artifex.exe", b"native")
-        archive.writestr("artifex/artifex-artifact.json", b"{}")
+def test_shipping_candidate_runs_exact_installer_at_standard_locations(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    artifact = tmp_path / "ARTIFEX-Setup.exe"
+    artifact.write_bytes(b"installer")
+    program_files = tmp_path / "Program Files"
+    local_app_data = tmp_path / "LocalAppData"
+    install_root = program_files / "ARTIFEX"
+    state_root = local_app_data / "ARTIFEX" / "runtime"
+    monkeypatch.setenv("PROGRAMW6432", str(program_files))
+    monkeypatch.setenv("LOCALAPPDATA", str(local_app_data))
+    observed: list[list[str]] = []
 
-    executable = _safe_extract_shipping_zip(artifact, tmp_path / "stage")
+    def runner(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        observed.append(command)
+        install_root.mkdir(parents=True)
+        for name in (
+            "artifex.exe",
+            "artifex-install-manifest.json",
+            "service-registration.json",
+            "Uninstall.exe",
+        ):
+            (install_root / name).write_bytes(b"candidate")
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
 
-    assert executable == tmp_path / "stage" / "artifex" / "artifex.exe"
+    executable = _install_shipping_candidate(
+        artifact,
+        install_root=install_root.resolve(),
+        state_root=state_root.resolve(),
+        runner=runner,
+    )
+
+    assert executable == install_root.resolve() / "artifex.exe"
+    assert observed == [[str(artifact), "/S"]]
 
 
-def test_shipping_zip_rejects_path_traversal(tmp_path: Path) -> None:
-    artifact = tmp_path / "candidate.zip"
-    with zipfile.ZipFile(artifact, "w") as archive:
-        archive.writestr("../escape.exe", b"forbidden")
+def test_shipping_candidate_rejects_nonstandard_install_root(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    artifact = tmp_path / "ARTIFEX-Setup.exe"
+    artifact.write_bytes(b"installer")
+    monkeypatch.setenv("PROGRAMW6432", str(tmp_path / "Program Files"))
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "LocalAppData"))
 
-    with pytest.raises(JourneyFailure, match="unsafe path"):
-        _safe_extract_shipping_zip(artifact, tmp_path / "stage")
-
-    assert not (tmp_path / "escape.exe").exists()
+    with pytest.raises(JourneyFailure, match="standard ARTIFEX installation"):
+        _install_shipping_candidate(
+            artifact,
+            install_root=(tmp_path / "custom").resolve(),
+            state_root=(tmp_path / "LocalAppData" / "ARTIFEX" / "runtime").resolve(),
+            runner=subprocess.run,
+        )
 
 
 def test_clean_guest_fails_closed_for_any_provider_or_prior_root(

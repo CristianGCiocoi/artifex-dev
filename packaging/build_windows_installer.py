@@ -6,6 +6,7 @@ import argparse
 import hashlib
 import importlib.metadata
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -134,7 +135,14 @@ def main() -> int:
         "--copyright=Apache-2.0",
         str(root / "src" / "artifex" / "cli.py"),
     )
-    subprocess.run(command, cwd=root, check=True)
+    build_environment = os.environ.copy()
+    # The Microsoft Store-hosted Codex process has a deeply nested default cache.
+    # MinGW cannot resolve its SDK headers reliably from that path, so keep the
+    # reproducible Nuitka toolchain cache inside this build tree.
+    build_environment["NUITKA_CACHE_DIR"] = str(
+        root / "build" / "toolchains" / "nuitka-cache"
+    )
+    subprocess.run(command, cwd=root, env=build_environment, check=True)
     generated = work / "cli.dist"
     if not generated.is_dir():
         matches = tuple(work.glob("*.dist"))
