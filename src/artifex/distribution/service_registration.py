@@ -629,6 +629,9 @@ class WindowsTaskSchedulerRegistrationAdapter:
         ET.SubElement(registration, _task_tag("Description")).text = _task_description(
             manifest
         )
+        ET.SubElement(registration, _task_tag("URI")).text = self._task_name(
+            manifest.service_id
+        )
         triggers = ET.SubElement(task, _task_tag("Triggers"))
         trigger = ET.SubElement(triggers, _task_tag("LogonTrigger"), {"id": "UserLogon"})
         ET.SubElement(trigger, _task_tag("Enabled")).text = "true"
@@ -682,6 +685,12 @@ class WindowsTaskSchedulerRegistrationAdapter:
         manifest = _manifest_from_task_description(_required_task_text(root, "Description"))
         if manifest.service_id != service_id:
             raise ServiceRegistrationDriftError("Windows scheduled task service identity drifted")
+        if _required_task_text(root, "URI").casefold() != self._task_name(
+            service_id
+        ).casefold():
+            raise ServiceRegistrationDriftError(
+                "Windows scheduled task registration URI drifted"
+            )
         self._assert_managed_service_manifest(manifest)
         _require_single_task_element(root, "LogonTrigger")
         _require_single_task_element(root, "Principal")
@@ -740,7 +749,7 @@ class WindowsTaskSchedulerRegistrationAdapter:
             )
 
         exact_shapes: tuple[tuple[str, set[str], dict[str, str]], ...] = (
-            ("RegistrationInfo", {"Description"}, {}),
+            ("RegistrationInfo", {"Description", "URI"}, {}),
             ("Triggers", {"LogonTrigger"}, {}),
             ("LogonTrigger", {"Enabled", "UserId"}, {"id": "UserLogon"}),
             ("Principals", {"Principal"}, {}),

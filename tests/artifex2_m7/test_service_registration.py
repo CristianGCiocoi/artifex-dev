@@ -517,6 +517,30 @@ def test_windows_task_scheduler_drift_blocks_overwrite_and_delete(tmp_path: Path
 
 
 @pytest.mark.adversarial
+def test_windows_task_scheduler_registration_uri_drift_is_rejected(
+    tmp_path: Path,
+) -> None:
+    scheduler = FakeTaskScheduler()
+    manager = ServiceRegistrationManager(
+        tmp_path / "state" / "service-registration.json",
+        adapter=_windows_adapter(scheduler),
+        readiness_timeout_seconds=0.5,
+    )
+    spec = _spec(tmp_path, "2.0.0", b"service-v1")
+    manager.install(manager.plan_install(spec))
+    task_name = next(iter(scheduler.tasks))
+    scheduler.tasks[task_name] = re.sub(
+        r"(<URI>).*?(</URI>)",
+        r"\1\\ARTIFEX-unowned\2",
+        scheduler.tasks[task_name],
+        count=1,
+    )
+
+    with pytest.raises(ServiceRegistrationDriftError, match="registration URI"):
+        manager.plan_uninstall("artifex-runtime")
+
+
+@pytest.mark.adversarial
 def test_windows_task_scheduler_readiness_timeout_rolls_back_registration(
     tmp_path: Path,
 ) -> None:
