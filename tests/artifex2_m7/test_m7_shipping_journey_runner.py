@@ -124,7 +124,7 @@ def test_clean_base_attestation_is_exact_and_vm104_bound() -> None:
     value = {
         "schema_version": "1.0",
         "vm_id": 104,
-        "snapshot_name": "m7-qualified-25h2-x64-cell-base-v8",
+        "snapshot_name": "m7-qualified-25h2-x64-cell-base-v9",
         "snapshot_config_sha256": "a" * 64,
         "account_sid_sha256": "b" * 64,
         "candidate_sha256": "c" * 64,
