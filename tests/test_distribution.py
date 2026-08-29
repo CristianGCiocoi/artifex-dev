@@ -61,7 +61,8 @@ def _write_test_artifact(directory: Path, content: bytes) -> Path:
 def _rewrite_artifact_manifest(source: Path) -> None:
     manifest = create_artifact_manifest(
         source,
-        pyinstaller_version="test-pyinstaller",
+        packager="nuitka",
+        packager_version="test-nuitka",
         source_commit="0" * 40,
     )
     (source.parent / "artifex-artifact.json").write_text(
@@ -158,7 +159,7 @@ def test_artifact_verification_rejects_missing_and_checksum_only_manifests(
         ("architecture", "wrong-arch", "architecture"),
         ("artifact", "wrong-name.exe", "filename"),
         ("product_version", "999.0.0", "product or release"),
-        ("format", "zip", "pyinstaller-onedir"),
+        ("format", "zip", "supported packager"),
     ],
 )
 def test_artifact_verification_rejects_incompatible_identity(
@@ -195,9 +196,10 @@ def test_artifact_manifest_rejects_unknown_fields_and_bundle_tampering(
     source = _write_test_artifact(tmp_path / "release", b"native")
     manifest_path = source.parent / "artifex-artifact.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    assert manifest["format"] == "pyinstaller-onedir"
+    assert manifest["format"] == "nuitka-standalone"
     assert manifest["python_version"]
-    assert manifest["pyinstaller_version"]
+    assert manifest["packager"] == "nuitka"
+    assert manifest["packager_version"]
     assert len(manifest["source_commit"]) == 40
     assert manifest["requires_user_python"] is False
     manifest["unexpected"] = True

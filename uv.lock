@@ -39,6 +39,7 @@ dev = [
     { name = "hatchling" },
     { name = "hypothesis" },
     { name = "mypy" },
+    { name = "nuitka" },
     { name = "pyinstaller" },
     { name = "pytest" },
     { name = "pytest-cov" },
@@ -57,6 +58,7 @@ dev = [
     { name = "hatchling", specifier = "==1.27.0" },
     { name = "hypothesis", specifier = ">=6.130,<7" },
     { name = "mypy", specifier = ">=1.15,<2" },
+    { name = "nuitka", extras = ["standalone"], specifier = "==4.2" },
     { name = "pyinstaller", specifier = ">=6.12,<7" },
     { name = "pytest", specifier = ">=8.3,<9" },
     { name = "pytest-cov", specifier = ">=6,<7" },
@@ -488,6 +490,12 @@ sdist = { url = "https://files.pythonhosted.org/packages/a2/6e/371856a3fb9d31ca8
 wheels = [
     { url = "https://files.pythonhosted.org/packages/79/7b/2c79738432f5c924bef5071f933bcc9efd0473bac3b4aa584a6f7c1c8df8/mypy_extensions-1.1.0-py3-none-any.whl", hash = "sha256:1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505", size = 4963, upload-time = "2025-04-22T14:54:22.983Z" },
 ]
+
+[[package]]
+name = "nuitka"
+version = "4.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/14/f7/305d1eca71f554f52cac820b8d1765aeb5fb2b3732d7f49f5a32aa4d97d2/nuitka-4.2.tar.gz", hash = "sha256:b6112c10a5d0431e2b4309780257a03049a42605290e83f771d57a067a387410", size = 4628471, upload-time = "2026-08-27T14:17:30.409Z" }
 
 [[package]]
 name = "packaging"

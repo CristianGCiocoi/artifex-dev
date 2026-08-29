@@ -575,7 +575,7 @@ def test_windows_task_scheduler_elevated_run_level_is_rejected(
     adapter.register(manifest)
     task_name = next(iter(scheduler.tasks))
     scheduler.tasks[task_name] = scheduler.tasks[task_name].replace(
-        "</Principal>", "<RunLevel>HighestAvailable</RunLevel></Principal>", count=1
+        "</Principal>", "<RunLevel>HighestAvailable</RunLevel></Principal>", 1
     )
 
     with pytest.raises(ServiceRegistrationDriftError, match="Principal definition"):

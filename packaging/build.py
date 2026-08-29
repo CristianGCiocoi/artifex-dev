@@ -151,7 +151,8 @@ def main() -> int:
         raise FileNotFoundError(f"PyInstaller did not produce {executable}")
     manifest = create_artifact_manifest(
         executable,
-        pyinstaller_version=importlib.metadata.version("pyinstaller"),
+        packager="pyinstaller",
+        packager_version=importlib.metadata.version("pyinstaller"),
         source_commit=_source_commit(root),
     )
     artifact_manifest_path = bundle / "artifex-artifact.json"

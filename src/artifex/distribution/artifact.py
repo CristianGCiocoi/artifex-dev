@@ -1,4 +1,4 @@
-"""Strict one-directory artifact provenance and executable attestation."""
+"""Strict standalone artifact provenance and executable attestation."""
 
 from __future__ import annotations
 
@@ -18,8 +18,12 @@ from typing import Any
 from artifex import __version__
 
 ARTIFACT_MANIFEST_NAME = "artifex-artifact.json"
-ARTIFACT_SCHEMA_VERSION = "4.0"
-ARTIFACT_FORMAT = "pyinstaller-onedir"
+ARTIFACT_SCHEMA_VERSION = "5.0"
+PRIMARY_PACKAGER = "nuitka"
+PACKAGER_FORMATS = {
+    "nuitka": "nuitka-standalone",
+    "pyinstaller": "pyinstaller-onedir",
+}
 PRODUCT_ID = "ARTIFEX"
 MAX_IDENTITY_OUTPUT_BYTES = 4096
 IDENTITY_PROBE_TIMEOUT_SECONDS = 10.0
@@ -36,7 +40,8 @@ _FIELDS = frozenset(
         "sha256",
         "files",
         "python_version",
-        "pyinstaller_version",
+        "packager",
+        "packager_version",
         "source_commit",
         "requires_user_python",
         "requires_user_pip",
@@ -89,7 +94,8 @@ def _supports_bundle_symlinks() -> bool:
 def create_artifact_manifest(
     source: str | Path,
     *,
-    pyinstaller_version: str | None = None,
+    packager: str = PRIMARY_PACKAGER,
+    packager_version: str | None = None,
     source_commit: str | None = None,
 ) -> dict[str, Any]:
     supplied = Path(source).absolute()
@@ -103,21 +109,26 @@ def create_artifact_manifest(
     digest = _sha256(artifact)
     operating_system = canonical_platform()
     architecture = canonical_architecture()
-    observed_pyinstaller = pyinstaller_version or importlib.metadata.version("pyinstaller")
+    try:
+        artifact_format = PACKAGER_FORMATS[packager]
+    except KeyError as exc:
+        raise ValueError(f"unsupported native artifact packager: {packager}") from exc
+    observed_packager_version = packager_version or importlib.metadata.version(packager)
     observed_commit = source_commit or _source_commit(Path.cwd())
     return {
         "schema_version": ARTIFACT_SCHEMA_VERSION,
         "product": PRODUCT_ID,
         "product_version": __version__,
         "build_id": _build_id(__version__, operating_system, architecture, digest),
-        "format": ARTIFACT_FORMAT,
+        "format": artifact_format,
         "platform": operating_system,
         "architecture": architecture,
         "artifact": artifact.name,
         "sha256": digest,
         "files": [dict(item) for item in files],
         "python_version": platform.python_version(),
-        "pyinstaller_version": observed_pyinstaller,
+        "packager": packager,
+        "packager_version": observed_packager_version,
         "source_commit": observed_commit,
         "requires_user_python": False,
         "requires_user_pip": False,
@@ -194,7 +205,7 @@ def runtime_release_identity() -> dict[str, Any]:
             "product": PRODUCT_ID,
             "version": __version__,
             "build_id": _build_id(__version__, operating_system, architecture, digest),
-            "format": ARTIFACT_FORMAT,
+            "format": _runtime_artifact_format(),
             "platform": operating_system,
             "architecture": architecture,
             "artifact": executable.name,
@@ -219,8 +230,9 @@ def _validate_manifest_identity(
         raise ValueError("unsupported artifact manifest schema")
     if value.get("product") != PRODUCT_ID or value.get("product_version") != __version__:
         raise ValueError("artifact product or release version does not match this installer")
-    if value.get("format") != ARTIFACT_FORMAT:
-        raise ValueError("artifact format must be pyinstaller-onedir")
+    packager = value.get("packager")
+    if packager not in PACKAGER_FORMATS or value.get("format") != PACKAGER_FORMATS[packager]:
+        raise ValueError("artifact format does not match its supported packager")
     if value.get("platform") != canonical_platform():
         raise ValueError("artifact platform is incompatible with this system")
     if value.get("architecture") != canonical_architecture():
@@ -235,7 +247,7 @@ def _validate_manifest_identity(
     )
     if value.get("build_id") != expected_build:
         raise ValueError("artifact build identity does not match its content")
-    for field in ("python_version", "pyinstaller_version"):
+    for field in ("python_version", "packager_version"):
         if not isinstance(value.get(field), str) or not str(value[field]).strip():
             raise ValueError(f"artifact provenance field is invalid: {field}")
     commit = value.get("source_commit")
@@ -394,6 +406,12 @@ def _source_commit(root: Path) -> str:
 
 def _build_id(version: str, system: str, architecture: str, digest: str) -> str:
     return f"artifex-{version}-{system}-{architecture}-{digest[:16]}"
+
+
+def _runtime_artifact_format() -> str:
+    if "__compiled__" in globals():
+        return PACKAGER_FORMATS["nuitka"]
+    return PACKAGER_FORMATS["pyinstaller"]
 
 
 def _sha256(path: Path) -> str:

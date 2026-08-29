@@ -25,6 +25,7 @@ dev = [
   "hatchling==1.27.0",
   "hypothesis>=6.130,<7",
   "mypy>=1.15,<2",
+  "nuitka[standalone]==4.2",
   "pyinstaller>=6.12,<7",
   "pytest>=8.3,<9",
   "pytest-cov>=6,<7",

@@ -314,6 +314,33 @@ def uninstall_command(
     )
 
 
+@app.command("_installer-lifecycle", hidden=True)
+def installer_lifecycle_command(
+    action: str = typer.Argument(...),
+    install_root: str = typer.Option(..., "--install-root"),
+    source_executable: str | None = typer.Option(None, "--source-executable"),
+    service_state_root: str | None = typer.Option(None, "--service-state-root"),
+    consent: bool = typer.Option(False, "--consent"),
+) -> None:
+    """Apply the authenticated lifecycle after explicit enclosing installer consent."""
+
+    if not consent:
+        raise typer.BadParameter("explicit enclosing installer consent is required")
+    from artifex.distribution.windows_installer import apply_installer, remove_installer
+
+    if action == "install":
+        if source_executable is None or service_state_root is None:
+            raise typer.BadParameter(
+                "install requires source executable and service state root"
+            )
+        result = apply_installer(source_executable, install_root, service_state_root)
+    elif action == "uninstall":
+        result = remove_installer(install_root)
+    else:
+        raise typer.BadParameter("installer lifecycle action must be install or uninstall")
+    typer.echo(json.dumps({"ok": True, "value": result}, sort_keys=True))
+
+
 @app.command("_complete-lifecycle", hidden=True)
 def complete_uninstall_command(
     request_file: str = typer.Option(..., "--request-file"),
