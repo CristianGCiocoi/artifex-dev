@@ -234,3 +234,24 @@ def test_doctor_classifies_corrupt_provider_setup_without_echoing_content(
     assert findings["provider-composition"]["status"] == "FAIL"
     assert findings["provider-composition"]["details"]["error_type"] == ("ProviderSetupError")
     assert "must-not-echo" not in json.dumps(result.to_dict())
+
+
+@pytest.mark.adversarial
+def test_doctor_reports_an_uncreated_nested_project_without_failing(
+    tmp_path: Path,
+) -> None:
+    project_root = tmp_path / "not-created" / "nested" / "project"
+
+    result = Application().dispatch(
+        OperationRequest(
+            "distribution.doctor",
+            {},
+            OperationContext(project_root=str(project_root), actor="clean-machine"),
+        )
+    )
+
+    assert result.ok
+    findings = {item["id"]: item for item in result.value["findings"]}
+    assert findings["project-state"]["status"] == "DEGRADED"
+    assert findings["manual-fallback"]["remediation_id"] == "use-manual-integration"
+    assert not project_root.exists()

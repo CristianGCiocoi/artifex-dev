@@ -19,7 +19,9 @@ _MAX_OUTPUT = 512
 
 def detect_resources(path: str | Path = ".") -> ResourceEnvelope:
     target = Path(path).resolve()
-    existing = target if target.exists() else target.parent
+    existing = target
+    while not existing.exists() and existing.parent != existing:
+        existing = existing.parent
     memory: int | None = None
     if os.name == "nt":
         try:

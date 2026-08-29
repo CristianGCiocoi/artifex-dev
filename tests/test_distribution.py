@@ -119,6 +119,22 @@ def test_discovery_reports_missing_tools_without_failure(tmp_path: Path) -> None
 
 
 @pytest.mark.adversarial
+def test_discovery_uses_nearest_existing_ancestor_for_uncreated_project(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "not-created" / "nested" / "project"
+
+    report = discover_environment(
+        command_overrides={name: None for name in ("git", "hermes", "codex", "claude")},
+        search_path="",
+        resource_path=target,
+    )
+
+    assert report.resources.disk_free_bytes > 0
+    assert not target.exists()
+
+
+@pytest.mark.adversarial
 def test_artifact_verification_rejects_missing_and_checksum_only_manifests(
     tmp_path: Path,
 ) -> None:
