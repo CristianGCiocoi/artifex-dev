@@ -255,8 +255,8 @@ workstreams:
   branch: codex/artifex-2-m7-qualification-live
   base_commit: cc1980ca02857b27276b489efddd30b4be74660f
   shared_contracts: [M7-CONTRACT, J01, J02, J10, J16, OUTCOME-ACCEPTANCE-POLICY]
-  state: IN_PROGRESS
-  blockers: []
+  state: BLOCKED_EXTERNAL_PREREQUISITE
+  blockers: [BLK-M7-WINDOWS-DEFENDER-QUARANTINE]
   integration_owner: ARTIFEX_2_ORCHESTRATOR
 - id: WS-M7-WINDOWS-SERVICE-INTEGRATION
   milestone: M7
@@ -266,6 +266,6 @@ workstreams:
   branch: codex/artifex-2-m7-qualification-live
   base_commit: cc1980ca02857b27276b489efddd30b4be74660f
   shared_contracts: [M7-CONTRACT, ADR-T003, ADR-T015, FROZEN-INVARIANTS]
-  state: IN_PROGRESS
-  blockers: []
+  state: BLOCKED_EXTERNAL_PREREQUISITE
+  blockers: [BLK-M7-WINDOWS-DEFENDER-QUARANTINE]
   integration_owner: ARTIFEX_2_ORCHESTRATOR

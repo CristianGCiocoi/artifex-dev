@@ -1,10 +1,10 @@
 {
   "account_sid_sha256": "5c00407e51a59e1b439dffb4136614fdf658946ba313d3b9549390e0455621b9",
-  "candidate_sha256": "ea2c4ce0246434a665d632c8238c003648feb84504896bd4164e8f77304a77b1",
+  "candidate_sha256": "5a331c3daf32601ad2af2ba870f9c9686ad4d44c5ec1082460abe4a016779f00",
   "providers_absent": true,
   "schema_version": "1.0",
-  "snapshot_config_sha256": "c1e71826a08aa23be9fd6c8077999e446b6a23b2f1f19038c3c22a8cb699b742",
-  "snapshot_name": "m7-qualified-25h2-x64-cell-base-v3",
+  "snapshot_config_sha256": "3d3bafca544cf9cee3b412de198c3983862b1128fd737f9a5aa1e4028d902db7",
+  "snapshot_name": "m7-qualified-25h2-x64-cell-base-v8",
   "source_checkout_absent": true,
   "vm_id": 104
 }

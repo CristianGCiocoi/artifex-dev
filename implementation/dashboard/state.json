@@ -1,16 +1,19 @@
 {
   "acceptance": {
     "acceptance_commit": null,
-    "blocked": [],
+    "blocked": [
+      "BLK-M7-WINDOWS-DEFENDER-QUARANTINE"
+    ],
     "contract_digest": "3eac41de4cacf7be80aab12e478b99ec7c5066dccddfff6ca00a03cf5a157d48",
     "evidence_classes": {
       "BLACK_BOX_OUTCOME": {
         "evidence": [
           "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
-          "EVIDENCE/M7-FOUNDATION-OUTCOME.json"
+          "EVIDENCE/M7-FOUNDATION-OUTCOME.json",
+          "EVIDENCE/M7-WINDOWS-DEFENDER-QUARANTINE.yaml"
         ],
         "required_m7": true,
-        "status": "PENDING_LIVE_CELL_QUALIFICATION"
+        "status": "BLOCKED_EXTERNAL_PREREQUISITE"
       },
       "COMPONENT": {
         "evidence": [
@@ -58,18 +61,20 @@
       "PROVIDER_CERTIFICATION": {
         "evidence": [
           "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
-          "EVIDENCE/M7-FOUNDATION-OUTCOME.json"
+          "EVIDENCE/M7-FOUNDATION-OUTCOME.json",
+          "EVIDENCE/M7-WINDOWS-DEFENDER-QUARANTINE.yaml"
         ],
         "required_m7": true,
-        "status": "PENDING_LIVE_CELL_QUALIFICATION"
+        "status": "BLOCKED_CANDIDATE_SECURITY_COMPATIBILITY"
       },
       "PUBLIC_COMPOSITION": {
         "evidence": [
           "EVIDENCE/M7-FOUNDATION-OUTCOME.json",
-          "EVIDENCE/M7-WINDOWS-CANDIDATE-ARTIFACT.yaml"
+          "EVIDENCE/M7-WINDOWS-CANDIDATE-ARTIFACT.yaml",
+          "EVIDENCE/M7-WINDOWS-DEFENDER-QUARANTINE.yaml"
         ],
         "required_m7": true,
-        "status": "PASS_NATIVE_CANDIDATE"
+        "status": "BLOCKED_CLEAN_VM_DEFENDER_QUARANTINE"
       },
       "SECURITY_AUTHORITY": {
         "evidence": [
@@ -94,7 +99,7 @@
     "schema_version": "1.0",
     "superseded": [],
     "unresolved_contradiction": null,
-    "verdict": "ACTIVE"
+    "verdict": "BLOCKED_EXTERNAL_PREREQUISITE"
   },
   "adrs": [
     {
@@ -726,6 +731,28 @@
   ],
   "blockers": [
     {
+      "affected_dependencies": [
+        "J01",
+        "J02",
+        "J10",
+        "J16",
+        "M7",
+        "M9",
+        "M12"
+      ],
+      "class": "EXTERNAL_PREREQUISITE",
+      "evidence": [
+        "EVIDENCE/M7-WINDOWS-DEFENDER-QUARANTINE.yaml"
+      ],
+      "id": "BLK-M7-WINDOWS-DEFENDER-QUARANTINE",
+      "required_authority": "HUMAN_RELEASE_OWNER",
+      "resolution": "Provide trusted Authenticode signing or Microsoft false-positive clearance for a new provenance-bound candidate; an alternative packaging baseline requires Architect approval",
+      "scope": "M7_ACCEPTANCE",
+      "status": "OPEN",
+      "summary": "Microsoft Defender quarantines the unsigned PyInstaller candidate and its managed-service Task Scheduler registration on the clean Windows Core baseline",
+      "unrelated_work_may_continue": true
+    },
+    {
       "class": "EXTERNAL_PREREQUISITE",
       "evidence": [
         "EVIDENCE/M8C-PUBLIC-OUTCOME.json"
@@ -839,24 +866,29 @@
       "sha256": "e112850d892471470973433de3be277222c25d503582726da083204a6d72737e"
     },
     {
-      "bytes": 1343,
+      "bytes": 1584,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CANDIDATE-ARTIFACT.yaml",
-      "sha256": "89cf0844c9dd653ebf48737698056c8d2ca3b01ad36eccf3ef81f953e01f385a"
+      "sha256": "1dd299ab4d3b6bfb980c11e5fe028ca9c306b1a7ff7a816ec3a67f7ec5c5904b"
     },
     {
       "bytes": 443,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION.json",
-      "sha256": "8ed66e3e97dd8a668f116be0a333be9f5a161d5a01f66dc55410fa84a559265b"
+      "sha256": "ec03ca75e11bc973695fdfe55e6ee708ac705861c37e861d2abc5152a044c537"
     },
     {
-      "bytes": 4419,
+      "bytes": 6165,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CLEAN-VM-BASE.yaml",
-      "sha256": "39f99e68eb0e9d980e15433e03453958896850d234d0af92d4c2945203a43f4e"
+      "sha256": "1c9fefdc6de80b5fd949e6339f2edf94e6ae044b4124b2ed3c483484dc2bdb6c"
     },
     {
-      "bytes": 2149,
+      "bytes": 2369,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
-      "sha256": "b68c070dd7f8142f471b1a68280470d34accff50f919af8fe29aba5f3959d673"
+      "sha256": "04d124fbb136fb272bc5fb3b34a285eee369d861ac464b6d134a394d11756da3"
+    },
+    {
+      "bytes": 2929,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-DEFENDER-QUARANTINE.yaml",
+      "sha256": "cd7f59c7960571b83483a1ad30d67917a801eb6d9f2a083131d0a9bb4fa93bed"
     },
     {
       "bytes": 2310,
@@ -1666,31 +1698,33 @@
   ],
   "journeys": [
     {
-      "blocker": null,
+      "blocker": "BLK-M7-WINDOWS-DEFENDER-QUARANTINE",
       "environment": "WINDOWS_11_25H2_X64_CLEAN_VM_CODEX_ONLY",
       "evidence": [
         "EVIDENCE/M3-PUBLIC-OUTCOME.json",
         "EVIDENCE/M7-FOUNDATION-OUTCOME.json",
-        "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml"
+        "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
+        "EVIDENCE/M7-WINDOWS-DEFENDER-QUARANTINE.yaml"
       ],
       "id": "J01",
       "last_run": "2026-08-27",
       "public_shipping_composition": "INSTALLED_WHEEL_PUBLIC_CLI_REAL_CODEX_VERTICAL_SLICE",
-      "status": "M7_WIN_CODEX_LIVE_CELL_PENDING",
+      "status": "BLOCKED_CANDIDATE_SECURITY_COMPATIBILITY",
       "title": "J01 — Fresh Machine + Codex"
     },
     {
-      "blocker": null,
+      "blocker": "BLK-M7-WINDOWS-DEFENDER-QUARANTINE",
       "environment": "WINDOWS_11_25H2_X64_CLEAN_VM_CLAUDE_ONLY",
       "evidence": [
         "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json",
         "EVIDENCE/M7-FOUNDATION-OUTCOME.json",
-        "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml"
+        "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
+        "EVIDENCE/M7-WINDOWS-DEFENDER-QUARANTINE.yaml"
       ],
       "id": "J02",
       "last_run": "2026-08-28",
       "public_shipping_composition": "INSTALLED_WHEEL_PUBLIC_CLI_REAL_CLAUDE_MULTI_PROCESS",
-      "status": "M7_WIN_CLAUDE_LIVE_CELL_PENDING",
+      "status": "BLOCKED_CANDIDATE_SECURITY_COMPATIBILITY",
       "title": "J02 — Fresh Machine + Claude"
     },
     {
@@ -1776,16 +1810,17 @@
       "title": "J09 — V1 Migration"
     },
     {
-      "blocker": null,
+      "blocker": "BLK-M7-WINDOWS-DEFENDER-QUARANTINE",
       "environment": "WINDOWS_11_25H2_X64_CLEAN_VM_NO_AUTOMATED_PROVIDER",
       "evidence": [
         "EVIDENCE/M7-FOUNDATION-OUTCOME.json",
-        "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml"
+        "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
+        "EVIDENCE/M7-WINDOWS-DEFENDER-QUARANTINE.yaml"
       ],
       "id": "J10",
-      "last_run": "2026-08-28",
+      "last_run": "2026-08-29",
       "public_shipping_composition": "INSTALLED_WHEEL_PUBLIC_MANAGED_SERVICE_MULTI_PROCESS",
-      "status": "M7_WIN_NOPROVIDER_LIVE_CELL_PENDING",
+      "status": "BLOCKED_EXTERNAL_PREREQUISITE",
       "title": "J10 — No Automated Provider"
     },
     {
@@ -1849,17 +1884,18 @@
       "title": "J15 — Promotion Conflict"
     },
     {
-      "blocker": null,
+      "blocker": "BLK-M7-WINDOWS-DEFENDER-QUARANTINE",
       "environment": "WINDOWS_11_25H2_X64_SEPARATE_CLEAN_PROVIDER_CELLS",
       "evidence": [
         "EVIDENCE/M3-PUBLIC-OUTCOME.json",
         "EVIDENCE/M7-FOUNDATION-OUTCOME.json",
-        "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml"
+        "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
+        "EVIDENCE/M7-WINDOWS-DEFENDER-QUARANTINE.yaml"
       ],
       "id": "J16",
       "last_run": "2026-08-27",
       "public_shipping_composition": "INSTALLED_WHEEL_PUBLIC_CLI_MULTI_PROCESS_PROVIDER_SETUP",
-      "status": "M7_WIN_CODEX_AND_CLAUDE_LIVE_CELLS_PENDING",
+      "status": "BLOCKED_CANDIDATE_SECURITY_COMPATIBILITY",
       "title": "J16 — Provider Setup Persistence"
     },
     {
@@ -2112,7 +2148,7 @@
       "id": "M7",
       "mandatory_for_core_ga": true,
       "started": true,
-      "state": "ACTIVE",
+      "state": "BLOCKED_EXTERNAL_PREREQUISITE",
       "title": "Fresh-Machine Installation & Bootstrap"
     },
     {
@@ -2248,7 +2284,7 @@
     "branch": "codex/artifex-2-m7-qualification-live",
     "canonical_integration_baseline": "cc1980ca02857b27276b489efddd30b4be74660f",
     "current_milestone": "M7",
-    "current_status": "ACTIVE",
+    "current_status": "BLOCKED_EXTERNAL_PREREQUISITE",
     "dashboard_state": "CURRENT",
     "directory_variance": "PACKAGING_NAME_VARIANCE_ACCEPTED",
     "handoff_declared_directory": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF",
@@ -2269,7 +2305,7 @@
     "m8a_started": true,
     "m8b_started": true,
     "m8c_started": true,
-    "next_integration_point": "Execute M7-WIN-NOPROVIDER J10 from m7-qualified-25h2-x64-cell-base-v3, then reset and qualify the independent Codex and Claude cells",
+    "next_integration_point": "Resolve BLK-M7-WINDOWS-DEFENDER-QUARANTINE with a trusted or Microsoft-cleared candidate, create a new candidate-bound clean snapshot, then rerun J10 before the provider cells",
     "recorded_date": "2026-08-29",
     "target_release": "2.0.0"
   },
@@ -2554,17 +2590,14 @@
   },
   "schema_version": "1.0",
   "summary": {
-    "active_blockers": 2,
+    "active_blockers": 3,
     "adr_count": 24,
     "current_milestone": "M7",
-    "evidence_items": 32,
+    "evidence_items": 33,
     "invariant_count": 34,
     "journey_states": {
-      "BLOCKED_EXTERNAL_PREREQUISITE": 1,
-      "M7_WIN_CLAUDE_LIVE_CELL_PENDING": 1,
-      "M7_WIN_CODEX_AND_CLAUDE_LIVE_CELLS_PENDING": 1,
-      "M7_WIN_CODEX_LIVE_CELL_PENDING": 1,
-      "M7_WIN_NOPROVIDER_LIVE_CELL_PENDING": 1,
+      "BLOCKED_CANDIDATE_SECURITY_COMPATIBILITY": 3,
+      "BLOCKED_EXTERNAL_PREREQUISITE": 2,
       "NOT_STARTED": 3,
       "PASS": 12
     },
@@ -2579,9 +2612,8 @@
     },
     "ready_milestones": [],
     "workstream_states": {
-      "BLOCKED_EXTERNAL_PREREQUISITE": 2,
-      "COMPLETE": 18,
-      "IN_PROGRESS": 2
+      "BLOCKED_EXTERNAL_PREREQUISITE": 4,
+      "COMPLETE": 18
     }
   },
   "target_system": {
@@ -2980,7 +3012,9 @@
     },
     {
       "base_commit": "cc1980ca02857b27276b489efddd30b4be74660f",
-      "blockers": [],
+      "blockers": [
+        "BLK-M7-WINDOWS-DEFENDER-QUARANTINE"
+      ],
       "branch": "codex/artifex-2-m7-qualification-live",
       "id": "WS-M7-CLEAN-MACHINE-QUALIFICATION",
       "integration_owner": "ARTIFEX_2_ORCHESTRATOR",
@@ -2995,12 +3029,14 @@
         "J16",
         "OUTCOME-ACCEPTANCE-POLICY"
       ],
-      "state": "IN_PROGRESS",
+      "state": "BLOCKED_EXTERNAL_PREREQUISITE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m7-qualification-live"
     },
     {
       "base_commit": "cc1980ca02857b27276b489efddd30b4be74660f",
-      "blockers": [],
+      "blockers": [
+        "BLK-M7-WINDOWS-DEFENDER-QUARANTINE"
+      ],
       "branch": "codex/artifex-2-m7-qualification-live",
       "id": "WS-M7-WINDOWS-SERVICE-INTEGRATION",
       "integration_owner": "ARTIFEX_2_ORCHESTRATOR",
@@ -3013,7 +3049,7 @@
         "ADR-T015",
         "FROZEN-INVARIANTS"
       ],
-      "state": "IN_PROGRESS",
+      "state": "BLOCKED_EXTERNAL_PREREQUISITE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m7-qualification-live"
     }
   ]

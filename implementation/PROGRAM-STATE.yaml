@@ -12,10 +12,10 @@ program:
   intake_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
   branch: codex/artifex-2-m7-qualification-live
   current_milestone: M7
-  current_status: ACTIVE
+  current_status: BLOCKED_EXTERNAL_PREREQUISITE
   latest_accepted_commit: d7fa3c4ad419bd97e401ad765128dc3560484d90
   canonical_integration_baseline: cc1980ca02857b27276b489efddd30b4be74660f
-  next_integration_point: Execute M7-WIN-NOPROVIDER J10 from m7-qualified-25h2-x64-cell-base-v3, then reset and qualify the independent Codex and Claude cells
+  next_integration_point: Resolve BLK-M7-WINDOWS-DEFENDER-QUARANTINE with a trusted or Microsoft-cleared candidate, create a new candidate-bound clean snapshot, then rerun J10 before the provider cells
   m1_started: true
   m2_started: true
   m3_started: true
@@ -81,7 +81,7 @@ milestone_states:
     started: false
     accepted: false
   M7:
-    state: ACTIVE
+    state: BLOCKED_EXTERNAL_PREREQUISITE
     started: true
     accepted: false
   M8A:

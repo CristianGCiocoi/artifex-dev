@@ -4,12 +4,12 @@ recorded_date: '2026-08-29'
 scope: SINGLE_CANDIDATE_FOR_ALL_M7_WINDOWS_CORE_CELLS
 artifact:
   name: artifex-1.0.0-windows-x64.zip
-  sha256: ea2c4ce0246434a665d632c8238c003648feb84504896bd4164e8f77304a77b1
-  bytes: 16645632
+  sha256: 5a331c3daf32601ad2af2ba870f9c9686ad4d44c5ec1082460abe4a016779f00
+  bytes: 16650157
   kind: native-windows-x64
   format: pyinstaller-onedir
-  source_commit: bf9d4a3a4c0e8c994761c9f2dfefb2f1821f7d6b
-  executable_sha256: d483ed09a7453f29e10633e827e2d6bdb1f957ac9e7cf7b4601b240fc57afad2
+  source_commit: 965f46f9be66b891e35c19ad6c0144e448486a67
+  executable_sha256: 86962ec40a1db1ec050e11e53b7b4f3105e173e446386f19562b2347e61f604a
   product_version: 1.0.0
   platform: windows
   architecture: x86_64
@@ -26,11 +26,17 @@ build_validation:
   self_uninstall: PASS
   unmanaged_file_preservation: PASS
 release_finalization:
-  command: uv run python scripts/validate_release.py finalize-native --candidate bf9d4a3a4c0e8c994761c9f2dfefb2f1821f7d6b --input dist/native/artifex --output dist/release-bf9d4a3 --kind native-windows-x64
+  command: uv run python scripts/validate_release.py finalize-native --candidate 965f46f9be66b891e35c19ad6c0144e448486a67 --input dist/native/artifex --output dist/release-965f46f --kind native-windows-x64
   result: PASS
+clean_vm_security_observation:
+  microsoft_defender_detection: Behavior:Win32/Execution.A!ml
+  threat_id: 2147735815
+  remediation: QUARANTINE
+  evidence: EVIDENCE/M7-WINDOWS-DEFENDER-QUARANTINE.yaml
+  candidate_eligible_for_m7_cells: false
 cell_policy:
   same_zip_sha256_required: true
   source_tree_execution_eligible: false
   per_cell_rebuild_permitted: false
   provider_result_inference_permitted: false
-verdict: READY_FOR_CLEAN_VM_CELL_QUALIFICATION
+verdict: REJECTED_CLEAN_VM_DEFENDER_QUARANTINE

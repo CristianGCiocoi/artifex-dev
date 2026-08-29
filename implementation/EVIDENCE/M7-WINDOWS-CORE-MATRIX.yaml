@@ -20,19 +20,19 @@ cells:
     codex: INSTALLED_CONFIGURED_AUTHENTICATED
     claude: ABSENT
   mandatory_journeys: [J01, J16]
-  qualification_status: PENDING
+  qualification_status: BLOCKED_CANDIDATE_SECURITY_COMPATIBILITY
 - id: M7-WIN-CLAUDE
   provider_state:
     codex: ABSENT
     claude: INSTALLED_CONFIGURED_AUTHENTICATED
   mandatory_journeys: [J02, J16]
-  qualification_status: PENDING
+  qualification_status: BLOCKED_CANDIDATE_SECURITY_COMPATIBILITY
 - id: M7-WIN-NOPROVIDER
   provider_state:
     codex: ABSENT
     claude: ABSENT
   mandatory_journeys: [J10]
-  qualification_status: PENDING
+  qualification_status: BLOCKED_EXTERNAL_PREREQUISITE
 constraints:
   provider_coexistence_required: false
   combined_provider_qualification_owned_by: [J11, M12]
@@ -48,13 +48,15 @@ implementation_observation:
   canonical_base_commit: cc1980ca02857b27276b489efddd30b4be74660f
   windows_service_registration_adapter: IMPLEMENTED_PENDING_CANDIDATE_QUALIFICATION
   public_distribution_lifecycle_wiring: IMPLEMENTED_PENDING_CANDIDATE_QUALIFICATION
-  clean_vm_qualification: BASELINE_READY_CELL_OUTCOMES_PENDING
+  clean_vm_qualification: BLOCKED_DEFENDER_QUARANTINE
+  active_blocker: BLK-M7-WINDOWS-DEFENDER-QUARANTINE
+  blocker_evidence: EVIDENCE/M7-WINDOWS-DEFENDER-QUARANTINE.yaml
   selected_clean_vm:
     hypervisor: Proxmox VE 9.2.3
     vm_id: 104
     os_build: 26200.9168
     network_state: DHCP_VM_SPECIFIC_MAC
-    reset_snapshot: m7-qualified-25h2-x64-cell-base-v3
+    reset_snapshot: m7-qualified-25h2-x64-cell-base-v8
     generalized_provenance_snapshot: m7-generalized-25h2-x64-base
     invalidated_pre_generalization_snapshot: m7-clean-25h2-x64-base
-verdict: MATRIX_ACCEPTED_M7_ACTIVE
+verdict: MATRIX_ACCEPTED_M7_BLOCKED_EXTERNAL_PREREQUISITE

@@ -1,5 +1,16 @@
 schema_version: '1.0'
 blockers:
+- id: BLK-M7-WINDOWS-DEFENDER-QUARANTINE
+  scope: M7_ACCEPTANCE
+  class: EXTERNAL_PREREQUISITE
+  status: OPEN
+  summary: Microsoft Defender quarantines the unsigned PyInstaller candidate and its managed-service Task Scheduler registration on the clean Windows Core baseline
+  evidence:
+  - EVIDENCE/M7-WINDOWS-DEFENDER-QUARANTINE.yaml
+  affected_dependencies: [J01, J02, J10, J16, M7, M9, M12]
+  required_authority: HUMAN_RELEASE_OWNER
+  resolution: Provide trusted Authenticode signing or Microsoft false-positive clearance for a new provenance-bound candidate; an alternative packaging baseline requires Architect approval
+  unrelated_work_may_continue: true
 - id: BLK-M8C-DEEPSEEK-LIVE-PREREQUISITES
   scope: M8C
   class: EXTERNAL_PREREQUISITE

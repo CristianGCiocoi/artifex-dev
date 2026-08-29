@@ -1,0 +1,74 @@
+schema_version: '1.0'
+evidence_id: EVD-M7-WINDOWS-DEFENDER-QUARANTINE
+recorded_date: '2026-08-29'
+scope: M7_WINDOWS_CORE_CLEAN_VM_CANDIDATE_SECURITY_COMPATIBILITY
+environment:
+  hypervisor: Proxmox VE 9.2.3
+  vm_id: 104
+  snapshot: m7-qualified-25h2-x64-cell-base-v8
+  os: Windows 11 Pro 25H2 x64
+  build: 26200.9168
+  cell: M7-WIN-NOPROVIDER
+  defender_enabled: true
+  defender_exclusions_added: false
+candidate:
+  source_commit: 965f46f9be66b891e35c19ad6c0144e448486a67
+  artifact_sha256: 5a331c3daf32601ad2af2ba870f9c9686ad4d44c5ec1082460abe4a016779f00
+  executable_sha256: 86962ec40a1db1ec050e11e53b7b4f3105e173e446386f19562b2347e61f604a
+  format: pyinstaller-onedir
+observation:
+  source: Microsoft-Windows-Windows Defender/Operational
+  detection_event:
+    event_id: 1116
+    timestamp_utc: '2026-08-29T02:27:06.304Z'
+  remediation_event:
+    event_id: 1117
+    timestamp_utc: '2026-08-29T02:27:09.343Z'
+  detection_name: Behavior:Win32/Execution.A!ml
+  threat_id: 2147735815
+  severity: SEVERE
+  category: SUSPICIOUS_BEHAVIOR
+  detection_origin: LOCAL_MACHINE
+  detection_source: SYSTEM
+  remediation: QUARANTINE
+  remediation_status: SUCCEEDED
+  affected_objects:
+  - staged_native_executable
+  - installed_native_executable
+  - managed_service_process
+  - managed_service_task_file
+  - managed_service_task_registry
+  - managed_service_task_registration
+corroboration:
+  task_scheduler_log: Microsoft-Windows-TaskScheduler/Operational
+  managed_service_restart_event_id: 129
+  managed_service_restart_process_id: 3792
+  managed_service_task_deleted_event_id: 141
+  managed_service_task_deleted_timestamp_utc: '2026-08-29T02:27:08.700Z'
+  managed_service_task_deleted_actor: NT_AUTHORITY_SYSTEM
+  post_remediation_installed_executable_present: false
+  post_remediation_managed_service_task_present: false
+  j10_capture_status: FAIL
+qualification_effect:
+  candidate_eligible_for_m7_cells: false
+  snapshot_bound_attestation_eligible: false
+  j01_status: BLOCKED_EXTERNAL_PREREQUISITE
+  j02_status: BLOCKED_EXTERNAL_PREREQUISITE
+  j10_status: BLOCKED_EXTERNAL_PREREQUISITE
+  j16_status: BLOCKED_EXTERNAL_PREREQUISITE
+  m7_status: BLOCKED_EXTERNAL_PREREQUISITE
+prohibited_workarounds:
+- disable_microsoft_defender
+- add_path_or_process_exclusion
+- restore_quarantined_binary_for_qualification
+- infer_success_from_developer_machine_or_source_tree
+resolution_gate:
+  required_authority: HUMAN_RELEASE_OWNER
+  acceptable_paths:
+  - provide an authorized trusted Authenticode signing identity and signing pipeline,
+    then produce and requalify one new provenance-bound candidate on a clean VM
+  - obtain Microsoft false-positive clearance for the shipping binary family, then
+    produce and requalify one new provenance-bound candidate on a clean VM
+  - if the frozen PyInstaller baseline must change, obtain Architect approval for a
+    packaging ADR revision before implementation
+verdict: BLOCKED_EXTERNAL_PREREQUISITE

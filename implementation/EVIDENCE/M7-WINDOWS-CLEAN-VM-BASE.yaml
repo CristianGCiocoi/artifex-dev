@@ -11,12 +11,12 @@ hypervisor:
   source_snapshot: VM101/clean-windows-base
   clone_mode: FULL
 snapshot:
-  name: m7-qualified-25h2-x64-cell-base-v3
-  unix_time: 1787958191
+  name: m7-qualified-25h2-x64-cell-base-v8
+  unix_time: 1787967886
   powered_off: true
-  config_sha256: c1e71826a08aa23be9fd6c8077999e446b6a23b2f1f19038c3c22a8cb699b742
+  config_sha256: 3d3bafca544cf9cee3b412de198c3983862b1128fd737f9a5aa1e4028d902db7
   immutable_cell_reset_source: true
-  parent: m7-qualified-25h2-x64-cell-base-v2
+  parent: m7-qualified-25h2-x64-cell-base-v7
 snapshot_lineage:
 - name: m7-clean-25h2-x64-base
   unix_time: 1787891259
@@ -42,10 +42,40 @@ snapshot_lineage:
   reason: CONTAINS_PREFINALIZATION_ARCHIVE_NOT_RELEASE_FINALIZER_OUTPUT
 - name: m7-qualified-25h2-x64-cell-base-v3
   unix_time: 1787958191
-  status: VALID_CELL_RESET_SOURCE
+  status: VALID_PREDECESSOR_NOT_CURRENT_CANDIDATE
   config_sha256: c1e71826a08aa23be9fd6c8077999e446b6a23b2f1f19038c3c22a8cb699b742
+  cell_reset_source: false
+  reason: CANDIDATE_REJECTED_BY_NATIVE_SCHTASKS_XML_STREAM_ENCODING_REGRESSION
+- name: m7-qualified-25h2-x64-cell-base-v4
+  unix_time: 1787960743
+  status: VALID_PREDECESSOR_NOT_CURRENT_CANDIDATE
+  config_sha256: 0d6df03ea3dbe8b98a59509cadb736f0ecbbf1f854df842e0126ba4e2cb71927
+  cell_reset_source: false
+  reason: CANDIDATE_REJECTED_BY_WINDOWS_TASK_SCHEDULER_URI_NORMALIZATION
+- name: m7-qualified-25h2-x64-cell-base-v5
+  unix_time: 1787962628
+  status: INVALID_FOR_M7_EVIDENCE
+  config_sha256: 7f90abe790889648e7d3695486b1fa35884f49637aa5b975dad5736bf7efad3a
+  cell_reset_source: false
+  reason: BROKEN_BOOT_AUTOMATIC_REPAIR_AFTER_HARD_STOP
+- name: m7-qualified-25h2-x64-cell-base-v6
+  unix_time: 1787963327
+  status: VALID_PREDECESSOR_NOT_CURRENT_CANDIDATE
+  config_sha256: fc232aaf36acf207a21092f705000c9ccb74dd47cd9cf2180cd87c5827461dc0
+  cell_reset_source: false
+  reason: CANDIDATE_REJECTED_BY_WINDOWS_TASK_SCHEDULER_LOGON_IDENTITY_NORMALIZATION
+- name: m7-qualified-25h2-x64-cell-base-v7
+  unix_time: 1787965247
+  status: VALID_PREDECESSOR_NOT_CURRENT_CANDIDATE
+  config_sha256: 4b17a13d9c8352b3398c09e4b23be032502ed7ea3c4c61a3bda13b3e0d7290aa
+  cell_reset_source: false
+  reason: CANDIDATE_REJECTED_BY_DISTRIBUTION_DOCTOR_UNCREATED_PROJECT_PATH_REGRESSION
+- name: m7-qualified-25h2-x64-cell-base-v8
+  unix_time: 1787967886
+  status: VALID_CELL_RESET_SOURCE
+  config_sha256: 3d3bafca544cf9cee3b412de198c3983862b1128fd737f9a5aa1e4028d902db7
   cell_reset_source: true
-  reason: CONTAINS_FIXED_RELEASE_FINALIZED_BF9D4A3_CANDIDATE
+  reason: CONTAINS_965F46F_CANDIDATE_AFTER_GRACEFUL_WINDOWS_SHUTDOWN_AND_BOOT_VERIFICATION
 generalization:
   sysprep_mode: VM
   sysprep_status: PASS
@@ -82,7 +112,7 @@ cleanliness:
   claude_installed_or_state_present: false
   node_installed: false
   shipping_candidate_staged: true
-  shipping_candidate_sha256: ea2c4ce0246434a665d632c8238c003648feb84504896bd4164e8f77304a77b1
+  shipping_candidate_sha256: 5a331c3daf32601ad2af2ba870f9c9686ad4d44c5ec1082460abe4a016779f00
   temporary_update_payloads_removed: true
   active_user_sessions: 0
   developer_machine_evidence_used: false
@@ -114,4 +144,9 @@ qualification_policy:
   cell_results_may_not_be_inferred: true
   interactive_logon_required_before_service_activation: true
   pre_logon_headless_activation_in_scope: false
-verdict: READY_FOR_SEPARATE_M7_CELL_QUALIFICATION
+qualification_attempt:
+  cell: M7-WIN-NOPROVIDER
+  status: REJECTED_CANDIDATE_DEFENDER_QUARANTINE
+  evidence: EVIDENCE/M7-WINDOWS-DEFENDER-QUARANTINE.yaml
+  candidate_bound_snapshot_reusable_for_replacement_candidate: false
+verdict: INVALID_FOR_CURRENT_M7_CANDIDATE_EVIDENCE
