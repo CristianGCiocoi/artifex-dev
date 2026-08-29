@@ -158,13 +158,17 @@ qualification_policy:
   pre_logon_headless_activation_in_scope: false
 qualification_attempt:
   cell: M7-WIN-NOPROVIDER
-  status: BLOCKED_INTERACTIVE_USER_LOGON_BEFORE_EXECUTION
+  status: PASS
   evidence:
   - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml
   - EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V10.json
   - EVIDENCE/M7-WINDOWS-V9-J10-FAILURE.yaml
+  - EVIDENCE/M7-WINDOWS-J10-V10-PASS.json
+  - EVIDENCE/M7-WINDOWS-J10-V10-QUALIFIED.json
+  qualified_outcome_sha256: 710ea9aa0bbe037d1e91f2f2cce4bf604bda5513c76344d4af4d4135c777958d
   rdp_reached_windows_security: true
+  interactive_session_established: true
   credential_available_to_operator: true
   automated_authentication_used: false
   candidate_bound_snapshot_reusable_for_replacement_candidate: false
-verdict: VALID_V10_CANDIDATE_RESET_SOURCE_EXECUTION_BLOCKED_INTERACTIVE_LOGON
+verdict: VALID_V10_RESET_SOURCE_J10_PASS_PROVIDER_CELLS_PENDING

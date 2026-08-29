@@ -12,10 +12,10 @@ program:
   intake_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
   branch: codex/artifex-2-m7-qualification-live
   current_milestone: M7
-  current_status: BLOCKED_EXTERNAL_PREREQUISITE
+  current_status: ACTIVE
   latest_accepted_commit: d7fa3c4ad419bd97e401ad765128dc3560484d90
   canonical_integration_baseline: 2ea4a38e1bc18a2aa3535a1d224f508ca6561d88
-  next_integration_point: Click Connect in the visible VM104 RDP window, run J10 from candidate-bound V10, then reset V10 independently for the Codex-only and Claude-only cells
+  next_integration_point: Preserve the qualified J10 outcome, reset VM104 from immutable V10, then install, configure and authenticate standalone Codex for J01 and J16
   m1_started: true
   m2_started: true
   m3_started: true
@@ -81,7 +81,7 @@ milestone_states:
     started: false
     accepted: false
   M7:
-    state: BLOCKED_EXTERNAL_PREREQUISITE
+    state: ACTIVE
     started: true
     accepted: false
   M8A:

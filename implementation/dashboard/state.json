@@ -1,18 +1,16 @@
 {
   "acceptance": {
     "acceptance_commit": null,
-    "blocked": [
-      "BLK-M7-WINDOWS-INTERACTIVE-LOGON"
-    ],
+    "blocked": [],
     "contract_digest": "3eac41de4cacf7be80aab12e478b99ec7c5066dccddfff6ca00a03cf5a157d48",
     "evidence_classes": {
       "BLACK_BOX_OUTCOME": {
         "evidence": [
           "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
-          "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml"
+          "EVIDENCE/M7-WINDOWS-J10-V10-QUALIFIED.json"
         ],
         "required_m7": true,
-        "status": "BLOCKED_INTERACTIVE_LOGON"
+        "status": "PARTIAL_PASS_J10"
       },
       "COMPONENT": {
         "evidence": [
@@ -63,15 +61,16 @@
           "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml"
         ],
         "required_m7": true,
-        "status": "BLOCKED_INTERACTIVE_LOGON_AND_PROVIDER_CELLS"
+        "status": "ACTIVE_PROVIDER_CELLS_PENDING"
       },
       "PUBLIC_COMPOSITION": {
         "evidence": [
           "EVIDENCE/M7-FOUNDATION-OUTCOME.json",
-          "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml"
+          "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml",
+          "EVIDENCE/M7-WINDOWS-J10-V10-QUALIFIED.json"
         ],
         "required_m7": true,
-        "status": "BLOCKED_CLEAN_VM_INTERACTIVE_LOGON"
+        "status": "PARTIAL_PASS_J10"
       },
       "SECURITY_AUTHORITY": {
         "evidence": [
@@ -96,7 +95,7 @@
     "schema_version": "1.0",
     "superseded": [],
     "unresolved_contradiction": null,
-    "verdict": "BLOCKED_EXTERNAL_PREREQUISITE"
+    "verdict": "ACTIVE_J10_PASS_PROVIDER_CELLS_PENDING"
   },
   "adrs": [
     {
@@ -728,28 +727,6 @@
   ],
   "blockers": [
     {
-      "affected_dependencies": [
-        "J01",
-        "J02",
-        "J10",
-        "J16",
-        "M7",
-        "M9",
-        "M12"
-      ],
-      "class": "EXTERNAL_PREREQUISITE",
-      "evidence": [
-        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml"
-      ],
-      "id": "BLK-M7-WINDOWS-INTERACTIVE-LOGON",
-      "required_authority": "HUMAN_ENVIRONMENT_OWNER",
-      "resolution": "Click Connect in the visible VM104 RDP window, then run the staged V10 J10 task without changing Defender or the candidate",
-      "scope": "M7_ACCEPTANCE",
-      "status": "OPEN",
-      "summary": "VM104 V10 is clean, staged and credential-ready, but the approved InteractiveToken service model still requires the human to click Connect in the visible RDP window before J10 can execute",
-      "unrelated_work_may_continue": true
-    },
-    {
       "class": "EXTERNAL_PREREQUISITE",
       "evidence": [
         "EVIDENCE/M8C-PUBLIC-OUTCOME.json"
@@ -883,14 +860,14 @@
       "sha256": "ec03ca75e11bc973695fdfe55e6ee708ac705861c37e861d2abc5152a044c537"
     },
     {
-      "bytes": 7073,
+      "bytes": 7238,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CLEAN-VM-BASE.yaml",
-      "sha256": "cbf5fb255bb24620c89e14d1838d93fb7a7c2228d9fa0cf5511697fe9a47bf45"
+      "sha256": "b1ee730345227e2a01039b758a0deb3d94718ecca04fa32d4cba189e237a370d"
     },
     {
-      "bytes": 2427,
+      "bytes": 2468,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
-      "sha256": "97b78c3df3f3a9316a8051da7bf8eb6863531161d97d60516c20277c8c3819a5"
+      "sha256": "ae8308ad77318226499f3e146d3591714beda9a823e2d308828d66fb0aa6ab0c"
     },
     {
       "bytes": 2929,
@@ -898,9 +875,19 @@
       "sha256": "cd7f59c7960571b83483a1ad30d67917a801eb6d9f2a083131d0a9bb4fa93bed"
     },
     {
-      "bytes": 2695,
+      "bytes": 5693,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-J10-V10-PASS.json",
+      "sha256": "047e6d2580642efb7222a2102fb10be8d7e31992d648228ccefd85372d48b40b"
+    },
+    {
+      "bytes": 6231,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-J10-V10-QUALIFIED.json",
+      "sha256": "be0e6de054b2b7b667388447da9f21c17c9ce9bc09a67e87e5da40a9db74d2d0"
+    },
+    {
+      "bytes": 2838,
       "path": "implementation/EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml",
-      "sha256": "d49ce2e7454d26da421958ac72b7b8027b2808bb18666a643a4b835abd3be489"
+      "sha256": "a005f2cf48907cab30cff1a23477e2acdf116bb1f6b439738193a1d292d57d75"
     },
     {
       "bytes": 2310,
@@ -1715,7 +1702,7 @@
   ],
   "journeys": [
     {
-      "blocker": "BLK-M7-WINDOWS-INTERACTIVE-LOGON",
+      "blocker": null,
       "environment": "WINDOWS_11_25H2_X64_CLEAN_VM_CODEX_ONLY",
       "evidence": [
         "EVIDENCE/M3-PUBLIC-OUTCOME.json",
@@ -1726,11 +1713,11 @@
       "id": "J01",
       "last_run": "2026-08-29",
       "public_shipping_composition": "ARTIFEX_SETUP_NUITKA_NSIS_PUBLIC_CLI_REAL_CODEX_VERTICAL_SLICE",
-      "status": "BLOCKED_EXTERNAL_PREREQUISITE",
+      "status": "ACTIVE",
       "title": "J01 — Fresh Machine + Codex"
     },
     {
-      "blocker": "BLK-M7-WINDOWS-INTERACTIVE-LOGON",
+      "blocker": null,
       "environment": "WINDOWS_11_25H2_X64_CLEAN_VM_CLAUDE_ONLY",
       "evidence": [
         "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json",
@@ -1741,7 +1728,7 @@
       "id": "J02",
       "last_run": "2026-08-28",
       "public_shipping_composition": "ARTIFEX_SETUP_NUITKA_NSIS_PUBLIC_CLI_REAL_CLAUDE_MULTI_PROCESS",
-      "status": "BLOCKED_EXTERNAL_PREREQUISITE",
+      "status": "READY",
       "title": "J02 — Fresh Machine + Claude"
     },
     {
@@ -1827,17 +1814,19 @@
       "title": "J09 — V1 Migration"
     },
     {
-      "blocker": "BLK-M7-WINDOWS-INTERACTIVE-LOGON",
+      "blocker": null,
       "environment": "WINDOWS_11_25H2_X64_CLEAN_VM_NO_AUTOMATED_PROVIDER",
       "evidence": [
         "EVIDENCE/M7-FOUNDATION-OUTCOME.json",
         "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
-        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml"
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml",
+        "EVIDENCE/M7-WINDOWS-J10-V10-PASS.json",
+        "EVIDENCE/M7-WINDOWS-J10-V10-QUALIFIED.json"
       ],
       "id": "J10",
       "last_run": "2026-08-29",
       "public_shipping_composition": "ARTIFEX_SETUP_NUITKA_NSIS_PUBLIC_MANAGED_SERVICE_MULTI_PROCESS",
-      "status": "BLOCKED_EXTERNAL_PREREQUISITE",
+      "status": "PASS",
       "title": "J10 — No Automated Provider"
     },
     {
@@ -1901,7 +1890,7 @@
       "title": "J15 — Promotion Conflict"
     },
     {
-      "blocker": "BLK-M7-WINDOWS-INTERACTIVE-LOGON",
+      "blocker": null,
       "environment": "WINDOWS_11_25H2_X64_SEPARATE_CLEAN_PROVIDER_CELLS",
       "evidence": [
         "EVIDENCE/M3-PUBLIC-OUTCOME.json",
@@ -1912,7 +1901,7 @@
       "id": "J16",
       "last_run": "2026-08-29",
       "public_shipping_composition": "ARTIFEX_SETUP_NUITKA_NSIS_PUBLIC_CLI_MULTI_PROCESS_PROVIDER_SETUP",
-      "status": "BLOCKED_EXTERNAL_PREREQUISITE",
+      "status": "ACTIVE",
       "title": "J16 — Provider Setup Persistence"
     },
     {
@@ -2165,7 +2154,7 @@
       "id": "M7",
       "mandatory_for_core_ga": true,
       "started": true,
-      "state": "BLOCKED_EXTERNAL_PREREQUISITE",
+      "state": "ACTIVE",
       "title": "Fresh-Machine Installation & Bootstrap"
     },
     {
@@ -2256,6 +2245,17 @@
   "observations": [
     {
       "evidence": [
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml",
+        "EVIDENCE/M7-WINDOWS-J10-V10-QUALIFIED.json"
+      ],
+      "id": "BLK-M7-WINDOWS-INTERACTIVE-LOGON",
+      "required_authority": "HUMAN_ENVIRONMENT_OWNER",
+      "scope": "M7_ACCEPTANCE",
+      "state": "RESOLVED_J10_INTERACTIVE_SESSION_ESTABLISHED",
+      "unrelated_work_may_continue": true
+    },
+    {
+      "evidence": [
         "EVIDENCE/M7-WINDOWS-DEFENDER-QUARANTINE.yaml",
         "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml"
       ],
@@ -2312,7 +2312,7 @@
     "branch": "codex/artifex-2-m7-qualification-live",
     "canonical_integration_baseline": "2ea4a38e1bc18a2aa3535a1d224f508ca6561d88",
     "current_milestone": "M7",
-    "current_status": "BLOCKED_EXTERNAL_PREREQUISITE",
+    "current_status": "ACTIVE",
     "dashboard_state": "CURRENT",
     "directory_variance": "PACKAGING_NAME_VARIANCE_ACCEPTED",
     "handoff_declared_directory": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF",
@@ -2333,7 +2333,7 @@
     "m8a_started": true,
     "m8b_started": true,
     "m8c_started": true,
-    "next_integration_point": "Click Connect in the visible VM104 RDP window, run J10 from candidate-bound V10, then reset V10 independently for the Codex-only and Claude-only cells",
+    "next_integration_point": "Preserve the qualified J10 outcome, reset VM104 from immutable V10, then install, configure and authenticate standalone Codex for J01 and J16",
     "recorded_date": "2026-08-29",
     "target_release": "2.0.0"
   },
@@ -2620,16 +2620,18 @@
   "summary": {
     "acceptance_classes_passing": 7,
     "acceptance_classes_required": 10,
-    "active_blockers": 3,
+    "active_blockers": 2,
     "adr_count": 24,
     "current_milestone": "M7",
     "current_milestone_progress_percent": 70,
-    "evidence_items": 37,
+    "evidence_items": 39,
     "invariant_count": 34,
     "journey_states": {
-      "BLOCKED_EXTERNAL_PREREQUISITE": 5,
+      "ACTIVE": 2,
+      "BLOCKED_EXTERNAL_PREREQUISITE": 1,
       "NOT_STARTED": 3,
-      "PASS": 12
+      "PASS": 13,
+      "READY": 1
     },
     "milestones_accepted": 8,
     "milestones_started": 11,
@@ -2643,7 +2645,8 @@
     },
     "ready_milestones": [],
     "workstream_states": {
-      "BLOCKED_EXTERNAL_PREREQUISITE": 4,
+      "ACTIVE": 2,
+      "BLOCKED_EXTERNAL_PREREQUISITE": 2,
       "COMPLETE": 18
     }
   },
@@ -3043,9 +3046,7 @@
     },
     {
       "base_commit": "2ea4a38e1bc18a2aa3535a1d224f508ca6561d88",
-      "blockers": [
-        "BLK-M7-WINDOWS-INTERACTIVE-LOGON"
-      ],
+      "blockers": [],
       "branch": "codex/artifex-2-m7-qualification-live",
       "id": "WS-M7-CLEAN-MACHINE-QUALIFICATION",
       "integration_owner": "ARTIFEX_2_ORCHESTRATOR",
@@ -3060,14 +3061,12 @@
         "J16",
         "OUTCOME-ACCEPTANCE-POLICY"
       ],
-      "state": "BLOCKED_EXTERNAL_PREREQUISITE",
+      "state": "ACTIVE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m7-qualification-live"
     },
     {
       "base_commit": "2ea4a38e1bc18a2aa3535a1d224f508ca6561d88",
-      "blockers": [
-        "BLK-M7-WINDOWS-INTERACTIVE-LOGON"
-      ],
+      "blockers": [],
       "branch": "codex/artifex-2-m7-qualification-live",
       "id": "WS-M7-WINDOWS-SERVICE-INTEGRATION",
       "integration_owner": "ARTIFEX_2_ORCHESTRATOR",
@@ -3080,7 +3079,7 @@
         "ADR-T015",
         "FROZEN-INVARIANTS"
       ],
-      "state": "BLOCKED_EXTERNAL_PREREQUISITE",
+      "state": "ACTIVE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m7-qualification-live"
     }
   ]

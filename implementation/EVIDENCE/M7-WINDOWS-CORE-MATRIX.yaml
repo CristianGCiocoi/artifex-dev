@@ -20,19 +20,21 @@ cells:
     codex: INSTALLED_CONFIGURED_AUTHENTICATED
     claude: ABSENT
   mandatory_journeys: [J01, J16]
-  qualification_status: BLOCKED_INTERACTIVE_LOGON_AND_PROVIDER_PREREQUISITE
+  qualification_status: ACTIVE_CODEX_INSTALL_CONFIGURE_AUTHENTICATE_PENDING
 - id: M7-WIN-CLAUDE
   provider_state:
     codex: ABSENT
     claude: INSTALLED_CONFIGURED_AUTHENTICATED
   mandatory_journeys: [J02, J16]
-  qualification_status: BLOCKED_INTERACTIVE_LOGON_AND_PROVIDER_PREREQUISITE
+  qualification_status: READY_AFTER_CODEX_CELL
 - id: M7-WIN-NOPROVIDER
   provider_state:
     codex: ABSENT
     claude: ABSENT
   mandatory_journeys: [J10]
-  qualification_status: BLOCKED_INTERACTIVE_LOGON
+  qualification_status: PASS
+  outcome: EVIDENCE/M7-WINDOWS-J10-V10-QUALIFIED.json
+  outcome_sha256: 710ea9aa0bbe037d1e91f2f2cce4bf604bda5513c76344d4af4d4135c777958d
 constraints:
   provider_coexistence_required: false
   combined_provider_qualification_owned_by: [J11, M12]
@@ -48,8 +50,8 @@ implementation_observation:
   canonical_base_commit: 2ea4a38e1bc18a2aa3535a1d224f508ca6561d88
   windows_service_registration_adapter: IMPLEMENTED_PENDING_CANDIDATE_QUALIFICATION
   public_distribution_lifecycle_wiring: IMPLEMENTED_PENDING_CANDIDATE_QUALIFICATION
-  clean_vm_qualification: STATIC_DEFENDER_PREFLIGHT_PASS_EXECUTION_BLOCKED_INTERACTIVE_LOGON
-  active_blocker: BLK-M7-WINDOWS-INTERACTIVE-LOGON
+  clean_vm_qualification: J10_PASS_CODEX_AND_CLAUDE_CELLS_PENDING
+  active_blocker: null
   blocker_evidence: EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml
   selected_clean_vm:
     hypervisor: Proxmox VE 9.2.3
@@ -59,4 +61,4 @@ implementation_observation:
     reset_snapshot: m7-qualified-25h2-x64-cell-base-v10
     generalized_provenance_snapshot: m7-generalized-25h2-x64-base
     invalidated_pre_generalization_snapshot: m7-clean-25h2-x64-base
-verdict: MATRIX_ACCEPTED_M7_BLOCKED_EXTERNAL_PREREQUISITE
+verdict: MATRIX_ACCEPTED_M7_ACTIVE_J10_PASS_PROVIDER_CELLS_PENDING

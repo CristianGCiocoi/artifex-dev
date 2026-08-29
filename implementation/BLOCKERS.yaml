@@ -1,16 +1,5 @@
 schema_version: '1.0'
 blockers:
-- id: BLK-M7-WINDOWS-INTERACTIVE-LOGON
-  scope: M7_ACCEPTANCE
-  class: EXTERNAL_PREREQUISITE
-  status: OPEN
-  summary: VM104 V10 is clean, staged and credential-ready, but the approved InteractiveToken service model still requires the human to click Connect in the visible RDP window before J10 can execute
-  evidence:
-  - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml
-  affected_dependencies: [J01, J02, J10, J16, M7, M9, M12]
-  required_authority: HUMAN_ENVIRONMENT_OWNER
-  resolution: Click Connect in the visible VM104 RDP window, then run the staged V10 J10 task without changing Defender or the candidate
-  unrelated_work_may_continue: true
 - id: BLK-M8C-DEEPSEEK-LIVE-PREREQUISITES
   scope: M8C
   class: EXTERNAL_PREREQUISITE
@@ -32,6 +21,14 @@ blockers:
   resolution: Provide a real Pandora runtime, supported RESEARCH exchange identity, and independent live qualification evidence
   unrelated_work_may_continue: true
 observations:
+- id: BLK-M7-WINDOWS-INTERACTIVE-LOGON
+  scope: M7_ACCEPTANCE
+  state: RESOLVED_J10_INTERACTIVE_SESSION_ESTABLISHED
+  evidence:
+  - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml
+  - EVIDENCE/M7-WINDOWS-J10-V10-QUALIFIED.json
+  required_authority: HUMAN_ENVIRONMENT_OWNER
+  unrelated_work_may_continue: true
 - id: BLK-M7-WINDOWS-DEFENDER-QUARANTINE
   scope: M7_ACCEPTANCE
   state: RESOLVED_REPLACED_CANDIDATE

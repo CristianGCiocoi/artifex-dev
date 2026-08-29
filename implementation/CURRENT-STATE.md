@@ -10,24 +10,24 @@
 - Intake baseline: `5cc5dcfeb420a6df171a44426c04a0f08fa1e877`
 - Branch: `codex/artifex-2-m7-qualification-live`
 - Current milestone: `M7`
-- Current status: `BLOCKED_EXTERNAL_PREREQUISITE`
+- Current status: `ACTIVE`
 - Accepted milestones: `M0, M1, M2, M3, M4, M5, M6A, M8A`
 - Ready milestones: `none`
 - Latest accepted commit: `d7fa3c4ad419bd97e401ad765128dc3560484d90`
-- Next integration point: `Click Connect in the visible VM104 RDP window, run J10 from candidate-bound V10, then reset V10 independently for the Codex-only and Claude-only cells`
+- Next integration point: `Preserve the qualified J10 outcome, reset VM104 from immutable V10, then install, configure and authenticate standalone Codex for J01 and J16`
 - M7 started: `true`
 
 ## Work
 
 - Active workstreams: `none`
-- Active blockers: `3`
+- Active blockers: `2`
 - Dashboard state: `CURRENT`
 - V1 regression state: `PASS`
 - Migration state: `M0_BASELINE_ACCEPTED`
 
 ## Acceptance
 
-- M7 verdict: `BLOCKED_EXTERNAL_PREREQUISITE`
+- M7 verdict: `ACTIVE_J10_PASS_PROVIDER_CELLS_PENDING`
 - Mandatory work complete: `false`
 - Mandatory journeys: `J01, J02, J10, J16`
-- Next integration point: `Click Connect in the visible VM104 RDP window, run J10 from candidate-bound V10, then reset V10 independently for the Codex-only and Claude-only cells`
+- Next integration point: `Preserve the qualified J10 outcome, reset VM104 from immutable V10, then install, configure and authenticate standalone Codex for J01 and J16`

@@ -3,7 +3,7 @@ m0_mandatory: []
 journeys:
 - id: J01
   title: J01 — Fresh Machine + Codex
-  status: BLOCKED_EXTERNAL_PREREQUISITE
+  status: ACTIVE
   environment: WINDOWS_11_25H2_X64_CLEAN_VM_CODEX_ONLY
   public_shipping_composition: ARTIFEX_SETUP_NUITKA_NSIS_PUBLIC_CLI_REAL_CODEX_VERTICAL_SLICE
   evidence:
@@ -12,10 +12,10 @@ journeys:
   - EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml
   - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml
   last_run: '2026-08-29'
-  blocker: BLK-M7-WINDOWS-INTERACTIVE-LOGON
+  blocker: null
 - id: J02
   title: J02 — Fresh Machine + Claude
-  status: BLOCKED_EXTERNAL_PREREQUISITE
+  status: READY
   environment: WINDOWS_11_25H2_X64_CLEAN_VM_CLAUDE_ONLY
   public_shipping_composition: ARTIFEX_SETUP_NUITKA_NSIS_PUBLIC_CLI_REAL_CLAUDE_MULTI_PROCESS
   evidence:
@@ -24,7 +24,7 @@ journeys:
   - EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml
   - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml
   last_run: '2026-08-28'
-  blocker: BLK-M7-WINDOWS-INTERACTIVE-LOGON
+  blocker: null
 - id: J03
   title: J03 — Project Continuity
   status: PASS
@@ -89,15 +89,17 @@ journeys:
   blocker: M0 has no mandatory journeys; milestone dependencies not accepted
 - id: J10
   title: J10 — No Automated Provider
-  status: BLOCKED_EXTERNAL_PREREQUISITE
+  status: PASS
   environment: WINDOWS_11_25H2_X64_CLEAN_VM_NO_AUTOMATED_PROVIDER
   public_shipping_composition: ARTIFEX_SETUP_NUITKA_NSIS_PUBLIC_MANAGED_SERVICE_MULTI_PROCESS
   evidence:
   - EVIDENCE/M7-FOUNDATION-OUTCOME.json
   - EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml
   - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml
+  - EVIDENCE/M7-WINDOWS-J10-V10-PASS.json
+  - EVIDENCE/M7-WINDOWS-J10-V10-QUALIFIED.json
   last_run: '2026-08-29'
-  blocker: BLK-M7-WINDOWS-INTERACTIVE-LOGON
+  blocker: null
 - id: J11
   title: J11 — Cross-provider Continuity
   status: PASS
@@ -145,7 +147,7 @@ journeys:
   blocker: null
 - id: J16
   title: J16 — Provider Setup Persistence
-  status: BLOCKED_EXTERNAL_PREREQUISITE
+  status: ACTIVE
   environment: WINDOWS_11_25H2_X64_SEPARATE_CLEAN_PROVIDER_CELLS
   public_shipping_composition: ARTIFEX_SETUP_NUITKA_NSIS_PUBLIC_CLI_MULTI_PROCESS_PROVIDER_SETUP
   evidence:
@@ -154,7 +156,7 @@ journeys:
   - EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml
   - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml
   last_run: '2026-08-29'
-  blocker: BLK-M7-WINDOWS-INTERACTIVE-LOGON
+  blocker: null
 - id: J17
   title: J17 — ATLAS Governed Execution
   status: NOT_STARTED

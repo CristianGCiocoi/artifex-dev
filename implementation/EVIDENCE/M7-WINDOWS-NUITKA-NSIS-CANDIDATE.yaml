@@ -50,14 +50,18 @@ security_preflight:
     candidate_retained: true
     candidate_hash_reverified: true
 qualification_state:
-  M7-WIN-NOPROVIDER: BLOCKED_INTERACTIVE_USER_LOGON_BEFORE_J10
-  M7-WIN-CODEX: NOT_RUN_AFTER_J10
-  M7-WIN-CLAUDE: NOT_RUN_AFTER_J10
-  m7_status: BLOCKED_EXTERNAL_PREREQUISITE
-  active_blocker: BLK-M7-WINDOWS-INTERACTIVE-LOGON
+  M7-WIN-NOPROVIDER: PASS
+  M7-WIN-CODEX: READY_RESET_FROM_V10
+  M7-WIN-CLAUDE: NOT_RUN_AFTER_CODEX
+  m7_status: ACTIVE
+  active_blocker: null
   clean_base_attestation: EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V10.json
+  j10_raw_capture: EVIDENCE/M7-WINDOWS-J10-V10-PASS.json
+  j10_qualified_outcome: EVIDENCE/M7-WINDOWS-J10-V10-QUALIFIED.json
+  j10_outcome_sha256: 710ea9aa0bbe037d1e91f2f2cce4bf604bda5513c76344d4af4d4135c777958d
   interactive_logon_attempt:
     rdp_reached_windows_security: true
+    interactive_session_established: true
     credential_available_to_operator: true
     automated_authentication_used: false
     account_reset_performed: true
@@ -66,4 +70,4 @@ historical_evidence_preserved:
 - EVIDENCE/M7-WINDOWS-CANDIDATE-ARTIFACT.yaml
 - EVIDENCE/M7-WINDOWS-DEFENDER-QUARANTINE.yaml
 - EVIDENCE/M7-WINDOWS-V9-J10-FAILURE.yaml
-verdict: V10_CANDIDATE_SECURITY_PREFLIGHT_PASS_EXECUTION_BLOCKED_INTERACTIVE_LOGON
+verdict: V10_CANDIDATE_J10_PASS_PROVIDER_CELLS_PENDING
