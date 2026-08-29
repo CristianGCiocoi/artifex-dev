@@ -10,26 +10,26 @@ authority:
   fallback_invoked: false
 artifact:
   name: ARTIFEX-Setup.exe
-  sha256: 7da696b95b67142f02e930eb37324107ab7e94cf744967e3cd39e477b2370133
-  bytes: 16150047
+  sha256: daae84ec9793c0fc184cebd723670cba0d0509ce4f94f33b040b2cdacfa6a381
+  bytes: 16153830
   format: nuitka-standalone+nsis
-  source_commit: b0c5686b781c37a710c97f66e060d22b842c6b8f
+  source_commit: 2ea4a38e1bc18a2aa3535a1d224f508ca6561d88
   product_version: 1.0.0
   platform: windows
   architecture: x86_64
   nuitka_version: '4.2'
   nsis_version: '3.12'
   python_version: 3.12.13
-  standalone_executable_sha256: cb8bd4cf0a49b9f86e8af8d1ff1727d9418138ea414ad56c1f765990c5de6d94
+  standalone_executable_sha256: 6e715fc1df2f1e9b1e8df30d7f9076effa1423dac253c1c1909f6d2e866fe05e
   bundle_file_inventory_count: 80
-  provenance_sha256: 3e1a8eb117f49b5d165357c16888778a6e4fd8a4b6594839fc95de1c779b25c8
-  build_timestamp: '2026-08-29T11:02:12.64034+03:00'
+  provenance_sha256: 0a58280501293b8cd58dad2e731fc7334bf1f5ac1dd6f6602a9be177411f2c6e
+  build_timestamp: '2026-08-29T14:13:15.963976+03:00'
 build_validation:
   command: .venv/Scripts/python.exe packaging/build_windows_installer.py --clean --smoke
   result: PASS
   system_version: PASS
   presentation_mode: PASS
-  unit_and_m7_distribution_tests: 127_PASS_7_SKIPPED_PRIVILEGE_BOUND
+  unit_and_m7_distribution_tests: 128_PASS_7_SKIPPED_PRIVILEGE_BOUND
   control_plane: PASS
 security_preflight:
   developer_host:
@@ -39,7 +39,7 @@ security_preflight:
   clean_vm:
     hypervisor: Proxmox VE 9.2.3
     vm_id: 104
-    snapshot: m7-qualified-25h2-x64-cell-base-v9
+    snapshot: m7-qualified-25h2-x64-cell-base-v10
     os: Windows 11 Pro 25H2 x64
     build: 26200.9168
     microsoft_defender_realtime_enabled: true
@@ -55,14 +55,15 @@ qualification_state:
   M7-WIN-CLAUDE: NOT_RUN_AFTER_J10
   m7_status: BLOCKED_EXTERNAL_PREREQUISITE
   active_blocker: BLK-M7-WINDOWS-INTERACTIVE-LOGON
-  clean_base_attestation: EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V9.json
+  clean_base_attestation: EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V10.json
   interactive_logon_attempt:
     rdp_reached_windows_security: true
-    credential_available_to_operator: false
+    credential_available_to_operator: true
     automated_authentication_used: false
-    account_reset_performed: false
+    account_reset_performed: true
     autologon_enabled: false
 historical_evidence_preserved:
 - EVIDENCE/M7-WINDOWS-CANDIDATE-ARTIFACT.yaml
 - EVIDENCE/M7-WINDOWS-DEFENDER-QUARANTINE.yaml
-verdict: CANDIDATE_SECURITY_PREFLIGHT_PASS_M7_CELL_EXECUTION_NOT_COMPLETE
+- EVIDENCE/M7-WINDOWS-V9-J10-FAILURE.yaml
+verdict: V10_CANDIDATE_SECURITY_PREFLIGHT_PASS_EXECUTION_BLOCKED_INTERACTIVE_LOGON

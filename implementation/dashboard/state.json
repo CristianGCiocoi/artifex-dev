@@ -83,7 +83,7 @@
       }
     },
     "frozen_architecture_baseline": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
-    "implementation_baseline_commit": "b0c5686b781c37a710c97f66e060d22b842c6b8f",
+    "implementation_baseline_commit": "2ea4a38e1bc18a2aa3535a1d224f508ca6561d88",
     "mandatory_journeys": [
       "J01",
       "J02",
@@ -743,10 +743,10 @@
       ],
       "id": "BLK-M7-WINDOWS-INTERACTIVE-LOGON",
       "required_authority": "HUMAN_ENVIRONMENT_OWNER",
-      "resolution": "Supply or explicitly authorize a VM104-only credential reset, complete the visible Windows Security sign-in manually, then run the staged V9 J10 task without changing Defender or the candidate",
+      "resolution": "Click Connect in the visible VM104 RDP window, then run the staged V10 J10 task without changing Defender or the candidate",
       "scope": "M7_ACCEPTANCE",
       "status": "OPEN",
-      "summary": "VM104 requires one human interactive Windows logon, but no usable credential is currently available, before the approved InteractiveToken service model can execute J10 from the clean V9 reset",
+      "summary": "VM104 V10 is clean, staged and credential-ready, but the approved InteractiveToken service model still requires the human to click Connect in the visible RDP window before J10 can execute",
       "unrelated_work_may_continue": true
     },
     {
@@ -868,6 +868,11 @@
       "sha256": "1dd299ab4d3b6bfb980c11e5fe028ca9c306b1a7ff7a816ec3a67f7ec5c5904b"
     },
     {
+      "bytes": 444,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V10.json",
+      "sha256": "3bae7ad38a5bacf1055540c9ee04f219e242292fb45b2161e71d095d48d30fa7"
+    },
+    {
       "bytes": 443,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V9.json",
       "sha256": "ba6f5468d8fd7ac47e63acb755c7279aa8cde0d6887dc9c562406feeb375e073"
@@ -878,14 +883,14 @@
       "sha256": "ec03ca75e11bc973695fdfe55e6ee708ac705861c37e861d2abc5152a044c537"
     },
     {
-      "bytes": 6700,
+      "bytes": 7073,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CLEAN-VM-BASE.yaml",
-      "sha256": "856af2e8e4f50b2ef12aa0d0a0796195cd0ab9bda817ca1ac4cd67264d94146e"
+      "sha256": "cbf5fb255bb24620c89e14d1838d93fb7a7c2228d9fa0cf5511697fe9a47bf45"
     },
     {
-      "bytes": 2426,
+      "bytes": 2427,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
-      "sha256": "825993c1b009b206f038aaedb68339d21fe0cf44e7bd8028496abd41b43e4fea"
+      "sha256": "97b78c3df3f3a9316a8051da7bf8eb6863531161d97d60516c20277c8c3819a5"
     },
     {
       "bytes": 2929,
@@ -893,14 +898,19 @@
       "sha256": "cd7f59c7960571b83483a1ad30d67917a801eb6d9f2a083131d0a9bb4fa93bed"
     },
     {
-      "bytes": 2643,
+      "bytes": 2695,
       "path": "implementation/EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml",
-      "sha256": "58f3e83162233c1d301847c71d013c5e2ed934529141bd5f931d7ab091542aa7"
+      "sha256": "d49ce2e7454d26da421958ac72b7b8027b2808bb18666a643a4b835abd3be489"
     },
     {
       "bytes": 2310,
       "path": "implementation/EVIDENCE/M7-WINDOWS-SERVICE-SOURCE-VALIDATION.yaml",
       "sha256": "961c7357d6deaa75e7c52eba27097994a78e6ff2c40c99f47011d26adb5938d1"
+    },
+    {
+      "bytes": 1909,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-V9-J10-FAILURE.yaml",
+      "sha256": "12dce31082133e02e98e238c35694084b574cdef55d3398732f67579201cc035"
     },
     {
       "bytes": 3506,
@@ -2300,7 +2310,7 @@
   "program": {
     "architecture_status": "FROZEN",
     "branch": "codex/artifex-2-m7-qualification-live",
-    "canonical_integration_baseline": "b0c5686b781c37a710c97f66e060d22b842c6b8f",
+    "canonical_integration_baseline": "2ea4a38e1bc18a2aa3535a1d224f508ca6561d88",
     "current_milestone": "M7",
     "current_status": "BLOCKED_EXTERNAL_PREREQUISITE",
     "dashboard_state": "CURRENT",
@@ -2323,7 +2333,7 @@
     "m8a_started": true,
     "m8b_started": true,
     "m8c_started": true,
-    "next_integration_point": "Complete the visible VM104 Windows Security sign-in, run J10 from candidate-bound V9, then reset V9 independently for the Codex-only and Claude-only cells",
+    "next_integration_point": "Click Connect in the visible VM104 RDP window, run J10 from candidate-bound V10, then reset V10 independently for the Codex-only and Claude-only cells",
     "recorded_date": "2026-08-29",
     "target_release": "2.0.0"
   },
@@ -2614,7 +2624,7 @@
     "adr_count": 24,
     "current_milestone": "M7",
     "current_milestone_progress_percent": 70,
-    "evidence_items": 35,
+    "evidence_items": 37,
     "invariant_count": 34,
     "journey_states": {
       "BLOCKED_EXTERNAL_PREREQUISITE": 5,
@@ -3032,7 +3042,7 @@
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m7"
     },
     {
-      "base_commit": "b0c5686b781c37a710c97f66e060d22b842c6b8f",
+      "base_commit": "2ea4a38e1bc18a2aa3535a1d224f508ca6561d88",
       "blockers": [
         "BLK-M7-WINDOWS-INTERACTIVE-LOGON"
       ],
@@ -3054,7 +3064,7 @@
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m7-qualification-live"
     },
     {
-      "base_commit": "b0c5686b781c37a710c97f66e060d22b842c6b8f",
+      "base_commit": "2ea4a38e1bc18a2aa3535a1d224f508ca6561d88",
       "blockers": [
         "BLK-M7-WINDOWS-INTERACTIVE-LOGON"
       ],

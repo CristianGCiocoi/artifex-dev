@@ -253,7 +253,7 @@ workstreams:
   owner_subagent: ARTIFEX_2_ORCHESTRATOR
   worktree: C:\aidev\artifex-worktrees\artifex-2-m7-qualification-live
   branch: codex/artifex-2-m7-qualification-live
-  base_commit: b0c5686b781c37a710c97f66e060d22b842c6b8f
+  base_commit: 2ea4a38e1bc18a2aa3535a1d224f508ca6561d88
   shared_contracts: [M7-CONTRACT, J01, J02, J10, J16, OUTCOME-ACCEPTANCE-POLICY]
   state: BLOCKED_EXTERNAL_PREREQUISITE
   blockers: [BLK-M7-WINDOWS-INTERACTIVE-LOGON]
@@ -264,7 +264,7 @@ workstreams:
   owner_subagent: ARTIFEX_2_ORCHESTRATOR
   worktree: C:\aidev\artifex-worktrees\artifex-2-m7-qualification-live
   branch: codex/artifex-2-m7-qualification-live
-  base_commit: b0c5686b781c37a710c97f66e060d22b842c6b8f
+  base_commit: 2ea4a38e1bc18a2aa3535a1d224f508ca6561d88
   shared_contracts: [M7-CONTRACT, ADR-T003, ADR-T015, FROZEN-INVARIANTS]
   state: BLOCKED_EXTERNAL_PREREQUISITE
   blockers: [BLK-M7-WINDOWS-INTERACTIVE-LOGON]

@@ -1,0 +1,48 @@
+schema_version: '1.0'
+evidence_id: EVD-M7-WINDOWS-V9-J10-FAILURE
+recorded_date: '2026-08-29'
+scope: PRESERVED_FAILED_BASELINE_EVIDENCE
+cell: M7-WIN-NOPROVIDER
+journey: J10
+environment:
+  hypervisor: Proxmox VE 9.2.3
+  vm_id: 104
+  os: Windows 11 Pro 25H2 x64
+  os_build: 26200.9168
+  reset_snapshot: m7-qualified-25h2-x64-cell-base-v9
+candidate:
+  source_commit: b0c5686b781c37a710c97f66e060d22b842c6b8f
+  installer_sha256: 7da696b95b67142f02e930eb37324107ab7e94cf744967e3cd39e477b2370133
+  standalone_executable_sha256: cb8bd4cf0a49b9f86e8af8d1ff1727d9418138ea414ad56c1f765990c5de6d94
+shipping_runner:
+  task: '\ARTIFEX-M7-J10-QUALIFICATION'
+  status: FAIL
+  diagnostic: operating-system failure during shipping-installer
+  error: TimeoutExpired
+  timeout_seconds: 180
+  rollback_install_root_present: false
+  rollback_runtime_state_present: false
+  rollback_project_state_present: false
+  rollback_managed_service_present: false
+direct_lifecycle_diagnostic:
+  task: '\ARTIFEX-M7-DIAG-DIRECT-LIFECYCLE'
+  completed: '2026-08-29T12:49:30.4199439+03:00'
+  exit_code: 1
+  failure: artifact executable identity does not match its build manifest
+identity_probe_observation:
+  product: ARTIFEX
+  version: 1.0.0
+  artifact: python.exe
+  build_id: source-development
+  format: python-source
+  platform: windows
+  architecture: x86_64
+  sha256: null
+root_cause:
+  classification: NUITKA_RUNTIME_IDENTITY_DETECTION_DEFECT
+  explanation: The compiled Nuitka launcher was not entering the native-runtime identity branch, so its self-probe could not match the adjacent hash-bound build manifest.
+resolution:
+  source_commit: 2ea4a38e1bc18a2aa3535a1d224f508ca6561d88
+  change: Detect Nuitka compiled runtime and bind identity to the invoked launcher executable.
+  qualification_requirement: A newly hashed candidate and clean-VM rerun are mandatory; V9 is not eligible for acceptance.
+verdict: PRESERVED_FAIL_NOT_ACCEPTED

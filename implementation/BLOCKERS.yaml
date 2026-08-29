@@ -4,12 +4,12 @@ blockers:
   scope: M7_ACCEPTANCE
   class: EXTERNAL_PREREQUISITE
   status: OPEN
-  summary: VM104 requires one human interactive Windows logon, but no usable credential is currently available, before the approved InteractiveToken service model can execute J10 from the clean V9 reset
+  summary: VM104 V10 is clean, staged and credential-ready, but the approved InteractiveToken service model still requires the human to click Connect in the visible RDP window before J10 can execute
   evidence:
   - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml
   affected_dependencies: [J01, J02, J10, J16, M7, M9, M12]
   required_authority: HUMAN_ENVIRONMENT_OWNER
-  resolution: Supply or explicitly authorize a VM104-only credential reset, complete the visible Windows Security sign-in manually, then run the staged V9 J10 task without changing Defender or the candidate
+  resolution: Click Connect in the visible VM104 RDP window, then run the staged V10 J10 task without changing Defender or the candidate
   unrelated_work_may_continue: true
 - id: BLK-M8C-DEEPSEEK-LIVE-PREREQUISITES
   scope: M8C

@@ -14,7 +14,7 @@
 - Accepted milestones: `M0, M1, M2, M3, M4, M5, M6A, M8A`
 - Ready milestones: `none`
 - Latest accepted commit: `d7fa3c4ad419bd97e401ad765128dc3560484d90`
-- Next integration point: `Complete the visible VM104 Windows Security sign-in, run J10 from candidate-bound V9, then reset V9 independently for the Codex-only and Claude-only cells`
+- Next integration point: `Click Connect in the visible VM104 RDP window, run J10 from candidate-bound V10, then reset V10 independently for the Codex-only and Claude-only cells`
 - M7 started: `true`
 
 ## Work
@@ -30,4 +30,4 @@
 - M7 verdict: `BLOCKED_EXTERNAL_PREREQUISITE`
 - Mandatory work complete: `false`
 - Mandatory journeys: `J01, J02, J10, J16`
-- Next integration point: `Complete the visible VM104 Windows Security sign-in, run J10 from candidate-bound V9, then reset V9 independently for the Codex-only and Claude-only cells`
+- Next integration point: `Click Connect in the visible VM104 RDP window, run J10 from candidate-bound V10, then reset V10 independently for the Codex-only and Claude-only cells`
