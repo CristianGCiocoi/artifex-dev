@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from tools.artifex2 import run_m7_shipping_journey as journey_runner
 from tools.artifex2.qualify_m7_windows import _installed_origin, _run_json
 from tools.artifex2.run_m7_shipping_journey import (
     JourneyFailure,
@@ -23,6 +24,12 @@ def test_journey_failures_are_operator_safe_messages() -> None:
     assert str(JourneyFailure("clean-machine preflight failed")) == (
         "clean-machine preflight failed"
     )
+
+
+def test_runtime_phase_diagnostics_are_bounded_and_secret_safe() -> None:
+    journey_runner._mark_phase("task-scheduler-restart")
+
+    assert journey_runner._ACTIVE_PHASE == "task-scheduler-restart"
 
 
 def test_shipping_zip_extracts_one_native_manifest_bound_bundle(tmp_path: Path) -> None:
@@ -76,7 +83,7 @@ def test_clean_base_attestation_is_exact_and_vm104_bound() -> None:
     value = {
         "schema_version": "1.0",
         "vm_id": 104,
-        "snapshot_name": "m7-qualified-25h2-x64-cell-base-v3",
+        "snapshot_name": "m7-qualified-25h2-x64-cell-base-v8",
         "snapshot_config_sha256": "a" * 64,
         "account_sid_sha256": "b" * 64,
         "candidate_sha256": "c" * 64,

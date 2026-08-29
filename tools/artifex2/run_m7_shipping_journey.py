@@ -44,6 +44,7 @@ _SENSITIVE_TEXT = re.compile(
     r"api[_ -]?key\s*[:=]|password\s*[:=])",
     re.IGNORECASE,
 )
+_ACTIVE_PHASE = "initialization"
 
 
 class JourneyFailure(M7EvidenceError):
@@ -159,6 +160,7 @@ def run_j10(
     which: Any = shutil.which,
     host_identity: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
+    _mark_phase("preflight")
     artifact = artifact.expanduser().resolve()
     staging_root = staging_root.expanduser().resolve()
     install_root = install_root.expanduser().resolve()
@@ -191,9 +193,11 @@ def run_j10(
     if artifact_sha256 != expected_artifact_sha256:
         raise JourneyFailure("shipping artifact SHA-256 does not match the frozen candidate")
     artifact_bytes = artifact.stat().st_size
+    _mark_phase("artifact-extraction")
     source_executable = _safe_extract_shipping_zip(artifact, staging_root)
 
     stage_cli = ShippingCLI(source_executable, cwd=staging_root, runner=runner)
+    _mark_phase("install-plan")
     plan = stage_cli.direct(
         "distribution.install.plan",
         [
@@ -210,6 +214,7 @@ def run_j10(
     token = _value(plan).get("confirmation_token")
     if not isinstance(token, str) or not token:
         raise JourneyFailure("shipping installer did not issue a bound confirmation token")
+    _mark_phase("install-apply")
     installed = stage_cli.direct(
         "distribution.install",
         [
@@ -234,13 +239,18 @@ def run_j10(
         raise JourneyFailure("shipping installation did not complete")
 
     cli = ShippingCLI(installed_executable, cwd=install_root, runner=runner)
+    _mark_phase("service-status-before-restart")
     status_before = cli.direct(
         "service.status", ["service", "status", "--state-root", str(state_root)]
     )
     before = _running_service_value(status_before)
+    _mark_phase("service-stop")
     cli.direct("service.stop", ["service", "stop", "--state-root", str(state_root)])
+    _mark_phase("service-process-exit")
     _wait_for_process_exit(int(before["process_id"]))
+    _mark_phase("task-scheduler-restart")
     _restart_registered_windows_task(runner=runner)
+    _mark_phase("service-readiness-after-restart")
     status_after = _wait_for_service(cli, state_root, prior_process_id=int(before["process_id"]))
     after = _running_service_value(status_after)
     if int(after["coordinator_generation"]) <= int(before["coordinator_generation"]):
@@ -248,6 +258,7 @@ def run_j10(
     if int(after["process_id"]) == int(before["process_id"]):
         raise JourneyFailure("managed-service restart did not change process identity")
 
+    _mark_phase("distribution-bootstrap")
     bootstrap = cli.service_call(
         "distribution.bootstrap", {}, project_root=project_root, state_root=state_root
     )
@@ -265,6 +276,7 @@ def run_j10(
     ):
         raise JourneyFailure("no-provider bootstrap did not fail closed to ManualIntegration")
 
+    _mark_phase("distribution-doctor")
     doctor = cli.service_call(
         "distribution.doctor",
         {
@@ -293,12 +305,14 @@ def run_j10(
     ):
         raise JourneyFailure("doctor did not provide the actionable manual fallback")
 
+    _mark_phase("provider-graph")
     graph_result = cli.service_call(
         "providers.graph", {}, project_root=project_root, state_root=state_root
     )
     if _value(graph_result).get("graph", {}).get("providers") != []:
         raise JourneyFailure("public Capability Graph exposed an automated provider")
 
+    _mark_phase("beginner-start")
     beginner = cli.service_call(
         "beginner.start",
         {"intent": "Qualify the no-provider manual fallback", "project_name": "M7 J10"},
@@ -312,6 +326,7 @@ def run_j10(
         raise JourneyFailure("beginner journey did not create canonical Project state")
     model_sha256 = _file_sha256(project_model)
 
+    _mark_phase("manual-packet")
     packet_result = cli.service_call(
         "manual.packet.create",
         {
@@ -331,6 +346,7 @@ def run_j10(
     packet = _value(packet_result).get("packet")
     if not isinstance(packet, Mapping):
         raise JourneyFailure("manual packet operation returned no packet")
+    _mark_phase("manual-result-submit")
     submitted = cli.service_call(
         "manual.result.submit",
         {
@@ -352,6 +368,7 @@ def run_j10(
     if submit_value.get("canonical_acceptance") is not False:
         raise JourneyFailure("manual result improperly granted itself canonical acceptance")
 
+    _mark_phase("capture-finalization")
     registration_manifest = install_root / "service-registration.json"
     install_manifest = install_root / "artifex-install-manifest.json"
     if not registration_manifest.is_file() or not install_manifest.is_file():
@@ -479,6 +496,11 @@ def _validate_inputs(**values: Any) -> None:
     attestation = values["clean_base_attestation"]
     if not isinstance(attestation, Path) or not attestation.is_file():
         raise JourneyFailure("hypervisor clean-base attestation is unavailable")
+
+
+def _mark_phase(value: str) -> None:
+    global _ACTIVE_PHASE
+    _ACTIVE_PHASE = value
 
 
 def _require_clean_guest(
@@ -652,7 +674,7 @@ def _validate_clean_base_attestation(value: Mapping[str, Any]) -> None:
         raise JourneyFailure("clean-base attestation does not prove cell separation")
     if (
         value.get("vm_id") != 104
-        or value.get("snapshot_name") != "m7-qualified-25h2-x64-cell-base-v3"
+        or value.get("snapshot_name") != "m7-qualified-25h2-x64-cell-base-v8"
     ):
         raise JourneyFailure("clean-base attestation does not identify the authorized VM104 reset")
 
@@ -756,7 +778,9 @@ def main() -> None:
             "status": "FAIL",
             "error": type(exc).__name__,
             "diagnostic": (
-                str(exc) if isinstance(exc, JourneyFailure) else "non-journey runtime failure"
+                str(exc)
+                if isinstance(exc, JourneyFailure)
+                else f"operating-system failure during {_ACTIVE_PHASE}"
             ),
         }
     rendered = json.dumps(result, indent=2, sort_keys=True) + "\n"
