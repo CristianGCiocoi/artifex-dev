@@ -20,19 +20,19 @@ cells:
     codex: INSTALLED_CONFIGURED_AUTHENTICATED
     claude: ABSENT
   mandatory_journeys: [J01, J16]
-  qualification_status: BLOCKED_CANDIDATE_SECURITY_COMPATIBILITY
+  qualification_status: BLOCKED_INTERACTIVE_LOGON_AND_PROVIDER_PREREQUISITE
 - id: M7-WIN-CLAUDE
   provider_state:
     codex: ABSENT
     claude: INSTALLED_CONFIGURED_AUTHENTICATED
   mandatory_journeys: [J02, J16]
-  qualification_status: BLOCKED_CANDIDATE_SECURITY_COMPATIBILITY
+  qualification_status: BLOCKED_INTERACTIVE_LOGON_AND_PROVIDER_PREREQUISITE
 - id: M7-WIN-NOPROVIDER
   provider_state:
     codex: ABSENT
     claude: ABSENT
   mandatory_journeys: [J10]
-  qualification_status: BLOCKED_EXTERNAL_PREREQUISITE
+  qualification_status: BLOCKED_INTERACTIVE_LOGON
 constraints:
   provider_coexistence_required: false
   combined_provider_qualification_owned_by: [J11, M12]
@@ -45,18 +45,18 @@ constraints:
   interactive_user_logon_required_for_each_cell: true
   headless_pre_logon_service_start_claimed: false
 implementation_observation:
-  canonical_base_commit: cc1980ca02857b27276b489efddd30b4be74660f
+  canonical_base_commit: b0c5686b781c37a710c97f66e060d22b842c6b8f
   windows_service_registration_adapter: IMPLEMENTED_PENDING_CANDIDATE_QUALIFICATION
   public_distribution_lifecycle_wiring: IMPLEMENTED_PENDING_CANDIDATE_QUALIFICATION
-  clean_vm_qualification: BLOCKED_DEFENDER_QUARANTINE
-  active_blocker: BLK-M7-WINDOWS-DEFENDER-QUARANTINE
-  blocker_evidence: EVIDENCE/M7-WINDOWS-DEFENDER-QUARANTINE.yaml
+  clean_vm_qualification: STATIC_DEFENDER_PREFLIGHT_PASS_EXECUTION_BLOCKED_INTERACTIVE_LOGON
+  active_blocker: BLK-M7-WINDOWS-INTERACTIVE-LOGON
+  blocker_evidence: EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml
   selected_clean_vm:
     hypervisor: Proxmox VE 9.2.3
     vm_id: 104
     os_build: 26200.9168
     network_state: DHCP_VM_SPECIFIC_MAC
-    reset_snapshot: m7-qualified-25h2-x64-cell-base-v8
+    reset_snapshot: m7-qualified-25h2-x64-cell-base-v9
     generalized_provenance_snapshot: m7-generalized-25h2-x64-base
     invalidated_pre_generalization_snapshot: m7-clean-25h2-x64-base
 verdict: MATRIX_ACCEPTED_M7_BLOCKED_EXTERNAL_PREREQUISITE

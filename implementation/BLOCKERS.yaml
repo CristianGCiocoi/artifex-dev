@@ -1,15 +1,15 @@
 schema_version: '1.0'
 blockers:
-- id: BLK-M7-WINDOWS-DEFENDER-QUARANTINE
+- id: BLK-M7-WINDOWS-INTERACTIVE-LOGON
   scope: M7_ACCEPTANCE
   class: EXTERNAL_PREREQUISITE
   status: OPEN
-  summary: Microsoft Defender quarantines the unsigned PyInstaller candidate and its managed-service Task Scheduler registration on the clean Windows Core baseline
+  summary: VM104 requires one human interactive Windows logon, but no usable credential is currently available, before the approved InteractiveToken service model can execute J10 from the clean V9 reset
   evidence:
-  - EVIDENCE/M7-WINDOWS-DEFENDER-QUARANTINE.yaml
+  - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml
   affected_dependencies: [J01, J02, J10, J16, M7, M9, M12]
-  required_authority: HUMAN_RELEASE_OWNER
-  resolution: Provide trusted Authenticode signing or Microsoft false-positive clearance for a new provenance-bound candidate; an alternative packaging baseline requires Architect approval
+  required_authority: HUMAN_ENVIRONMENT_OWNER
+  resolution: Supply or explicitly authorize a VM104-only credential reset, complete the visible Windows Security sign-in manually, then run the staged V9 J10 task without changing Defender or the candidate
   unrelated_work_may_continue: true
 - id: BLK-M8C-DEEPSEEK-LIVE-PREREQUISITES
   scope: M8C
@@ -32,6 +32,14 @@ blockers:
   resolution: Provide a real Pandora runtime, supported RESEARCH exchange identity, and independent live qualification evidence
   unrelated_work_may_continue: true
 observations:
+- id: BLK-M7-WINDOWS-DEFENDER-QUARANTINE
+  scope: M7_ACCEPTANCE
+  state: RESOLVED_REPLACED_CANDIDATE
+  evidence:
+  - EVIDENCE/M7-WINDOWS-DEFENDER-QUARANTINE.yaml
+  - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml
+  required_authority: ARCHITECT_PRODUCT_OWNER
+  unrelated_work_may_continue: true
 - id: BLK-M7-SUPPORTED-PLATFORM-MATRIX-UNDEFINED
   scope: M7_ACCEPTANCE
   state: RESOLVED_PRODUCT_DECISION

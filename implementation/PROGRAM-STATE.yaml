@@ -14,8 +14,8 @@ program:
   current_milestone: M7
   current_status: BLOCKED_EXTERNAL_PREREQUISITE
   latest_accepted_commit: d7fa3c4ad419bd97e401ad765128dc3560484d90
-  canonical_integration_baseline: cc1980ca02857b27276b489efddd30b4be74660f
-  next_integration_point: Resolve BLK-M7-WINDOWS-DEFENDER-QUARANTINE with a trusted or Microsoft-cleared candidate, create a new candidate-bound clean snapshot, then rerun J10 before the provider cells
+  canonical_integration_baseline: b0c5686b781c37a710c97f66e060d22b842c6b8f
+  next_integration_point: Complete the visible VM104 Windows Security sign-in, run J10 from candidate-bound V9, then reset V9 independently for the Codex-only and Claude-only cells
   m1_started: true
   m2_started: true
   m3_started: true

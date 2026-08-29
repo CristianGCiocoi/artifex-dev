@@ -11,12 +11,12 @@ hypervisor:
   source_snapshot: VM101/clean-windows-base
   clone_mode: FULL
 snapshot:
-  name: m7-qualified-25h2-x64-cell-base-v8
-  unix_time: 1787967886
+  name: m7-qualified-25h2-x64-cell-base-v9
+  unix_time: 1787991100
   powered_off: true
-  config_sha256: 3d3bafca544cf9cee3b412de198c3983862b1128fd737f9a5aa1e4028d902db7
+  config_sha256: e0d858fec3780f999c9b7e7bf4afeaf2fbf5f41cb88ecc106b84177be7db4113
   immutable_cell_reset_source: true
-  parent: m7-qualified-25h2-x64-cell-base-v7
+  parent: m7-qualified-25h2-x64-cell-base-v8
 snapshot_lineage:
 - name: m7-clean-25h2-x64-base
   unix_time: 1787891259
@@ -72,10 +72,16 @@ snapshot_lineage:
   reason: CANDIDATE_REJECTED_BY_DISTRIBUTION_DOCTOR_UNCREATED_PROJECT_PATH_REGRESSION
 - name: m7-qualified-25h2-x64-cell-base-v8
   unix_time: 1787967886
-  status: VALID_CELL_RESET_SOURCE
+  status: VALID_PREDECESSOR_REJECTED_CANDIDATE
   config_sha256: 3d3bafca544cf9cee3b412de198c3983862b1128fd737f9a5aa1e4028d902db7
+  cell_reset_source: false
+  reason: CONTAINS_PRESERVED_PYINSTALLER_CANDIDATE_REJECTED_BY_DEFENDER_QUARANTINE
+- name: m7-qualified-25h2-x64-cell-base-v9
+  unix_time: 1787991100
+  status: VALID_CELL_RESET_SOURCE
+  config_sha256: e0d858fec3780f999c9b7e7bf4afeaf2fbf5f41cb88ecc106b84177be7db4113
   cell_reset_source: true
-  reason: CONTAINS_965F46F_CANDIDATE_AFTER_GRACEFUL_WINDOWS_SHUTDOWN_AND_BOOT_VERIFICATION
+  reason: CONTAINS_B0C5686_NUITKA_NSIS_CANDIDATE_AFTER_ZERO_DETECTION_DEFENDER_SCAN_AND_GRACEFUL_WINDOWS_SHUTDOWN
 generalization:
   sysprep_mode: VM
   sysprep_status: PASS
@@ -112,7 +118,7 @@ cleanliness:
   claude_installed_or_state_present: false
   node_installed: false
   shipping_candidate_staged: true
-  shipping_candidate_sha256: 5a331c3daf32601ad2af2ba870f9c9686ad4d44c5ec1082460abe4a016779f00
+  shipping_candidate_sha256: 7da696b95b67142f02e930eb37324107ab7e94cf744967e3cd39e477b2370133
   temporary_update_payloads_removed: true
   active_user_sessions: 0
   developer_machine_evidence_used: false
@@ -146,7 +152,12 @@ qualification_policy:
   pre_logon_headless_activation_in_scope: false
 qualification_attempt:
   cell: M7-WIN-NOPROVIDER
-  status: REJECTED_CANDIDATE_DEFENDER_QUARANTINE
-  evidence: EVIDENCE/M7-WINDOWS-DEFENDER-QUARANTINE.yaml
+  status: BLOCKED_INTERACTIVE_USER_LOGON_BEFORE_EXECUTION
+  evidence:
+  - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml
+  - EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V9.json
+  rdp_reached_windows_security: true
+  credential_available_to_operator: false
+  automated_authentication_used: false
   candidate_bound_snapshot_reusable_for_replacement_candidate: false
-verdict: INVALID_FOR_CURRENT_M7_CANDIDATE_EVIDENCE
+verdict: VALID_CURRENT_CANDIDATE_RESET_SOURCE_EXECUTION_NOT_COMPLETE

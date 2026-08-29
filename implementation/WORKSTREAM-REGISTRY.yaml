@@ -253,10 +253,10 @@ workstreams:
   owner_subagent: ARTIFEX_2_ORCHESTRATOR
   worktree: C:\aidev\artifex-worktrees\artifex-2-m7-qualification-live
   branch: codex/artifex-2-m7-qualification-live
-  base_commit: cc1980ca02857b27276b489efddd30b4be74660f
+  base_commit: b0c5686b781c37a710c97f66e060d22b842c6b8f
   shared_contracts: [M7-CONTRACT, J01, J02, J10, J16, OUTCOME-ACCEPTANCE-POLICY]
   state: BLOCKED_EXTERNAL_PREREQUISITE
-  blockers: [BLK-M7-WINDOWS-DEFENDER-QUARANTINE]
+  blockers: [BLK-M7-WINDOWS-INTERACTIVE-LOGON]
   integration_owner: ARTIFEX_2_ORCHESTRATOR
 - id: WS-M7-WINDOWS-SERVICE-INTEGRATION
   milestone: M7
@@ -264,8 +264,8 @@ workstreams:
   owner_subagent: ARTIFEX_2_ORCHESTRATOR
   worktree: C:\aidev\artifex-worktrees\artifex-2-m7-qualification-live
   branch: codex/artifex-2-m7-qualification-live
-  base_commit: cc1980ca02857b27276b489efddd30b4be74660f
+  base_commit: b0c5686b781c37a710c97f66e060d22b842c6b8f
   shared_contracts: [M7-CONTRACT, ADR-T003, ADR-T015, FROZEN-INVARIANTS]
   state: BLOCKED_EXTERNAL_PREREQUISITE
-  blockers: [BLK-M7-WINDOWS-DEFENDER-QUARANTINE]
+  blockers: [BLK-M7-WINDOWS-INTERACTIVE-LOGON]
   integration_owner: ARTIFEX_2_ORCHESTRATOR

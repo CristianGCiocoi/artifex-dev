@@ -1,0 +1,68 @@
+schema_version: '1.0'
+evidence_id: EVD-M7-WINDOWS-NUITKA-NSIS-CANDIDATE
+recorded_date: '2026-08-29'
+scope: SINGLE_EXACT_SHIPPING_CANDIDATE_FOR_ALL_M7_WINDOWS_CORE_CELLS
+authority:
+  decision: ARCHITECT_PRODUCT_PACKAGING_DISPOSITION
+  decision_sha256: d3cf45b8589992abc8acb6f86f00a85d426b4ef94d8f88009be081d52a4a36ca
+  primary_packaging: NUITKA_STANDALONE_PLUS_NSIS
+  onefile_authorized: false
+  fallback_invoked: false
+artifact:
+  name: ARTIFEX-Setup.exe
+  sha256: 7da696b95b67142f02e930eb37324107ab7e94cf744967e3cd39e477b2370133
+  bytes: 16150047
+  format: nuitka-standalone+nsis
+  source_commit: b0c5686b781c37a710c97f66e060d22b842c6b8f
+  product_version: 1.0.0
+  platform: windows
+  architecture: x86_64
+  nuitka_version: '4.2'
+  nsis_version: '3.12'
+  python_version: 3.12.13
+  standalone_executable_sha256: cb8bd4cf0a49b9f86e8af8d1ff1727d9418138ea414ad56c1f765990c5de6d94
+  bundle_file_inventory_count: 80
+  provenance_sha256: 3e1a8eb117f49b5d165357c16888778a6e4fd8a4b6594839fc95de1c779b25c8
+  build_timestamp: '2026-08-29T11:02:12.64034+03:00'
+build_validation:
+  command: .venv/Scripts/python.exe packaging/build_windows_installer.py --clean --smoke
+  result: PASS
+  system_version: PASS
+  presentation_mode: PASS
+  unit_and_m7_distribution_tests: 127_PASS_7_SKIPPED_PRIVILEGE_BOUND
+  control_plane: PASS
+security_preflight:
+  developer_host:
+    microsoft_defender_realtime_enabled: true
+    custom_scan: PASS_ZERO_DETECTIONS
+    candidate_retained: true
+  clean_vm:
+    hypervisor: Proxmox VE 9.2.3
+    vm_id: 104
+    snapshot: m7-qualified-25h2-x64-cell-base-v9
+    os: Windows 11 Pro 25H2 x64
+    build: 26200.9168
+    microsoft_defender_realtime_enabled: true
+    microsoft_defender_antivirus_enabled: true
+    microsoft_defender_signature_version: 1.457.384.0
+    exclusions_added: false
+    custom_scan: PASS_ZERO_DETECTIONS
+    candidate_retained: true
+    candidate_hash_reverified: true
+qualification_state:
+  M7-WIN-NOPROVIDER: BLOCKED_INTERACTIVE_USER_LOGON_BEFORE_J10
+  M7-WIN-CODEX: NOT_RUN_AFTER_J10
+  M7-WIN-CLAUDE: NOT_RUN_AFTER_J10
+  m7_status: BLOCKED_EXTERNAL_PREREQUISITE
+  active_blocker: BLK-M7-WINDOWS-INTERACTIVE-LOGON
+  clean_base_attestation: EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V9.json
+  interactive_logon_attempt:
+    rdp_reached_windows_security: true
+    credential_available_to_operator: false
+    automated_authentication_used: false
+    account_reset_performed: false
+    autologon_enabled: false
+historical_evidence_preserved:
+- EVIDENCE/M7-WINDOWS-CANDIDATE-ARTIFACT.yaml
+- EVIDENCE/M7-WINDOWS-DEFENDER-QUARANTINE.yaml
+verdict: CANDIDATE_SECURITY_PREFLIGHT_PASS_M7_CELL_EXECUTION_NOT_COMPLETE
