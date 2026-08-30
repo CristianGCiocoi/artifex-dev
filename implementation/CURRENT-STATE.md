@@ -14,13 +14,13 @@
 - Accepted milestones: `M0, M1, M2, M3, M4, M5, M6A, M8A`
 - Ready milestones: `none`
 - Latest accepted commit: `d7fa3c4ad419bd97e401ad765128dc3560484d90`
-- Next integration point: `Stage exact V13 on a reset clean VM104 cell, requalify J10, then run standalone Codex J01/J16 and standalone Claude J02/J16 on exact V13 clean cells`
+- Next integration point: `Establish the VM104 InteractiveToken session and run exact V13 J10 plus its independent qualifier, then prepare standalone Codex and Claude V13 clean cells`
 - M7 started: `true`
 
 ## Work
 
 - Active workstreams: `none`
-- Active blockers: `3`
+- Active blockers: `4`
 - Dashboard state: `CURRENT`
 - V1 regression state: `PASS`
 - Migration state: `M0_BASELINE_ACCEPTED`
@@ -30,4 +30,4 @@
 - M7 verdict: `ACTIVE_V13_CANDIDATE_READY_ALL_CLEAN_CELLS_PENDING`
 - Mandatory work complete: `false`
 - Mandatory journeys: `J01, J02, J10, J16`
-- Next integration point: `Stage exact V13 on a reset clean VM104 cell, requalify J10, then run standalone Codex J01/J16 and standalone Claude J02/J16 on exact V13 clean cells`
+- Next integration point: `Establish the VM104 InteractiveToken session and run exact V13 J10 plus its independent qualifier, then prepare standalone Codex and Claude V13 clean cells`

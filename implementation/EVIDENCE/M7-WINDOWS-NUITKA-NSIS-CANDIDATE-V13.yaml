@@ -49,13 +49,31 @@ security_preflight:
     microsoft_defender_realtime_enabled: true
     custom_scan: PASS_ZERO_DETECTIONS
     candidate_retained: true
+  clean_vm:
+    evidence: EVIDENCE/M7-WINDOWS-V13-CLEAN-PREFLIGHT.json
+    hypervisor: Proxmox VE 9.2.3
+    vm_id: 104
+    snapshot: m7-qualified-25h2-x64-cell-base-v13
+    snapshot_config_sha256: 42a4451fac9b45960786e34ceb229d3eaabe97c44e8c10e9c8de1fbeaef6c26b
+    os: Windows 11 Pro 25H2 x64
+    build: 26200.9168
+    microsoft_defender_realtime_enabled: true
+    exclusions_added: false
+    custom_scan: PASS_ZERO_DETECTIONS
+    candidate_retained: true
+    candidate_hash_reverified: true
 qualification_state:
-  M7-WIN-NOPROVIDER: PENDING_V13_CLEAN_CELL
+  M7-WIN-NOPROVIDER: READY_WAITING_INTERACTIVE_LOGON
   M7-WIN-CODEX: PENDING_V13_CLEAN_CELL
   M7-WIN-CLAUDE: PENDING_AFTER_V13_CODEX
   m7_status: ACTIVE
   active_blockers:
+  - BLK-M7-WINDOWS-V13-INTERACTIVE-LOGON
   - BLK-M7-CODEX-PROVIDER-BLOCKED
+  clean_base_attestation: EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V13.json
+  clean_base_attestation_sha256: 413129c816f6f2d2e9b0d2f5e5cfee0ff9bc1c2c984322003f60edeba84514d4
+  clean_preflight: EVIDENCE/M7-WINDOWS-V13-CLEAN-PREFLIGHT.json
+  clean_preflight_sha256: d7cb720e3c88e49b9d8f12fff815f027331ca6ad77074d0df20c39ffe6958037
 historical_evidence_preserved:
 - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml
 - EVIDENCE/M7-WINDOWS-J10-V10-QUALIFIED.json
@@ -65,4 +83,4 @@ historical_evidence_preserved:
 - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml
 - EVIDENCE/M7-WINDOWS-J10-V12-QUALIFIED.json
 - EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-DURABLE-BLOCKED.json
-verdict: V13_CANDIDATE_HOST_PREFLIGHT_PASS_CLEAN_CELL_QUALIFICATION_PENDING
+verdict: V13_CANDIDATE_CLEAN_VM_PREFLIGHT_PASS_WAITING_INTERACTIVE_J10

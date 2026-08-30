@@ -5,7 +5,7 @@ implementation_baseline_commit: 2ea4a38e1bc18a2aa3535a1d224f508ca6561d88
 acceptance_commit: null
 frozen_architecture_baseline: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
 mandatory_work_complete: false
-blocked: [BLK-M7-CODEX-PROVIDER-BLOCKED]
+blocked: [BLK-M7-WINDOWS-V13-INTERACTIVE-LOGON, BLK-M7-CODEX-PROVIDER-BLOCKED]
 superseded: []
 evidence_classes:
   DESIGN_CONFORMANCE: {required_m7: true, status: PASS_FOUNDATION, evidence: [EVIDENCE/M7-FOUNDATION-VALIDATION.yaml]}

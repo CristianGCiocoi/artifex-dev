@@ -1,5 +1,17 @@
 schema_version: '1.0'
 blockers:
+- id: BLK-M7-WINDOWS-V13-INTERACTIVE-LOGON
+  scope: M7_V13_J10_REQUALIFICATION
+  class: HUMAN_ENVIRONMENT
+  status: OPEN
+  summary: VM104 exact V13 no-provider clean cell is staged and waiting for the required human InteractiveToken RDP logon before J10 can execute
+  evidence:
+  - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V13.yaml
+  - EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V13.json
+  - EVIDENCE/M7-WINDOWS-V13-CLEAN-PREFLIGHT.json
+  required_authority: HUMAN_ENVIRONMENT_OWNER
+  resolution: Log in interactively to VM104 as M7-WIN-BASE\Crugger, leave the RDP window open and then run exact V13 J10 plus the independent qualifier
+  unrelated_work_may_continue: true
 - id: BLK-M7-CODEX-PROVIDER-BLOCKED
   scope: M7_ACCEPTANCE
   class: IMPLEMENTATION_DEFECT

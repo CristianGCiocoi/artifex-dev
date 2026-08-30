@@ -1,6 +1,6 @@
 schema_version: '1.0'
 evidence_id: EVD-M7-OFFICIAL-WINDOWS-CORE-MATRIX
-recorded_date: '2026-08-29'
+recorded_date: '2026-08-30'
 authority: PRODUCT_OWNER
 authority_source:
 - OFFICIAL_PRODUCT_DECISION_M7_QUALIFICATION_MATRIX
@@ -20,10 +20,10 @@ cells:
     codex: INSTALLED_CONFIGURED_AUTHENTICATED
     claude: ABSENT
   mandatory_journeys: [J01, J16]
-  qualification_status: READY_V11_CLEAN_CELL_WAITING_INTERACTIVE_LOGON
+  qualification_status: READY_V13_CLEAN_CELL_AFTER_J10
   historical_outcome: EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-DURABLE-BLOCKED.json
-  clean_base_attestation: EVIDENCE/M7-WINDOWS-CODEX-CLEAN-BASE-ATTESTATION-VM105-V11.json
-  clean_preflight: EVIDENCE/M7-WINDOWS-CODEX-VM105-V11-CLEAN-PREFLIGHT.json
+  clean_base_attestation: EVIDENCE/M7-WINDOWS-CODEX-CLEAN-BASE-ATTESTATION-VM105-V12.json
+  clean_preflight: EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-CLEAN-PREFLIGHT.json
 - id: M7-WIN-CLAUDE
   provider_state:
     codex: ABSENT
@@ -35,9 +35,13 @@ cells:
     codex: ABSENT
     claude: ABSENT
   mandatory_journeys: [J10]
-  qualification_status: PASS_V11
-  outcome: EVIDENCE/M7-WINDOWS-J10-V11-QUALIFIED.json
-  outcome_sha256: aea683456e06fad66218d71458a11f862b5a024d7061b7f61b5950e4ecaa9509
+  qualification_status: READY_V13_WAITING_INTERACTIVE_LOGON
+  clean_base_attestation: EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V13.json
+  clean_preflight: EVIDENCE/M7-WINDOWS-V13-CLEAN-PREFLIGHT.json
+  historical_outcome_v12: EVIDENCE/M7-WINDOWS-J10-V12-QUALIFIED.json
+  historical_outcome_v12_sha256: 9e7715eb10b028e8ceefbf7ba3297a3a6f15cbda61ce9f5a105b30b2ec337ea1
+  historical_outcome_v11: EVIDENCE/M7-WINDOWS-J10-V11-QUALIFIED.json
+  historical_outcome_v11_sha256: aea683456e06fad66218d71458a11f862b5a024d7061b7f61b5950e4ecaa9509
   historical_outcome: EVIDENCE/M7-WINDOWS-J10-V10-QUALIFIED.json
   historical_outcome_sha256: 710ea9aa0bbe037d1e91f2f2cce4bf604bda5513c76344d4af4d4135c777958d
 constraints:
@@ -55,9 +59,9 @@ implementation_observation:
   canonical_base_commit: 2ea4a38e1bc18a2aa3535a1d224f508ca6561d88
   windows_service_registration_adapter: IMPLEMENTED_PENDING_CANDIDATE_QUALIFICATION
   public_distribution_lifecycle_wiring: IMPLEMENTED_PENDING_CANDIDATE_QUALIFICATION
-  clean_vm_qualification: J10_V11_PASS_CODEX_AND_CLAUDE_V11_PENDING
+  clean_vm_qualification: V13_J10_WAITING_INTERACTIVE_LOGON_CODEX_AND_CLAUDE_V13_PENDING
   active_blockers:
-  - BLK-M7-CODEX-V11-INTERACTIVE-LOGON
+  - BLK-M7-WINDOWS-V13-INTERACTIVE-LOGON
   - BLK-M7-CODEX-PROVIDER-BLOCKED
   blocker_evidence: EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-DURABLE-BLOCKED.json
   diagnostic_evidence:
@@ -68,14 +72,14 @@ implementation_observation:
       hypervisor: Proxmox VE 9.2.3
       vm_id: 104
       os_build: 26200.9168
-      reset_snapshot: m7-qualified-25h2-x64-cell-base-v11
+      reset_snapshot: m7-qualified-25h2-x64-cell-base-v13
     codex:
       hypervisor: Proxmox VE 9.2.3
       vm_id: 105
       os_build: 26200.9168
-      reset_snapshot: m7-qualified-25h2-x64-codex-cell-v11
+      reset_snapshot: m7-qualified-25h2-x64-codex-cell-v12
     common:
       network_state: DHCP_VM_SPECIFIC_MAC
       generalized_provenance_snapshot: m7-generalized-25h2-x64-base
       invalidated_pre_generalization_snapshot: m7-clean-25h2-x64-base
-verdict: MATRIX_ACCEPTED_M7_ACTIVE_J10_V11_PASS_CODEX_AND_CLAUDE_V11_PENDING
+verdict: MATRIX_ACCEPTED_M7_ACTIVE_V13_J10_WAITING_INTERACTIVE_LOGON_CODEX_AND_CLAUDE_V13_PENDING

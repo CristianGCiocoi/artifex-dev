@@ -106,7 +106,7 @@ journeys:
   blocker: M0 has no mandatory journeys; milestone dependencies not accepted
 - id: J10
   title: J10 — No Automated Provider
-  status: READY_V13_CANDIDATE_REQUALIFICATION
+  status: READY_V13_WAITING_INTERACTIVE_LOGON
   environment: WINDOWS_11_25H2_X64_CLEAN_VM_NO_AUTOMATED_PROVIDER
   public_shipping_composition: ARTIFEX_SETUP_NUITKA_NSIS_PUBLIC_MANAGED_SERVICE_MULTI_PROCESS
   evidence:
@@ -126,8 +126,10 @@ journeys:
   - EVIDENCE/M7-WINDOWS-J10-V12-PASS.json
   - EVIDENCE/M7-WINDOWS-J10-V12-QUALIFIED.json
   - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V13.yaml
+  - EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V13.json
+  - EVIDENCE/M7-WINDOWS-V13-CLEAN-PREFLIGHT.json
   last_run: '2026-08-30'
-  blocker: null
+  blocker: BLK-M7-WINDOWS-V13-INTERACTIVE-LOGON
 - id: J11
   title: J11 — Cross-provider Continuity
   status: PASS
