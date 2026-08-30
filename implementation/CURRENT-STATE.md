@@ -14,20 +14,20 @@
 - Accepted milestones: `M0, M1, M2, M3, M4, M5, M6A, M8A`
 - Ready milestones: `none`
 - Latest accepted commit: `d7fa3c4ad419bd97e401ad765128dc3560484d90`
-- Next integration point: `Establish the human InteractiveToken session on VM104, requalify J10 on exact V11, then reset the independent Codex and Claude cells to V11`
+- Next integration point: `Preserve J10 V11 PASS, then reset and requalify the independent Codex and Claude clean cells on the exact V11 candidate`
 - M7 started: `true`
 
 ## Work
 
 - Active workstreams: `none`
-- Active blockers: `4`
+- Active blockers: `3`
 - Dashboard state: `CURRENT`
 - V1 regression state: `PASS`
 - Migration state: `M0_BASELINE_ACCEPTED`
 
 ## Acceptance
 
-- M7 verdict: `ACTIVE_V11_PREFLIGHT_PASS_ALL_CLEAN_CELL_JOURNEYS_PENDING`
+- M7 verdict: `ACTIVE_J10_V11_PASS_CODEX_AND_CLAUDE_V11_PENDING`
 - Mandatory work complete: `false`
 - Mandatory journeys: `J01, J02, J10, J16`
-- Next integration point: `Establish the human InteractiveToken session on VM104, requalify J10 on exact V11, then reset the independent Codex and Claude cells to V11`
+- Next integration point: `Preserve J10 V11 PASS, then reset and requalify the independent Codex and Claude clean cells on the exact V11 candidate`

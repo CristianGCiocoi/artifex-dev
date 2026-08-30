@@ -1,0 +1,175 @@
+{
+  "candidate": {
+    "artifact_bytes": 16148194,
+    "artifact_name": "ARTIFEX-Setup.exe",
+    "artifact_sha256": "6e4fe78c958baac341db15f02e009f74f6788f3cc9cfa92d81f0e4fec2df25dd",
+    "contract_digest": "3eac41de4cacf7be80aab12e478b99ec7c5066dccddfff6ca00a03cf5a157d48",
+    "product_disposition_sha256": "17ed830e83f6e6ed8654d4385bd4ef224e75d67fe79ca415c35f6f5dff4020d2",
+    "source_commit": "ff22cfcbd24738ed964db629ae9391ec8a1e4761"
+  },
+  "cell": {
+    "absent_providers": [
+      "claude",
+      "codex"
+    ],
+    "architecture": "x86_64",
+    "display_version": "25H2",
+    "id": "M7-WIN-NOPROVIDER",
+    "journeys": [
+      "J10"
+    ],
+    "mode": "STANDALONE",
+    "os": "Windows 11",
+    "provider": "none",
+    "support_tier": "CORE"
+  },
+  "clean_machine": {
+    "first_boot": true,
+    "os_build": "26200",
+    "prior_artifex_absent": true,
+    "prior_service_absent": true,
+    "prior_state_root_absent": true,
+    "snapshot_identity_sha256": "41bae61a1925de2c966c2f87e5df75bd62391b3a14f5c315452f17322ba3afef",
+    "source_checkout_absent": true,
+    "ubr": 9168
+  },
+  "composition": {
+    "atlas_present": false,
+    "combined_provider_cell": false,
+    "custom_application_factory_used": false,
+    "provider_injection_used": false,
+    "public_cli": true,
+    "public_managed_service": true,
+    "shipping_installer": true,
+    "simulated_provider": false,
+    "source_tree_imported": false
+  },
+  "installer_service": {
+    "authenticated_loopback_transport": true,
+    "doctor_secret_safe": true,
+    "executable_sha256": "463731caaf21d4114d73e77f03751fe25e7c967bd5c2afbdecb74048fd58bd4d",
+    "frontend_independent": true,
+    "install_status": "PASS",
+    "os_service_manager": "WINDOWS_TASK_SCHEDULER_PER_USER",
+    "registration_manifest_sha256": "0dc7b8bcea4b3e44e4b86d1c9407051f2726c8eb10d6021ff01e87206cfd2a03",
+    "registration_status": "PASS",
+    "restart_generation_after": 2,
+    "restart_generation_before": 1,
+    "service_process_changed": true,
+    "service_start_status": "PASS"
+  },
+  "journeys": {
+    "J10": {
+      "automated_candidates": [],
+      "automated_dispatch_occurred": false,
+      "beginner_start_succeeded": true,
+      "bootstrap_status": "MANUAL_FALLBACK",
+      "doctor_actionable": true,
+      "manual_fallback_selected": true,
+      "manual_operations": [
+        "manual.packet.create",
+        "manual.result.submit"
+      ],
+      "manual_result_self_accepted": false,
+      "no_false_automated_ready": true,
+      "status": "PASS"
+    }
+  },
+  "provider": {
+    "automated_candidates": [],
+    "claude_present": false,
+    "codex_present": false,
+    "credential_files_read": false,
+    "id": "none",
+    "pii_persisted": false
+  },
+  "public_process_calls": [
+    {
+      "ok": true,
+      "operation": "service.status",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "ab6201868b4e0dd172657de3dfa7eea926cccc0e9aead80792fcd97d11bb6559"
+    },
+    {
+      "ok": true,
+      "operation": "service.stop",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "27c459c12ecdb2d91e694cef3099546096bcb6ff38d9c688b016088daa648063"
+    },
+    {
+      "ok": true,
+      "operation": "service.status",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "6134010c9946399fcc3796d20f4b91dc5a4740025f6d7c61221735bd7898353a"
+    },
+    {
+      "ok": true,
+      "operation": "distribution.bootstrap",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "886a6802d9d6fb4650b50a735fb37651ee5ea2cce9cd71f585e3b46cd436a244"
+    },
+    {
+      "ok": true,
+      "operation": "distribution.doctor",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "0a182b66de25bc347c260714acf0665621b8c7910468b9475f5dc95545993a01"
+    },
+    {
+      "ok": true,
+      "operation": "providers.graph",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "440a9560fbc55a296475527ac995f7b4517274a3e0c9f5a5e4f7e1f971d33826"
+    },
+    {
+      "ok": true,
+      "operation": "beginner.start",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "2aae12daa95d442f98d11139ca0a5be98e103f136bc5bb7e66ddac1f1868b284"
+    },
+    {
+      "ok": true,
+      "operation": "manual.packet.create",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "a7fcce2d8986e473b58b6a21954bc983317d40ceb2ccc749deda60bd579ac471"
+    },
+    {
+      "ok": true,
+      "operation": "manual.result.submit",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "4cad8ca230c1e4b5dbb49ea881fe030da4eeafb70b9499bdf1fc821fdd2dc917"
+    }
+  ],
+  "qualifier_probes": {
+    "bootstrap": "3b5ecfa8bf8ee1299b7d77940a90c4609e6f71961c122fa4d54c19048bcfe1a3",
+    "doctor": "8f48e9ea4b5d807ca8b6710decdf4893bf17e1857ed45c33758b4ae3e07021fd",
+    "graph": "aaba5a7f7dec08348991ba66cb89c6b953d499b081bfd288fed8a75688835b02",
+    "host": "1059864991828a24644912fc826d3ae22a182752073e4193da432ba486ce3353",
+    "installed_origin": "f4b27b118cbc9a22f575c11eef0aaea5f2e21cdfe5a37d39af2f4ba22e975654",
+    "service_status": "5ea19e1c9f9b809b9903cae816a15f672d6c82e1b78a6ee60833880b431fb428"
+  },
+  "schema_version": "1.0",
+  "security": {
+    "acceptance_authority_separate": true,
+    "credential_files_read": false,
+    "pii_persisted": false,
+    "project_authority_required": true,
+    "provider_result_self_acceptance": false,
+    "transport_token_persisted": false
+  },
+  "status": "PASS",
+  "transcript": {
+    "bytes": 2152,
+    "raw_output_persisted": false,
+    "secret_scan": "PASS",
+    "sha256": "e8e3bccdfaa848ec2740e6bed2587d8591e26276ba3bdd15c1a5d3a6ae6c0740"
+  }
+}
