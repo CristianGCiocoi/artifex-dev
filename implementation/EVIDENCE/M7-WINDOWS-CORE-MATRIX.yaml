@@ -20,8 +20,10 @@ cells:
     codex: INSTALLED_CONFIGURED_AUTHENTICATED
     claude: ABSENT
   mandatory_journeys: [J01, J16]
-  qualification_status: IMPLEMENTATION_REMEDIATION_ACTIVE
-  outcome: EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-DURABLE-BLOCKED.json
+  qualification_status: READY_V11_CLEAN_CELL_WAITING_INTERACTIVE_LOGON
+  historical_outcome: EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-DURABLE-BLOCKED.json
+  clean_base_attestation: EVIDENCE/M7-WINDOWS-CODEX-CLEAN-BASE-ATTESTATION-VM105-V11.json
+  clean_preflight: EVIDENCE/M7-WINDOWS-CODEX-VM105-V11-CLEAN-PREFLIGHT.json
 - id: M7-WIN-CLAUDE
   provider_state:
     codex: ABSENT
@@ -55,6 +57,7 @@ implementation_observation:
   public_distribution_lifecycle_wiring: IMPLEMENTED_PENDING_CANDIDATE_QUALIFICATION
   clean_vm_qualification: J10_V11_PASS_CODEX_AND_CLAUDE_V11_PENDING
   active_blockers:
+  - BLK-M7-CODEX-V11-INTERACTIVE-LOGON
   - BLK-M7-CODEX-PROVIDER-BLOCKED
   blocker_evidence: EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-DURABLE-BLOCKED.json
   diagnostic_evidence:
@@ -70,7 +73,7 @@ implementation_observation:
       hypervisor: Proxmox VE 9.2.3
       vm_id: 105
       os_build: 26200.9168
-      reset_snapshot: m7-qualified-25h2-x64-codex-cell-v10
+      reset_snapshot: m7-qualified-25h2-x64-codex-cell-v11
     common:
       network_state: DHCP_VM_SPECIFIC_MAC
       generalized_provenance_snapshot: m7-generalized-25h2-x64-base

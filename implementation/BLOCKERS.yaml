@@ -1,15 +1,29 @@
 schema_version: '1.0'
 blockers:
+- id: BLK-M7-CODEX-V11-INTERACTIVE-LOGON
+  scope: M7_V11_CODEX_CELL
+  class: HUMAN_ENVIRONMENT
+  status: OPEN
+  summary: VM105 exact V11 Codex clean cell is staged and waiting for the required human InteractiveToken logon before Codex installation and authentication
+  evidence:
+  - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml
+  - EVIDENCE/M7-WINDOWS-CODEX-CLEAN-BASE-ATTESTATION-VM105-V11.json
+  - EVIDENCE/M7-WINDOWS-CODEX-VM105-V11-CLEAN-PREFLIGHT.json
+  required_authority: HUMAN_ENVIRONMENT_OWNER
+  resolution: Log in interactively to VM105 as M7-WIN-BASE\Crugger, then install and authenticate only Codex before running J01 and J16
+  unrelated_work_may_continue: true
 - id: BLK-M7-CODEX-PROVIDER-BLOCKED
   scope: M7_ACCEPTANCE
   class: IMPLEMENTATION_DEFECT
-  status: REMEDIATION_ACTIVE
+  status: CLEAN_CELL_REQUALIFICATION_READY
   summary: The V10 managed service nested Execution Workspaces beneath the private RunStore state DACL, preventing the supported Codex Windows unelevated sandbox from writing owned artifacts
   evidence:
   - EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-FAILURE.json
   - EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-DURABLE-BLOCKED.json
   - EVIDENCE/M7-WINDOWS-CODEX-VM105-PATH-DIAGNOSTIC-1.json
   - EVIDENCE/M7-WINDOWS-CODEX-VM105-PROVIDER-ROOT-DIAGNOSTIC-2.json
+  - EVIDENCE/M7-WINDOWS-CODEX-CLEAN-BASE-ATTESTATION-VM105-V11.json
+  - EVIDENCE/M7-WINDOWS-CODEX-VM105-V11-CLEAN-PREFLIGHT.json
   required_authority: IMPLEMENTATION_OWNER
   resolution: Ship the Windows-safe managed workspace root in a new candidate, then produce a clean-cell standalone Codex SUCCESS with complete candidate-bound artifacts and passing validation; do not infer success from the diagnostic probe, authentication, interaction, retries, or another provider
   unrelated_work_may_continue: true

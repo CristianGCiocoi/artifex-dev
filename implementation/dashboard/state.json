@@ -736,18 +736,35 @@
   ],
   "blockers": [
     {
+      "class": "HUMAN_ENVIRONMENT",
+      "evidence": [
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml",
+        "EVIDENCE/M7-WINDOWS-CODEX-CLEAN-BASE-ATTESTATION-VM105-V11.json",
+        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V11-CLEAN-PREFLIGHT.json"
+      ],
+      "id": "BLK-M7-CODEX-V11-INTERACTIVE-LOGON",
+      "required_authority": "HUMAN_ENVIRONMENT_OWNER",
+      "resolution": "Log in interactively to VM105 as M7-WIN-BASE\\Crugger, then install and authenticate only Codex before running J01 and J16",
+      "scope": "M7_V11_CODEX_CELL",
+      "status": "OPEN",
+      "summary": "VM105 exact V11 Codex clean cell is staged and waiting for the required human InteractiveToken logon before Codex installation and authentication",
+      "unrelated_work_may_continue": true
+    },
+    {
       "class": "IMPLEMENTATION_DEFECT",
       "evidence": [
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-FAILURE.json",
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-DURABLE-BLOCKED.json",
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-PATH-DIAGNOSTIC-1.json",
-        "EVIDENCE/M7-WINDOWS-CODEX-VM105-PROVIDER-ROOT-DIAGNOSTIC-2.json"
+        "EVIDENCE/M7-WINDOWS-CODEX-VM105-PROVIDER-ROOT-DIAGNOSTIC-2.json",
+        "EVIDENCE/M7-WINDOWS-CODEX-CLEAN-BASE-ATTESTATION-VM105-V11.json",
+        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V11-CLEAN-PREFLIGHT.json"
       ],
       "id": "BLK-M7-CODEX-PROVIDER-BLOCKED",
       "required_authority": "IMPLEMENTATION_OWNER",
       "resolution": "Ship the Windows-safe managed workspace root in a new candidate, then produce a clean-cell standalone Codex SUCCESS with complete candidate-bound artifacts and passing validation; do not infer success from the diagnostic probe, authentication, interaction, retries, or another provider",
       "scope": "M7_ACCEPTANCE",
-      "status": "REMEDIATION_ACTIVE",
+      "status": "CLEAN_CELL_REQUALIFICATION_READY",
       "summary": "The V10 managed service nested Execution Workspaces beneath the private RunStore state DACL, preventing the supported Codex Windows unelevated sandbox from writing owned artifacts",
       "unrelated_work_may_continue": true
     },
@@ -895,6 +912,11 @@
       "sha256": "b1ee730345227e2a01039b758a0deb3d94718ecca04fa32d4cba189e237a370d"
     },
     {
+      "bytes": 472,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-CLEAN-BASE-ATTESTATION-VM105-V11.json",
+      "sha256": "37c2c2830e3d7f4a0477f7838b60efe754e9199ec0773ba90ddafb39e78e21a9"
+    },
+    {
       "bytes": 445,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-CLEAN-BASE-ATTESTATION-VM105.json",
       "sha256": "676979dca65007608d3cc97a5359da1368c5a6ed208ef3852e9eb486134928a8"
@@ -1005,9 +1027,14 @@
       "sha256": "b525d4bc90d0621e5545750911c1e56b6ec4397b029808da358f8dd81a369319"
     },
     {
-      "bytes": 3076,
+      "bytes": 1875,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-VM105-V11-CLEAN-PREFLIGHT.json",
+      "sha256": "af41029565ec8dd6221abb17331a3819ab67522403c6af1de0029c2b3a14baa4"
+    },
+    {
+      "bytes": 3305,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
-      "sha256": "63a12f6d0386941898e7bdd94a2c6242b2a3a37f5d1208657a00b356b941e4c9"
+      "sha256": "10a5fccaf17b10832f6c808e804054a7624d447dc73233d4eae30e69a52605b9"
     },
     {
       "bytes": 2929,
@@ -1035,9 +1062,9 @@
       "sha256": "aea683456e06fad66218d71458a11f862b5a024d7061b7f61b5950e4ecaa9509"
     },
     {
-      "bytes": 2811,
+      "bytes": 3041,
       "path": "implementation/EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml",
-      "sha256": "914db169145f4ae477baa9813f7170831f1af5548fb0ed7962872cee2bcf782f"
+      "sha256": "aa77a24a3ab823542caeaeafbc5cfa27dd052f5f7545d70340670a1b3974bbe7"
     },
     {
       "bytes": 2838,
@@ -2525,7 +2552,7 @@
     "m8a_started": true,
     "m8b_started": true,
     "m8c_started": true,
-    "next_integration_point": "Preserve J10 V11 PASS, then reset and requalify the independent Codex and Claude clean cells on the exact V11 candidate",
+    "next_integration_point": "Establish the VM105 InteractiveToken session, install and authenticate only Codex, then run exact V11 J01 and J16 before beginning Claude",
     "recorded_date": "2026-08-29",
     "target_release": "2.0.0"
   },
@@ -2812,11 +2839,11 @@
   "summary": {
     "acceptance_classes_passing": 7,
     "acceptance_classes_required": 10,
-    "active_blockers": 3,
+    "active_blockers": 4,
     "adr_count": 24,
     "current_milestone": "M7",
     "current_milestone_progress_percent": 70,
-    "evidence_items": 67,
+    "evidence_items": 69,
     "invariant_count": 34,
     "journey_states": {
       "ACTIVE": 2,
