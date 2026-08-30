@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 from collections.abc import Callable, Mapping, Sequence
-from contextlib import suppress
+from contextlib import nullcontext, suppress
 from contextvars import ContextVar
 from dataclasses import dataclass, field, replace
 from pathlib import Path
@@ -403,13 +403,18 @@ class Application:
             root = self._project_root
         if not isinstance(root, str) or not root:
             raise ValueError("project_root is required for provider interaction")
-        value = self._provider_interaction.interact(
-            provider=provider,
-            project_root=root,
-            project_id=request_value.project_id,
-            project_job_id=request_value.project_job_id,
-            prompt=_required_string(request.arguments, "prompt"),
+        runtime = _HOSTED_RUNTIME_SERVICE.get()
+        heartbeat = (
+            runtime.coordinator_heartbeat() if runtime is not None else nullcontext()
         )
+        with heartbeat:
+            value = self._provider_interaction.interact(
+                provider=provider,
+                project_root=root,
+                project_id=request_value.project_id,
+                project_job_id=request_value.project_job_id,
+                prompt=_required_string(request.arguments, "prompt"),
+            )
         return OperationResult(ok=True, value={"interaction": value})
 
     def _providers_certifications(self, request: OperationRequest) -> OperationResult:

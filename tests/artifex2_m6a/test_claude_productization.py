@@ -4,7 +4,7 @@ import json
 import subprocess
 from collections.abc import Sequence
 from pathlib import Path
-from time import time
+from time import sleep, time
 from typing import Any
 
 import pytest
@@ -24,7 +24,7 @@ from artifex.distribution import apply_integration_setup, plan_integration_setup
 from artifex.distribution.approvals import ApprovalStore
 from artifex.integrations.claude import ClaudeProcessRunner
 from artifex.project import ProjectAuthority, ProjectRepository
-from artifex.runtime import ActorType
+from artifex.runtime import ActorType, ManagedRuntimeService
 
 
 def _completed(
@@ -451,6 +451,65 @@ def test_public_claude_interaction_preserves_project_identity_and_baseline(
         ).stdout
         == ""
     )
+
+
+def test_hosted_claude_interaction_renews_coordinator_during_long_provider_call(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root, _, _ = _project(tmp_path)
+    executable = tmp_path / "claude.exe"
+    executable.write_bytes(b"fixture claude executable")
+    monkeypatch.setenv("ARTIFEX_SHIPPING_ARTIFACT_SHA256", "b" * 64)
+    runtime = ManagedRuntimeService(
+        tmp_path / "runtime" / "runstore.sqlite3",
+        lease_seconds=3,
+    )
+
+    def delayed_interaction(
+        arguments: Sequence[str], observed_root: Path, stdin_prompt: str | None
+    ) -> subprocess.CompletedProcess[str]:
+        assert observed_root == root.resolve()
+        assert stdin_prompt == "Return the bounded response."
+        sleep(3.5)
+        return _completed(
+            arguments,
+            stdout=json.dumps(
+                {
+                    "type": "result",
+                    "subtype": "success",
+                    "is_error": False,
+                    "result": "bounded response",
+                }
+            ),
+        )
+
+    application = Application(
+        project_root=str(root),
+        provider_loader=_claude_loader(executable=str(executable)),
+        provider_interaction=ProviderInteractionService(
+            store=CapabilityEvidenceStore(tmp_path / "capability-evidence.sqlite3"),
+            runner=delayed_interaction,
+        ),
+        runtime_service=runtime,
+    )
+    prior_expiry = runtime.coordinator.token.expires_at
+    result = application.dispatch(
+        OperationRequest(
+            "providers.interact",
+            {
+                "provider_id": "claude",
+                "project_id": "m6a-project",
+                "project_root": str(root),
+                "prompt": "Return the bounded response.",
+            },
+            OperationContext(actor="m7-qualifier"),
+        )
+    )
+
+    assert result.ok, result.to_dict()
+    assert result.value["interaction"]["response"] == "bounded response"
+    assert runtime.coordinator.token.expires_at > prior_expiry
+    runtime.coordinator.renew()
 
 
 def test_public_claude_execution_uses_isolated_workspace_and_separate_acceptance(
