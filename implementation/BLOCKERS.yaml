@@ -1,17 +1,5 @@
 schema_version: '1.0'
 blockers:
-- id: BLK-M7-WINDOWS-V12-INTERACTIVE-LOGON
-  scope: M7_V12_J10_REQUALIFICATION
-  class: HUMAN_ENVIRONMENT
-  status: OPEN
-  summary: VM104 exact V12 no-provider clean cell is staged and waiting for the required human InteractiveToken RDP logon before J10
-  evidence:
-  - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml
-  - EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V12.json
-  - EVIDENCE/M7-WINDOWS-V12-CLEAN-PREFLIGHT.json
-  required_authority: HUMAN_ENVIRONMENT_OWNER
-  resolution: Log in interactively to VM104 as M7-WIN-BASE\Crugger without closing the RDP window, then run exact V12 J10 and its independent qualifier
-  unrelated_work_may_continue: true
 - id: BLK-M7-CODEX-PROVIDER-BLOCKED
   scope: M7_ACCEPTANCE
   class: IMPLEMENTATION_DEFECT
@@ -53,6 +41,16 @@ blockers:
   resolution: Provide a real Pandora runtime, supported RESEARCH exchange identity, and independent live qualification evidence
   unrelated_work_may_continue: true
 observations:
+- id: BLK-M7-WINDOWS-V12-INTERACTIVE-LOGON
+  scope: M7_V12_J10_REQUALIFICATION
+  state: RESOLVED_J10_V12_INTERACTIVE_SESSION_AND_QUALIFICATION_PASS
+  evidence:
+  - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml
+  - EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V12.json
+  - EVIDENCE/M7-WINDOWS-V12-CLEAN-PREFLIGHT.json
+  - EVIDENCE/M7-WINDOWS-J10-V12-QUALIFIED.json
+  required_authority: HUMAN_ENVIRONMENT_OWNER
+  unrelated_work_may_continue: true
 - id: BLK-M7-CODEX-V11-INTERACTIVE-LOGON
   scope: M7_V11_CODEX_CELL
   state: RESOLVED_INTERACTIVE_SESSION_INSTALL_AND_AUTH_PASS

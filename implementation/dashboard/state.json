@@ -12,10 +12,11 @@
           "EVIDENCE/M7-WINDOWS-J10-V10-QUALIFIED.json",
           "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml",
           "EVIDENCE/M7-WINDOWS-J10-V11-QUALIFIED.json",
-          "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml"
+          "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml",
+          "EVIDENCE/M7-WINDOWS-J10-V12-QUALIFIED.json"
         ],
         "required_m7": true,
-        "status": "PENDING_V12_CLEAN_CELL_REQUALIFICATION"
+        "status": "PARTIAL_PASS_J10_V12"
       },
       "COMPONENT": {
         "evidence": [
@@ -81,10 +82,11 @@
           "EVIDENCE/M7-WINDOWS-J10-V10-QUALIFIED.json",
           "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml",
           "EVIDENCE/M7-WINDOWS-J10-V11-QUALIFIED.json",
-          "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml"
+          "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml",
+          "EVIDENCE/M7-WINDOWS-J10-V12-QUALIFIED.json"
         ],
         "required_m7": true,
-        "status": "PENDING_V12_CLEAN_CELL_REQUALIFICATION"
+        "status": "PARTIAL_PASS_J10_V12"
       },
       "SECURITY_AUTHORITY": {
         "evidence": [
@@ -109,7 +111,7 @@
     "schema_version": "1.0",
     "superseded": [],
     "unresolved_contradiction": null,
-    "verdict": "ACTIVE_V12_CANDIDATE_CLEAN_CELL_QUALIFICATION_PENDING"
+    "verdict": "ACTIVE_J10_V12_PASS_CODEX_AND_CLAUDE_V12_PENDING"
   },
   "adrs": [
     {
@@ -741,21 +743,6 @@
   ],
   "blockers": [
     {
-      "class": "HUMAN_ENVIRONMENT",
-      "evidence": [
-        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml",
-        "EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V12.json",
-        "EVIDENCE/M7-WINDOWS-V12-CLEAN-PREFLIGHT.json"
-      ],
-      "id": "BLK-M7-WINDOWS-V12-INTERACTIVE-LOGON",
-      "required_authority": "HUMAN_ENVIRONMENT_OWNER",
-      "resolution": "Log in interactively to VM104 as M7-WIN-BASE\\Crugger without closing the RDP window, then run exact V12 J10 and its independent qualifier",
-      "scope": "M7_V12_J10_REQUALIFICATION",
-      "status": "OPEN",
-      "summary": "VM104 exact V12 no-provider clean cell is staged and waiting for the required human InteractiveToken RDP logon before J10",
-      "unrelated_work_may_continue": true
-    },
-    {
       "class": "IMPLEMENTATION_DEFECT",
       "evidence": [
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-FAILURE.json",
@@ -1102,14 +1089,24 @@
       "sha256": "aea683456e06fad66218d71458a11f862b5a024d7061b7f61b5950e4ecaa9509"
     },
     {
+      "bytes": 5693,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-J10-V12-PASS.json",
+      "sha256": "48b98cc283fb5703a7ebe94a4a3b394e61f5abe3c29321b97e152d38728dbab1"
+    },
+    {
+      "bytes": 6231,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-J10-V12-QUALIFIED.json",
+      "sha256": "9e7715eb10b028e8ceefbf7ba3297a3a6f15cbda61ce9f5a105b30b2ec337ea1"
+    },
+    {
       "bytes": 3272,
       "path": "implementation/EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml",
       "sha256": "d24cbe7b6c23450ff6972276cae44a5179853c0ffb0bb42b7c1de573d2a6726d"
     },
     {
-      "bytes": 2864,
+      "bytes": 3084,
       "path": "implementation/EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml",
-      "sha256": "7f64a55ee3f04744bbe77f4cc7611ee2aafc700e206ff0c26066fedb8ac76e47"
+      "sha256": "d7b4b7a770a577cd2b9a46ba1a159d596a1d91a7839f0af20c7f9b3374fcf4c5"
     },
     {
       "bytes": 2838,
@@ -2069,7 +2066,7 @@
       "title": "J09 — V1 Migration"
     },
     {
-      "blocker": "BLK-M7-WINDOWS-V12-INTERACTIVE-LOGON",
+      "blocker": null,
       "environment": "WINDOWS_11_25H2_X64_CLEAN_VM_NO_AUTOMATED_PROVIDER",
       "evidence": [
         "EVIDENCE/M7-FOUNDATION-OUTCOME.json",
@@ -2084,12 +2081,14 @@
         "EVIDENCE/M7-WINDOWS-J10-V11-QUALIFIED.json",
         "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml",
         "EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V12.json",
-        "EVIDENCE/M7-WINDOWS-V12-CLEAN-PREFLIGHT.json"
+        "EVIDENCE/M7-WINDOWS-V12-CLEAN-PREFLIGHT.json",
+        "EVIDENCE/M7-WINDOWS-J10-V12-PASS.json",
+        "EVIDENCE/M7-WINDOWS-J10-V12-QUALIFIED.json"
       ],
       "id": "J10",
       "last_run": "2026-08-30",
       "public_shipping_composition": "ARTIFEX_SETUP_NUITKA_NSIS_PUBLIC_MANAGED_SERVICE_MULTI_PROCESS",
-      "status": "READY",
+      "status": "PASS",
       "title": "J10 — No Automated Provider"
     },
     {
@@ -2514,6 +2513,19 @@
   "observations": [
     {
       "evidence": [
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml",
+        "EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V12.json",
+        "EVIDENCE/M7-WINDOWS-V12-CLEAN-PREFLIGHT.json",
+        "EVIDENCE/M7-WINDOWS-J10-V12-QUALIFIED.json"
+      ],
+      "id": "BLK-M7-WINDOWS-V12-INTERACTIVE-LOGON",
+      "required_authority": "HUMAN_ENVIRONMENT_OWNER",
+      "scope": "M7_V12_J10_REQUALIFICATION",
+      "state": "RESOLVED_J10_V12_INTERACTIVE_SESSION_AND_QUALIFICATION_PASS",
+      "unrelated_work_may_continue": true
+    },
+    {
+      "evidence": [
         "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml",
         "EVIDENCE/M7-WINDOWS-CODEX-CLEAN-BASE-ATTESTATION-VM105-V11.json",
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-V11-CLEAN-PREFLIGHT.json",
@@ -2629,7 +2641,7 @@
     "m8a_started": true,
     "m8b_started": true,
     "m8c_started": true,
-    "next_integration_point": "Establish the VM104 InteractiveToken session and run exact V12 J10, then qualify standalone Codex J01/J16 on VM105 before beginning Claude",
+    "next_integration_point": "Reset VM105 to its clean provider-free base, stage exact V12, then qualify standalone Codex J01/J16 before beginning Claude",
     "recorded_date": "2026-08-29",
     "target_release": "2.0.0"
   },
@@ -2916,17 +2928,17 @@
   "summary": {
     "acceptance_classes_passing": 7,
     "acceptance_classes_required": 10,
-    "active_blockers": 4,
+    "active_blockers": 3,
     "adr_count": 24,
     "current_milestone": "M7",
     "current_milestone_progress_percent": 70,
-    "evidence_items": 78,
+    "evidence_items": 80,
     "invariant_count": 34,
     "journey_states": {
       "BLOCKED_EXTERNAL_PREREQUISITE": 1,
       "NOT_STARTED": 3,
-      "PASS": 12,
-      "READY": 4
+      "PASS": 13,
+      "READY": 3
     },
     "milestones_accepted": 8,
     "milestones_started": 11,
