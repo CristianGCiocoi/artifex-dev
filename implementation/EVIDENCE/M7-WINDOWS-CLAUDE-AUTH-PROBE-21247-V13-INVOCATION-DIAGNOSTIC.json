@@ -1,0 +1,13 @@
+{
+  "error_category": "INVOCATION_CONTRACT",
+  "provider": "claude",
+  "response_exact": false,
+  "returncode": 1,
+  "schema_version": "1.0",
+  "secret_shaped_output": false,
+  "status": "FAIL",
+  "stderr_bytes": 94,
+  "stderr_sha256": "2122456c9827a04aff9792c1149505097ac016d61c330a0df0dd73976358987c",
+  "stdout_bytes": 0,
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

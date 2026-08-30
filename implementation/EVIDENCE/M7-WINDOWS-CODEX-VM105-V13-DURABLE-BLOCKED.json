@@ -1,0 +1,89 @@
+{
+  "schema_version": "1.0",
+  "evidence_id": "EVD-M7-WINDOWS-CODEX-VM105-V13-DURABLE-BLOCKED",
+  "recorded_date": "2026-08-31",
+  "cell_id": "M7-WIN-CODEX",
+  "status": "FAIL",
+  "classification": "PROVIDER_SANDBOX_INCOMPATIBLE_WITH_LEAST_PRIVILEGE_TASK",
+  "environment": {
+    "vm_id": 105,
+    "snapshot_name": "m7-codex-provider-ready-v13",
+    "snapshot_config_sha256": "b807006ac885ae72ffdcc4437862661f2b8b7648bc3c2858093705406ada05cb",
+    "os": "Windows 11 Pro 25H2 x64",
+    "os_build": "26200.9168",
+    "interactive_user_logon": true,
+    "claude_absent": true,
+    "source_checkout_absent_at_cell_start": true
+  },
+  "shipping_candidate": {
+    "source_commit": "2bf1cb638ae955d3fd573c31b067a1ad180329e5",
+    "artifact_sha256": "93de31656c9f9568fabc9226ecc7d5834a77b73e857ba33d458bd608d7284aba",
+    "standalone_executable_sha256": "563a1be529dba5369b5ee49d32aad850cc7f18f098259a954085de1f9a6042b8",
+    "provenance_sha256": "0d89e06ef71dadd26920f94663f48d7b55ce359a229899b1abaf3820e88229b7",
+    "qualification_harness_sha256": "dd5f7925b437c16639e55d65b36439d5bb8806057ff1b551f5eb9b88e51f6c10"
+  },
+  "provider": {
+    "id": "codex",
+    "version": "codex-cli 0.150.1",
+    "executable_sha256": "cbd657ddfe151d1a6ebad660beffdbd3265dc5aff4b3a6095124d3e2f0156f2f",
+    "authentication_probe_status": "PASS",
+    "authentication_probe_evidence_sha256": "4887fc4f26521401dc1b89faf7d80cd9243c95ad831e19b442c31c5e6e2577c3"
+  },
+  "shipping_attempts": [
+    {
+      "phase": "runtime.provider.execute",
+      "capture": "EVIDENCE/M7-WINDOWS-CODEX-VM105-V13-ATTEMPT1-FAIL.json",
+      "capture_sha256": "cf7362bd9fd02175eb4edd87e9102efddbfeb23d61cfbf70fd3b2a08fcb1e69",
+      "returncode": 3221226505
+    },
+    {
+      "phase": "providers.interact",
+      "capture": "EVIDENCE/M7-WINDOWS-CODEX-VM105-V13-RESUME1-FAIL.json",
+      "capture_sha256": "65faf9f8500ed1fdd7f05ff9e97df288bd361a9f427aa9b8633e7d338dc2eef4",
+      "returncode": 3221226505
+    }
+  ],
+  "diagnostics": {
+    "windows_error_reporting": {
+      "path": "EVIDENCE/M7-WINDOWS-CODEX-VM105-V13-WER-FASTFAIL.json",
+      "event_name": "BEX64",
+      "exception_code": "0xc0000409",
+      "exception_parameter": "7",
+      "fault_offset": "0x000000000df1de69",
+      "bucket_hash": "306acdeb19714ee0031c03233aa33a3f",
+      "identical_events": 2
+    },
+    "highest_run_level_control": {
+      "path": "EVIDENCE/M7-WINDOWS-CODEX-POST-FAILURE-CONTROL-V13.json",
+      "status": "PASS",
+      "provider_protocol_completed": true,
+      "project_unchanged": true
+    },
+    "least_privilege_control": {
+      "path": "EVIDENCE/M7-WINDOWS-CODEX-LEAST-PRIVILEGE-CONTROL-V13.json",
+      "sha256": "fb956bc388419d8d2b216fe6a9d485b6f1260354d690c91bc578c1a5c4ec41d4",
+      "status": "FAIL",
+      "returncode": 3221226505,
+      "project_unchanged": true
+    }
+  },
+  "root_cause_boundary": {
+    "finding": "The exact Codex executable and unelevated sandbox protocol pass in an elevated InteractiveToken task but reproduce the identical native fast-fail in an independent least-privilege InteractiveToken task outside ARTIFEX. The failure is therefore not specific to the ARTIFEX RunStore, transport or journey state.",
+    "service_constraint": "ARTIFEX intentionally rejects an elevated managed-service run level; raising the service privilege would expand the frozen security boundary and is not an eligible implementation workaround.",
+    "eligible_next_probe": "Provision the administrator-approved native Codex elevated sandbox while retaining the least-privilege ARTIFEX service, then execute one new candidate-bound clean-cell qualification."
+  },
+  "journeys": {
+    "J01": "FAIL_PROVIDER_PREREQUISITE",
+    "J16": "FAIL_PROVIDER_PREREQUISITE"
+  },
+  "qualification_policy": {
+    "m7_accepted": false,
+    "authentication_treated_as_journey_success": false,
+    "diagnostic_treated_as_journey_success": false,
+    "service_elevation_used": false,
+    "combined_provider_inference_used": false,
+    "developer_machine_evidence_used": false,
+    "additional_v13_journey_retries_allowed": false
+  },
+  "next_action": "Obtain explicit environment-owner approval for Codex native elevated-sandbox provisioning on VM105; do not rerun V13 or elevate the ARTIFEX managed service."
+}

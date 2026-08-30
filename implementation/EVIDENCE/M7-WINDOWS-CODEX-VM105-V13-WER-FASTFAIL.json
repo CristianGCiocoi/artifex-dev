@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0",
+  "evidence_class": "WINDOWS_ERROR_REPORTING_DIAGNOSTIC",
+  "status": "FAIL",
+  "vm_id": 105,
+  "provider": "codex",
+  "provider_version": "codex-cli 0.150.1",
+  "provider_executable_sha256": "cbd657ddfe151d1a6ebad660beffdbd3265dc5aff4b3a6095124d3e2f0156f2f",
+  "windows_event_name": "BEX64",
+  "exception_code": "0xc0000409",
+  "exception_parameter": "0000000000000007",
+  "fault_offset": "000000000df1de69",
+  "faulting_module": "codex.exe",
+  "faulting_process_path": "C:\\Users\\Crugger\\.codex\\packages\\standalone\\releases\\0.150.1-x86_64-pc-windows-msvc\\bin\\codex.exe",
+  "wer_bucket_hash": "306acdeb19714ee0031c03233aa33a3f",
+  "observed_failures": 2,
+  "attempts": [
+    {
+      "phase": "runtime.provider.execute",
+      "returncode": 3221226505,
+      "report_id": "fa245aec-a413-4082-8122-5c70f251b4bf"
+    },
+    {
+      "phase": "providers.interact",
+      "returncode": 3221226505,
+      "report_id": "9726407b-61c5-4312-b801-52cdf325b91f"
+    }
+  ],
+  "credential_material_read": false,
+  "dump_content_read": false
+}

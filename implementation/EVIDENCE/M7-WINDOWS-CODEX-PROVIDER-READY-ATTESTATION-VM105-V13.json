@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "status": "PASS",
+  "vm_id": 105,
+  "snapshot_name": "m7-codex-provider-ready-v13",
+  "snapshot_config_sha256": "b807006ac885ae72ffdcc4437862661f2b8b7648bc3c2858093705406ada05cb",
+  "clean_base_snapshot_name": "m7-qualified-25h2-x64-codex-cell-v13",
+  "clean_base_attestation_sha256": "b611714d010de4cb1e6c3a4f0ac8b9754d830e78671c8fe78bb167c3a24529b2",
+  "candidate_sha256": "93de31656c9f9568fabc9226ecc7d5834a77b73e857ba33d458bd608d7284aba",
+  "provider": "codex",
+  "provider_version": "codex-cli 0.150.1",
+  "provider_executable_sha256": "cbd657ddfe151d1a6ebad660beffdbd3265dc5aff4b3a6095124d3e2f0156f2f",
+  "auth_probe_sha256": "4887fc4f26521401dc1b89faf7d80cd9243c95ad831e19b442c31c5e6e2577c3",
+  "authenticated_invocation": true,
+  "artifex_absent": true,
+  "journey_project_absent": true,
+  "rdp_session_active": true,
+  "vm_memory_included": true,
+  "credential_material_extracted": false
+}

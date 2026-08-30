@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "evidence_id": "EVD-M7-WINDOWS-CLAUDE-VM106-V13-DURABLE-BLOCKED",
+  "recorded_date": "2026-08-31",
+  "cell_id": "M7-WIN-CLAUDE",
+  "status": "FAIL_REMEDIATED_PENDING_NEW_CANDIDATE",
+  "classification": "IMPLEMENTATION_DEFECT_PROVIDER_INTERACTION_HEARTBEAT_GAP",
+  "environment": {
+    "vm_id": 106,
+    "snapshot_name": "m7-claude-provider-ready-v13",
+    "snapshot_config_sha256": "e178a1ca152bd4a324a73d2875f6f5baa984371bee27b5f0168b2fd33f969fb4",
+    "os": "Windows 11 Pro 25H2 x64",
+    "os_build": "26200.9168",
+    "interactive_user_logon": true,
+    "codex_absent": true,
+    "source_checkout_absent_at_cell_start": true
+  },
+  "shipping_candidate": {
+    "source_commit": "2bf1cb638ae955d3fd573c31b067a1ad180329e5",
+    "artifact_sha256": "93de31656c9f9568fabc9226ecc7d5834a77b73e857ba33d458bd608d7284aba",
+    "standalone_executable_sha256": "563a1be529dba5369b5ee49d32aad850cc7f18f098259a954085de1f9a6042b8",
+    "provenance_sha256": "0d89e06ef71dadd26920f94663f48d7b55ce359a229899b1abaf3820e88229b7"
+  },
+  "provider": {
+    "id": "claude",
+    "version": "2.1.247 (Claude Code)",
+    "executable_sha256": "00e5be0a8b69893cad9259a1e8b80d59be8f3eb367d4a16c19f91bcd279423b7",
+    "authentication_status": "PASS",
+    "authentication_status_evidence_sha256": "4c52d1e0c6ce91b14c472c5cfe73b6cfd59bb1aa253619b97d7a9521c2f26b58",
+    "authentication_probe_status": "PASS",
+    "authentication_probe_evidence_sha256": "9392d97cddf7b647150110b894aa1357aa5da9f40461c8884fc3583df9e29bae"
+  },
+  "shipping_capture": {
+    "path": "EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V13-FAIL.json",
+    "sha256": "c3358797fc9687a172b6db20a504a824b507fe36667bcc1c1503cec7662dba5a",
+    "diagnostic": "providers.interact did not return one JSON object"
+  },
+  "managed_service_observation": {
+    "generation": 2,
+    "lifecycle_after_failure": "STOPPED",
+    "shutdown_reason": "CONTROLLED",
+    "task_last_result": 0,
+    "lease_elapsed_seconds": 56
+  },
+  "root_cause": {
+    "cause": "ManagedServiceHost retained the coordinator authority lock across the whole application dispatch. The real Claude interaction exceeded the coordinator lease, and providers.interact had no hosted coordinator heartbeat scope. When dispatch released the lock after lease expiry, the host heartbeat renewal failed closed and the service stopped cleanly before the frontend received one JSON response.",
+    "remediation": "Wrap hosted providers.interact dispatch in ManagedRuntimeService.coordinator_heartbeat while preserving the direct non-hosted interaction path.",
+    "remediation_commit": "d044fdaa9341f3ba003faec86c33d2e85b0ba7ec",
+    "focused_validation": "18 passed in 116.63s",
+    "new_regression": "test_hosted_claude_interaction_renews_coordinator_during_long_provider_call"
+  },
+  "journeys": {
+    "J02": "FAIL_IMPLEMENTATION_DEFECT_REMEDIATED_PENDING_NEW_CANDIDATE",
+    "J16": "FAIL_IMPLEMENTATION_DEFECT_REMEDIATED_PENDING_NEW_CANDIDATE"
+  },
+  "qualification_policy": {
+    "m7_accepted": false,
+    "authentication_treated_as_journey_success": false,
+    "source_test_treated_as_clean_vm_success": false,
+    "combined_provider_inference_used": false,
+    "developer_machine_evidence_used": false,
+    "v13_failure_preserved": true
+  },
+  "next_action": "Build one immutable replacement candidate containing d044fda, rebind it to a new VM106 provider-ready snapshot without reading or replacing provider credentials, then rerun J02 and J16 once."
+}

@@ -1,0 +1,13 @@
+{
+  "project_unchanged": true,
+  "provider": "codex",
+  "response_exact": true,
+  "returncode": 0,
+  "schema_version": "1.0",
+  "status": "PASS",
+  "stderr_bytes": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_bytes": 384,
+  "stdout_sha256": "a43aa1969aef2049d3e4e8e480d26375c77c74433564d03e3e0d351c678bbb5d",
+  "structured_jsonl": true
+}

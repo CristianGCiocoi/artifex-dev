@@ -1,0 +1,16 @@
+{
+  "project_file_count": 1,
+  "project_unchanged": true,
+  "provider": "claude",
+  "provider_executable_sha256": "00e5be0a8b69893cad9259a1e8b80d59be8f3eb367d4a16c19f91bcd279423b7",
+  "provider_version": "2.1.247 (Claude Code)",
+  "response_exact": true,
+  "response_sha256": "7276680aa6837c47ccdeaee1bb29f603b52d44009592e448e82d304205ec8acc",
+  "returncode": 0,
+  "schema_version": "1.0",
+  "status": "PASS",
+  "stderr_bytes": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_bytes": 38,
+  "stdout_sha256": "75b8f3797aa5e741302b06602c0733b0a031d780107863946c9265129bab57f0"
+}

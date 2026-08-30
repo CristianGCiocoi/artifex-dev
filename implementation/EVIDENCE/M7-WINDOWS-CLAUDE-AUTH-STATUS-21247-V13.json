@@ -1,0 +1,13 @@
+{
+  "logged_in": true,
+  "provider": "claude",
+  "returncode": 0,
+  "schema_version": "1.0",
+  "secret_shaped_output": false,
+  "status": "PASS",
+  "stderr_bytes": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_bytes": 286,
+  "stdout_sha256": "4d979d256183e55cb60f3e6f2bee1d37ee43c41b163c57eebc10da56852565d8",
+  "structured_status": true
+}

@@ -1,0 +1,14 @@
+{
+  "project_unchanged": true,
+  "provider": "codex",
+  "response_exact": false,
+  "returncode": 3221226505,
+  "schema_version": "1.0",
+  "status": "FAIL",
+  "stderr_bytes": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_bytes": 77,
+  "stdout_sha256": "f8e34e732eb2678de38929141277c58d41488137e8c735c54c3173ffd9aadf8b",
+  "structured_jsonl": true,
+  "task_run_level": "LEAST_PRIVILEGE"
+}

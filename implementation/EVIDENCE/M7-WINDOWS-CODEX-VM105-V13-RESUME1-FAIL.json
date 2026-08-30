@@ -1,0 +1,6 @@
+{
+  "diagnostic": "providers.interact failed: OPERATION_FAILED/ValueError: codex interaction exited with 3221226505",
+  "error": "JourneyFailure",
+  "schema_version": "1.0",
+  "status": "FAIL"
+}

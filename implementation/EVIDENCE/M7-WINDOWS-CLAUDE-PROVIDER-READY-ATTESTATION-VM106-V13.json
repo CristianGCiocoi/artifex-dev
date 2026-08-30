@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "status": "PASS",
+  "vm_id": 106,
+  "snapshot_name": "m7-claude-provider-ready-v13",
+  "snapshot_config_sha256": "e178a1ca152bd4a324a73d2875f6f5baa984371bee27b5f0168b2fd33f969fb4",
+  "clean_base_snapshot_name": "m7-qualified-25h2-x64-claude-cell-v13",
+  "clean_base_attestation_sha256": "7c47855fc9475a45349b4176d03b99a92c96b0595ec57c757d0c922ec03e9055",
+  "candidate_sha256": "93de31656c9f9568fabc9226ecc7d5834a77b73e857ba33d458bd608d7284aba",
+  "provider": "claude",
+  "provider_version": "2.1.247 (Claude Code)",
+  "provider_executable_sha256": "00e5be0a8b69893cad9259a1e8b80d59be8f3eb367d4a16c19f91bcd279423b7",
+  "auth_status_sha256": "4c52d1e0c6ce91b14c472c5cfe73b6cfd59bb1aa253619b97d7a9521c2f26b58",
+  "auth_probe_sha256": "9392d97cddf7b647150110b894aa1357aa5da9f40461c8884fc3583df9e29bae",
+  "authenticated_invocation": true,
+  "artifex_absent": true,
+  "journey_project_absent": true,
+  "rdp_session_active": true,
+  "vm_memory_included": true,
+  "credential_material_extracted": false
+}

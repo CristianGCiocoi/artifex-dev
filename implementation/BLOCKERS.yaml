@@ -16,9 +16,9 @@ blockers:
   unrelated_work_may_continue: true
 - id: BLK-M7-CODEX-PROVIDER-BLOCKED
   scope: M7_ACCEPTANCE
-  class: IMPLEMENTATION_DEFECT
-  status: V13_PROVIDER_CELLS_STAGED_WAITING_ONE_TIME_INTERACTIVE_AUTH
-  summary: The V12 installed-artifact binding defect is remediated in V13; independent Codex and Claude V13 clean cells are staged and now require their one-time interactive provider authentication before qualification
+  class: HUMAN_ENVIRONMENT
+  status: OPEN_CODEX_NATIVE_SANDBOX_SETUP_REQUIRED
+  summary: Exact Codex 0.150.1 authentication passes, but its unelevated Windows sandbox fast-fails identically under an independent least-privilege InteractiveToken task; the ARTIFEX service cannot be elevated without violating the frozen security boundary
   evidence:
   - EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-FAILURE.json
   - EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-DURABLE-BLOCKED.json
@@ -40,10 +40,33 @@ blockers:
   - EVIDENCE/M7-WINDOWS-V13-HOST-DEFENDER-PREFLIGHT.json
   - EVIDENCE/M7-WINDOWS-CODEX-CLEAN-BASE-ATTESTATION-VM105-V13.json
   - EVIDENCE/M7-WINDOWS-CODEX-VM105-V13-CLEAN-PREFLIGHT.json
+  - EVIDENCE/M7-WINDOWS-CODEX-INSTALL-1501-V13.json
+  - EVIDENCE/M7-WINDOWS-CODEX-AUTH-PROBE-1501-V13.json
+  - EVIDENCE/M7-WINDOWS-CODEX-PROVIDER-READY-ATTESTATION-VM105-V13.json
+  - EVIDENCE/M7-WINDOWS-CODEX-VM105-V13-ATTEMPT1-FAIL.json
+  - EVIDENCE/M7-WINDOWS-CODEX-VM105-V13-RESUME1-FAIL.json
+  - EVIDENCE/M7-WINDOWS-CODEX-VM105-V13-WER-FASTFAIL.json
+  - EVIDENCE/M7-WINDOWS-CODEX-POST-FAILURE-CONTROL-V13.json
+  - EVIDENCE/M7-WINDOWS-CODEX-LEAST-PRIVILEGE-CONTROL-V13.json
+  - EVIDENCE/M7-WINDOWS-CODEX-VM105-V13-DURABLE-BLOCKED.json
+  required_authority: HUMAN_ENVIRONMENT_OWNER
+  resolution: Explicitly approve and complete the administrator-owned native Codex elevated-sandbox setup on VM105 while retaining the least-privilege ARTIFEX service, then run one new candidate-bound Codex qualification
+  unrelated_work_may_continue: true
+- id: BLK-M7-CLAUDE-INTERACTION-LEASE
+  scope: M7_ACCEPTANCE
+  class: IMPLEMENTATION_DEFECT
+  status: REMEDIATED_SOURCE_PENDING_REPLACEMENT_CANDIDATE
+  summary: The authenticated V13 Claude cell exposed a coordinator-heartbeat gap around hosted provider interaction; source commit d044fda fixes the defect and passes the focused managed-service and Claude suite
+  evidence:
   - EVIDENCE/M7-WINDOWS-CLAUDE-CLEAN-BASE-ATTESTATION-VM106-V13.json
   - EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V13-CLEAN-PREFLIGHT.json
+  - EVIDENCE/M7-WINDOWS-CLAUDE-AUTH-STATUS-21247-V13.json
+  - EVIDENCE/M7-WINDOWS-CLAUDE-AUTH-PROBE-21247-V13.json
+  - EVIDENCE/M7-WINDOWS-CLAUDE-PROVIDER-READY-ATTESTATION-VM106-V13.json
+  - EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V13-FAIL.json
+  - EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V13-DURABLE-BLOCKED.json
   required_authority: IMPLEMENTATION_OWNER
-  resolution: Complete one interactive logon and provider authentication on VM105 and VM106, preserve provider-ready live-session snapshots, then qualify exact V13 on standalone Codex J01/J16 and standalone Claude J02/J16
+  resolution: Build one immutable replacement candidate containing d044fda, create a new candidate-bound provider-ready VM106 snapshot without reading or replacing credentials, and requalify J02/J16 once
   unrelated_work_may_continue: true
 - id: BLK-M8C-DEEPSEEK-LIVE-PREREQUISITES
   scope: M8C
