@@ -1,0 +1,82 @@
+schema_version: '1.0'
+evidence_id: EVD-M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V14
+recorded_date: '2026-08-31'
+scope: SINGLE_EXACT_HEARTBEAT_REMEDIATED_SHIPPING_CANDIDATE_FOR_ALL_M7_WINDOWS_CORE_CELLS
+authority:
+  decision: ARCHITECT_PRODUCT_PACKAGING_DISPOSITION
+  decision_sha256: d3cf45b8589992abc8acb6f86f00a85d426b4ef94d8f88009be081d52a4a36ca
+  primary_packaging: NUITKA_STANDALONE_PLUS_NSIS
+  onefile_authorized: false
+  fallback_invoked: false
+artifact:
+  name: ARTIFEX-Setup.exe
+  sha256: 6a45d787120d41ea75dd1cd9f6dc3efe9c33d6b1f5cb6ddf77d07af77105405b
+  bytes: 16154322
+  format: nuitka-standalone+nsis
+  source_commit: 077b08c86c85257f19a93846e4e435275686e727
+  product_version: 1.0.0
+  platform: windows
+  architecture: x86_64
+  nuitka_version: '4.2'
+  nsis_version: '3.12'
+  python_version: 3.12.13
+  standalone_executable_sha256: ad7cade370cb5690d8eca51155d39fafc093760d523a53f81b5852328b0f625a
+  bundle_file_inventory_count: 80
+  provenance_sha256: df3a86c9e5bb05724d3253ad13ee2b1a0c07ec10b96e7fa56668183304bc3649
+  qualification_harness_source_commit: 31b86866f653a2b6fae1d1595bedae14bdc622e7
+  qualification_harness_sha256: 875d497095abe871fe6347930e7fb5194ddc74206042d7d2b0837b5c9fb0ee12
+  qualification_runner_sha256: c70b73e656f4ff715c9fabe698086c23d08af7d9a87d0d23a65ccc9361c57a3e
+defect_remediation:
+  source_failure: EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V13-DURABLE-BLOCKED.json
+  classification: PROVIDER_INTERACTION_HEARTBEAT_GAP
+  hosted_provider_interaction_renews_coordinator: true
+  direct_non_hosted_interaction_unchanged: true
+  service_authority_lock_preserved: true
+build_validation:
+  command: .venv/Scripts/python.exe packaging/build_windows_installer.py --clean --smoke
+  result: PASS
+  m0_m6a_m7_distribution_tests: 162_PASS_7_SKIP_SYMLINK_UNAVAILABLE
+  focused_provider_ready_rebinding_tests: 24_PASS
+  ruff: PASS
+  mypy_strict: PASS_93_SOURCE_FILES
+  control_plane: PASS
+security_preflight:
+  developer_host:
+    evidence: EVIDENCE/M7-WINDOWS-V14-HOST-DEFENDER-PREFLIGHT.json
+    microsoft_defender_realtime_enabled: true
+    custom_scan: PASS_ZERO_DETECTIONS
+    candidate_retained: true
+  clean_vm:
+    evidence: EVIDENCE/M7-WINDOWS-V14-CLEAN-PREFLIGHT.json
+    hypervisor: Proxmox VE 9.2.3
+    vm_id: 104
+    snapshot: m7-qualified-25h2-x64-cell-base-v14
+    snapshot_config_sha256: 3562d812acb0d829eba1281e00b0a4c2e488c770669ac533f6431955e923fd6e
+    os: Windows 11 Pro 25H2 x64
+    build: 26200.9168
+    microsoft_defender_realtime_enabled: true
+    exclusions_added: false
+    custom_scan: PASS_ZERO_DETECTIONS
+    candidate_retained: true
+    candidate_hash_reverified: true
+qualification_state:
+  M7-WIN-NOPROVIDER: READY_WAITING_INTERACTIVE_LOGON
+  M7-WIN-CODEX: BLOCKED_NATIVE_SANDBOX_SETUP
+  M7-WIN-CLAUDE: PASS
+  m7_status: ACTIVE
+  active_blockers:
+  - BLK-M7-WINDOWS-V14-INTERACTIVE-LOGON
+  - BLK-M7-CODEX-PROVIDER-BLOCKED
+  clean_base_attestation: EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V14.json
+  clean_preflight: EVIDENCE/M7-WINDOWS-V14-CLEAN-PREFLIGHT.json
+  claude_provider_ready_attestation: EVIDENCE/M7-WINDOWS-CLAUDE-PROVIDER-READY-ATTESTATION-VM106-V14.json
+  claude_capture: EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V14-PASS.json
+  claude_capture_sha256: 2bbc92ab5e1ec92b8032ad853c1e6c15774bfaa89413c2293a975e937f161cb0
+  claude_outcome: EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V14-QUALIFIED.json
+  claude_outcome_sha256: d1107752bce62958f4738ae3cba9b7f398ab6df07a3d55ff37bd5492e473675c
+historical_evidence_preserved:
+- EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V13.yaml
+- EVIDENCE/M7-WINDOWS-J10-V13-QUALIFIED.json
+- EVIDENCE/M7-WINDOWS-CODEX-VM105-V13-DURABLE-BLOCKED.json
+- EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V13-DURABLE-BLOCKED.json
+verdict: V14_CANDIDATE_CLAUDE_PASS_J10_WAITING_INTERACTIVE_LOGON_CODEX_SANDBOX_BLOCKED

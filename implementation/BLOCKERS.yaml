@@ -1,19 +1,5 @@
 schema_version: '1.0'
 blockers:
-- id: BLK-M7-WINDOWS-V13-INTERACTIVE-LOGON
-  scope: M7_V13_J10_REQUALIFICATION
-  class: HUMAN_ENVIRONMENT
-  status: RESOLVED_J10_V13_INTERACTIVE_SESSION_AND_QUALIFICATION_PASS
-  summary: VM104 exact V13 no-provider clean cell completed J10 and its independent qualifier under the required human InteractiveToken session
-  evidence:
-  - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V13.yaml
-  - EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V13.json
-  - EVIDENCE/M7-WINDOWS-V13-CLEAN-PREFLIGHT.json
-  - EVIDENCE/M7-WINDOWS-J10-V13-PASS.json
-  - EVIDENCE/M7-WINDOWS-J10-V13-QUALIFIED.json
-  required_authority: HUMAN_ENVIRONMENT_OWNER
-  resolution: Completed exact V13 J10 and its independent qualifier on VM104; both returned PASS and exact evidence is retained
-  unrelated_work_may_continue: true
 - id: BLK-M7-CODEX-PROVIDER-BLOCKED
   scope: M7_ACCEPTANCE
   class: HUMAN_ENVIRONMENT
@@ -52,21 +38,17 @@ blockers:
   required_authority: HUMAN_ENVIRONMENT_OWNER
   resolution: Explicitly approve and complete the administrator-owned native Codex elevated-sandbox setup on VM105 while retaining the least-privilege ARTIFEX service, then run one new candidate-bound Codex qualification
   unrelated_work_may_continue: true
-- id: BLK-M7-CLAUDE-INTERACTION-LEASE
-  scope: M7_ACCEPTANCE
-  class: IMPLEMENTATION_DEFECT
-  status: REMEDIATED_SOURCE_PENDING_REPLACEMENT_CANDIDATE
-  summary: The authenticated V13 Claude cell exposed a coordinator-heartbeat gap around hosted provider interaction; source commit d044fda fixes the defect and passes the focused managed-service and Claude suite
+- id: BLK-M7-WINDOWS-V14-INTERACTIVE-LOGON
+  scope: M7_V14_J10_REQUALIFICATION
+  class: HUMAN_ENVIRONMENT
+  status: OPEN_WAITING_VM104_INTERACTIVE_LOGON
+  summary: VM104 exact V14 clean snapshot is staged and booted, but the existing RDP window rejects its stored credentials; J10 requires one real InteractiveToken user session
   evidence:
-  - EVIDENCE/M7-WINDOWS-CLAUDE-CLEAN-BASE-ATTESTATION-VM106-V13.json
-  - EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V13-CLEAN-PREFLIGHT.json
-  - EVIDENCE/M7-WINDOWS-CLAUDE-AUTH-STATUS-21247-V13.json
-  - EVIDENCE/M7-WINDOWS-CLAUDE-AUTH-PROBE-21247-V13.json
-  - EVIDENCE/M7-WINDOWS-CLAUDE-PROVIDER-READY-ATTESTATION-VM106-V13.json
-  - EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V13-FAIL.json
-  - EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V13-DURABLE-BLOCKED.json
-  required_authority: IMPLEMENTATION_OWNER
-  resolution: Build one immutable replacement candidate containing d044fda, create a new candidate-bound provider-ready VM106 snapshot without reading or replacing credentials, and requalify J02/J16 once
+  - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V14.yaml
+  - EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V14.json
+  - EVIDENCE/M7-WINDOWS-V14-CLEAN-PREFLIGHT.json
+  required_authority: HUMAN_ENVIRONMENT_OWNER
+  resolution: Complete one manual RDP logon on the already-open VM104 window; the orchestrator will preserve a RAM snapshot and execute J10 without further credential entry
   unrelated_work_may_continue: true
 - id: BLK-M8C-DEEPSEEK-LIVE-PREREQUISITES
   scope: M8C
@@ -89,6 +71,28 @@ blockers:
   resolution: Provide a real Pandora runtime, supported RESEARCH exchange identity, and independent live qualification evidence
   unrelated_work_may_continue: true
 observations:
+- id: BLK-M7-CLAUDE-INTERACTION-LEASE
+  scope: M7_ACCEPTANCE
+  state: RESOLVED_V14_J02_J16_INDEPENDENT_QUALIFICATION_PASS
+  evidence:
+  - EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V13-DURABLE-BLOCKED.json
+  - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V14.yaml
+  - EVIDENCE/M7-WINDOWS-CLAUDE-PROVIDER-READY-ATTESTATION-VM106-V14.json
+  - EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V14-PASS.json
+  - EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V14-QUALIFIED.json
+  required_authority: IMPLEMENTATION_OWNER
+  unrelated_work_may_continue: true
+- id: BLK-M7-WINDOWS-V13-INTERACTIVE-LOGON
+  scope: M7_V13_J10_REQUALIFICATION
+  state: RESOLVED_J10_V13_INTERACTIVE_SESSION_AND_QUALIFICATION_PASS
+  evidence:
+  - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V13.yaml
+  - EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V13.json
+  - EVIDENCE/M7-WINDOWS-V13-CLEAN-PREFLIGHT.json
+  - EVIDENCE/M7-WINDOWS-J10-V13-PASS.json
+  - EVIDENCE/M7-WINDOWS-J10-V13-QUALIFIED.json
+  required_authority: HUMAN_ENVIRONMENT_OWNER
+  unrelated_work_may_continue: true
 - id: BLK-M7-CODEX-V12-INTERACTIVE-LOGON
   scope: M7_V12_CODEX_CELL
   state: RESOLVED_INTERACTIVE_SESSION_INSTALL_AND_AUTH_PASS

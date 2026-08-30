@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "evidence_class": "DEVELOPER_HOST_SECURITY_PREFLIGHT_NOT_JOURNEY_ACCEPTANCE",
+  "recorded_date": "2026-08-31",
+  "candidate_sha256": "6a45d787120d41ea75dd1cd9f6dc3efe9c33d6b1f5cb6ddf77d07af77105405b",
+  "candidate_bytes": 16154322,
+  "provenance_sha256": "df3a86c9e5bb05724d3253ad13ee2b1a0c07ec10b96e7fa56668183304bc3649",
+  "standalone_executable_sha256": "ad7cade370cb5690d8eca51155d39fafc093760d523a53f81b5852328b0f625a",
+  "source_commit": "077b08c86c85257f19a93846e4e435275686e727",
+  "microsoft_defender_antivirus_enabled": true,
+  "microsoft_defender_realtime_enabled": true,
+  "threat_detection_count_before": 0,
+  "threat_detection_count_after": 0,
+  "candidate_retained": true,
+  "exclusion_added": false,
+  "journey_acceptance_claimed": false
+}

@@ -14,20 +14,20 @@
 - Accepted milestones: `M0, M1, M2, M3, M4, M5, M6A, M8A`
 - Ready milestones: `none`
 - Latest accepted commit: `d7fa3c4ad419bd97e401ad765128dc3560484d90`
-- Next integration point: `Build V14 with the Claude lease fix and requalify VM106; VM105 Codex remains gated on explicit administrator-owned native elevated-sandbox setup while the ARTIFEX service stays least privilege`
+- Next integration point: `Complete one manual VM104 RDP logon for V14 J10, then approve administrator-owned Codex native elevated-sandbox setup on VM105 while the ARTIFEX service stays least privilege`
 - M7 started: `true`
 
 ## Work
 
 - Active workstreams: `none`
-- Active blockers: `5`
+- Active blockers: `4`
 - Dashboard state: `CURRENT`
 - V1 regression state: `PASS`
 - Migration state: `M0_BASELINE_ACCEPTED`
 
 ## Acceptance
 
-- M7 verdict: `ACTIVE_V13_J10_PASS_CLAUDE_FIX_PENDING_V14_CODEX_SANDBOX_SETUP_BLOCKED`
+- M7 verdict: `ACTIVE_V14_CLAUDE_PASS_J10_WAITING_VM104_LOGON_CODEX_SANDBOX_SETUP_BLOCKED`
 - Mandatory work complete: `false`
 - Mandatory journeys: `J01, J02, J10, J16`
-- Next integration point: `Build V14 with the Claude lease fix and requalify VM106; VM105 Codex remains gated on explicit administrator-owned native elevated-sandbox setup while the ARTIFEX service stays least privilege`
+- Next integration point: `Complete one manual VM104 RDP logon for V14 J10, then approve administrator-owned Codex native elevated-sandbox setup on VM105 while the ARTIFEX service stays least privilege`
