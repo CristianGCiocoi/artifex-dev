@@ -519,6 +519,8 @@ def run_provider_cell(
     provider_version: str,
     provider_executable_sha256: str,
     auth_probe_sha256: str,
+    provider_ready_attestation: Path | None = None,
+    expected_provider_ready_snapshot_name: str | None = None,
     expected_vm_id: int = _DEFAULT_CLEAN_VM_ID,
     expected_snapshot_name: str = _DEFAULT_CLEAN_SNAPSHOT,
     resume_installed: bool = False,
@@ -554,6 +556,8 @@ def run_provider_cell(
     project_root = project_root.expanduser().resolve()
     provider_command = provider_command.expanduser().resolve()
     clean_base_attestation = clean_base_attestation.expanduser().resolve()
+    if provider_ready_attestation is not None:
+        provider_ready_attestation = provider_ready_attestation.expanduser().resolve()
     _validate_inputs(
         artifact=artifact,
         expected_artifact_sha256=expected_artifact_sha256,
@@ -604,9 +608,29 @@ def run_provider_cell(
         expected_vm_id=expected_vm_id,
         expected_snapshot_name=expected_snapshot_name,
     )
-    if attestation.get("candidate_sha256") != expected_artifact_sha256:
-        raise JourneyFailure("clean-base attestation is not bound to the frozen candidate")
-    snapshot_identity = canonical_sha256(attestation)
+    clean_candidate_matches = attestation.get("candidate_sha256") == expected_artifact_sha256
+    if provider_ready_attestation is None:
+        if not clean_candidate_matches:
+            raise JourneyFailure("clean-base attestation is not bound to the frozen candidate")
+        snapshot_identity = canonical_sha256(attestation)
+    else:
+        if expected_provider_ready_snapshot_name is None:
+            raise JourneyFailure("provider-ready snapshot identity is required")
+        provider_ready = _read_object(provider_ready_attestation)
+        _validate_provider_ready_rebinding_attestation(
+            provider_ready,
+            clean_base_attestation=clean_base_attestation,
+            clean_base=attestation,
+            expected_vm_id=expected_vm_id,
+            expected_snapshot_name=expected_provider_ready_snapshot_name,
+            expected_candidate_sha256=expected_artifact_sha256,
+            expected_source_commit=source_commit,
+            expected_provider_id=provider_id,
+            expected_provider_version=provider_version,
+            expected_provider_executable_sha256=provider_executable_sha256,
+            expected_auth_probe_sha256=auth_probe_sha256,
+        )
+        snapshot_identity = canonical_sha256(provider_ready)
     artifact_sha256 = _file_sha256(artifact)
     if artifact_sha256 != expected_artifact_sha256:
         raise JourneyFailure("shipping artifact SHA-256 does not match the frozen candidate")
@@ -1769,6 +1793,91 @@ def _validate_clean_base_attestation(
         raise JourneyFailure("clean-base attestation does not identify the authorized VM reset")
 
 
+def _validate_provider_ready_rebinding_attestation(
+    value: Mapping[str, Any],
+    *,
+    clean_base_attestation: Path,
+    clean_base: Mapping[str, Any],
+    expected_vm_id: int,
+    expected_snapshot_name: str,
+    expected_candidate_sha256: str,
+    expected_source_commit: str,
+    expected_provider_id: str,
+    expected_provider_version: str,
+    expected_provider_executable_sha256: str,
+    expected_auth_probe_sha256: str,
+) -> None:
+    expected = {
+        "schema_version",
+        "vm_id",
+        "snapshot_name",
+        "snapshot_config_sha256",
+        "parent_provider_ready_snapshot_name",
+        "parent_provider_ready_snapshot_config_sha256",
+        "clean_base_attestation_sha256",
+        "previous_candidate_sha256",
+        "candidate_sha256",
+        "source_commit",
+        "provider_id",
+        "provider_version",
+        "provider_executable_sha256",
+        "auth_probe_sha256",
+        "artifex_absent",
+        "journey_project_absent",
+        "source_checkout_absent",
+        "interactive_session_active",
+        "vm_memory_included",
+        "defender_realtime_enabled",
+        "defender_candidate_detection_count",
+        "defender_candidate_excluded",
+        "credential_material_extracted",
+    }
+    if set(value) != expected or value.get("schema_version") != "1.0":
+        raise JourneyFailure("provider-ready rebinding attestation schema is invalid")
+    for field in (
+        "snapshot_config_sha256",
+        "parent_provider_ready_snapshot_config_sha256",
+        "clean_base_attestation_sha256",
+        "previous_candidate_sha256",
+        "candidate_sha256",
+        "provider_executable_sha256",
+        "auth_probe_sha256",
+    ):
+        if not _DIGEST.fullmatch(str(value.get(field, ""))):
+            raise JourneyFailure(f"provider-ready rebinding attestation {field} is invalid")
+    expected_values = {
+        "vm_id": expected_vm_id,
+        "snapshot_name": expected_snapshot_name,
+        "clean_base_attestation_sha256": _file_sha256(clean_base_attestation),
+        "previous_candidate_sha256": clean_base.get("candidate_sha256"),
+        "candidate_sha256": expected_candidate_sha256,
+        "source_commit": expected_source_commit,
+        "provider_id": expected_provider_id,
+        "provider_version": expected_provider_version,
+        "provider_executable_sha256": expected_provider_executable_sha256,
+        "auth_probe_sha256": expected_auth_probe_sha256,
+    }
+    if any(value.get(field) != expected for field, expected in expected_values.items()):
+        raise JourneyFailure("provider-ready rebinding attestation identity is invalid")
+    required_true = (
+        "artifex_absent",
+        "journey_project_absent",
+        "source_checkout_absent",
+        "interactive_session_active",
+        "vm_memory_included",
+        "defender_realtime_enabled",
+    )
+    if any(value.get(field) is not True for field in required_true):
+        raise JourneyFailure("provider-ready rebinding attestation does not prove clean state")
+    if (
+        value.get("defender_candidate_detection_count") != 0
+        or value.get("defender_candidate_excluded") is not False
+        or value.get("credential_material_extracted") is not False
+        or not str(value.get("parent_provider_ready_snapshot_name", "")).strip()
+    ):
+        raise JourneyFailure("provider-ready rebinding attestation security state is invalid")
+
+
 def _windows_identity() -> dict[str, Any]:
     if platform.system() != "Windows":
         raise JourneyFailure("official M7 cells require Windows")
@@ -1842,6 +1951,8 @@ def main() -> None:
     parser.add_argument("--source-commit", required=True)
     parser.add_argument("--product-disposition-sha256", required=True)
     parser.add_argument("--clean-base-attestation", type=Path, required=True)
+    parser.add_argument("--provider-ready-attestation", type=Path)
+    parser.add_argument("--expected-provider-ready-snapshot-name")
     parser.add_argument("--expected-vm-id", type=int, default=_DEFAULT_CLEAN_VM_ID)
     parser.add_argument("--expected-snapshot-name", default=_DEFAULT_CLEAN_SNAPSHOT)
     parser.add_argument("--staging-root", type=Path, required=True)
@@ -1888,6 +1999,10 @@ def main() -> None:
                 provider_version=arguments.provider_version,
                 provider_executable_sha256=arguments.provider_executable_sha256,
                 auth_probe_sha256=arguments.auth_probe_sha256,
+                provider_ready_attestation=arguments.provider_ready_attestation,
+                expected_provider_ready_snapshot_name=(
+                    arguments.expected_provider_ready_snapshot_name
+                ),
                 resume_installed=arguments.resume_installed_provider_cell,
                 resume_failure_capture=arguments.resume_failure_capture,
                 **common,

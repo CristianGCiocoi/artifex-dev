@@ -25,6 +25,7 @@ from tools.artifex2.run_m7_shipping_journey import (
     _resume_installed_candidate,
     _role_states,
     _validate_clean_base_attestation,
+    _validate_provider_ready_rebinding_attestation,
     _wait_for_process_exit,
 )
 
@@ -359,6 +360,72 @@ def test_clean_base_attestation_is_exact_and_operator_bound() -> None:
             vm105,
             expected_vm_id=105,
             expected_snapshot_name="m7-qualified-25h2-x64-claude-cell-v10",
+        )
+
+
+def test_provider_ready_rebinding_is_exact_and_preserves_clean_lineage(
+    tmp_path: Path,
+) -> None:
+    clean_path = tmp_path / "clean.json"
+    clean = {
+        "schema_version": "1.0",
+        "vm_id": 106,
+        "snapshot_name": "m7-qualified-25h2-x64-claude-cell-v13",
+        "snapshot_config_sha256": "a" * 64,
+        "account_sid_sha256": "b" * 64,
+        "candidate_sha256": "c" * 64,
+        "providers_absent": True,
+        "source_checkout_absent": True,
+    }
+    clean_path.write_text(json.dumps(clean), encoding="utf-8")
+    rebound = {
+        "schema_version": "1.0",
+        "vm_id": 106,
+        "snapshot_name": "m7-claude-provider-ready-v14",
+        "snapshot_config_sha256": "d" * 64,
+        "parent_provider_ready_snapshot_name": "m7-claude-provider-ready-v13",
+        "parent_provider_ready_snapshot_config_sha256": "e" * 64,
+        "clean_base_attestation_sha256": hashlib.sha256(
+            clean_path.read_bytes()
+        ).hexdigest(),
+        "previous_candidate_sha256": "c" * 64,
+        "candidate_sha256": "f" * 64,
+        "source_commit": "1" * 40,
+        "provider_id": "claude",
+        "provider_version": "2.1.247 (Claude Code)",
+        "provider_executable_sha256": "2" * 64,
+        "auth_probe_sha256": "3" * 64,
+        "artifex_absent": True,
+        "journey_project_absent": True,
+        "source_checkout_absent": True,
+        "interactive_session_active": True,
+        "vm_memory_included": True,
+        "defender_realtime_enabled": True,
+        "defender_candidate_detection_count": 0,
+        "defender_candidate_excluded": False,
+        "credential_material_extracted": False,
+    }
+    arguments = {
+        "clean_base_attestation": clean_path,
+        "clean_base": clean,
+        "expected_vm_id": 106,
+        "expected_snapshot_name": "m7-claude-provider-ready-v14",
+        "expected_candidate_sha256": "f" * 64,
+        "expected_source_commit": "1" * 40,
+        "expected_provider_id": "claude",
+        "expected_provider_version": "2.1.247 (Claude Code)",
+        "expected_provider_executable_sha256": "2" * 64,
+        "expected_auth_probe_sha256": "3" * 64,
+    }
+    _validate_provider_ready_rebinding_attestation(rebound, **arguments)
+
+    with pytest.raises(JourneyFailure, match="security state"):
+        _validate_provider_ready_rebinding_attestation(
+            {**rebound, "credential_material_extracted": True}, **arguments
+        )
+    with pytest.raises(JourneyFailure, match="identity"):
+        _validate_provider_ready_rebinding_attestation(
+            {**rebound, "candidate_sha256": "4" * 64}, **arguments
         )
 
 
