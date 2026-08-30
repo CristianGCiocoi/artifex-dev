@@ -1,9 +1,21 @@
 schema_version: '1.0'
 blockers:
+- id: BLK-M7-WINDOWS-V12-INTERACTIVE-LOGON
+  scope: M7_V12_J10_REQUALIFICATION
+  class: HUMAN_ENVIRONMENT
+  status: OPEN
+  summary: VM104 exact V12 no-provider clean cell is staged and waiting for the required human InteractiveToken RDP logon before J10
+  evidence:
+  - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml
+  - EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V12.json
+  - EVIDENCE/M7-WINDOWS-V12-CLEAN-PREFLIGHT.json
+  required_authority: HUMAN_ENVIRONMENT_OWNER
+  resolution: Log in interactively to VM104 as M7-WIN-BASE\Crugger without closing the RDP window, then run exact V12 J10 and its independent qualifier
+  unrelated_work_may_continue: true
 - id: BLK-M7-CODEX-PROVIDER-BLOCKED
   scope: M7_ACCEPTANCE
   class: IMPLEMENTATION_DEFECT
-  status: IMPLEMENTATION_REMEDIATION_ACTIVE
+  status: CLEAN_CELL_REQUALIFICATION_READY
   summary: V11 moved Execution Workspaces outside the private RunStore tree but still created the Windows workspace root with mode 0o700, producing a protected owner-only DACL that the supported Codex unelevated sandbox cannot traverse
   evidence:
   - EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-FAILURE.json
@@ -16,8 +28,9 @@ blockers:
   - EVIDENCE/M7-WINDOWS-CODEX-AUTH-PROBE-1501-V11.json
   - EVIDENCE/M7-WINDOWS-CODEX-VM105-V11-FAILURE.json
   - EVIDENCE/M7-WINDOWS-CODEX-VM105-V11-DURABLE-BLOCKED.json
+  - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml
   required_authority: IMPLEMENTATION_OWNER
-  resolution: Ship a new candidate that preserves inherited Windows ACLs on the managed workspace root, then requalify J10, standalone Codex J01/J16 and standalone Claude J02/J16 on exact clean cells; do not infer success from authentication, the diagnostic probe, prior-candidate passes, retries or another provider
+  resolution: Requalify V12 J10, standalone Codex J01/J16 and standalone Claude J02/J16 on exact clean cells; do not infer success from authentication, the diagnostic probe, prior-candidate passes, retries or another provider
   unrelated_work_may_continue: true
 - id: BLK-M8C-DEEPSEEK-LIVE-PREREQUISITES
   scope: M8C

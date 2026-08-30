@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "scan_started": "2026-08-30T19:26:00+03:00",
+  "scan_completed": "2026-08-30T19:26:20.0567744+03:00",
+  "candidate_sha256": "2fada5a5b72c2df4f0a339984c8d135100b9bc666bf9f6ce8f34ba02aa5ca415",
+  "expected_candidate_sha256": "2fada5a5b72c2df4f0a339984c8d135100b9bc666bf9f6ce8f34ba02aa5ca415",
+  "candidate_retained": true,
+  "antivirus_enabled": true,
+  "realtime_protection_enabled": true,
+  "antivirus_signature_version": "1.457.409.0",
+  "exclusions_added_for_candidate": false,
+  "threat_detection_count_after": 0,
+  "candidate_detection_count": 0,
+  "result": "PASS"
+}

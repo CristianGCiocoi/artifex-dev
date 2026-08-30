@@ -11,10 +11,11 @@
           "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
           "EVIDENCE/M7-WINDOWS-J10-V10-QUALIFIED.json",
           "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml",
-          "EVIDENCE/M7-WINDOWS-J10-V11-QUALIFIED.json"
+          "EVIDENCE/M7-WINDOWS-J10-V11-QUALIFIED.json",
+          "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml"
         ],
         "required_m7": true,
-        "status": "PARTIAL_PASS_J10_V11"
+        "status": "PENDING_V12_CLEAN_CELL_REQUALIFICATION"
       },
       "COMPONENT": {
         "evidence": [
@@ -67,10 +68,11 @@
           "EVIDENCE/M7-WINDOWS-CODEX-VM105-PATH-DIAGNOSTIC-1.json",
           "EVIDENCE/M7-WINDOWS-CODEX-VM105-PROVIDER-ROOT-DIAGNOSTIC-2.json",
           "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml",
-          "EVIDENCE/M7-WINDOWS-CODEX-VM105-V11-DURABLE-BLOCKED.json"
+          "EVIDENCE/M7-WINDOWS-CODEX-VM105-V11-DURABLE-BLOCKED.json",
+          "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml"
         ],
         "required_m7": true,
-        "status": "CODEX_V11_IMPLEMENTATION_DEFECT_CLAUDE_PENDING"
+        "status": "V12_CLEAN_CELL_REQUALIFICATION_PENDING"
       },
       "PUBLIC_COMPOSITION": {
         "evidence": [
@@ -78,10 +80,11 @@
           "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml",
           "EVIDENCE/M7-WINDOWS-J10-V10-QUALIFIED.json",
           "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml",
-          "EVIDENCE/M7-WINDOWS-J10-V11-QUALIFIED.json"
+          "EVIDENCE/M7-WINDOWS-J10-V11-QUALIFIED.json",
+          "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml"
         ],
         "required_m7": true,
-        "status": "PARTIAL_PASS_J10_V11"
+        "status": "PENDING_V12_CLEAN_CELL_REQUALIFICATION"
       },
       "SECURITY_AUTHORITY": {
         "evidence": [
@@ -106,7 +109,7 @@
     "schema_version": "1.0",
     "superseded": [],
     "unresolved_contradiction": null,
-    "verdict": "ACTIVE_V11_FAILED_IMPLEMENTATION_REMEDIATION_AND_NEW_CANDIDATE_REQUIRED"
+    "verdict": "ACTIVE_V12_CANDIDATE_CLEAN_CELL_QUALIFICATION_PENDING"
   },
   "adrs": [
     {
@@ -738,6 +741,21 @@
   ],
   "blockers": [
     {
+      "class": "HUMAN_ENVIRONMENT",
+      "evidence": [
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml",
+        "EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V12.json",
+        "EVIDENCE/M7-WINDOWS-V12-CLEAN-PREFLIGHT.json"
+      ],
+      "id": "BLK-M7-WINDOWS-V12-INTERACTIVE-LOGON",
+      "required_authority": "HUMAN_ENVIRONMENT_OWNER",
+      "resolution": "Log in interactively to VM104 as M7-WIN-BASE\\Crugger without closing the RDP window, then run exact V12 J10 and its independent qualifier",
+      "scope": "M7_V12_J10_REQUALIFICATION",
+      "status": "OPEN",
+      "summary": "VM104 exact V12 no-provider clean cell is staged and waiting for the required human InteractiveToken RDP logon before J10",
+      "unrelated_work_may_continue": true
+    },
+    {
       "class": "IMPLEMENTATION_DEFECT",
       "evidence": [
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-FAILURE.json",
@@ -749,13 +767,14 @@
         "EVIDENCE/M7-WINDOWS-CODEX-INSTALL-1501-V11.json",
         "EVIDENCE/M7-WINDOWS-CODEX-AUTH-PROBE-1501-V11.json",
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-V11-FAILURE.json",
-        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V11-DURABLE-BLOCKED.json"
+        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V11-DURABLE-BLOCKED.json",
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml"
       ],
       "id": "BLK-M7-CODEX-PROVIDER-BLOCKED",
       "required_authority": "IMPLEMENTATION_OWNER",
-      "resolution": "Ship a new candidate that preserves inherited Windows ACLs on the managed workspace root, then requalify J10, standalone Codex J01/J16 and standalone Claude J02/J16 on exact clean cells; do not infer success from authentication, the diagnostic probe, prior-candidate passes, retries or another provider",
+      "resolution": "Requalify V12 J10, standalone Codex J01/J16 and standalone Claude J02/J16 on exact clean cells; do not infer success from authentication, the diagnostic probe, prior-candidate passes, retries or another provider",
       "scope": "M7_ACCEPTANCE",
-      "status": "IMPLEMENTATION_REMEDIATION_ACTIVE",
+      "status": "CLEAN_CELL_REQUALIFICATION_READY",
       "summary": "V11 moved Execution Workspaces outside the private RunStore tree but still created the Windows workspace root with mode 0o700, producing a protected owner-only DACL that the supported Codex unelevated sandbox cannot traverse",
       "unrelated_work_may_continue": true
     },
@@ -886,6 +905,11 @@
       "bytes": 444,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V11.json",
       "sha256": "3befb73f258496d7d47bb9ec69e314fc9ec7d9ed2e3604c7dc58d979a0dcdea1"
+    },
+    {
+      "bytes": 444,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V12.json",
+      "sha256": "7a267f2216b8825045f493c5a3d41491d184397e696b7adb04eb3549e6a61fbc"
     },
     {
       "bytes": 443,
@@ -1083,6 +1107,11 @@
       "sha256": "d24cbe7b6c23450ff6972276cae44a5179853c0ffb0bb42b7c1de573d2a6726d"
     },
     {
+      "bytes": 2864,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml",
+      "sha256": "7f64a55ee3f04744bbe77f4cc7611ee2aafc700e206ff0c26066fedb8ac76e47"
+    },
+    {
       "bytes": 2838,
       "path": "implementation/EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml",
       "sha256": "a005f2cf48907cab30cff1a23477e2acdf116bb1f6b439738193a1d292d57d75"
@@ -1101,6 +1130,16 @@
       "bytes": 649,
       "path": "implementation/EVIDENCE/M7-WINDOWS-V11-HOST-DEFENDER-PREFLIGHT.json",
       "sha256": "0eccb67687ac713541d26376e5544cf79fe11b36b4ca1bcb3a80d48c3eb6ed1b"
+    },
+    {
+      "bytes": 1875,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-V12-CLEAN-PREFLIGHT.json",
+      "sha256": "fb0e43447314dfa1ddbd8f9fd4fff99a80daf2e6f4ea581ecf45281e9d599687"
+    },
+    {
+      "bytes": 603,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-V12-HOST-DEFENDER-PREFLIGHT.json",
+      "sha256": "481894f3b36d7ea76fdd4bec4529f5a70867aa9c4827542a60e92221c3091eb6"
     },
     {
       "bytes": 1909,
@@ -1921,12 +1960,13 @@
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-PATH-DIAGNOSTIC-1.json",
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-PROVIDER-ROOT-DIAGNOSTIC-2.json",
         "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml",
-        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V11-DURABLE-BLOCKED.json"
+        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V11-DURABLE-BLOCKED.json",
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml"
       ],
       "id": "J01",
       "last_run": "2026-08-30",
       "public_shipping_composition": "ARTIFEX_SETUP_NUITKA_NSIS_PUBLIC_CLI_REAL_CODEX_VERTICAL_SLICE",
-      "status": "ACTIVE",
+      "status": "READY",
       "title": "J01 — Fresh Machine + Codex"
     },
     {
@@ -1937,7 +1977,8 @@
         "EVIDENCE/M7-FOUNDATION-OUTCOME.json",
         "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
         "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml",
-        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml"
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml",
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml"
       ],
       "id": "J02",
       "last_run": "2026-08-28",
@@ -2028,7 +2069,7 @@
       "title": "J09 — V1 Migration"
     },
     {
-      "blocker": null,
+      "blocker": "BLK-M7-WINDOWS-V12-INTERACTIVE-LOGON",
       "environment": "WINDOWS_11_25H2_X64_CLEAN_VM_NO_AUTOMATED_PROVIDER",
       "evidence": [
         "EVIDENCE/M7-FOUNDATION-OUTCOME.json",
@@ -2040,12 +2081,15 @@
         "EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V11.json",
         "EVIDENCE/M7-WINDOWS-V11-CLEAN-PREFLIGHT.json",
         "EVIDENCE/M7-WINDOWS-J10-V11-PASS.json",
-        "EVIDENCE/M7-WINDOWS-J10-V11-QUALIFIED.json"
+        "EVIDENCE/M7-WINDOWS-J10-V11-QUALIFIED.json",
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml",
+        "EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V12.json",
+        "EVIDENCE/M7-WINDOWS-V12-CLEAN-PREFLIGHT.json"
       ],
       "id": "J10",
       "last_run": "2026-08-30",
       "public_shipping_composition": "ARTIFEX_SETUP_NUITKA_NSIS_PUBLIC_MANAGED_SERVICE_MULTI_PROCESS",
-      "status": "PASS",
+      "status": "READY",
       "title": "J10 — No Automated Provider"
     },
     {
@@ -2120,12 +2164,13 @@
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-PATH-DIAGNOSTIC-1.json",
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-PROVIDER-ROOT-DIAGNOSTIC-2.json",
         "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml",
-        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V11-DURABLE-BLOCKED.json"
+        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V11-DURABLE-BLOCKED.json",
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml"
       ],
       "id": "J16",
       "last_run": "2026-08-30",
       "public_shipping_composition": "ARTIFEX_SETUP_NUITKA_NSIS_PUBLIC_CLI_MULTI_PROCESS_PROVIDER_SETUP",
-      "status": "ACTIVE",
+      "status": "READY",
       "title": "J16 — Provider Setup Persistence"
     },
     {
@@ -2584,7 +2629,7 @@
     "m8a_started": true,
     "m8b_started": true,
     "m8c_started": true,
-    "next_integration_point": "Build immutable V12 with inherited Windows workspace-root ACLs, then requalify J10 on VM104 and standalone Codex J01/J16 on VM105 before beginning Claude",
+    "next_integration_point": "Establish the VM104 InteractiveToken session and run exact V12 J10, then qualify standalone Codex J01/J16 on VM105 before beginning Claude",
     "recorded_date": "2026-08-29",
     "target_release": "2.0.0"
   },
@@ -2871,18 +2916,17 @@
   "summary": {
     "acceptance_classes_passing": 7,
     "acceptance_classes_required": 10,
-    "active_blockers": 3,
+    "active_blockers": 4,
     "adr_count": 24,
     "current_milestone": "M7",
     "current_milestone_progress_percent": 70,
-    "evidence_items": 74,
+    "evidence_items": 78,
     "invariant_count": 34,
     "journey_states": {
-      "ACTIVE": 2,
       "BLOCKED_EXTERNAL_PREREQUISITE": 1,
       "NOT_STARTED": 3,
-      "PASS": 13,
-      "READY": 1
+      "PASS": 12,
+      "READY": 4
     },
     "milestones_accepted": 8,
     "milestones_started": 11,

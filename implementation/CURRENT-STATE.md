@@ -14,20 +14,20 @@
 - Accepted milestones: `M0, M1, M2, M3, M4, M5, M6A, M8A`
 - Ready milestones: `none`
 - Latest accepted commit: `d7fa3c4ad419bd97e401ad765128dc3560484d90`
-- Next integration point: `Build immutable V12 with inherited Windows workspace-root ACLs, then requalify J10 on VM104 and standalone Codex J01/J16 on VM105 before beginning Claude`
+- Next integration point: `Establish the VM104 InteractiveToken session and run exact V12 J10, then qualify standalone Codex J01/J16 on VM105 before beginning Claude`
 - M7 started: `true`
 
 ## Work
 
 - Active workstreams: `none`
-- Active blockers: `3`
+- Active blockers: `4`
 - Dashboard state: `CURRENT`
 - V1 regression state: `PASS`
 - Migration state: `M0_BASELINE_ACCEPTED`
 
 ## Acceptance
 
-- M7 verdict: `ACTIVE_V11_FAILED_IMPLEMENTATION_REMEDIATION_AND_NEW_CANDIDATE_REQUIRED`
+- M7 verdict: `ACTIVE_V12_CANDIDATE_CLEAN_CELL_QUALIFICATION_PENDING`
 - Mandatory work complete: `false`
 - Mandatory journeys: `J01, J02, J10, J16`
-- Next integration point: `Build immutable V12 with inherited Windows workspace-root ACLs, then requalify J10 on VM104 and standalone Codex J01/J16 on VM105 before beginning Claude`
+- Next integration point: `Establish the VM104 InteractiveToken session and run exact V12 J10, then qualify standalone Codex J01/J16 on VM105 before beginning Claude`

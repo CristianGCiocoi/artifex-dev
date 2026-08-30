@@ -1,0 +1,70 @@
+schema_version: '1.0'
+evidence_id: EVD-M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12
+recorded_date: '2026-08-30'
+scope: SINGLE_EXACT_REMEDIATED_SHIPPING_CANDIDATE_FOR_ALL_M7_WINDOWS_CORE_CELLS
+authority:
+  decision: ARCHITECT_PRODUCT_PACKAGING_DISPOSITION
+  decision_sha256: d3cf45b8589992abc8acb6f86f00a85d426b4ef94d8f88009be081d52a4a36ca
+  primary_packaging: NUITKA_STANDALONE_PLUS_NSIS
+  onefile_authorized: false
+  fallback_invoked: false
+artifact:
+  name: ARTIFEX-Setup.exe
+  sha256: 2fada5a5b72c2df4f0a339984c8d135100b9bc666bf9f6ce8f34ba02aa5ca415
+  bytes: 16151834
+  format: nuitka-standalone+nsis
+  source_commit: f5f4138f6f3ea1da0a1c3a51a5e778c55a6751f9
+  product_version: 1.0.0
+  platform: windows
+  architecture: x86_64
+  nuitka_version: '4.2'
+  nsis_version: '3.12'
+  python_version: 3.12.13
+  standalone_executable_sha256: 4bd7f3ef6da6f15f38b2dc7cb7f0cb4497d6a1879cda4e4c2cd017a42fc28dd1
+  bundle_file_inventory_count: 80
+  provenance_sha256: 6ea099c641eb080c875f0e36645b946db6de750e5c00d1dd01d113d3f3e65a6b
+  build_timestamp_utc: '2026-08-30T16:25:04.670475+00:00'
+  qualification_harness_sha256: dd5f7925b437c16639e55d65b36439d5bb8806057ff1b551f5eb9b88e51f6c10
+build_validation:
+  command: .venv/Scripts/python.exe packaging/build_windows_installer.py --clean --smoke
+  result: PASS
+  system_version: PASS
+  presentation_mode: PASS
+  m7_plus_m0_tests: 104_PASS
+  control_plane: PASS
+  windows_workspace_root_inherited_dacl_test: PASS
+security_preflight:
+  developer_host:
+    evidence: EVIDENCE/M7-WINDOWS-V12-HOST-DEFENDER-PREFLIGHT.json
+    microsoft_defender_realtime_enabled: true
+    custom_scan: PASS_ZERO_DETECTIONS
+    candidate_retained: true
+  clean_vm:
+    evidence: EVIDENCE/M7-WINDOWS-V12-CLEAN-PREFLIGHT.json
+    hypervisor: Proxmox VE 9.2.3
+    vm_id: 104
+    snapshot: m7-qualified-25h2-x64-cell-base-v12
+    snapshot_config_sha256: ec6267992702bfa374d0a0dff5034ec37671fb4cdd9debcb50d3b798cfed19f6
+    os: Windows 11 Pro 25H2 x64
+    build: 26200.9168
+    microsoft_defender_realtime_enabled: true
+    exclusions_added: false
+    custom_scan: PASS_ZERO_DETECTIONS
+    candidate_retained: true
+    candidate_hash_reverified: true
+qualification_state:
+  M7-WIN-NOPROVIDER: READY_WAITING_INTERACTIVE_LOGON
+  M7-WIN-CODEX: PENDING_AFTER_V12_J10
+  M7-WIN-CLAUDE: PENDING_AFTER_V12_CODEX
+  m7_status: ACTIVE
+  active_blockers:
+  - BLK-M7-WINDOWS-V12-INTERACTIVE-LOGON
+  - BLK-M7-CODEX-PROVIDER-BLOCKED
+  clean_base_attestation: EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V12.json
+historical_evidence_preserved:
+- EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml
+- EVIDENCE/M7-WINDOWS-J10-V10-QUALIFIED.json
+- EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml
+- EVIDENCE/M7-WINDOWS-J10-V11-QUALIFIED.json
+- EVIDENCE/M7-WINDOWS-CODEX-VM105-V11-DURABLE-BLOCKED.json
+verdict: V12_CANDIDATE_BUILD_AND_HOST_PREFLIGHT_PASS_CLEAN_CELL_QUALIFICATION_PENDING

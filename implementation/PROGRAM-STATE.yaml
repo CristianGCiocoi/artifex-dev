@@ -15,7 +15,7 @@ program:
   current_status: ACTIVE
   latest_accepted_commit: d7fa3c4ad419bd97e401ad765128dc3560484d90
   canonical_integration_baseline: 2ea4a38e1bc18a2aa3535a1d224f508ca6561d88
-  next_integration_point: Build immutable V12 with inherited Windows workspace-root ACLs, then requalify J10 on VM104 and standalone Codex J01/J16 on VM105 before beginning Claude
+  next_integration_point: Establish the VM104 InteractiveToken session and run exact V12 J10, then qualify standalone Codex J01/J16 on VM105 before beginning Claude
   m1_started: true
   m2_started: true
   m3_started: true
