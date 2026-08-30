@@ -7,6 +7,7 @@ import json
 import os
 import re
 import sqlite3
+import sys
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -33,11 +34,33 @@ def default_capability_evidence_path() -> Path:
     return root.resolve() / "capability-evidence.sqlite3"
 
 
-def shipping_artifact_sha256() -> str | None:
-    """Return the installer/qualifier-bound wheel digest, never package source state."""
+def shipping_artifact_sha256(
+    *,
+    install_root: str | Path | None = None,
+    security_root: str | Path | None = None,
+) -> str | None:
+    """Return trusted shipping identity, never package source state.
+
+    Source and qualifier execution may supply an explicit frozen digest.  A
+    managed shipping process instead resolves the authenticated install
+    manifest beside its executable, which survives service restart without
+    developer-only environment wiring.
+    """
 
     value = os.environ.get("ARTIFEX_SHIPPING_ARTIFACT_SHA256", "").strip().casefold()
-    return value if _SHA256.fullmatch(value) is not None else None
+    if _SHA256.fullmatch(value) is not None:
+        return value
+    root = (
+        Path(install_root).expanduser().resolve()
+        if install_root is not None
+        else Path(sys.executable).resolve().parent
+    )
+    try:
+        from artifex.distribution.lifecycle import installed_shipping_artifact_sha256
+
+        return installed_shipping_artifact_sha256(root, security_root=security_root)
+    except (OSError, TypeError, ValueError):
+        return None
 
 
 @dataclass(frozen=True, slots=True)

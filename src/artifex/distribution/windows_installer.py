@@ -26,27 +26,41 @@ def apply_installer(
     source = Path(source_executable).resolve()
     root = Path(install_root).resolve()
     service_state = Path(service_state_root).resolve()
-    common = {
-        "managed_service": True,
-        "service_state_root": service_state,
-        "service_id": "artifex-managed-service",
-        "service_readiness_timeout_seconds": 60,
-    }
     if (root / MANIFEST_NAME).is_file():
-        decision = upgrade_plan(source, root, **common)
+        decision = upgrade_plan(
+            source,
+            root,
+            managed_service=True,
+            service_state_root=service_state,
+            service_id="artifex-managed-service",
+            service_readiness_timeout_seconds=60,
+        )
         result = upgrade(
             source,
             root,
             confirmation_token=decision.confirmation_token,
-            **common,
+            managed_service=True,
+            service_state_root=service_state,
+            service_id="artifex-managed-service",
+            service_readiness_timeout_seconds=60,
         )
     else:
-        decision = install_plan(source, root, **common)
+        decision = install_plan(
+            source,
+            root,
+            managed_service=True,
+            service_state_root=service_state,
+            service_id="artifex-managed-service",
+            service_readiness_timeout_seconds=60,
+        )
         result = install(
             source,
             root,
             confirmation_token=decision.confirmation_token,
-            **common,
+            managed_service=True,
+            service_state_root=service_state,
+            service_id="artifex-managed-service",
+            service_readiness_timeout_seconds=60,
         )
     return result.to_dict()
 
@@ -55,14 +69,16 @@ def remove_installer(install_root: str | Path) -> dict[str, Any]:
     """Unregister the service and remove manifest-owned files for NSIS."""
 
     root = Path(install_root).resolve()
-    common = {
-        "managed_service": True,
-        "service_id": "artifex-managed-service",
-        "service_readiness_timeout_seconds": 60,
-    }
-    decision = uninstall_plan(root, **common)
+    decision = uninstall_plan(
+        root,
+        managed_service=True,
+        service_id="artifex-managed-service",
+        service_readiness_timeout_seconds=60,
+    )
     return uninstall(
         root,
         confirmation_token=decision.confirmation_token,
-        **common,
+        managed_service=True,
+        service_id="artifex-managed-service",
+        service_readiness_timeout_seconds=60,
     )

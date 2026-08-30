@@ -15,6 +15,7 @@ from typer.testing import CliRunner
 from artifex import cli as cli_module
 from artifex.application import Application, OperationContext, OperationRequest
 from artifex.application import api as application_api
+from artifex.capabilities.evidence import shipping_artifact_sha256
 from artifex.cli import app
 from artifex.distribution import (
     ApprovalStore,
@@ -729,6 +730,36 @@ def test_manifest_lifecycle_is_reversible_and_preserves_unrelated_files(tmp_path
     assert str(backup_executable) in removed["removed"]
     assert unrelated.read_text(encoding="utf-8") == "preserve"
     assert root.is_dir()
+
+
+@pytest.mark.integration
+def test_installed_shipping_identity_survives_fresh_process_environment(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    approvals = ApprovalStore(tmp_path / "approvals")
+    security = tmp_path / "security"
+    source = _write_test_artifact(tmp_path / "release", b"qualified-native")
+    root = tmp_path / "installed"
+    expected = hashlib.sha256(b"qualified-native").hexdigest()
+    plan = install_plan(
+        source, root, approval_store=approvals, identity_probe=_test_identity_probe
+    )
+    install(
+        source,
+        root,
+        confirmation_token=plan.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+    )
+    monkeypatch.delenv("ARTIFEX_SHIPPING_ARTIFACT_SHA256", raising=False)
+
+    assert (
+        shipping_artifact_sha256(install_root=root, security_root=security) == expected
+    )
+
+    (root / source.name).write_bytes(b"tampered")
+    assert shipping_artifact_sha256(install_root=root, security_root=security) is None
 
 
 @pytest.mark.adversarial

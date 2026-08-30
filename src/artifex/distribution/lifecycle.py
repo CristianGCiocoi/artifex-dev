@@ -1086,6 +1086,34 @@ def _load_manifest(
     return root, path, value, key
 
 
+def installed_shipping_artifact_sha256(
+    install_root: str | Path,
+    *,
+    security_root: str | Path | None = None,
+) -> str:
+    """Return the authenticated digest of the installed shipping executable.
+
+    Live provider certification runs in a fresh managed-service process, so it
+    cannot depend on a qualifier-only environment variable surviving service
+    registration or restart.  The installer-owned manifest is the durable
+    authority for the exact shipping executable that the service is running.
+    """
+
+    root, _, manifest, _ = _load_manifest(install_root, security_root=security_root)
+    _verify_managed_checksums(root, manifest)
+    artifact_manifest = manifest["artifact_manifest"]
+    if not isinstance(artifact_manifest, Mapping):
+        raise ValueError("installed artifact identity is missing")
+    digest = artifact_manifest.get("sha256")
+    if (
+        not isinstance(digest, str)
+        or len(digest) != 64
+        or any(character not in "0123456789abcdef" for character in digest)
+    ):
+        raise ValueError("installed shipping artifact digest is invalid")
+    return digest
+
+
 def _manifest_entries(
     manifest: Mapping[str, Any], field: str, *, required: bool
 ) -> tuple[dict[str, str], ...]:
