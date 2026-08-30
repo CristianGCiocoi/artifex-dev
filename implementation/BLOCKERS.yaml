@@ -1,5 +1,17 @@
 schema_version: '1.0'
 blockers:
+- id: BLK-M7-CODEX-V12-INTERACTIVE-LOGON
+  scope: M7_V12_CODEX_CELL
+  class: HUMAN_ENVIRONMENT
+  status: OPEN
+  summary: VM105 exact V12 Codex clean cell is staged and waiting for the required human InteractiveToken RDP logon before official Codex installation and authentication
+  evidence:
+  - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml
+  - EVIDENCE/M7-WINDOWS-CODEX-CLEAN-BASE-ATTESTATION-VM105-V12.json
+  - EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-CLEAN-PREFLIGHT.json
+  required_authority: HUMAN_ENVIRONMENT_OWNER
+  resolution: Log in interactively to VM105 as M7-WIN-BASE\Crugger, then install and authenticate only Codex before exact V12 J01 and J16
+  unrelated_work_may_continue: true
 - id: BLK-M7-CODEX-PROVIDER-BLOCKED
   scope: M7_ACCEPTANCE
   class: IMPLEMENTATION_DEFECT

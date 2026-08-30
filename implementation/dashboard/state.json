@@ -743,6 +743,21 @@
   ],
   "blockers": [
     {
+      "class": "HUMAN_ENVIRONMENT",
+      "evidence": [
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml",
+        "EVIDENCE/M7-WINDOWS-CODEX-CLEAN-BASE-ATTESTATION-VM105-V12.json",
+        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-CLEAN-PREFLIGHT.json"
+      ],
+      "id": "BLK-M7-CODEX-V12-INTERACTIVE-LOGON",
+      "required_authority": "HUMAN_ENVIRONMENT_OWNER",
+      "resolution": "Log in interactively to VM105 as M7-WIN-BASE\\Crugger, then install and authenticate only Codex before exact V12 J01 and J16",
+      "scope": "M7_V12_CODEX_CELL",
+      "status": "OPEN",
+      "summary": "VM105 exact V12 Codex clean cell is staged and waiting for the required human InteractiveToken RDP logon before official Codex installation and authentication",
+      "unrelated_work_may_continue": true
+    },
+    {
       "class": "IMPLEMENTATION_DEFECT",
       "evidence": [
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-FAILURE.json",
@@ -925,6 +940,11 @@
     },
     {
       "bytes": 445,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-CLEAN-BASE-ATTESTATION-VM105-V12.json",
+      "sha256": "9b4e289ee2fc49834e47e8020284b34e8b5f18e2ae770f6a4780a637d73f391c"
+    },
+    {
+      "bytes": 445,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-CLEAN-BASE-ATTESTATION-VM105.json",
       "sha256": "676979dca65007608d3cc97a5359da1368c5a6ed208ef3852e9eb486134928a8"
     },
@@ -1059,6 +1079,11 @@
       "sha256": "65faf9f8500ed1fdd7f05ff9e97df288bd361a9f427aa9b8633e7d338dc2eef4"
     },
     {
+      "bytes": 1875,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-CLEAN-PREFLIGHT.json",
+      "sha256": "73d3e5e67a0601dd95630a7653313c6990d46457a2593d457ddaa09b1aaace00"
+    },
+    {
       "bytes": 3305,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
       "sha256": "10a5fccaf17b10832f6c808e804054a7624d447dc73233d4eae30e69a52605b9"
@@ -1104,9 +1129,9 @@
       "sha256": "d24cbe7b6c23450ff6972276cae44a5179853c0ffb0bb42b7c1de573d2a6726d"
     },
     {
-      "bytes": 3084,
+      "bytes": 3311,
       "path": "implementation/EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml",
-      "sha256": "d7b4b7a770a577cd2b9a46ba1a159d596a1d91a7839f0af20c7f9b3374fcf4c5"
+      "sha256": "4cc61039b044f9228f31b6db27c43fef0631a8e06dc43836133ebd4481fb920d"
     },
     {
       "bytes": 2838,
@@ -1958,7 +1983,9 @@
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-PROVIDER-ROOT-DIAGNOSTIC-2.json",
         "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml",
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-V11-DURABLE-BLOCKED.json",
-        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml"
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml",
+        "EVIDENCE/M7-WINDOWS-CODEX-CLEAN-BASE-ATTESTATION-VM105-V12.json",
+        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-CLEAN-PREFLIGHT.json"
       ],
       "id": "J01",
       "last_run": "2026-08-30",
@@ -2164,7 +2191,9 @@
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-PROVIDER-ROOT-DIAGNOSTIC-2.json",
         "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml",
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-V11-DURABLE-BLOCKED.json",
-        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml"
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml",
+        "EVIDENCE/M7-WINDOWS-CODEX-CLEAN-BASE-ATTESTATION-VM105-V12.json",
+        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-CLEAN-PREFLIGHT.json"
       ],
       "id": "J16",
       "last_run": "2026-08-30",
@@ -2641,7 +2670,7 @@
     "m8a_started": true,
     "m8b_started": true,
     "m8c_started": true,
-    "next_integration_point": "Reset VM105 to its clean provider-free base, stage exact V12, then qualify standalone Codex J01/J16 before beginning Claude",
+    "next_integration_point": "Establish the VM105 InteractiveToken session, install and authenticate only Codex, then run exact V12 J01/J16 before beginning Claude",
     "recorded_date": "2026-08-29",
     "target_release": "2.0.0"
   },
@@ -2928,11 +2957,11 @@
   "summary": {
     "acceptance_classes_passing": 7,
     "acceptance_classes_required": 10,
-    "active_blockers": 3,
+    "active_blockers": 4,
     "adr_count": 24,
     "current_milestone": "M7",
     "current_milestone_progress_percent": 70,
-    "evidence_items": 80,
+    "evidence_items": 82,
     "invariant_count": 34,
     "journey_states": {
       "BLOCKED_EXTERNAL_PREREQUISITE": 1,
