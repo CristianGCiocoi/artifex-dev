@@ -14,20 +14,20 @@
 - Accepted milestones: `M0, M1, M2, M3, M4, M5, M6A, M8A`
 - Ready milestones: `none`
 - Latest accepted commit: `d7fa3c4ad419bd97e401ad765128dc3560484d90`
-- Next integration point: `Establish the VM105 InteractiveToken session, install and authenticate only Codex, then run exact V12 J01/J16 before beginning Claude`
+- Next integration point: `Build one immutable post-V12 artifact-binding candidate, requalify J10, then run standalone Codex J01/J16 and standalone Claude J02/J16 on exact clean candidate-bound cells`
 - M7 started: `true`
 
 ## Work
 
 - Active workstreams: `none`
-- Active blockers: `4`
+- Active blockers: `3`
 - Dashboard state: `CURRENT`
 - V1 regression state: `PASS`
 - Migration state: `M0_BASELINE_ACCEPTED`
 
 ## Acceptance
 
-- M7 verdict: `ACTIVE_J10_V12_PASS_CODEX_AND_CLAUDE_V12_PENDING`
+- M7 verdict: `ACTIVE_J10_V12_PASS_CODEX_V12_FAIL_ARTIFACT_BINDING_NEW_CANDIDATE_REQUIRED`
 - Mandatory work complete: `false`
 - Mandatory journeys: `J01, J02, J10, J16`
-- Next integration point: `Establish the VM105 InteractiveToken session, install and authenticate only Codex, then run exact V12 J01/J16 before beginning Claude`
+- Next integration point: `Build one immutable post-V12 artifact-binding candidate, requalify J10, then run standalone Codex J01/J16 and standalone Claude J02/J16 on exact clean candidate-bound cells`

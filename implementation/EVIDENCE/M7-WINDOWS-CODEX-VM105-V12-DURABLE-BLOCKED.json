@@ -1,0 +1,88 @@
+{
+  "schema_version": "1.0",
+  "evidence_id": "EVD-M7-WINDOWS-CODEX-VM105-V12-DURABLE-BLOCKED",
+  "recorded_date": "2026-08-30",
+  "cell_id": "M7-WIN-CODEX",
+  "status": "FAIL",
+  "classification": "IMPLEMENTATION_DEFECT_INSTALLED_SHIPPING_ARTIFACT_BINDING",
+  "environment": {
+    "vm_id": 105,
+    "snapshot_name": "m7-qualified-25h2-x64-codex-cell-v12",
+    "snapshot_config_sha256": "1d9ffaae3acb52ff9f7d0d142b6526af54d6f2f03c52b499a1cdbbf36576d1ec",
+    "os": "Windows 11 Pro 25H2 x64",
+    "os_build": "26200.9168",
+    "interactive_user_logon": true,
+    "claude_absent": true,
+    "source_checkout_absent_at_cell_start": true
+  },
+  "shipping_candidate": {
+    "source_commit": "f5f4138f6f3ea1da0a1c3a51a5e778c55a6751f9",
+    "artifact_sha256": "2fada5a5b72c2df4f0a339984c8d135100b9bc666bf9f6ce8f34ba02aa5ca415",
+    "standalone_executable_sha256": "4bd7f3ef6da6f15f38b2dc7cb7f0cb4497d6a1879cda4e4c2cd017a42fc28dd1",
+    "provenance_sha256": "6ea099c641eb080c875f0e36645b946db6de750e5c00d1dd01d113d3f3e65a6b",
+    "qualification_harness_sha256": "dd5f7925b437c16639e55d65b36439d5bb8806057ff1b551f5eb9b88e51f6c10"
+  },
+  "provider": {
+    "id": "codex",
+    "version": "codex-cli 0.150.1",
+    "executable_sha256": "cbd657ddfe151d1a6ebad660beffdbd3265dc5aff4b3a6095124d3e2f0156f2f",
+    "install_evidence_sha256": "b12d70b0f2237373a7d2ef71e6f3d6403e90d43c2e66d0e34fc92f40bac95e98",
+    "login_status_evidence_sha256": "9b57d61d9499428d81d4ddeec6fbb281796d3c1cbd971a41c7faec9a4788162a",
+    "authentication_probe_status": "PASS",
+    "authentication_probe_evidence_sha256": "ea214f67f8fb071188c92c8e9cb1ffc7cad3a6b2300f99555cae4a02ac4f88d2",
+    "fresh_runtime_readiness": "AVAILABLE"
+  },
+  "shipping_capture": {
+    "path": "EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-FAIL.json",
+    "sha256": "6079955f57e48a3e5a55ccc3a2082f89680efe4a2a5b3f35aabe40621c3247ec",
+    "runner_log_sha256": "66e59eba9ab3bd5aae5f8f540827b1bde6182097cc6a68b3449b954d5903a834",
+    "diagnostic": "provider roles are not independently live-certified"
+  },
+  "runtime_outcome": {
+    "interaction_completed": true,
+    "execution_completed": true,
+    "owned_deliverable_created": true,
+    "independent_acceptance_recorded": true,
+    "project_authority_promotion_revision": 2,
+    "provider_result_self_accepted": false,
+    "role_certification_passed": false
+  },
+  "certification_receipts": {
+    "interaction": {
+      "receipt_id": "35df0fe3923311cbc823caf168291609ff9e7da9700af894d60fe83a4630ccf3",
+      "provider_version": null,
+      "provider_executable_sha256": null,
+      "auth_probe_sha256": null,
+      "shipping_artifact_sha256": null
+    },
+    "execution_implementer": {
+      "receipt_id": "799e91bd16515ad508b3ca1d05b913293a1c9eb9caf5b680d9fb007bc3aa90af",
+      "acceptance_decision_id": "decision-ff07af7d-2fe9-4deb-a506-6c8fbaa621e4",
+      "promotion_revision": 2,
+      "provider_version": null,
+      "provider_executable_sha256": null,
+      "auth_probe_sha256": null,
+      "shipping_artifact_sha256": null
+    }
+  },
+  "root_cause": {
+    "provider_graph_version": "0.150.1",
+    "provider_graph_executable_sha256": "cbd657ddfe151d1a6ebad660beffdbd3265dc5aff4b3a6095124d3e2f0156f2f",
+    "provider_graph_auth_probe_sha256": "fe9c6234c6c01a92fe62533e31dd16f21cce3e83c56b7de1e2c154574b09d6a1",
+    "cause": "The fresh managed-service process could not resolve ARTIFEX shipping identity after restart because shipping_artifact_sha256 used only a qualifier environment variable. The all-or-none live binding therefore persisted null provider, authentication and shipping hashes even though provider readiness and real execution passed.",
+    "remediation": "Resolve shipping identity from the authenticated installer-owned manifest beside the running executable and verify every managed checksum; retain the environment digest only for explicit source or qualifier execution."
+  },
+  "journeys": {
+    "J01": "FAIL_IMPLEMENTATION_DEFECT",
+    "J16": "FAIL_IMPLEMENTATION_DEFECT"
+  },
+  "qualification_policy": {
+    "m7_accepted": false,
+    "real_execution_treated_as_role_certification": false,
+    "authentication_treated_as_journey_success": false,
+    "combined_provider_inference_used": false,
+    "developer_machine_evidence_used": false,
+    "v12_failure_preserved": true
+  },
+  "next_action": "Build one new immutable candidate with authenticated installed-artifact resolution, then requalify J10 and each standalone provider cell from clean candidate-bound baselines."
+}

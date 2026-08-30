@@ -1,0 +1,8 @@
+﻿{
+    "schema_version":  "1.0",
+    "status":  "PASS",
+    "provider":  "codex",
+    "version":  "codex-cli 0.150.1",
+    "executable_sha256":  "cbd657ddfe151d1a6ebad660beffdbd3265dc5aff4b3a6095124d3e2f0156f2f",
+    "installer_sha256":  "391f247de2c70c7e99041979ec02dae7e76be27ac9cfc1dfe7c1eb21d48d8b97"
+}

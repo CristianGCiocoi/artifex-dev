@@ -15,7 +15,7 @@ program:
   current_status: ACTIVE
   latest_accepted_commit: d7fa3c4ad419bd97e401ad765128dc3560484d90
   canonical_integration_baseline: 2ea4a38e1bc18a2aa3535a1d224f508ca6561d88
-  next_integration_point: Establish the VM105 InteractiveToken session, install and authenticate only Codex, then run exact V12 J01/J16 before beginning Claude
+  next_integration_point: Build one immutable post-V12 artifact-binding candidate, requalify J10, then run standalone Codex J01/J16 and standalone Claude J02/J16 on exact clean candidate-bound cells
   m1_started: true
   m2_started: true
   m3_started: true

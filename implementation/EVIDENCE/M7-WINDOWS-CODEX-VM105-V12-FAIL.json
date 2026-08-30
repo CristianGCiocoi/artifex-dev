@@ -1,0 +1,6 @@
+{
+  "diagnostic": "provider roles are not independently live-certified",
+  "error": "JourneyFailure",
+  "schema_version": "1.0",
+  "status": "FAIL"
+}
