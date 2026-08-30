@@ -1,5 +1,17 @@
 schema_version: '1.0'
 blockers:
+- id: BLK-M7-WINDOWS-V11-INTERACTIVE-LOGON
+  scope: M7_V11_J10_REQUALIFICATION
+  class: HUMAN_ENVIRONMENT
+  status: OPEN
+  summary: VM104 exact V11 clean cell is staged and waiting for the required human InteractiveToken logon before the public shipping journey can start
+  evidence:
+  - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml
+  - EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V11.json
+  - EVIDENCE/M7-WINDOWS-V11-CLEAN-PREFLIGHT.json
+  required_authority: HUMAN_ENVIRONMENT_OWNER
+  resolution: Log in interactively to VM104 as M7-WIN-BASE\Crugger without enabling AutoLogon, then run the already staged V11 J10 journey
+  unrelated_work_may_continue: true
 - id: BLK-M7-CODEX-PROVIDER-BLOCKED
   scope: M7_ACCEPTANCE
   class: IMPLEMENTATION_DEFECT

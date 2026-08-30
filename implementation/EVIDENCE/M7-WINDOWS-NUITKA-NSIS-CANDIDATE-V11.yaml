@@ -1,0 +1,65 @@
+schema_version: '1.0'
+evidence_id: EVD-M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11
+recorded_date: '2026-08-30'
+scope: SINGLE_EXACT_REMEDIATED_SHIPPING_CANDIDATE_FOR_ALL_M7_WINDOWS_CORE_CELLS
+authority:
+  decision: ARCHITECT_PRODUCT_PACKAGING_DISPOSITION
+  decision_sha256: d3cf45b8589992abc8acb6f86f00a85d426b4ef94d8f88009be081d52a4a36ca
+  primary_packaging: NUITKA_STANDALONE_PLUS_NSIS
+  onefile_authorized: false
+  fallback_invoked: false
+artifact:
+  name: ARTIFEX-Setup.exe
+  sha256: 6e4fe78c958baac341db15f02e009f74f6788f3cc9cfa92d81f0e4fec2df25dd
+  bytes: 16148194
+  format: nuitka-standalone+nsis
+  source_commit: ff22cfcbd24738ed964db629ae9391ec8a1e4761
+  product_version: 1.0.0
+  platform: windows
+  architecture: x86_64
+  nuitka_version: '4.2'
+  nsis_version: '3.12'
+  python_version: 3.12.13
+  standalone_executable_sha256: 463731caaf21d4114d73e77f03751fe25e7c967bd5c2afbdecb74048fd58bd4d
+  bundle_file_inventory_count: 80
+  provenance_sha256: cfe13e27eec1ec63f5d9b56f9663d1fa58839548f59ce65246ef0ad3400f42b0
+  build_timestamp_utc: '2026-08-30T07:50:28.087915+00:00'
+  qualification_harness_sha256: dd5f7925b437c16639e55d65b36439d5bb8806057ff1b551f5eb9b88e51f6c10
+build_validation:
+  command: .venv/Scripts/python.exe packaging/build_windows_installer.py --clean --smoke
+  result: PASS
+  system_version: PASS
+  presentation_mode: PASS
+  m7_tests: 95_PASS
+  control_plane: PASS
+security_preflight:
+  developer_host:
+    evidence: EVIDENCE/M7-WINDOWS-V11-HOST-DEFENDER-PREFLIGHT.json
+    microsoft_defender_realtime_enabled: true
+    custom_scan: PASS_ZERO_DETECTIONS
+    candidate_retained: true
+  clean_vm:
+    evidence: EVIDENCE/M7-WINDOWS-V11-CLEAN-PREFLIGHT.json
+    hypervisor: Proxmox VE 9.2.3
+    vm_id: 104
+    snapshot: m7-qualified-25h2-x64-cell-base-v11
+    os: Windows 11 Pro 25H2 x64
+    build: 26200.9168
+    microsoft_defender_realtime_enabled: true
+    exclusions_added: false
+    custom_scan: PASS_ZERO_DETECTIONS
+    candidate_retained: true
+    candidate_hash_reverified: true
+qualification_state:
+  M7-WIN-NOPROVIDER: WAITING_INTERACTIVE_LOGON
+  M7-WIN-CODEX: PENDING_V11_CLEAN_RESET
+  M7-WIN-CLAUDE: PENDING_V11_CLEAN_RESET
+  m7_status: ACTIVE
+  active_blocker: BLK-M7-WINDOWS-V11-INTERACTIVE-LOGON
+  clean_base_attestation: EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V11.json
+historical_evidence_preserved:
+- EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml
+- EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-DURABLE-BLOCKED.json
+- EVIDENCE/M7-WINDOWS-CODEX-VM105-PATH-DIAGNOSTIC-1.json
+- EVIDENCE/M7-WINDOWS-CODEX-VM105-PROVIDER-ROOT-DIAGNOSTIC-2.json
+verdict: V11_CANDIDATE_PREFLIGHT_PASS_WAITING_CLEAN_CELL_JOURNEYS

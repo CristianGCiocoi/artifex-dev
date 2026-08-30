@@ -9,10 +9,11 @@
       "BLACK_BOX_OUTCOME": {
         "evidence": [
           "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
-          "EVIDENCE/M7-WINDOWS-J10-V10-QUALIFIED.json"
+          "EVIDENCE/M7-WINDOWS-J10-V10-QUALIFIED.json",
+          "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml"
         ],
         "required_m7": true,
-        "status": "PARTIAL_PASS_J10"
+        "status": "V10_J10_HISTORICAL_PASS_V11_REQUALIFICATION_PENDING"
       },
       "COMPONENT": {
         "evidence": [
@@ -72,10 +73,11 @@
         "evidence": [
           "EVIDENCE/M7-FOUNDATION-OUTCOME.json",
           "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml",
-          "EVIDENCE/M7-WINDOWS-J10-V10-QUALIFIED.json"
+          "EVIDENCE/M7-WINDOWS-J10-V10-QUALIFIED.json",
+          "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml"
         ],
         "required_m7": true,
-        "status": "PARTIAL_PASS_J10"
+        "status": "V10_J10_HISTORICAL_PASS_V11_REQUALIFICATION_PENDING"
       },
       "SECURITY_AUTHORITY": {
         "evidence": [
@@ -100,7 +102,7 @@
     "schema_version": "1.0",
     "superseded": [],
     "unresolved_contradiction": null,
-    "verdict": "ACTIVE_J10_V10_PASS_CODEX_WORKSPACE_REMEDIATION_CLAUDE_PENDING"
+    "verdict": "ACTIVE_V11_PREFLIGHT_PASS_ALL_CLEAN_CELL_JOURNEYS_PENDING"
   },
   "adrs": [
     {
@@ -732,6 +734,21 @@
   ],
   "blockers": [
     {
+      "class": "HUMAN_ENVIRONMENT",
+      "evidence": [
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml",
+        "EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V11.json",
+        "EVIDENCE/M7-WINDOWS-V11-CLEAN-PREFLIGHT.json"
+      ],
+      "id": "BLK-M7-WINDOWS-V11-INTERACTIVE-LOGON",
+      "required_authority": "HUMAN_ENVIRONMENT_OWNER",
+      "resolution": "Log in interactively to VM104 as M7-WIN-BASE\\Crugger without enabling AutoLogon, then run the already staged V11 J10 journey",
+      "scope": "M7_V11_J10_REQUALIFICATION",
+      "status": "OPEN",
+      "summary": "VM104 exact V11 clean cell is staged and waiting for the required human InteractiveToken logon before the public shipping journey can start",
+      "unrelated_work_may_continue": true
+    },
+    {
       "class": "IMPLEMENTATION_DEFECT",
       "evidence": [
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-FAILURE.json",
@@ -871,6 +888,11 @@
       "sha256": "3bae7ad38a5bacf1055540c9ee04f219e242292fb45b2161e71d095d48d30fa7"
     },
     {
+      "bytes": 444,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V11.json",
+      "sha256": "3befb73f258496d7d47bb9ec69e314fc9ec7d9ed2e3604c7dc58d979a0dcdea1"
+    },
+    {
       "bytes": 443,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V9.json",
       "sha256": "ba6f5468d8fd7ac47e63acb755c7279aa8cde0d6887dc9c562406feeb375e073"
@@ -996,9 +1018,9 @@
       "sha256": "b525d4bc90d0621e5545750911c1e56b6ec4397b029808da358f8dd81a369319"
     },
     {
-      "bytes": 2936,
+      "bytes": 3034,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
-      "sha256": "b36beba18524a869475665a5cb01db0e6c1e230e1fc29eb3b1aafb1a83b75686"
+      "sha256": "17116cd6e7ab557a3b596d864a68879fdbada2ddcdefdb4edd5cdc6d1c4a71d2"
     },
     {
       "bytes": 2929,
@@ -1016,6 +1038,11 @@
       "sha256": "be0e6de054b2b7b667388447da9f21c17c9ce9bc09a67e87e5da40a9db74d2d0"
     },
     {
+      "bytes": 2628,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml",
+      "sha256": "735e4e6fd46ab0f66534acd58f067b03fea4146d2cc4771813f9d55cfae9c472"
+    },
+    {
       "bytes": 2838,
       "path": "implementation/EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml",
       "sha256": "a005f2cf48907cab30cff1a23477e2acdf116bb1f6b439738193a1d292d57d75"
@@ -1024,6 +1051,16 @@
       "bytes": 2310,
       "path": "implementation/EVIDENCE/M7-WINDOWS-SERVICE-SOURCE-VALIDATION.yaml",
       "sha256": "961c7357d6deaa75e7c52eba27097994a78e6ff2c40c99f47011d26adb5938d1"
+    },
+    {
+      "bytes": 1663,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-V11-CLEAN-PREFLIGHT.json",
+      "sha256": "cb059e5a18b84f795293f505659db2e4c348655ca5ff0a452613480cf5f87cbe"
+    },
+    {
+      "bytes": 649,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-V11-HOST-DEFENDER-PREFLIGHT.json",
+      "sha256": "0eccb67687ac713541d26376e5544cf79fe11b36b4ca1bcb3a80d48c3eb6ed1b"
     },
     {
       "bytes": 1909,
@@ -1842,7 +1879,8 @@
         "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml",
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-DURABLE-BLOCKED.json",
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-PATH-DIAGNOSTIC-1.json",
-        "EVIDENCE/M7-WINDOWS-CODEX-VM105-PROVIDER-ROOT-DIAGNOSTIC-2.json"
+        "EVIDENCE/M7-WINDOWS-CODEX-VM105-PROVIDER-ROOT-DIAGNOSTIC-2.json",
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml"
       ],
       "id": "J01",
       "last_run": "2026-08-30",
@@ -1857,7 +1895,8 @@
         "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json",
         "EVIDENCE/M7-FOUNDATION-OUTCOME.json",
         "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
-        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml"
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml",
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml"
       ],
       "id": "J02",
       "last_run": "2026-08-28",
@@ -1948,19 +1987,22 @@
       "title": "J09 — V1 Migration"
     },
     {
-      "blocker": null,
+      "blocker": "BLK-M7-WINDOWS-V11-INTERACTIVE-LOGON",
       "environment": "WINDOWS_11_25H2_X64_CLEAN_VM_NO_AUTOMATED_PROVIDER",
       "evidence": [
         "EVIDENCE/M7-FOUNDATION-OUTCOME.json",
         "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
         "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml",
         "EVIDENCE/M7-WINDOWS-J10-V10-PASS.json",
-        "EVIDENCE/M7-WINDOWS-J10-V10-QUALIFIED.json"
+        "EVIDENCE/M7-WINDOWS-J10-V10-QUALIFIED.json",
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml",
+        "EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V11.json",
+        "EVIDENCE/M7-WINDOWS-V11-CLEAN-PREFLIGHT.json"
       ],
       "id": "J10",
-      "last_run": "2026-08-29",
+      "last_run": "2026-08-30",
       "public_shipping_composition": "ARTIFEX_SETUP_NUITKA_NSIS_PUBLIC_MANAGED_SERVICE_MULTI_PROCESS",
-      "status": "PASS",
+      "status": "READY",
       "title": "J10 — No Automated Provider"
     },
     {
@@ -2033,7 +2075,8 @@
         "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml",
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-DURABLE-BLOCKED.json",
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-PATH-DIAGNOSTIC-1.json",
-        "EVIDENCE/M7-WINDOWS-CODEX-VM105-PROVIDER-ROOT-DIAGNOSTIC-2.json"
+        "EVIDENCE/M7-WINDOWS-CODEX-VM105-PROVIDER-ROOT-DIAGNOSTIC-2.json",
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml"
       ],
       "id": "J16",
       "last_run": "2026-08-30",
@@ -2470,7 +2513,7 @@
     "m8a_started": true,
     "m8b_started": true,
     "m8c_started": true,
-    "next_integration_point": "Build a new candidate from the Windows provider-workspace remediation, requalify all three clean M7 cells, and preserve the V10 Codex BLOCKED outcome as immutable regression evidence",
+    "next_integration_point": "Establish the human InteractiveToken session on VM104, requalify J10 on exact V11, then reset the independent Codex and Claude cells to V11",
     "recorded_date": "2026-08-29",
     "target_release": "2.0.0"
   },
@@ -2757,18 +2800,18 @@
   "summary": {
     "acceptance_classes_passing": 7,
     "acceptance_classes_required": 10,
-    "active_blockers": 3,
+    "active_blockers": 4,
     "adr_count": 24,
     "current_milestone": "M7",
     "current_milestone_progress_percent": 70,
-    "evidence_items": 61,
+    "evidence_items": 65,
     "invariant_count": 34,
     "journey_states": {
       "ACTIVE": 2,
       "BLOCKED_EXTERNAL_PREREQUISITE": 1,
       "NOT_STARTED": 3,
-      "PASS": 13,
-      "READY": 1
+      "PASS": 12,
+      "READY": 2
     },
     "milestones_accepted": 8,
     "milestones_started": 11,
