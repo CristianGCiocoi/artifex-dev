@@ -540,7 +540,6 @@ def run_provider_cell(
     project_id = f"{prefix}-{instance_key}-project"
     catalog_path = project_root.parent / f"{project_root.name}-catalog.sqlite3"
     store_path = state_root / "runstore.sqlite3"
-    workspace_root = state_root / "workspaces"
     run_id = f"{prefix}-{instance_key}-run"
     project_job_id = f"{prefix}-{instance_key}-job"
     attempt_id = f"{prefix}-{instance_key}-attempt"
@@ -721,6 +720,7 @@ def run_provider_cell(
         raise JourneyFailure("provider setup restart did not advance service generation")
     if int(after["process_id"]) == int(before["process_id"]):
         raise JourneyFailure("provider setup restart did not change service process")
+    workspace_root = _provider_workspace_root(after, state_root=state_root)
 
     bootstrap = _value(
         cli.service_call(
@@ -1719,6 +1719,24 @@ def _running_service_value(result: Mapping[str, Any]) -> Mapping[str, Any]:
     ):
         raise JourneyFailure("managed service is not a frontend-independent loopback service")
     return value
+
+
+def _provider_workspace_root(
+    service: Mapping[str, Any], *, state_root: Path, platform_name: str = os.name
+) -> Path:
+    paths = service.get("paths")
+    raw_workspace = paths.get("workspace_root") if isinstance(paths, Mapping) else None
+    if not isinstance(raw_workspace, str) or not raw_workspace.strip():
+        raise JourneyFailure("managed-service status does not expose its workspace authority")
+    workspace_root = Path(raw_workspace).expanduser().resolve()
+    resolved_state = state_root.expanduser().resolve()
+    if platform_name == "nt":
+        expected = resolved_state.with_name(f"{resolved_state.name}-workspaces")
+        if workspace_root != expected or resolved_state in workspace_root.parents:
+            raise JourneyFailure(
+                "Windows provider workspace authority remains inside the private state tree"
+            )
+    return workspace_root
 
 
 def _validate_clean_base_attestation(

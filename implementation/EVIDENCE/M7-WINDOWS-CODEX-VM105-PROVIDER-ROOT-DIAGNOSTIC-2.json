@@ -1,0 +1,25 @@
+{
+  "acl_returncode": 0,
+  "acl_stdout_sha256": "af346458814f21b47be7c3eee2014faea924354ed0a99d7e017f8903efb983da",
+  "artifact_exact": true,
+  "artifact_exists": true,
+  "artifact_sha256": "ee45ff5d10d2b04347597aadfedc2a0b0fa1813e668d301b56195121601cb9f3",
+  "codex_sha256": "cbd657ddfe151d1a6ebad660beffdbd3265dc5aff4b3a6095124d3e2f0156f2f",
+  "diagnostic_id": "M7-WIN-CODEX-VM105-PROVIDER-ROOT-DIAGNOSTIC-2",
+  "evidence_class": "DIAGNOSTIC_ONLY_NOT_ACCEPTANCE",
+  "finished_at": "2026-08-30T07:19:08.694171+00:00",
+  "host": "M7-WIN-BASE",
+  "returncode": 0,
+  "root": "C:\\Users\\Crugger\\AppData\\Local\\ARTIFEX-Provider-Workspaces\\m7-codex-path-diagnostic-2",
+  "schema_version": "1.0",
+  "started_at": "2026-08-30T07:18:31.526559+00:00",
+  "stderr_bytes": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_bytes": 16307,
+  "stdout_sha256": "097560e75d80a2869c75dce6f43ce4eddd9762aad1ca3b0f099a1b690be5e934",
+  "structured_result": {
+    "message": "Created and verified `deliverables/m7-codex-provider-root-diagnostic.txt` with exact content. No tracked files were modified.",
+    "status": "SUCCESS"
+  },
+  "user": "Crugger"
+}

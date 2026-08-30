@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
+import artifex.managed_service as managed_service
 from artifex.cli import app
 from artifex.managed_service import (
     LOCAL_TRANSPORT_PROTOCOL,
@@ -53,9 +54,12 @@ def _bootstrap_arguments() -> dict[str, object]:
 def test_service_state_is_secret_free_and_paths_are_deterministic(tmp_path: Path) -> None:
     root = tmp_path / "state"
     paths = ServicePaths.resolve(root)
+    expected_workspace_root = (
+        root.with_name("state-workspaces") if os.name == "nt" else root / "workspaces"
+    )
     assert paths.state_file == root / "service-state.json"
     assert paths.runstore == root / "runstore.sqlite3"
-    assert paths.workspace_root == root / "workspaces"
+    assert paths.workspace_root == expected_workspace_root
     assert paths.instance_lock == root / ".service-instance.lock"
     assert paths.transport_token == root / ".local-transport-token"
 
@@ -76,7 +80,7 @@ def test_service_state_is_secret_free_and_paths_are_deterministic(tmp_path: Path
         assert state["paths"] == {
             "state_root": str(root),
             "runstore": str(root / "runstore.sqlite3"),
-            "workspace_root": str(root / "workspaces"),
+            "workspace_root": str(expected_workspace_root),
         }
         assert token not in persisted
         assert "authorization" not in persisted
@@ -85,6 +89,25 @@ def test_service_state_is_secret_free_and_paths_are_deterministic(tmp_path: Path
             assert stat.S_IMODE(paths.state_root.stat().st_mode) == 0o700
     finally:
         host.stop()
+
+
+@pytest.mark.architecture
+def test_windows_workspace_root_is_deterministic_and_outside_private_state_tree(
+    tmp_path: Path,
+) -> None:
+    state_root = (tmp_path / "runtime").resolve()
+
+    windows_root = managed_service._managed_workspace_root(
+        state_root, platform_name="nt"
+    )
+    portable_root = managed_service._managed_workspace_root(
+        state_root, platform_name="posix"
+    )
+
+    assert windows_root == state_root.with_name("runtime-workspaces")
+    assert windows_root.parent == state_root.parent
+    assert state_root not in windows_root.parents
+    assert portable_root == state_root / "workspaces"
 
 
 @pytest.mark.integration

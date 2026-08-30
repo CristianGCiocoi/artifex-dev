@@ -1,0 +1,72 @@
+{
+  "codex_executable": "C:\\Users\\Crugger\\AppData\\Local\\Programs\\OpenAI\\Codex\\bin\\codex.exe",
+  "codex_sha256": "cbd657ddfe151d1a6ebad660beffdbd3265dc5aff4b3a6095124d3e2f0156f2f",
+  "comparisons": [
+    {
+      "acl_after": {
+        "returncode": 0,
+        "stderr_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_bytes": 563,
+        "stdout_sha256": "bab05a40b231f9d9f381f682394bd11cf20ac9f4475d08779dbf7f7d5c50805c"
+      },
+      "acl_before": {
+        "returncode": 0,
+        "stderr_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_bytes": 416,
+        "stdout_sha256": "e86b0a12690bddd8a54f8779ab7f7ef2dc6dc363eb1d235cdb2dbd344664ebc4"
+      },
+      "artifact_exact": false,
+      "artifact_exists": false,
+      "artifact_sha256": null,
+      "finished_at": "2026-08-30T07:14:35.928193+00:00",
+      "label": "runtime_workspace",
+      "returncode": 0,
+      "root": "C:\\Users\\Crugger\\AppData\\Local\\ARTIFEX\\runtime\\workspaces\\m7-codex-path-diagnostic-1",
+      "started_at": "2026-08-30T07:14:02.230510+00:00",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 5040,
+      "stdout_sha256": "e73b2fd1a0ba158e27ed22ea7db71f720252f95e6ba9b427ee1bba9bbc67be65",
+      "structured_result": {
+        "message": "Access to the path 'deliverables' is denied.",
+        "status": "BLOCKED"
+      }
+    },
+    {
+      "acl_after": {
+        "returncode": 0,
+        "stderr_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_bytes": 378,
+        "stdout_sha256": "19dcfbdefb93c46640f430f857300f5bbbb21dcc530eaa39ce33969064ef9c12"
+      },
+      "acl_before": {
+        "returncode": 0,
+        "stderr_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_bytes": 378,
+        "stdout_sha256": "19dcfbdefb93c46640f430f857300f5bbbb21dcc530eaa39ce33969064ef9c12"
+      },
+      "artifact_exact": false,
+      "artifact_exists": false,
+      "artifact_sha256": null,
+      "finished_at": "2026-08-30T07:14:44.847258+00:00",
+      "label": "documents_control",
+      "returncode": 3221226505,
+      "root": "C:\\Users\\Crugger\\Documents\\ARTIFEX-M7\\CODEX-path-diagnostic-control-1",
+      "started_at": "2026-08-30T07:14:37.373920+00:00",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 101,
+      "stdout_sha256": "f0c4d0a790246a6aa7a76af3ac05f5a415fc9a467fcf2d08016650efbf2e6485",
+      "structured_result": null
+    }
+  ],
+  "diagnostic_id": "M7-WIN-CODEX-VM105-PATH-DIAGNOSTIC-1",
+  "evidence_class": "DIAGNOSTIC_ONLY_NOT_ACCEPTANCE",
+  "host": "M7-WIN-BASE",
+  "schema_version": "1.0",
+  "user": "Crugger"
+}

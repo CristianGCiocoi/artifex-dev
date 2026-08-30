@@ -17,6 +17,7 @@ from tools.artifex2.run_m7_shipping_journey import (
     _initial_service_status,
     _install_shipping_candidate,
     _provider_envelope,
+    _provider_workspace_root,
     _require_clean_guest,
     _require_provider_guest,
     _require_provider_resume,
@@ -302,6 +303,26 @@ def test_role_state_projection_requires_typed_certification_roles() -> None:
         "INTERACTION": "LIVE_ROLE_CERTIFIED",
         "EXECUTION_IMPLEMENTER": "LIVE_ROLE_CERTIFIED",
     }
+
+
+def test_windows_provider_workspace_uses_public_managed_service_authority(
+    tmp_path: Path,
+) -> None:
+    state_root = (tmp_path / "runtime").resolve()
+    expected = state_root.with_name("runtime-workspaces")
+
+    assert _provider_workspace_root(
+        {"paths": {"workspace_root": str(expected)}},
+        state_root=state_root,
+        platform_name="nt",
+    ) == expected
+
+    with pytest.raises(JourneyFailure, match="private state tree"):
+        _provider_workspace_root(
+            {"paths": {"workspace_root": str(state_root / "workspaces")}},
+            state_root=state_root,
+            platform_name="nt",
+        )
 
 
 def test_clean_base_attestation_is_exact_and_operator_bound() -> None:

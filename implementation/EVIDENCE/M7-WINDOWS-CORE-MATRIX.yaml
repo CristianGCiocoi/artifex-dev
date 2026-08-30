@@ -20,7 +20,7 @@ cells:
     codex: INSTALLED_CONFIGURED_AUTHENTICATED
     claude: ABSENT
   mandatory_journeys: [J01, J16]
-  qualification_status: BLOCKED_EXTERNAL_PROVIDER
+  qualification_status: IMPLEMENTATION_REMEDIATION_ACTIVE
   outcome: EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-DURABLE-BLOCKED.json
 - id: M7-WIN-CLAUDE
   provider_state:
@@ -51,9 +51,12 @@ implementation_observation:
   canonical_base_commit: 2ea4a38e1bc18a2aa3535a1d224f508ca6561d88
   windows_service_registration_adapter: IMPLEMENTED_PENDING_CANDIDATE_QUALIFICATION
   public_distribution_lifecycle_wiring: IMPLEMENTED_PENDING_CANDIDATE_QUALIFICATION
-  clean_vm_qualification: J10_PASS_CODEX_BLOCKED_CLAUDE_PENDING
+  clean_vm_qualification: J10_V10_PASS_CODEX_WORKSPACE_REMEDIATION_CLAUDE_PENDING
   active_blocker: BLK-M7-CODEX-PROVIDER-BLOCKED
   blocker_evidence: EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-DURABLE-BLOCKED.json
+  diagnostic_evidence:
+  - EVIDENCE/M7-WINDOWS-CODEX-VM105-PATH-DIAGNOSTIC-1.json
+  - EVIDENCE/M7-WINDOWS-CODEX-VM105-PROVIDER-ROOT-DIAGNOSTIC-2.json
   selected_clean_vms:
     no_provider:
       hypervisor: Proxmox VE 9.2.3
@@ -69,4 +72,4 @@ implementation_observation:
       network_state: DHCP_VM_SPECIFIC_MAC
       generalized_provenance_snapshot: m7-generalized-25h2-x64-base
       invalidated_pre_generalization_snapshot: m7-clean-25h2-x64-base
-verdict: MATRIX_ACCEPTED_M7_ACTIVE_J10_PASS_CODEX_BLOCKED_CLAUDE_PENDING
+verdict: MATRIX_ACCEPTED_M7_ACTIVE_J10_V10_PASS_CODEX_WORKSPACE_REMEDIATION_CLAUDE_PENDING

@@ -148,6 +148,9 @@ def test_native_windows_state_root_and_token_acl_round_trip(tmp_path: Path) -> N
     )
 
     assert paths.state_root.is_dir()
+    assert paths.workspace_root.is_dir()
+    assert paths.workspace_root == paths.state_root.with_name("state-workspaces")
+    assert paths.state_root not in paths.workspace_root.parents
     assert paths.transport_token.read_text(encoding="utf-8") == "native-private-token"
     managed_service._verify_windows_private_acl(
         paths.state_root,

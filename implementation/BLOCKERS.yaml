@@ -2,14 +2,16 @@ schema_version: '1.0'
 blockers:
 - id: BLK-M7-CODEX-PROVIDER-BLOCKED
   scope: M7_ACCEPTANCE
-  class: EXTERNAL_PROVIDER
-  status: OPEN
-  summary: The authenticated standalone Codex provider returned a durable BLOCKED result with no owned artifacts and failed validation on the clean VM105 V10 cell
+  class: IMPLEMENTATION_DEFECT
+  status: REMEDIATION_ACTIVE
+  summary: The V10 managed service nested Execution Workspaces beneath the private RunStore state DACL, preventing the supported Codex Windows unelevated sandbox from writing owned artifacts
   evidence:
   - EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-FAILURE.json
   - EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-DURABLE-BLOCKED.json
-  required_authority: EXTERNAL_PROVIDER_OR_IMPLEMENTATION_OWNER
-  resolution: Produce a non-selected standalone Codex SUCCESS with complete candidate-bound artifacts and passing validation; do not infer success from authentication, interaction, retries, or another provider
+  - EVIDENCE/M7-WINDOWS-CODEX-VM105-PATH-DIAGNOSTIC-1.json
+  - EVIDENCE/M7-WINDOWS-CODEX-VM105-PROVIDER-ROOT-DIAGNOSTIC-2.json
+  required_authority: IMPLEMENTATION_OWNER
+  resolution: Ship the Windows-safe managed workspace root in a new candidate, then produce a clean-cell standalone Codex SUCCESS with complete candidate-bound artifacts and passing validation; do not infer success from the diagnostic probe, authentication, interaction, retries, or another provider
   unrelated_work_may_continue: true
 - id: BLK-M8C-DEEPSEEK-LIVE-PREREQUISITES
   scope: M8C

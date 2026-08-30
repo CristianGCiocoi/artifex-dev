@@ -14,7 +14,7 @@
 - Accepted milestones: `M0, M1, M2, M3, M4, M5, M6A, M8A`
 - Ready milestones: `none`
 - Latest accepted commit: `d7fa3c4ad419bd97e401ad765128dc3560484d90`
-- Next integration point: `Preserve the VM105 standalone Codex BLOCKED outcome without retry selection, then qualify an independent Claude-only clean cell for J02 and J16`
+- Next integration point: `Build a new candidate from the Windows provider-workspace remediation, requalify all three clean M7 cells, and preserve the V10 Codex BLOCKED outcome as immutable regression evidence`
 - M7 started: `true`
 
 ## Work
@@ -27,7 +27,7 @@
 
 ## Acceptance
 
-- M7 verdict: `ACTIVE_J10_PASS_CODEX_BLOCKED_CLAUDE_PENDING`
+- M7 verdict: `ACTIVE_J10_V10_PASS_CODEX_WORKSPACE_REMEDIATION_CLAUDE_PENDING`
 - Mandatory work complete: `false`
 - Mandatory journeys: `J01, J02, J10, J16`
-- Next integration point: `Preserve the VM105 standalone Codex BLOCKED outcome without retry selection, then qualify an independent Claude-only clean cell for J02 and J16`
+- Next integration point: `Build a new candidate from the Windows provider-workspace remediation, requalify all three clean M7 cells, and preserve the V10 Codex BLOCKED outcome as immutable regression evidence`

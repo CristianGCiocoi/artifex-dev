@@ -72,7 +72,7 @@ class ServicePaths:
             state_root=resolved,
             state_file=resolved / "service-state.json",
             runstore=resolved / "runstore.sqlite3",
-            workspace_root=resolved / "workspaces",
+            workspace_root=_managed_workspace_root(resolved),
             instance_lock=resolved / ".service-instance.lock",
             transport_token=resolved / ".local-transport-token",
         )
@@ -87,6 +87,25 @@ class ServicePaths:
             raise ManagedServiceError("managed service workspace root must be a directory")
         if os.name != "nt":
             _restrict_directory(self.workspace_root)
+
+
+def _managed_workspace_root(
+    state_root: Path, *, platform_name: str = os.name
+) -> Path:
+    """Keep Windows provider sandboxes outside the private RunStore DACL tree.
+
+    The Windows managed-service state root is intentionally restricted to the
+    current user and LocalSystem.  Codex's supported unelevated sandbox runs
+    under a per-workspace capability SID, so a workspace nested beneath that
+    private root is not traversable even after Codex authorizes the workspace
+    leaf.  A deterministic sibling remains service-owned and isolated while
+    preserving the private ACL boundary around RunStore, fencing and transport
+    credentials.
+    """
+
+    if platform_name == "nt":
+        return state_root.with_name(f"{state_root.name}-workspaces")
+    return state_root / "workspaces"
 
 
 @dataclass(frozen=True, slots=True)
