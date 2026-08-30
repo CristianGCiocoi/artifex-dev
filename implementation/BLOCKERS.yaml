@@ -3,19 +3,21 @@ blockers:
 - id: BLK-M7-WINDOWS-V13-INTERACTIVE-LOGON
   scope: M7_V13_J10_REQUALIFICATION
   class: HUMAN_ENVIRONMENT
-  status: OPEN
-  summary: VM104 exact V13 no-provider clean cell is staged and waiting for the required human InteractiveToken RDP logon before J10 can execute
+  status: RESOLVED_J10_V13_INTERACTIVE_SESSION_AND_QUALIFICATION_PASS
+  summary: VM104 exact V13 no-provider clean cell completed J10 and its independent qualifier under the required human InteractiveToken session
   evidence:
   - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V13.yaml
   - EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V13.json
   - EVIDENCE/M7-WINDOWS-V13-CLEAN-PREFLIGHT.json
+  - EVIDENCE/M7-WINDOWS-J10-V13-PASS.json
+  - EVIDENCE/M7-WINDOWS-J10-V13-QUALIFIED.json
   required_authority: HUMAN_ENVIRONMENT_OWNER
-  resolution: Log in interactively to VM104 as M7-WIN-BASE\Crugger, leave the RDP window open and then run exact V13 J10 plus the independent qualifier
+  resolution: Completed exact V13 J10 and its independent qualifier on VM104; both returned PASS and exact evidence is retained
   unrelated_work_may_continue: true
 - id: BLK-M7-CODEX-PROVIDER-BLOCKED
   scope: M7_ACCEPTANCE
   class: IMPLEMENTATION_DEFECT
-  status: V13_CANDIDATE_BUILT_HOST_PREFLIGHT_PASS_CLEAN_CELL_PENDING
+  status: V13_J10_PASS_CODEX_CLEAN_CELL_PENDING
   summary: V12 completed real Codex interaction, isolated execution, independent acceptance and promotion, but fresh managed-service receipts could not resolve authenticated ARTIFEX shipping identity after restart and therefore remained ineligible for live role certification
   evidence:
   - EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-FAILURE.json
@@ -37,7 +39,7 @@ blockers:
   - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V13.yaml
   - EVIDENCE/M7-WINDOWS-V13-HOST-DEFENDER-PREFLIGHT.json
   required_authority: IMPLEMENTATION_OWNER
-  resolution: Requalify exact V13 on J10, standalone Codex J01/J16 and standalone Claude J02/J16 clean cells; do not infer success from authentication, real execution without role certification, prior-candidate passes or another provider
+  resolution: Qualify exact V13 on standalone Codex J01/J16 and standalone Claude J02/J16 clean cells; J10 V13 is PASS and must not be used to infer provider-cell success
   unrelated_work_may_continue: true
 - id: BLK-M8C-DEEPSEEK-LIVE-PREREQUISITES
   scope: M8C

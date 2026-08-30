@@ -20,7 +20,7 @@ cells:
     codex: INSTALLED_CONFIGURED_AUTHENTICATED
     claude: ABSENT
   mandatory_journeys: [J01, J16]
-  qualification_status: READY_V13_CLEAN_CELL_AFTER_J10
+  qualification_status: READY_V13_CLEAN_CELL
   historical_outcome: EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-DURABLE-BLOCKED.json
   clean_base_attestation: EVIDENCE/M7-WINDOWS-CODEX-CLEAN-BASE-ATTESTATION-VM105-V12.json
   clean_preflight: EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-CLEAN-PREFLIGHT.json
@@ -35,9 +35,13 @@ cells:
     codex: ABSENT
     claude: ABSENT
   mandatory_journeys: [J10]
-  qualification_status: READY_V13_WAITING_INTERACTIVE_LOGON
+  qualification_status: PASS_V13
   clean_base_attestation: EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V13.json
   clean_preflight: EVIDENCE/M7-WINDOWS-V13-CLEAN-PREFLIGHT.json
+  raw_capture: EVIDENCE/M7-WINDOWS-J10-V13-PASS.json
+  raw_capture_sha256: 8ce0fb56118836c4cc254f6a15eb3c0706cc2d1f4cd385cc52d9aeb40cc04f6c
+  qualified_outcome: EVIDENCE/M7-WINDOWS-J10-V13-QUALIFIED.json
+  qualified_outcome_sha256: 172dd20e6a1de08c71af4b156bb7865f28bbf09303c5fd6221a3a489cc28cf66
   historical_outcome_v12: EVIDENCE/M7-WINDOWS-J10-V12-QUALIFIED.json
   historical_outcome_v12_sha256: 9e7715eb10b028e8ceefbf7ba3297a3a6f15cbda61ce9f5a105b30b2ec337ea1
   historical_outcome_v11: EVIDENCE/M7-WINDOWS-J10-V11-QUALIFIED.json
@@ -59,9 +63,8 @@ implementation_observation:
   canonical_base_commit: 2ea4a38e1bc18a2aa3535a1d224f508ca6561d88
   windows_service_registration_adapter: IMPLEMENTED_PENDING_CANDIDATE_QUALIFICATION
   public_distribution_lifecycle_wiring: IMPLEMENTED_PENDING_CANDIDATE_QUALIFICATION
-  clean_vm_qualification: V13_J10_WAITING_INTERACTIVE_LOGON_CODEX_AND_CLAUDE_V13_PENDING
+  clean_vm_qualification: V13_J10_PASS_CODEX_AND_CLAUDE_V13_PENDING
   active_blockers:
-  - BLK-M7-WINDOWS-V13-INTERACTIVE-LOGON
   - BLK-M7-CODEX-PROVIDER-BLOCKED
   blocker_evidence: EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-DURABLE-BLOCKED.json
   diagnostic_evidence:
@@ -82,4 +85,4 @@ implementation_observation:
       network_state: DHCP_VM_SPECIFIC_MAC
       generalized_provenance_snapshot: m7-generalized-25h2-x64-base
       invalidated_pre_generalization_snapshot: m7-clean-25h2-x64-base
-verdict: MATRIX_ACCEPTED_M7_ACTIVE_V13_J10_WAITING_INTERACTIVE_LOGON_CODEX_AND_CLAUDE_V13_PENDING
+verdict: MATRIX_ACCEPTED_M7_ACTIVE_V13_J10_PASS_CODEX_AND_CLAUDE_V13_PENDING
