@@ -1,0 +1,68 @@
+schema_version: '1.0'
+evidence_id: EVD-M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V13
+recorded_date: '2026-08-30'
+scope: SINGLE_EXACT_REMEDIATED_SHIPPING_CANDIDATE_FOR_ALL_M7_WINDOWS_CORE_CELLS
+authority:
+  decision: ARCHITECT_PRODUCT_PACKAGING_DISPOSITION
+  decision_sha256: d3cf45b8589992abc8acb6f86f00a85d426b4ef94d8f88009be081d52a4a36ca
+  primary_packaging: NUITKA_STANDALONE_PLUS_NSIS
+  onefile_authorized: false
+  fallback_invoked: false
+artifact:
+  name: ARTIFEX-Setup.exe
+  sha256: 93de31656c9f9568fabc9226ecc7d5834a77b73e857ba33d458bd608d7284aba
+  bytes: 16153641
+  format: nuitka-standalone+nsis
+  source_commit: 2bf1cb638ae955d3fd573c31b067a1ad180329e5
+  product_version: 1.0.0
+  platform: windows
+  architecture: x86_64
+  nuitka_version: '4.2'
+  nsis_version: '3.12'
+  python_version: 3.12.13
+  standalone_executable_sha256: 563a1be529dba5369b5ee49d32aad850cc7f18f098259a954085de1f9a6042b8
+  bundle_file_inventory_count: 80
+  provenance_sha256: 0d89e06ef71dadd26920f94663f48d7b55ce359a229899b1abaf3820e88229b7
+  build_timestamp_utc: '2026-08-30T18:54:11.464050+00:00'
+  qualification_harness_sha256: dd5f7925b437c16639e55d65b36439d5bb8806057ff1b551f5eb9b88e51f6c10
+defect_remediation:
+  source_failure: EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-DURABLE-BLOCKED.json
+  classification: INSTALLED_SHIPPING_ARTIFACT_BINDING
+  authenticated_install_manifest_authority: true
+  managed_bundle_checksums_reverified_before_binding: true
+  qualifier_environment_digest_preserved_for_source_execution: true
+  developer_only_service_environment_wiring_added: false
+build_validation:
+  command: .venv/Scripts/python.exe packaging/build_windows_installer.py --clean --smoke
+  result: PASS
+  system_version: PASS
+  presentation_mode: PASS
+  m0_plus_m7_tests: 108_PASS
+  m7_plus_distribution_tests: 142_PASS_7_SKIP_SYMLINK_UNAVAILABLE
+  focused_binding_and_installer_tests: 4_PASS
+  ruff: PASS
+  mypy_strict: PASS_93_SOURCE_FILES
+  control_plane: PASS
+security_preflight:
+  developer_host:
+    evidence: EVIDENCE/M7-WINDOWS-V13-HOST-DEFENDER-PREFLIGHT.json
+    microsoft_defender_realtime_enabled: true
+    custom_scan: PASS_ZERO_DETECTIONS
+    candidate_retained: true
+qualification_state:
+  M7-WIN-NOPROVIDER: PENDING_V13_CLEAN_CELL
+  M7-WIN-CODEX: PENDING_V13_CLEAN_CELL
+  M7-WIN-CLAUDE: PENDING_AFTER_V13_CODEX
+  m7_status: ACTIVE
+  active_blockers:
+  - BLK-M7-CODEX-PROVIDER-BLOCKED
+historical_evidence_preserved:
+- EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml
+- EVIDENCE/M7-WINDOWS-J10-V10-QUALIFIED.json
+- EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml
+- EVIDENCE/M7-WINDOWS-J10-V11-QUALIFIED.json
+- EVIDENCE/M7-WINDOWS-CODEX-VM105-V11-DURABLE-BLOCKED.json
+- EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml
+- EVIDENCE/M7-WINDOWS-J10-V12-QUALIFIED.json
+- EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-DURABLE-BLOCKED.json
+verdict: V13_CANDIDATE_HOST_PREFLIGHT_PASS_CLEAN_CELL_QUALIFICATION_PENDING

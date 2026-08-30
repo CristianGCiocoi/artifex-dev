@@ -72,10 +72,11 @@
           "EVIDENCE/M7-WINDOWS-CODEX-VM105-V11-DURABLE-BLOCKED.json",
           "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml",
           "EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-FAIL.json",
-          "EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-DURABLE-BLOCKED.json"
+          "EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-DURABLE-BLOCKED.json",
+          "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V13.yaml"
         ],
         "required_m7": true,
-        "status": "V12_CODEX_FAIL_INSTALLED_ARTIFACT_BINDING_REMEDIATION_VALIDATED"
+        "status": "V13_CLEAN_CELL_REQUALIFICATION_PENDING"
       },
       "PUBLIC_COMPOSITION": {
         "evidence": [
@@ -113,7 +114,7 @@
     "schema_version": "1.0",
     "superseded": [],
     "unresolved_contradiction": null,
-    "verdict": "ACTIVE_J10_V12_PASS_CODEX_V12_FAIL_ARTIFACT_BINDING_NEW_CANDIDATE_REQUIRED"
+    "verdict": "ACTIVE_V13_CANDIDATE_READY_ALL_CLEAN_CELLS_PENDING"
   },
   "adrs": [
     {
@@ -762,13 +763,15 @@
         "EVIDENCE/M7-WINDOWS-CODEX-LOGIN-STATUS-V12.json",
         "EVIDENCE/M7-WINDOWS-CODEX-AUTH-PROBE-1501-V12.json",
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-FAIL.json",
-        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-DURABLE-BLOCKED.json"
+        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-DURABLE-BLOCKED.json",
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V13.yaml",
+        "EVIDENCE/M7-WINDOWS-V13-HOST-DEFENDER-PREFLIGHT.json"
       ],
       "id": "BLK-M7-CODEX-PROVIDER-BLOCKED",
       "required_authority": "IMPLEMENTATION_OWNER",
-      "resolution": "Build one new immutable candidate with authenticated installed-shipping-artifact resolution, then requalify J10, standalone Codex J01/J16 and standalone Claude J02/J16 on exact clean cells; do not infer success from authentication, real execution without role certification, prior-candidate passes or another provider",
+      "resolution": "Requalify exact V13 on J10, standalone Codex J01/J16 and standalone Claude J02/J16 clean cells; do not infer success from authentication, real execution without role certification, prior-candidate passes or another provider",
       "scope": "M7_ACCEPTANCE",
-      "status": "V12_ARTIFACT_BINDING_REMEDIATION_SOURCE_VALIDATED",
+      "status": "V13_CANDIDATE_BUILT_HOST_PREFLIGHT_PASS_CLEAN_CELL_PENDING",
       "summary": "V12 completed real Codex interaction, isolated execution, independent acceptance and promotion, but fresh managed-service receipts could not resolve authenticated ARTIFEX shipping identity after restart and therefore remained ineligible for live role certification",
       "unrelated_work_may_continue": true
     },
@@ -1151,6 +1154,11 @@
       "sha256": "eb33fe97e90edb0a4794671e0beb654e8e2e12c6d28af8c727dc65a55174ed7e"
     },
     {
+      "bytes": 2883,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V13.yaml",
+      "sha256": "40feae6b812d7ecfa9b53ef95abf049a0e34d45fa042dcae0ac1eac7315e71fa"
+    },
+    {
       "bytes": 2838,
       "path": "implementation/EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml",
       "sha256": "a005f2cf48907cab30cff1a23477e2acdf116bb1f6b439738193a1d292d57d75"
@@ -1179,6 +1187,11 @@
       "bytes": 603,
       "path": "implementation/EVIDENCE/M7-WINDOWS-V12-HOST-DEFENDER-PREFLIGHT.json",
       "sha256": "481894f3b36d7ea76fdd4bec4529f5a70867aa9c4827542a60e92221c3091eb6"
+    },
+    {
+      "bytes": 649,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-V13-HOST-DEFENDER-PREFLIGHT.json",
+      "sha256": "79e2d267dc6f305bace833787373e16a6c2023bcf9e2ad68da687c587b451a2b"
     },
     {
       "bytes": 1909,
@@ -2007,12 +2020,13 @@
         "EVIDENCE/M7-WINDOWS-CODEX-LOGIN-STATUS-V12.json",
         "EVIDENCE/M7-WINDOWS-CODEX-AUTH-PROBE-1501-V12.json",
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-FAIL.json",
-        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-DURABLE-BLOCKED.json"
+        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-DURABLE-BLOCKED.json",
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V13.yaml"
       ],
       "id": "J01",
       "last_run": "2026-08-30",
       "public_shipping_composition": "ARTIFEX_SETUP_NUITKA_NSIS_PUBLIC_CLI_REAL_CODEX_VERTICAL_SLICE",
-      "status": "FAIL_IMPLEMENTATION_DEFECT",
+      "status": "READY_V13_CLEAN_CELL_REQUALIFICATION",
       "title": "J01 — Fresh Machine + Codex"
     },
     {
@@ -2024,7 +2038,8 @@
         "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
         "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml",
         "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml",
-        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml"
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml",
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V13.yaml"
       ],
       "id": "J02",
       "last_run": "2026-08-28",
@@ -2132,12 +2147,13 @@
         "EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V12.json",
         "EVIDENCE/M7-WINDOWS-V12-CLEAN-PREFLIGHT.json",
         "EVIDENCE/M7-WINDOWS-J10-V12-PASS.json",
-        "EVIDENCE/M7-WINDOWS-J10-V12-QUALIFIED.json"
+        "EVIDENCE/M7-WINDOWS-J10-V12-QUALIFIED.json",
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V13.yaml"
       ],
       "id": "J10",
       "last_run": "2026-08-30",
       "public_shipping_composition": "ARTIFEX_SETUP_NUITKA_NSIS_PUBLIC_MANAGED_SERVICE_MULTI_PROCESS",
-      "status": "PASS",
+      "status": "READY_V13_CANDIDATE_REQUALIFICATION",
       "title": "J10 — No Automated Provider"
     },
     {
@@ -2220,12 +2236,13 @@
         "EVIDENCE/M7-WINDOWS-CODEX-LOGIN-STATUS-V12.json",
         "EVIDENCE/M7-WINDOWS-CODEX-AUTH-PROBE-1501-V12.json",
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-FAIL.json",
-        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-DURABLE-BLOCKED.json"
+        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-DURABLE-BLOCKED.json",
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V13.yaml"
       ],
       "id": "J16",
       "last_run": "2026-08-30",
       "public_shipping_composition": "ARTIFEX_SETUP_NUITKA_NSIS_PUBLIC_CLI_MULTI_PROCESS_PROVIDER_SETUP",
-      "status": "FAIL_IMPLEMENTATION_DEFECT",
+      "status": "READY_V13_CLEAN_CELL_REQUALIFICATION",
       "title": "J16 — Provider Setup Persistence"
     },
     {
@@ -2712,7 +2729,7 @@
     "m8a_started": true,
     "m8b_started": true,
     "m8c_started": true,
-    "next_integration_point": "Build one immutable post-V12 artifact-binding candidate, requalify J10, then run standalone Codex J01/J16 and standalone Claude J02/J16 on exact clean candidate-bound cells",
+    "next_integration_point": "Stage exact V13 on a reset clean VM104 cell, requalify J10, then run standalone Codex J01/J16 and standalone Claude J02/J16 on exact V13 clean cells",
     "recorded_date": "2026-08-29",
     "target_release": "2.0.0"
   },
@@ -3003,14 +3020,15 @@
     "adr_count": 24,
     "current_milestone": "M7",
     "current_milestone_progress_percent": 70,
-    "evidence_items": 87,
+    "evidence_items": 89,
     "invariant_count": 34,
     "journey_states": {
       "BLOCKED_EXTERNAL_PREREQUISITE": 1,
-      "FAIL_IMPLEMENTATION_DEFECT": 2,
       "NOT_STARTED": 3,
-      "PASS": 13,
-      "READY": 1
+      "PASS": 12,
+      "READY": 1,
+      "READY_V13_CANDIDATE_REQUALIFICATION": 1,
+      "READY_V13_CLEAN_CELL_REQUALIFICATION": 2
     },
     "milestones_accepted": 8,
     "milestones_started": 11,
