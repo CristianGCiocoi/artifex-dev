@@ -1,0 +1,14 @@
+{
+  "provider": "codex",
+  "provider_executable_sha256": "cbd657ddfe151d1a6ebad660beffdbd3265dc5aff4b3a6095124d3e2f0156f2f",
+  "provider_version": "codex-cli 0.150.1",
+  "response_exact": true,
+  "response_sha256": "e3ac5fedb579b79414008eed6771cb924c1a6bb9af921ab8d0bec81a7ed6af7f",
+  "returncode": 0,
+  "schema_version": "1.0",
+  "status": "PASS",
+  "stderr_bytes": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_bytes": 379,
+  "stdout_sha256": "37365fdc9bb6ae0014de3568355734c1a79b333185360138cc5c168a5a4d319b"
+}

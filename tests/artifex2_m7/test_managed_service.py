@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import stat
+import subprocess
 import time
 from pathlib import Path
 
@@ -108,6 +109,29 @@ def test_windows_workspace_root_is_deterministic_and_outside_private_state_tree(
     assert windows_root.parent == state_root.parent
     assert state_root not in windows_root.parents
     assert portable_root == state_root / "workspaces"
+
+
+@pytest.mark.architecture
+def test_windows_workspace_root_does_not_request_private_mode() -> None:
+    assert managed_service._managed_workspace_mode(platform_name="nt") is None
+    assert managed_service._managed_workspace_mode(platform_name="posix") == 0o700
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows DACL behavior")
+@pytest.mark.architecture
+def test_windows_workspace_root_preserves_inherited_dacl(tmp_path: Path) -> None:
+    paths = ServicePaths.resolve(tmp_path / "runtime")
+    paths.prepare()
+
+    completed = subprocess.run(
+        ["icacls.exe", str(paths.workspace_root)],
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+
+    assert "(I)" in completed.stdout
 
 
 @pytest.mark.integration

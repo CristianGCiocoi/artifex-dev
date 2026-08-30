@@ -82,7 +82,13 @@ class ServicePaths:
         if not self.state_root.is_dir():
             raise ManagedServiceError("managed service state root must be a directory")
         _restrict_directory(self.state_root)
-        self.workspace_root.mkdir(mode=0o700, parents=True, exist_ok=True)
+        workspace_mode = _managed_workspace_mode()
+        if workspace_mode is None:
+            self.workspace_root.mkdir(parents=True, exist_ok=True)
+        else:
+            self.workspace_root.mkdir(
+                mode=workspace_mode, parents=True, exist_ok=True
+            )
         if not self.workspace_root.is_dir():
             raise ManagedServiceError("managed service workspace root must be a directory")
         if os.name != "nt":
@@ -106,6 +112,19 @@ def _managed_workspace_root(
     if platform_name == "nt":
         return state_root.with_name(f"{state_root.name}-workspaces")
     return state_root / "workspaces"
+
+
+def _managed_workspace_mode(*, platform_name: str = os.name) -> int | None:
+    """Avoid Python's private ``0o700`` DACL on Windows provider workspaces.
+
+    Windows provider sandboxes add a capability SID to each owned workspace.
+    Creating the managed workspace root with ``mode=0o700`` produces a protected
+    owner-only DACL on current Python builds, preventing that sandbox SID from
+    traversing the root.  Omitting the mode preserves the normal inherited user
+    ACL; each provider workspace still applies its own sandbox boundary.
+    """
+
+    return None if platform_name == "nt" else 0o700
 
 
 @dataclass(frozen=True, slots=True)

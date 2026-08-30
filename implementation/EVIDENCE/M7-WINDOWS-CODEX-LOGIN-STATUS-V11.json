@@ -1,0 +1,5 @@
+﻿{
+    "schema_version":  "1.0",
+    "returncode":  0,
+    "status_output":  "codex.exe : Logged in using ChatGPT\r\nAt C:\\M7\\codex-login-status.ps1:2 char:7\r\n+ $out=(\u0026 $exe login status 2\u003e\u00261 | Out-String).Trim()\r\n+       ~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (Logged in using ChatGPT:String) [], RemoteExc \r\n   eption\r\n    + FullyQualifiedErrorId : NativeCommandError"
+}

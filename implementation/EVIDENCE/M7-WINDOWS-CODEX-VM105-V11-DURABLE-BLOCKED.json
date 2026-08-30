@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.0",
+  "evidence_id": "EVD-M7-WINDOWS-CODEX-VM105-V11-DURABLE-BLOCKED",
+  "recorded_date": "2026-08-30",
+  "cell_id": "M7-WIN-CODEX",
+  "status": "FAIL",
+  "classification": "IMPLEMENTATION_DEFECT_WINDOWS_WORKSPACE_ROOT_DACL",
+  "environment": {
+    "vm_id": 105,
+    "snapshot_name": "m7-qualified-25h2-x64-codex-cell-v11",
+    "snapshot_config_sha256": "0ee952df3fb245457a1ff4f925cf9620c9be73a94c3b7637e46887dbaedd2df1",
+    "os": "Windows 11 Pro 25H2 x64",
+    "os_build": "26200.9168",
+    "interactive_user_logon": true,
+    "claude_absent": true,
+    "source_checkout_absent_at_cell_start": true
+  },
+  "shipping_candidate": {
+    "source_commit": "ff22cfcbd24738ed964db629ae9391ec8a1e4761",
+    "artifact_sha256": "6e4fe78c958baac341db15f02e009f74f6788f3cc9cfa92d81f0e4fec2df25dd",
+    "standalone_executable_sha256": "463731caaf21d4114d73e77f03751fe25e7c967bd5c2afbdecb74048fd58bd4d",
+    "provenance_sha256": "cfe13e27eec1ec63f5d9b56f9663d1fa58839548f59ce65246ef0ad3400f42b0",
+    "qualification_harness_sha256": "dd5f7925b437c16639e55d65b36439d5bb8806057ff1b551f5eb9b88e51f6c10"
+  },
+  "provider": {
+    "id": "codex",
+    "version": "codex-cli 0.150.1",
+    "executable_sha256": "cbd657ddfe151d1a6ebad660beffdbd3265dc5aff4b3a6095124d3e2f0156f2f",
+    "installer_sha256": "391f247de2c70c7e99041979ec02dae7e76be27ac9cfc1dfe7c1eb21d48d8b97",
+    "install_evidence_sha256": "b12d70b0f2237373a7d2ef71e6f3d6403e90d43c2e66d0e34fc92f40bac95e98",
+    "login_status": "LOGGED_IN_USING_CHATGPT",
+    "authentication_probe_status": "PASS",
+    "authentication_probe_sha256": "996c7aa3514aaccb1252f5de1698600af86fefc38f7d6d29c0ef76da87269234"
+  },
+  "shipping_capture": {
+    "path": "EVIDENCE/M7-WINDOWS-CODEX-VM105-V11-FAILURE.json",
+    "sha256": "65faf9f8500ed1fdd7f05ff9e97df288bd361a9f427aa9b8633e7d338dc2eef4",
+    "runner_log_sha256": "b8555ad30e893394a52da8e8fe576807e738293da392b1bb0d000070048b15da",
+    "diagnostic": "providers.interact failed: OPERATION_FAILED/ValueError: codex interaction exited with 3221226505",
+    "windows_exit_code_hex": "0xC0000409"
+  },
+  "root_cause": {
+    "state_root": "C:\\Users\\Crugger\\AppData\\Local\\ARTIFEX\\runtime",
+    "workspace_root": "C:\\Users\\Crugger\\AppData\\Local\\ARTIFEX\\runtime-workspaces",
+    "workspace_root_sddl": "O:S-1-5-21-1976436204-1752865815-467500013-1001G:S-1-5-21-1976436204-1752865815-467500013-513D:P(A;OICI;FA;;;OW)(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)",
+    "workspace_root_dacl_protected": true,
+    "explicit_interactive_user_sid_ace_present": false,
+    "cause": "ServicePaths.prepare created the Windows workspace root with mode 0o700, producing a protected owner-only DACL that the supported Codex unelevated sandbox capability SID could not traverse",
+    "control_probe": {
+      "evidence": "EVIDENCE/M7-WINDOWS-CODEX-VM105-PROVIDER-ROOT-DIAGNOSTIC-2.json",
+      "root": "C:\\Users\\Crugger\\AppData\\Local\\ARTIFEX-Provider-Workspaces\\m7-codex-path-diagnostic-2",
+      "status": "PASS",
+      "interpretation": "Diagnostic only: a normally inherited provider root supported the exact Codex interaction, isolating the defect to ARTIFEX workspace-root creation"
+    }
+  },
+  "attestation_normalization": {
+    "original_vm_utf8_bom_sha256": "a0d08f5960188cadb7993c774c435acb60ec7014b2c582784f41234a0e805b46",
+    "canonical_bom_free_sha256": "177c6a67f20e9818e8737954144061b99192876020daeafb4378be973a2b45c5",
+    "semantic_content_changed": false
+  },
+  "journeys": {
+    "J01": "FAIL_IMPLEMENTATION_DEFECT",
+    "J16": "FAIL_IMPLEMENTATION_DEFECT"
+  },
+  "qualification_policy": {
+    "m7_accepted": false,
+    "success_inferred": false,
+    "authentication_treated_as_journey_success": false,
+    "diagnostic_probe_treated_as_acceptance": false,
+    "combined_provider_inference_used": false,
+    "developer_machine_evidence_used": false
+  },
+  "next_action": "Create a new immutable Windows candidate that omits mode 0o700 for the managed workspace-root mkdir on Windows, then requalify every candidate-bound M7 Core cell"
+}
