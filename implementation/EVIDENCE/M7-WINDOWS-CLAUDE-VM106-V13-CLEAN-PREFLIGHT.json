@@ -1,0 +1,41 @@
+﻿{
+    "schema_version":  "1.0",
+    "evidence_class":  "CLEAN_BASE_PREFLIGHT_NOT_JOURNEY_ACCEPTANCE",
+    "vm_id":  106,
+    "host":  "M7-WIN-CLAUDE",
+    "os_product_name":  "Windows 10 Pro",
+    "os_display_version":  "2009",
+    "os_build":  "26200",
+    "architecture":  "64-bit",
+    "started_at":  "2026-08-30T23:37:32.4398468+03:00",
+    "completed_at":  "2026-08-30T23:37:45.0652778+03:00",
+    "candidate_sha256":  "93de31656c9f9568fabc9226ecc7d5834a77b73e857ba33d458bd608d7284aba",
+    "expected_candidate_sha256":  "93de31656c9f9568fabc9226ecc7d5834a77b73e857ba33d458bd608d7284aba",
+    "provenance_sha256":  "0d89e06ef71dadd26920f94663f48d7b55ce359a229899b1abaf3820e88229b7",
+    "expected_provenance_sha256":  "0d89e06ef71dadd26920f94663f48d7b55ce359a229899b1abaf3820e88229b7",
+    "provenance_source_commit":  "2bf1cb638ae955d3fd573c31b067a1ad180329e5",
+    "expected_source_commit":  "2bf1cb638ae955d3fd573c31b067a1ad180329e5",
+    "candidate_retained":  true,
+    "account_sid_sha256":  "84d01b8d925b11f536e5a83a752a5ff5cf7f74b1647c120ad53b096dcd54deaa",
+    "providers_and_artifex_absent":  true,
+    "present_forbidden_paths":  [
+
+                                ],
+    "source_checkout_absent":  true,
+    "autologon_absent":  true,
+    "default_password_absent":  true,
+    "unattend_absent":  true,
+    "present_unattend_paths":  [
+
+                               ],
+    "defender":  {
+                     "antivirus_enabled":  true,
+                     "realtime_protection_enabled":  true,
+                     "antivirus_signature_version":  "1.457.415.0",
+                     "exclusion_count":  0,
+                     "candidate_exclusion_added":  false,
+                     "threat_detection_count_before":  0,
+                     "threat_detection_count_after":  0,
+                     "candidate_detection_count":  0
+                 }
+}

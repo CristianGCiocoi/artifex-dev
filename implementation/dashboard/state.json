@@ -76,10 +76,14 @@
           "EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-FAIL.json",
           "EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-DURABLE-BLOCKED.json",
           "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V13.yaml",
-          "EVIDENCE/M7-WINDOWS-J10-V13-QUALIFIED.json"
+          "EVIDENCE/M7-WINDOWS-J10-V13-QUALIFIED.json",
+          "EVIDENCE/M7-WINDOWS-CODEX-CLEAN-BASE-ATTESTATION-VM105-V13.json",
+          "EVIDENCE/M7-WINDOWS-CODEX-VM105-V13-CLEAN-PREFLIGHT.json",
+          "EVIDENCE/M7-WINDOWS-CLAUDE-CLEAN-BASE-ATTESTATION-VM106-V13.json",
+          "EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V13-CLEAN-PREFLIGHT.json"
         ],
         "required_m7": true,
-        "status": "V13_CODEX_AND_CLAUDE_CLEAN_CELLS_PENDING"
+        "status": "V13_PROVIDER_CELLS_STAGED_WAITING_ONE_TIME_AUTH"
       },
       "PUBLIC_COMPOSITION": {
         "evidence": [
@@ -119,7 +123,7 @@
     "schema_version": "1.0",
     "superseded": [],
     "unresolved_contradiction": null,
-    "verdict": "ACTIVE_V13_J10_PASS_CODEX_AND_CLAUDE_CLEAN_CELLS_PENDING"
+    "verdict": "ACTIVE_V13_J10_PASS_PROVIDER_CELLS_STAGED_WAITING_AUTH"
   },
   "adrs": [
     {
@@ -787,14 +791,18 @@
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-FAIL.json",
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-DURABLE-BLOCKED.json",
         "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V13.yaml",
-        "EVIDENCE/M7-WINDOWS-V13-HOST-DEFENDER-PREFLIGHT.json"
+        "EVIDENCE/M7-WINDOWS-V13-HOST-DEFENDER-PREFLIGHT.json",
+        "EVIDENCE/M7-WINDOWS-CODEX-CLEAN-BASE-ATTESTATION-VM105-V13.json",
+        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V13-CLEAN-PREFLIGHT.json",
+        "EVIDENCE/M7-WINDOWS-CLAUDE-CLEAN-BASE-ATTESTATION-VM106-V13.json",
+        "EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V13-CLEAN-PREFLIGHT.json"
       ],
       "id": "BLK-M7-CODEX-PROVIDER-BLOCKED",
       "required_authority": "IMPLEMENTATION_OWNER",
-      "resolution": "Qualify exact V13 on standalone Codex J01/J16 and standalone Claude J02/J16 clean cells; J10 V13 is PASS and must not be used to infer provider-cell success",
+      "resolution": "Complete one interactive logon and provider authentication on VM105 and VM106, preserve provider-ready live-session snapshots, then qualify exact V13 on standalone Codex J01/J16 and standalone Claude J02/J16",
       "scope": "M7_ACCEPTANCE",
-      "status": "V13_J10_PASS_CODEX_CLEAN_CELL_PENDING",
-      "summary": "V12 completed real Codex interaction, isolated execution, independent acceptance and promotion, but fresh managed-service receipts could not resolve authenticated ARTIFEX shipping identity after restart and therefore remained ineligible for live role certification",
+      "status": "V13_PROVIDER_CELLS_STAGED_WAITING_ONE_TIME_INTERACTIVE_AUTH",
+      "summary": "The V12 installed-artifact binding defect is remediated in V13; independent Codex and Claude V13 clean cells are staged and now require their one-time interactive provider authentication before qualification",
       "unrelated_work_may_continue": true
     },
     {
@@ -916,6 +924,16 @@
       "sha256": "1dd299ab4d3b6bfb980c11e5fe028ca9c306b1a7ff7a816ec3a67f7ec5c5904b"
     },
     {
+      "bytes": 446,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CLAUDE-CLEAN-BASE-ATTESTATION-VM106-V13.json",
+      "sha256": "7c47855fc9475a45349b4176d03b99a92c96b0595ec57c757d0c922ec03e9055"
+    },
+    {
+      "bytes": 1877,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V13-CLEAN-PREFLIGHT.json",
+      "sha256": "888d9978bac3e1f6ed468a60a5efc95d28b76976bbb440c55ff1466a074d37c8"
+    },
+    {
       "bytes": 444,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V10.json",
       "sha256": "3bae7ad38a5bacf1055540c9ee04f219e242292fb45b2161e71d095d48d30fa7"
@@ -969,6 +987,11 @@
       "bytes": 445,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-CLEAN-BASE-ATTESTATION-VM105-V12.json",
       "sha256": "9b4e289ee2fc49834e47e8020284b34e8b5f18e2ae770f6a4780a637d73f391c"
+    },
+    {
+      "bytes": 445,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-CLEAN-BASE-ATTESTATION-VM105-V13.json",
+      "sha256": "b611714d010de4cb1e6c3a4f0ac8b9754d830e78671c8fe78bb167c3a24529b2"
     },
     {
       "bytes": 445,
@@ -1131,9 +1154,14 @@
       "sha256": "6079955f57e48a3e5a55ccc3a2082f89680efe4a2a5b3f35aabe40621c3247ec"
     },
     {
-      "bytes": 3876,
+      "bytes": 1875,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-VM105-V13-CLEAN-PREFLIGHT.json",
+      "sha256": "120acf73c1b7ca974720f82c504a67f56c0b17a0e96f6fbd70637c82e2ec4b69"
+    },
+    {
+      "bytes": 4255,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
-      "sha256": "2da76b28a70df79d7780b25412e268b9b0271a8b2c3c0b0d82be7425243e8987"
+      "sha256": "7bc57c1c9b75fe6d92d691c6b66d88d539380abebae82c77c5f75058f2398939"
     },
     {
       "bytes": 2929,
@@ -1191,9 +1219,9 @@
       "sha256": "eb33fe97e90edb0a4794671e0beb654e8e2e12c6d28af8c727dc65a55174ed7e"
     },
     {
-      "bytes": 3999,
+      "bytes": 4800,
       "path": "implementation/EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V13.yaml",
-      "sha256": "f19b7e2ca56d1a0ef2b2666e9cd8056e683fab74838fc7444b03634a3b1c39e2"
+      "sha256": "e80465fa80690e0eb2f38a19bd306db98aa432baeebe733923ab83b1a9fc10d0"
     },
     {
       "bytes": 2838,
@@ -2063,16 +2091,18 @@
         "EVIDENCE/M7-WINDOWS-CODEX-AUTH-PROBE-1501-V12.json",
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-FAIL.json",
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-DURABLE-BLOCKED.json",
-        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V13.yaml"
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V13.yaml",
+        "EVIDENCE/M7-WINDOWS-CODEX-CLEAN-BASE-ATTESTATION-VM105-V13.json",
+        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V13-CLEAN-PREFLIGHT.json"
       ],
       "id": "J01",
       "last_run": "2026-08-30",
       "public_shipping_composition": "ARTIFEX_SETUP_NUITKA_NSIS_PUBLIC_CLI_REAL_CODEX_VERTICAL_SLICE",
-      "status": "READY_V13_CLEAN_CELL_REQUALIFICATION",
+      "status": "READY_V13_WAITING_INTERACTIVE_CODEX_AUTH",
       "title": "J01 — Fresh Machine + Codex"
     },
     {
-      "blocker": null,
+      "blocker": "BLK-M7-CODEX-PROVIDER-BLOCKED",
       "environment": "WINDOWS_11_25H2_X64_CLEAN_VM_CLAUDE_ONLY",
       "evidence": [
         "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json",
@@ -2081,12 +2111,14 @@
         "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml",
         "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml",
         "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V12.yaml",
-        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V13.yaml"
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V13.yaml",
+        "EVIDENCE/M7-WINDOWS-CLAUDE-CLEAN-BASE-ATTESTATION-VM106-V13.json",
+        "EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V13-CLEAN-PREFLIGHT.json"
       ],
       "id": "J02",
       "last_run": "2026-08-28",
       "public_shipping_composition": "ARTIFEX_SETUP_NUITKA_NSIS_PUBLIC_CLI_REAL_CLAUDE_MULTI_PROCESS",
-      "status": "READY",
+      "status": "READY_V13_WAITING_INTERACTIVE_CLAUDE_AUTH",
       "title": "J02 — Fresh Machine + Claude"
     },
     {
@@ -2283,12 +2315,16 @@
         "EVIDENCE/M7-WINDOWS-CODEX-AUTH-PROBE-1501-V12.json",
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-FAIL.json",
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-DURABLE-BLOCKED.json",
-        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V13.yaml"
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V13.yaml",
+        "EVIDENCE/M7-WINDOWS-CODEX-CLEAN-BASE-ATTESTATION-VM105-V13.json",
+        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V13-CLEAN-PREFLIGHT.json",
+        "EVIDENCE/M7-WINDOWS-CLAUDE-CLEAN-BASE-ATTESTATION-VM106-V13.json",
+        "EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V13-CLEAN-PREFLIGHT.json"
       ],
       "id": "J16",
       "last_run": "2026-08-30",
       "public_shipping_composition": "ARTIFEX_SETUP_NUITKA_NSIS_PUBLIC_CLI_MULTI_PROCESS_PROVIDER_SETUP",
-      "status": "READY_V13_CLEAN_CELL_REQUALIFICATION",
+      "status": "READY_V13_WAITING_PROVIDER_AUTH",
       "title": "J16 — Provider Setup Persistence"
     },
     {
@@ -2775,7 +2811,7 @@
     "m8a_started": true,
     "m8b_started": true,
     "m8c_started": true,
-    "next_integration_point": "Prepare the standalone Codex V13 clean cell and execute J01 plus J16, then qualify the independent Claude V13 clean cell",
+    "next_integration_point": "Complete one-time interactive Codex and Claude authentication on staged VM105 and VM106, preserve provider-ready live-session snapshots, then execute the exact V13 provider journeys",
     "recorded_date": "2026-08-29",
     "target_release": "2.0.0"
   },
@@ -3066,14 +3102,15 @@
     "adr_count": 24,
     "current_milestone": "M7",
     "current_milestone_progress_percent": 70,
-    "evidence_items": 93,
+    "evidence_items": 97,
     "invariant_count": 34,
     "journey_states": {
       "BLOCKED_EXTERNAL_PREREQUISITE": 1,
       "NOT_STARTED": 3,
       "PASS": 13,
-      "READY": 1,
-      "READY_V13_CLEAN_CELL_REQUALIFICATION": 2
+      "READY_V13_WAITING_INTERACTIVE_CLAUDE_AUTH": 1,
+      "READY_V13_WAITING_INTERACTIVE_CODEX_AUTH": 1,
+      "READY_V13_WAITING_PROVIDER_AUTH": 1
     },
     "milestones_accepted": 8,
     "milestones_started": 11,

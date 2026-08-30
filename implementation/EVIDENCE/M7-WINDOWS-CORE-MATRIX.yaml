@@ -20,16 +20,18 @@ cells:
     codex: INSTALLED_CONFIGURED_AUTHENTICATED
     claude: ABSENT
   mandatory_journeys: [J01, J16]
-  qualification_status: READY_V13_CLEAN_CELL
+  qualification_status: READY_V13_WAITING_INTERACTIVE_CODEX_AUTH
   historical_outcome: EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-DURABLE-BLOCKED.json
-  clean_base_attestation: EVIDENCE/M7-WINDOWS-CODEX-CLEAN-BASE-ATTESTATION-VM105-V12.json
-  clean_preflight: EVIDENCE/M7-WINDOWS-CODEX-VM105-V12-CLEAN-PREFLIGHT.json
+  clean_base_attestation: EVIDENCE/M7-WINDOWS-CODEX-CLEAN-BASE-ATTESTATION-VM105-V13.json
+  clean_preflight: EVIDENCE/M7-WINDOWS-CODEX-VM105-V13-CLEAN-PREFLIGHT.json
 - id: M7-WIN-CLAUDE
   provider_state:
     codex: ABSENT
     claude: INSTALLED_CONFIGURED_AUTHENTICATED
   mandatory_journeys: [J02, J16]
-  qualification_status: READY_INDEPENDENT_CELL
+  qualification_status: READY_V13_WAITING_INTERACTIVE_CLAUDE_AUTH
+  clean_base_attestation: EVIDENCE/M7-WINDOWS-CLAUDE-CLEAN-BASE-ATTESTATION-VM106-V13.json
+  clean_preflight: EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V13-CLEAN-PREFLIGHT.json
 - id: M7-WIN-NOPROVIDER
   provider_state:
     codex: ABSENT
@@ -63,7 +65,7 @@ implementation_observation:
   canonical_base_commit: 2ea4a38e1bc18a2aa3535a1d224f508ca6561d88
   windows_service_registration_adapter: IMPLEMENTED_PENDING_CANDIDATE_QUALIFICATION
   public_distribution_lifecycle_wiring: IMPLEMENTED_PENDING_CANDIDATE_QUALIFICATION
-  clean_vm_qualification: V13_J10_PASS_CODEX_AND_CLAUDE_V13_PENDING
+  clean_vm_qualification: V13_J10_PASS_PROVIDER_CELLS_STAGED_WAITING_ONE_TIME_AUTH
   active_blockers:
   - BLK-M7-CODEX-PROVIDER-BLOCKED
   blocker_evidence: EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-DURABLE-BLOCKED.json
@@ -80,9 +82,14 @@ implementation_observation:
       hypervisor: Proxmox VE 9.2.3
       vm_id: 105
       os_build: 26200.9168
-      reset_snapshot: m7-qualified-25h2-x64-codex-cell-v12
+      reset_snapshot: m7-qualified-25h2-x64-codex-cell-v13
+    claude:
+      hypervisor: Proxmox VE 9.2.3
+      vm_id: 106
+      os_build: 26200.9168
+      reset_snapshot: m7-qualified-25h2-x64-claude-cell-v13
     common:
       network_state: DHCP_VM_SPECIFIC_MAC
       generalized_provenance_snapshot: m7-generalized-25h2-x64-base
       invalidated_pre_generalization_snapshot: m7-clean-25h2-x64-base
-verdict: MATRIX_ACCEPTED_M7_ACTIVE_V13_J10_PASS_CODEX_AND_CLAUDE_V13_PENDING
+verdict: MATRIX_ACCEPTED_M7_ACTIVE_V13_J10_PASS_PROVIDER_CELLS_STAGED_WAITING_AUTH

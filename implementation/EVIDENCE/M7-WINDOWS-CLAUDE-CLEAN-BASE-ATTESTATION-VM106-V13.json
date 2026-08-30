@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0",
+  "vm_id": 106,
+  "snapshot_name": "m7-qualified-25h2-x64-claude-cell-v13",
+  "snapshot_config_sha256": "69f45884ff5ad25fc20cb5cdca2477c489f7ed0683cda4ba201be269fcf7df68",
+  "account_sid_sha256": "84d01b8d925b11f536e5a83a752a5ff5cf7f74b1647c120ad53b096dcd54deaa",
+  "candidate_sha256": "93de31656c9f9568fabc9226ecc7d5834a77b73e857ba33d458bd608d7284aba",
+  "providers_absent": true,
+  "source_checkout_absent": true
+}
