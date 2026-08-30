@@ -1,0 +1,15 @@
+{
+  "artifact_exists": false,
+  "artifact_sha256": null,
+  "base_commit": "74f09a383a4670f736578c23b741dceb9068e1cc",
+  "diagnostic_only": true,
+  "execution_contract_fingerprint": "fee6f1dc35843680ba3bcd8b3b9441124e252c57b6b44595544c74afd26fb894",
+  "project_model_fingerprint": "c30f71b659163bc7d77ecd818657f410e55ac003d49d659fe9b80b074195d113",
+  "returncode": 3221226505,
+  "schema_version": "1.0",
+  "stderr_bytes": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_bytes": 101,
+  "stdout_sha256": "99e08211fe4e2c0b7b9e618f1534ce0cb115e400e8cc4922528424252f9918fd",
+  "structured_result": null
+}

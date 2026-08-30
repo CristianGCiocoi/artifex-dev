@@ -1,0 +1,6 @@
+{
+  "diagnostic": "governance.envelope.propose failed: OPERATION_FAILED/IntegrityError: UNIQUE constraint failed: envelope_proposals.envelope_id, envelope_proposals.version",
+  "error": "JourneyFailure",
+  "schema_version": "1.0",
+  "status": "FAIL"
+}

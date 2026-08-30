@@ -14,20 +14,20 @@
 - Accepted milestones: `M0, M1, M2, M3, M4, M5, M6A, M8A`
 - Ready milestones: `none`
 - Latest accepted commit: `d7fa3c4ad419bd97e401ad765128dc3560484d90`
-- Next integration point: `Preserve the qualified J10 outcome, reset VM104 from immutable V10, then install, configure and authenticate standalone Codex for J01 and J16`
+- Next integration point: `Preserve the VM105 standalone Codex BLOCKED outcome without retry selection, then qualify an independent Claude-only clean cell for J02 and J16`
 - M7 started: `true`
 
 ## Work
 
 - Active workstreams: `none`
-- Active blockers: `2`
+- Active blockers: `3`
 - Dashboard state: `CURRENT`
 - V1 regression state: `PASS`
 - Migration state: `M0_BASELINE_ACCEPTED`
 
 ## Acceptance
 
-- M7 verdict: `ACTIVE_J10_PASS_PROVIDER_CELLS_PENDING`
+- M7 verdict: `ACTIVE_J10_PASS_CODEX_BLOCKED_CLAUDE_PENDING`
 - Mandatory work complete: `false`
 - Mandatory journeys: `J01, J02, J10, J16`
-- Next integration point: `Preserve the qualified J10 outcome, reset VM104 from immutable V10, then install, configure and authenticate standalone Codex for J01 and J16`
+- Next integration point: `Preserve the VM105 standalone Codex BLOCKED outcome without retry selection, then qualify an independent Claude-only clean cell for J02 and J16`

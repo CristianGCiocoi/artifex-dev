@@ -1,0 +1,6 @@
+{
+  "diagnostic": "distribution.bootstrap failed: OPERATION_FAILED/MemoryError: ",
+  "error": "JourneyFailure",
+  "schema_version": "1.0",
+  "status": "FAIL"
+}

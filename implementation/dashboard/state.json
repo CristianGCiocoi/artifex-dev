@@ -1,7 +1,9 @@
 {
   "acceptance": {
     "acceptance_commit": null,
-    "blocked": [],
+    "blocked": [
+      "BLK-M7-CODEX-PROVIDER-BLOCKED"
+    ],
     "contract_digest": "3eac41de4cacf7be80aab12e478b99ec7c5066dccddfff6ca00a03cf5a157d48",
     "evidence_classes": {
       "BLACK_BOX_OUTCOME": {
@@ -58,10 +60,11 @@
       "PROVIDER_CERTIFICATION": {
         "evidence": [
           "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
-          "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml"
+          "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml",
+          "EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-DURABLE-BLOCKED.json"
         ],
         "required_m7": true,
-        "status": "ACTIVE_PROVIDER_CELLS_PENDING"
+        "status": "CODEX_BLOCKED_CLAUDE_PENDING"
       },
       "PUBLIC_COMPOSITION": {
         "evidence": [
@@ -95,7 +98,7 @@
     "schema_version": "1.0",
     "superseded": [],
     "unresolved_contradiction": null,
-    "verdict": "ACTIVE_J10_PASS_PROVIDER_CELLS_PENDING"
+    "verdict": "ACTIVE_J10_PASS_CODEX_BLOCKED_CLAUDE_PENDING"
   },
   "adrs": [
     {
@@ -727,6 +730,20 @@
   ],
   "blockers": [
     {
+      "class": "EXTERNAL_PROVIDER",
+      "evidence": [
+        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-FAILURE.json",
+        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-DURABLE-BLOCKED.json"
+      ],
+      "id": "BLK-M7-CODEX-PROVIDER-BLOCKED",
+      "required_authority": "EXTERNAL_PROVIDER_OR_IMPLEMENTATION_OWNER",
+      "resolution": "Produce a non-selected standalone Codex SUCCESS with complete candidate-bound artifacts and passing validation; do not infer success from authentication, interaction, retries, or another provider",
+      "scope": "M7_ACCEPTANCE",
+      "status": "OPEN",
+      "summary": "The authenticated standalone Codex provider returned a durable BLOCKED result with no owned artifacts and failed validation on the clean VM105 V10 cell",
+      "unrelated_work_may_continue": true
+    },
+    {
       "class": "EXTERNAL_PREREQUISITE",
       "evidence": [
         "EVIDENCE/M8C-PUBLIC-OUTCOME.json"
@@ -865,9 +882,109 @@
       "sha256": "b1ee730345227e2a01039b758a0deb3d94718ecca04fa32d4cba189e237a370d"
     },
     {
-      "bytes": 2468,
+      "bytes": 445,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-CLEAN-BASE-ATTESTATION-VM105.json",
+      "sha256": "676979dca65007608d3cc97a5359da1368c5a6ed208ef3852e9eb486134928a8"
+    },
+    {
+      "bytes": 713,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-V10-DEFENDER-CONFIG.json",
+      "sha256": "69f59449c33607a953466c801bfc1c9674d1051513783b2249b2e886c9cc715b"
+    },
+    {
+      "bytes": 681,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-V10-DOCTOR-SUMMARY.json",
+      "sha256": "cb595dbf8f60d6d4d98db85e5bbcb0e52f0f57a34cf7ef03299252b679acf5fd"
+    },
+    {
+      "bytes": 226,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-V10-HARNESS-FAILURE-2.json",
+      "sha256": "cd31d3d14e6a42e860d2cbe4fd6cccfb9baa405ab303db91010f4fcc342c84e8"
+    },
+    {
+      "bytes": 154,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-V10-HARNESS-FAILURE-3.json",
+      "sha256": "a04fb50580594f0d32478055830c12cbece0f6969ddb3028845c92f0fc792ed7"
+    },
+    {
+      "bytes": 220,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-V10-HARNESS-FAILURE.json",
+      "sha256": "0d9b3e88767c92e8199eb87f7ffacef195dd4d202dda103baa88dd720e204175"
+    },
+    {
+      "bytes": 252,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-V10-IDENTITY-FAILURE-6.json",
+      "sha256": "d70aaed8e9c1edad09919636c5da116fd00b24cc613733f8233899450029fb22"
+    },
+    {
+      "bytes": 651,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-V10-PACKET-PROBE-1-CRASH.json",
+      "sha256": "3e62f7f056408d2caacfcf52381ac6b73af4566c6987d96dcf77455b8b1bed10"
+    },
+    {
+      "bytes": 1296,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-V10-PACKET-PROBE-2-PASS.json",
+      "sha256": "968987fd5a9eced9e3d111589dce814d9b4b242cf1d24c1c007d85e89afcb9d3"
+    },
+    {
+      "bytes": 157,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-V10-PROVIDER-BLOCKED-8.json",
+      "sha256": "5af8f4ff2609307b025c67148307dc7950cf9f4ed32c57565af0aee8135fe52f"
+    },
+    {
+      "bytes": 245,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-V10-PROVIDER-CRASH-7.json",
+      "sha256": "cf7362bd9fd02175eb4edd87e9102efddbfeeb23d61cfbf70fd3b2a08fcb1e69"
+    },
+    {
+      "bytes": 503,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-V10-PROVIDER-CRASH-9-WER.json",
+      "sha256": "594c0d0aaa0218e7e3a2935189b6e22e2ddace3e916538251c43ef3282011878"
+    },
+    {
+      "bytes": 245,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-V10-PROVIDER-CRASH-9.json",
+      "sha256": "cf7362bd9fd02175eb4edd87e9102efddbfeeb23d61cfbf70fd3b2a08fcb1e69"
+    },
+    {
+      "bytes": 160,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-V10-RESOURCE-FAILURE-4.json",
+      "sha256": "492119b114582be689f4a6990a03859bfd9fb3e1bcfd06a38dd5cc26da05abaa"
+    },
+    {
+      "bytes": 543,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-V10-SANDBOX-PROBE-2.json",
+      "sha256": "c96d06cd55e2ca3ed6685a62ce0b1f9809edd94cab907668620854cfae7250cd"
+    },
+    {
+      "bytes": 565,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-V10-SANDBOX-PROBE.json",
+      "sha256": "b80d9efd0799ada91805307b5f46b29fe1f4907e35e8967a16390b9cfbea4e6d"
+    },
+    {
+      "bytes": 144,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-V10-SERVICE-RECOVERY-FAILURE-5.json",
+      "sha256": "77a470453a481d3308d2dae825de1eacd00e0a474d84946e9d4b8431c37899fa"
+    },
+    {
+      "bytes": 787,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-VM105-CLEAN-PREFLIGHT.json",
+      "sha256": "beeef45f94201497af1ab36eb3c9efaff13d05634a3e25d4cae83cfa38fb825c"
+    },
+    {
+      "bytes": 2790,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-DURABLE-BLOCKED.json",
+      "sha256": "7d5579d01d8862240cab820d2053dbfb20f340f0d804999eafb3c9f0ad39cd39"
+    },
+    {
+      "bytes": 144,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-FAILURE.json",
+      "sha256": "b525d4bc90d0621e5545750911c1e56b6ec4397b029808da358f8dd81a369319"
+    },
+    {
+      "bytes": 2742,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
-      "sha256": "ae8308ad77318226499f3e146d3591714beda9a823e2d308828d66fb0aa6ab0c"
+      "sha256": "800cb3378c672245d54e5b096f47c930bb0390a4645472778dbb3cd4e723c4a5"
     },
     {
       "bytes": 2929,
@@ -1702,18 +1819,19 @@
   ],
   "journeys": [
     {
-      "blocker": null,
+      "blocker": "BLK-M7-CODEX-PROVIDER-BLOCKED",
       "environment": "WINDOWS_11_25H2_X64_CLEAN_VM_CODEX_ONLY",
       "evidence": [
         "EVIDENCE/M3-PUBLIC-OUTCOME.json",
         "EVIDENCE/M7-FOUNDATION-OUTCOME.json",
         "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
-        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml"
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml",
+        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-DURABLE-BLOCKED.json"
       ],
       "id": "J01",
-      "last_run": "2026-08-29",
+      "last_run": "2026-08-30",
       "public_shipping_composition": "ARTIFEX_SETUP_NUITKA_NSIS_PUBLIC_CLI_REAL_CODEX_VERTICAL_SLICE",
-      "status": "ACTIVE",
+      "status": "BLOCKED_EXTERNAL_PROVIDER",
       "title": "J01 — Fresh Machine + Codex"
     },
     {
@@ -1890,16 +2008,17 @@
       "title": "J15 — Promotion Conflict"
     },
     {
-      "blocker": null,
+      "blocker": "BLK-M7-CODEX-PROVIDER-BLOCKED",
       "environment": "WINDOWS_11_25H2_X64_SEPARATE_CLEAN_PROVIDER_CELLS",
       "evidence": [
         "EVIDENCE/M3-PUBLIC-OUTCOME.json",
         "EVIDENCE/M7-FOUNDATION-OUTCOME.json",
         "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
-        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml"
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml",
+        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-DURABLE-BLOCKED.json"
       ],
       "id": "J16",
-      "last_run": "2026-08-29",
+      "last_run": "2026-08-30",
       "public_shipping_composition": "ARTIFEX_SETUP_NUITKA_NSIS_PUBLIC_CLI_MULTI_PROCESS_PROVIDER_SETUP",
       "status": "ACTIVE",
       "title": "J16 — Provider Setup Persistence"
@@ -2333,7 +2452,7 @@
     "m8a_started": true,
     "m8b_started": true,
     "m8c_started": true,
-    "next_integration_point": "Preserve the qualified J10 outcome, reset VM104 from immutable V10, then install, configure and authenticate standalone Codex for J01 and J16",
+    "next_integration_point": "Preserve the VM105 standalone Codex BLOCKED outcome without retry selection, then qualify an independent Claude-only clean cell for J02 and J16",
     "recorded_date": "2026-08-29",
     "target_release": "2.0.0"
   },
@@ -2620,15 +2739,16 @@
   "summary": {
     "acceptance_classes_passing": 7,
     "acceptance_classes_required": 10,
-    "active_blockers": 2,
+    "active_blockers": 3,
     "adr_count": 24,
     "current_milestone": "M7",
     "current_milestone_progress_percent": 70,
-    "evidence_items": 39,
+    "evidence_items": 59,
     "invariant_count": 34,
     "journey_states": {
-      "ACTIVE": 2,
+      "ACTIVE": 1,
       "BLOCKED_EXTERNAL_PREREQUISITE": 1,
+      "BLOCKED_EXTERNAL_PROVIDER": 1,
       "NOT_STARTED": 3,
       "PASS": 13,
       "READY": 1

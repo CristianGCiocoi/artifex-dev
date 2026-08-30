@@ -1,0 +1,18 @@
+{
+  "auth_credentials": "ok",
+  "codex_version": "0.151.0",
+  "doctor_report_sha256": "2f133de8859932d5c351a565bbcc9a01aad32d1063f633c34ea20f1377d75d40",
+  "installation": "ok",
+  "network_provider_reachability": "ok",
+  "network_websocket_reachability": "ok",
+  "official_windows_sandbox_documentation": "https://learn.chatgpt.com/docs/windows/windows-sandbox",
+  "overall_status": "warning",
+  "sandbox_helpers": "ok",
+  "schema_version": "1.0",
+  "security_endpoint": {
+    "endpoint_product": "Microsoft Defender",
+    "status": "warning",
+    "summary": "endpoint protection detected; Codex exclusions are unverified"
+  },
+  "updates_status": "current version is not older"
+}

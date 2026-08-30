@@ -1,0 +1,29 @@
+{
+  "artifact_exists": true,
+  "artifact_sha256": "a6efc12e53b2fbeb5dfe68ff6d547ff8e203b8b9cdda7f7511eddfa5c54324dc",
+  "base_commit": "74f09a383a4670f736578c23b741dceb9068e1cc",
+  "diagnostic_only": true,
+  "execution_contract_fingerprint": "fee6f1dc35843680ba3bcd8b3b9441124e252c57b6b44595544c74afd26fb894",
+  "project_model_fingerprint": "c30f71b659163bc7d77ecd818657f410e55ac003d49d659fe9b80b074195d113",
+  "returncode": 0,
+  "schema_version": "1.0",
+  "stderr_bytes": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_bytes": 6340,
+  "stdout_sha256": "c09ff0cff25b4be64eab50d7231b9d886d6b1b4232eac8276a146e541a3379dd",
+  "structured_result": {
+    "artifacts": [
+      {
+        "path": "deliverables/m7-codex.txt"
+      }
+    ],
+    "base_commit": "74f09a383a4670f736578c23b741dceb9068e1cc",
+    "execution_contract_fingerprint": "fee6f1dc35843680ba3bcd8b3b9441124e252c57b6b44595544c74afd26fb894",
+    "message": "Created the owned deliverable with the exact required content and newline.",
+    "project_model_fingerprint": "c30f71b659163bc7d77ecd818657f410e55ac003d49d659fe9b80b074195d113",
+    "status": "SUCCESS",
+    "validation": {
+      "tests": "Exact 32-byte content check passed; git diff --check exited successfully."
+    }
+  }
+}

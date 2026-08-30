@@ -20,13 +20,14 @@ cells:
     codex: INSTALLED_CONFIGURED_AUTHENTICATED
     claude: ABSENT
   mandatory_journeys: [J01, J16]
-  qualification_status: ACTIVE_CODEX_INSTALL_CONFIGURE_AUTHENTICATE_PENDING
+  qualification_status: BLOCKED_EXTERNAL_PROVIDER
+  outcome: EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-DURABLE-BLOCKED.json
 - id: M7-WIN-CLAUDE
   provider_state:
     codex: ABSENT
     claude: INSTALLED_CONFIGURED_AUTHENTICATED
   mandatory_journeys: [J02, J16]
-  qualification_status: READY_AFTER_CODEX_CELL
+  qualification_status: READY_INDEPENDENT_CELL
 - id: M7-WIN-NOPROVIDER
   provider_state:
     codex: ABSENT
@@ -50,15 +51,22 @@ implementation_observation:
   canonical_base_commit: 2ea4a38e1bc18a2aa3535a1d224f508ca6561d88
   windows_service_registration_adapter: IMPLEMENTED_PENDING_CANDIDATE_QUALIFICATION
   public_distribution_lifecycle_wiring: IMPLEMENTED_PENDING_CANDIDATE_QUALIFICATION
-  clean_vm_qualification: J10_PASS_CODEX_AND_CLAUDE_CELLS_PENDING
-  active_blocker: null
-  blocker_evidence: EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE.yaml
-  selected_clean_vm:
-    hypervisor: Proxmox VE 9.2.3
-    vm_id: 104
-    os_build: 26200.9168
-    network_state: DHCP_VM_SPECIFIC_MAC
-    reset_snapshot: m7-qualified-25h2-x64-cell-base-v10
-    generalized_provenance_snapshot: m7-generalized-25h2-x64-base
-    invalidated_pre_generalization_snapshot: m7-clean-25h2-x64-base
-verdict: MATRIX_ACCEPTED_M7_ACTIVE_J10_PASS_PROVIDER_CELLS_PENDING
+  clean_vm_qualification: J10_PASS_CODEX_BLOCKED_CLAUDE_PENDING
+  active_blocker: BLK-M7-CODEX-PROVIDER-BLOCKED
+  blocker_evidence: EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-DURABLE-BLOCKED.json
+  selected_clean_vms:
+    no_provider:
+      hypervisor: Proxmox VE 9.2.3
+      vm_id: 104
+      os_build: 26200.9168
+      reset_snapshot: m7-qualified-25h2-x64-cell-base-v10
+    codex:
+      hypervisor: Proxmox VE 9.2.3
+      vm_id: 105
+      os_build: 26200.9168
+      reset_snapshot: m7-qualified-25h2-x64-codex-cell-v10
+    common:
+      network_state: DHCP_VM_SPECIFIC_MAC
+      generalized_provenance_snapshot: m7-generalized-25h2-x64-base
+      invalidated_pre_generalization_snapshot: m7-clean-25h2-x64-base
+verdict: MATRIX_ACCEPTED_M7_ACTIVE_J10_PASS_CODEX_BLOCKED_CLAUDE_PENDING

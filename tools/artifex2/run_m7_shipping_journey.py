@@ -5,8 +5,8 @@ It executes the staged and installed native executable, records only hashes and
 typed assertions, and emits a capture that still requires the independent M7
 Windows qualifier before it can become acceptance evidence.
 
-The first implemented cell is M7-WIN-NOPROVIDER/J10.  Provider cells fail
-closed until their live interaction/execution runner is implemented.
+The no-provider cell executes J10. Provider cells execute their standalone
+J01/J02 journey together with J16 through the same native distribution.
 """
 
 from __future__ import annotations
@@ -44,10 +44,42 @@ _SENSITIVE_TEXT = re.compile(
     re.IGNORECASE,
 )
 _ACTIVE_PHASE = "initialization"
+_DEFAULT_CLEAN_VM_ID = 104
+_DEFAULT_CLEAN_SNAPSHOT = "m7-qualified-25h2-x64-cell-base-v10"
+_RESUMABLE_PROVIDER_FAILURES = frozenset(
+    {
+        (
+            "governance.envelope.propose failed: OPERATION_FAILED/ValueError: "
+            "service_id cannot override the managed service authority"
+        ),
+        (
+            "governance.envelope.propose failed: OPERATION_FAILED/ValueError: "
+            "full M4 Execution Envelope fields are missing: ['deadline_at']"
+        ),
+        "runtime.provider.execute did not return one JSON object",
+        "distribution.bootstrap failed: OPERATION_FAILED/MemoryError: ",
+        "service.status did not return one JSON object",
+        (
+            "governance.envelope.propose failed: OPERATION_FAILED/IntegrityError: "
+            "UNIQUE constraint failed: envelope_proposals.envelope_id, "
+            "envelope_proposals.version"
+        ),
+        (
+            "runtime.provider.execute failed: OPERATION_FAILED/CodexProcessError: "
+            "Codex execution outcome is UNKNOWN: process exited non-zero "
+            "(code 3221226505)"
+        ),
+        "provider EXECUTION_IMPLEMENTER did not finish successfully",
+    }
+)
 
 
 class JourneyFailure(M7EvidenceError):
     """Raised when a live shipping journey cannot prove every required assertion."""
+
+
+class FrontendDetached(JourneyFailure):
+    """Raised when a long-running service call outlives its native frontend."""
 
 
 class ShippingCLI:
@@ -120,6 +152,20 @@ class ShippingCLI:
         try:
             value = json.loads(stdout)
         except json.JSONDecodeError as exc:
+            if operation == "runtime.provider.execute":
+                self.calls.append(
+                    {
+                        "operation": operation,
+                        "returncode": completed.returncode,
+                        "ok": None,
+                        "frontend_detached": True,
+                        "stdout_sha256": _text_sha256(stdout),
+                        "stderr_sha256": _text_sha256(stderr),
+                    }
+                )
+                raise FrontendDetached(
+                    "runtime.provider.execute frontend detached before the durable result"
+                ) from exc
             raise JourneyFailure(f"{operation} did not return one JSON object") from exc
         ok = isinstance(value, Mapping) and value.get("ok") is True
         if completed.returncode != 0 or not ok:
@@ -161,6 +207,8 @@ def run_j10(
     install_root: Path,
     state_root: Path,
     project_root: Path,
+    expected_vm_id: int = _DEFAULT_CLEAN_VM_ID,
+    expected_snapshot_name: str = _DEFAULT_CLEAN_SNAPSHOT,
     runner: Runner = subprocess.run,
     which: Any = shutil.which,
     host_identity: Mapping[str, Any] | None = None,
@@ -189,7 +237,11 @@ def run_j10(
         which=which,
     )
     attestation = _read_object(clean_base_attestation)
-    _validate_clean_base_attestation(attestation)
+    _validate_clean_base_attestation(
+        attestation,
+        expected_vm_id=expected_vm_id,
+        expected_snapshot_name=expected_snapshot_name,
+    )
     if attestation.get("candidate_sha256") != expected_artifact_sha256:
         raise JourneyFailure("clean-base attestation is not bound to the frozen candidate")
     snapshot_identity = canonical_sha256(attestation)
@@ -451,6 +503,690 @@ def run_j10(
     }
 
 
+def run_provider_cell(
+    *,
+    cell_id: str,
+    artifact: Path,
+    expected_artifact_sha256: str,
+    source_commit: str,
+    product_disposition_sha256: str,
+    clean_base_attestation: Path,
+    staging_root: Path,
+    install_root: Path,
+    state_root: Path,
+    project_root: Path,
+    provider_command: Path,
+    provider_version: str,
+    provider_executable_sha256: str,
+    auth_probe_sha256: str,
+    expected_vm_id: int = _DEFAULT_CLEAN_VM_ID,
+    expected_snapshot_name: str = _DEFAULT_CLEAN_SNAPSHOT,
+    resume_installed: bool = False,
+    resume_failure_capture: Path | None = None,
+    runner: Runner = subprocess.run,
+    which: Any = shutil.which,
+    host_identity: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    if cell_id not in {"M7-WIN-CODEX", "M7-WIN-CLAUDE"}:
+        raise JourneyFailure("provider runner requires an official provider cell")
+    provider_id = str(CELL_CONTRACTS[cell_id]["provider"])
+    other_provider = "claude" if provider_id == "codex" else "codex"
+    journey_id = "J01" if provider_id == "codex" else "J02"
+    prefix = f"m7-{provider_id}"
+    instance_key = hashlib.sha256(
+        project_root.as_posix().casefold().encode("utf-8")
+    ).hexdigest()[:12]
+    project_name = f"M7 {provider_id.title()} Core Qualification {instance_key}"
+    project_id = f"{prefix}-{instance_key}-project"
+    catalog_path = project_root.parent / f"{project_root.name}-catalog.sqlite3"
+    store_path = state_root / "runstore.sqlite3"
+    workspace_root = state_root / "workspaces"
+    run_id = f"{prefix}-{instance_key}-run"
+    project_job_id = f"{prefix}-{instance_key}-job"
+    attempt_id = f"{prefix}-{instance_key}-attempt"
+    workspace_id = f"{prefix}-{instance_key}-workspace"
+    workstream_id = f"{prefix}-{instance_key}-workstream"
+
+    _mark_phase("provider-preflight")
+    artifact = artifact.expanduser().resolve()
+    staging_root = staging_root.expanduser().resolve()
+    install_root = install_root.expanduser().resolve()
+    state_root = state_root.expanduser().resolve()
+    project_root = project_root.expanduser().resolve()
+    provider_command = provider_command.expanduser().resolve()
+    clean_base_attestation = clean_base_attestation.expanduser().resolve()
+    _validate_inputs(
+        artifact=artifact,
+        expected_artifact_sha256=expected_artifact_sha256,
+        source_commit=source_commit,
+        product_disposition_sha256=product_disposition_sha256,
+        clean_base_attestation=clean_base_attestation,
+    )
+    if not provider_command.is_file():
+        raise JourneyFailure("expected provider executable is unavailable")
+    if not provider_version.strip():
+        raise JourneyFailure("provider version is unavailable")
+    for name, digest in (
+        ("provider executable", provider_executable_sha256),
+        ("provider authentication probe", auth_probe_sha256),
+    ):
+        if not _DIGEST.fullmatch(digest):
+            raise JourneyFailure(f"{name} SHA-256 is invalid")
+    if _file_sha256(provider_command) != provider_executable_sha256:
+        raise JourneyFailure("provider executable does not match its qualified SHA-256")
+    identity = dict(host_identity or _windows_identity())
+    _require_windows_25h2(identity)
+    if resume_installed:
+        _require_provider_resume(
+            expected_provider=provider_id,
+            provider_command=provider_command,
+            other_provider=other_provider,
+            staging_root=staging_root,
+            install_root=install_root,
+            state_root=state_root,
+            project_root=project_root,
+            failure_capture=resume_failure_capture,
+            which=which,
+        )
+    else:
+        _require_provider_guest(
+            expected_provider=provider_id,
+            provider_command=provider_command,
+            other_provider=other_provider,
+            staging_root=staging_root,
+            install_root=install_root,
+            state_root=state_root,
+            project_root=project_root,
+            which=which,
+        )
+    attestation = _read_object(clean_base_attestation)
+    _validate_clean_base_attestation(
+        attestation,
+        expected_vm_id=expected_vm_id,
+        expected_snapshot_name=expected_snapshot_name,
+    )
+    if attestation.get("candidate_sha256") != expected_artifact_sha256:
+        raise JourneyFailure("clean-base attestation is not bound to the frozen candidate")
+    snapshot_identity = canonical_sha256(attestation)
+    artifact_sha256 = _file_sha256(artifact)
+    if artifact_sha256 != expected_artifact_sha256:
+        raise JourneyFailure("shipping artifact SHA-256 does not match the frozen candidate")
+
+    _mark_phase("provider-shipping-installer")
+    installed_executable = (
+        _resume_installed_candidate(install_root)
+        if resume_installed
+        else _install_shipping_candidate(
+            artifact,
+            install_root=install_root,
+            state_root=state_root,
+            runner=runner,
+        )
+    )
+    cli = ShippingCLI(
+        installed_executable,
+        cwd=install_root,
+        runner=runner,
+        timeout_seconds=900,
+    )
+    status_before = _initial_service_status(
+        cli,
+        state_root=state_root,
+        resume_installed=resume_installed,
+        runner=runner,
+    )
+    before = _running_service_value(status_before)
+
+    _mark_phase("provider-project-create")
+    created = _value(
+        cli.service_call(
+            "project.create",
+            {
+                "project_root": str(project_root),
+                "catalog_path": str(catalog_path),
+                "name": project_name,
+                "project_id": project_id,
+            },
+            project_root=project_root,
+            state_root=state_root,
+        )
+    )
+    baseline_revision = int(created.get("semantic_revision", 0))
+    baseline_fingerprint = str(created.get("semantic_fingerprint", ""))
+    if baseline_revision != 1 or not _DIGEST.fullmatch(baseline_fingerprint):
+        raise JourneyFailure("fresh Project semantic baseline is invalid")
+
+    provider_spec = {
+        "provider_id": provider_id,
+        "command": [str(provider_command)],
+        "roles": ["INTERACTION", "EXECUTION_IMPLEMENTER"],
+        "credential_reference": {
+            "broker": f"{provider_id}-native-session",
+            "reference": "default-session",
+            "provider_id": provider_id,
+            "scopes": ["INTERACTION", "EXECUTION_IMPLEMENTER"],
+            "secret_material_present": False,
+        },
+    }
+    setup_arguments = {
+        "project_root": str(project_root),
+        "integration_ids": ["manual", provider_id],
+        "provider_specs": [provider_spec],
+    }
+    setup_plan = cli.service_call(
+        "distribution.setup.plan",
+        setup_arguments,
+        project_root=project_root,
+        state_root=state_root,
+    )
+    decision = _value(setup_plan).get("decision")
+    confirmation = decision.get("confirmation_token") if isinstance(decision, Mapping) else None
+    if not isinstance(confirmation, str) or not confirmation.startswith("approve-"):
+        raise JourneyFailure("provider setup plan did not issue bounded approval")
+    cli.service_call(
+        "distribution.setup.apply",
+        {**setup_arguments, "confirmation_token": confirmation},
+        project_root=project_root,
+        state_root=state_root,
+    )
+    setup_path = project_root / ".artifex" / "integrations.json"
+    if not setup_path.is_file():
+        raise JourneyFailure("provider setup did not persist Project integration state")
+    setup_text = setup_path.read_text(encoding="utf-8")
+    if _SENSITIVE_TEXT.search(setup_text):
+        raise JourneyFailure("provider setup appears to contain secret material")
+    setup_sha256 = _text_sha256(setup_text)
+
+    _git(project_root, "config", "user.name", "ARTIFEX M7 Qualifier", runner=runner)
+    _git(
+        project_root,
+        "config",
+        "user.email",
+        "artifex-m7-qualifier@invalid.local",
+        runner=runner,
+    )
+    _git(project_root, "add", "--all", runner=runner)
+    _git(project_root, "commit", "-m", "Establish M7 provider baseline", runner=runner)
+    baseline_commit = _git(project_root, "rev-parse", "HEAD", runner=runner)
+    if not _COMMIT.fullmatch(baseline_commit):
+        raise JourneyFailure("fresh Project Git baseline is invalid")
+
+    _mark_phase("provider-service-restart")
+    cli.direct("service.stop", ["service", "stop", "--state-root", str(state_root)])
+    _wait_for_process_exit(int(before["process_id"]))
+    _restart_registered_windows_task(runner=runner)
+    status_after = _wait_for_service(cli, state_root, prior_process_id=int(before["process_id"]))
+    after = _running_service_value(status_after)
+    if int(after["coordinator_generation"]) <= int(before["coordinator_generation"]):
+        raise JourneyFailure("provider setup restart did not advance service generation")
+    if int(after["process_id"]) == int(before["process_id"]):
+        raise JourneyFailure("provider setup restart did not change service process")
+
+    bootstrap = _value(
+        cli.service_call(
+            "distribution.bootstrap", {}, project_root=project_root, state_root=state_root
+        )
+    )
+    if bootstrap.get("automated_candidates") != [provider_id]:
+        raise JourneyFailure("provider bootstrap did not expose the sole expected candidate")
+    cli.service_call(
+        "distribution.doctor",
+        {
+            "runstore_path": str(store_path),
+            "service_state_path": str(state_root / "service-state.json"),
+        },
+        project_root=project_root,
+        state_root=state_root,
+    )
+    graph = _value(
+        cli.service_call(
+            "providers.graph", {}, project_root=project_root, state_root=state_root
+        )
+    ).get("graph")
+    node = _find_provider(graph, provider_id)
+    readiness = _value(
+        cli.service_call(
+            "providers.readiness",
+            {"provider_id": provider_id},
+            project_root=project_root,
+            state_root=state_root,
+        )
+    ).get("readiness")
+    if not isinstance(readiness, Mapping) or readiness.get("state") != "AVAILABLE":
+        raise JourneyFailure("provider is not AVAILABLE after fresh service consumption")
+
+    common = {
+        "store_path": str(store_path),
+        "workspace_root": str(workspace_root),
+        "project_root": str(project_root),
+    }
+    proposer = _principal(
+        f"{prefix}-planner", "INTERACTION_CLIENT", "envelope:propose"
+    )
+    approver = _principal(
+        f"{prefix}-architect", "USER", "envelope:approve", "run:authorize"
+    )
+    dispatcher = _principal(
+        f"{prefix}-coordinator",
+        "AUTOMATION_SYSTEM_ACTOR",
+        "runtime:dispatch",
+        "workspace:create",
+        "workspace:access",
+    )
+    provider_actor = _principal(
+        f"{prefix}-provider", "PROVIDER", "result:submit"
+    )
+    evidence_actor = _principal(
+        f"{prefix}-evidence",
+        "ARTIFEX_SERVICE",
+        "workspace:access",
+        "evidence:record",
+    )
+    acceptance_actor = _principal(
+        f"{prefix}-acceptance", "ARTIFEX_SERVICE", "acceptance:decide"
+    )
+    promotion_actor = _principal(
+        f"{prefix}-project-authority", "ARTIFEX_SERVICE", "project:promote"
+    )
+    marker = (
+        f"ARTIFEX_INTERACTION project_id={project_id} "
+        f"semantic_revision={baseline_revision}"
+    )
+    interaction = _value(
+        cli.service_call(
+            "providers.interact",
+            {
+                "provider_id": provider_id,
+                "project_id": project_id,
+                "role": "INTERACTION",
+                "prompt": f"Return exactly: {marker}. Do not call tools and do not modify files.",
+            },
+            project_root=project_root,
+            state_root=state_root,
+        )
+    ).get("interaction")
+    if (
+        not isinstance(interaction, Mapping)
+        or interaction.get("provider_id") != provider_id
+        or interaction.get("live") is not True
+        or not _is_bounded_interaction_response(interaction.get("response"), marker)
+    ):
+        raise JourneyFailure("provider INTERACTION did not return the bounded live response")
+
+    envelope = _provider_envelope(
+        provider_id=provider_id,
+        project_id=project_id,
+        workstream_id=workstream_id,
+        baseline_fingerprint=baseline_fingerprint,
+        baseline_commit=baseline_commit,
+    )
+    cli.service_call(
+        "governance.envelope.propose",
+        {**common, "actor": proposer, "envelope": envelope},
+        project_root=project_root,
+        state_root=state_root,
+    )
+    cli.service_call(
+        "governance.envelope.approve",
+        {
+            **common,
+            "envelope_id": envelope["envelope_id"],
+            "version": 1,
+            "actor": approver,
+        },
+        project_root=project_root,
+        state_root=state_root,
+    )
+    cli.service_call(
+        "runtime.run.authorize",
+        {
+            **common,
+            "envelope_id": envelope["envelope_id"],
+            "envelope_version": 1,
+            "workstream_id": workstream_id,
+            "run_id": run_id,
+            "project_job_id": project_job_id,
+            "attempt_id": attempt_id,
+            "purpose": f"M7 real standalone {provider_id} qualification",
+            "actor": approver,
+        },
+        project_root=project_root,
+        state_root=state_root,
+    )
+    workspace = _value(
+        cli.service_call(
+            "runtime.workspace.create",
+            {
+                **common,
+                "workspace_id": workspace_id,
+                "attempt_id": attempt_id,
+                "baseline_revision": baseline_revision,
+                "actor": dispatcher,
+            },
+            project_root=project_root,
+            state_root=state_root,
+        )
+    )
+    execution_response: Mapping[str, Any] | None = None
+    try:
+        execution_response = cli.service_call(
+            "runtime.provider.execute",
+            {
+                **common,
+                "provider_id": provider_id,
+                "role": "EXECUTION_IMPLEMENTER",
+                "run_id": run_id,
+                "project_job_id": project_job_id,
+                "attempt_id": attempt_id,
+                "workspace_id": workspace_id,
+                "objective": (
+                    f"Create deliverables/{prefix}.txt containing exactly "
+                    f"ARTIFEX M7 REAL {provider_id.upper()} EXECUTION followed by a newline."
+                ),
+                "acceptance_criteria": [
+                    (
+                        f"deliverables/{prefix}.txt contains exactly ARTIFEX M7 REAL "
+                        f"{provider_id.upper()} EXECUTION followed by one newline"
+                    ),
+                    "git diff --check exits successfully",
+                ],
+                "owned_paths": [f"deliverables/{prefix}.txt"],
+                "credential_reference_id": f"{provider_id}-cli-session",
+                "capabilities": ["repository_write", "test_execution"],
+                "filesystem_permissions": ["READ", "WRITE"],
+                "network_permissions": ["PROVIDER_API"],
+                "tool_permissions": [f"{provider_id}.exec"],
+                "actor": dispatcher,
+                "provider_actor": provider_actor,
+                "evidence_actor": evidence_actor,
+            },
+            project_root=project_root,
+            state_root=state_root,
+        )
+    except FrontendDetached:
+        execution_response = None
+    if execution_response is None:
+        execution = _wait_for_durable_provider_execution(
+            cli,
+            common=common,
+            project_root=project_root,
+            state_root=state_root,
+            provider_id=provider_id,
+            run_id=run_id,
+            project_job_id=project_job_id,
+            attempt_id=attempt_id,
+        )
+    else:
+        execution = _value(execution_response).get("execution")
+    if (
+        not isinstance(execution, Mapping)
+        or execution.get("provider_id") != provider_id
+        or execution.get("live") is not True
+        or str(execution.get("status", "")).upper() not in {"SUCCESS", "FINISHED", "PASS"}
+    ):
+        raise JourneyFailure("provider EXECUTION_IMPLEMENTER did not finish successfully")
+    evidence = execution.get("evidence")
+    if not isinstance(evidence, list) or not evidence:
+        raise JourneyFailure("provider execution did not persist validation evidence")
+    evidence_ids = [
+        str(item.get("evidence_id"))
+        for item in evidence
+        if isinstance(item, Mapping) and item.get("evidence_id")
+    ]
+    if len(evidence_ids) != len(evidence):
+        raise JourneyFailure("provider validation evidence identities are incomplete")
+
+    observed_before_reconnect = _value(
+        cli.service_call(
+            "runtime.status",
+            {**common, "run_id": run_id},
+            project_root=project_root,
+            state_root=state_root,
+        )
+    )
+    if observed_before_reconnect.get("acceptance_decisions"):
+        raise JourneyFailure("provider result improperly self-accepted")
+    # ShippingCLI launches a new native frontend process for every call. This
+    # second status read therefore proves reconnect to the same durable Run.
+    observed_after_reconnect = _value(
+        cli.service_call(
+            "runtime.status",
+            {**common, "run_id": run_id},
+            project_root=project_root,
+            state_root=state_root,
+        )
+    )
+    if observed_after_reconnect.get("run") != observed_before_reconnect.get("run"):
+        raise JourneyFailure("frontend reconnect did not observe the same durable Run")
+
+    cli.service_call(
+        "runtime.accept",
+        {
+            **common,
+            "project_job_id": project_job_id,
+            "evidence_valid": True,
+            "evidence_ids": evidence_ids,
+            "reason": "independent M7 owned-path validation passed",
+            "actor": acceptance_actor,
+        },
+        project_root=project_root,
+        state_root=state_root,
+    )
+    model_path = project_root / ".artifex" / "project-model.json"
+    model = _read_object(model_path)
+    mutable_model = json.loads(json.dumps(model))
+    mutable_model["project"]["description"] = (
+        f"Accepted real standalone {provider_id} M7 ProjectJob"
+    )
+    promoted = _value(
+        cli.service_call(
+            "runtime.workspace.promote",
+            {
+                **common,
+                "workspace_id": workspace_id,
+                "project_job_id": project_job_id,
+                "model": mutable_model,
+                "actor": promotion_actor,
+            },
+            project_root=project_root,
+            state_root=state_root,
+        )
+    )
+    promotion_revision = int(promoted.get("semantic_revision", 0))
+    if promotion_revision != baseline_revision + 1:
+        raise JourneyFailure("Project Authority promotion did not advance exactly one revision")
+    certifications = _value(
+        cli.service_call(
+            "providers.certifications",
+            {"project_id": project_id, "provider_id": provider_id},
+            project_root=project_root,
+            state_root=state_root,
+        )
+    ).get("certifications")
+    role_states = _role_states(certifications)
+    required_roles = {"INTERACTION", "EXECUTION_IMPLEMENTER"}
+    live_roles = {
+        role for role, state in role_states.items() if state == "LIVE_ROLE_CERTIFIED"
+    }
+    if live_roles != required_roles:
+        raise JourneyFailure("provider roles are not independently live-certified")
+
+    cli.service_call(
+        "documentation.regenerate",
+        {"catalog_path": str(catalog_path), "name": project_name, "documents": []},
+        project_root=project_root,
+        state_root=state_root,
+    )
+    documentation = _value(
+        cli.service_call(
+            "documentation.status",
+            {"catalog_path": str(catalog_path), "name": project_name},
+            project_root=project_root,
+            state_root=state_root,
+        )
+    )
+    documents = documentation.get("documents")
+    documentation_current = isinstance(documents, list) and bool(documents) and all(
+        isinstance(item, Mapping) and item.get("state") == "CURRENT" for item in documents
+    )
+    dashboard = _value(
+        cli.service_call(
+            "dashboard.project",
+            {"catalog_path": str(catalog_path), "name": project_name},
+            project_root=project_root,
+            state_root=state_root,
+        )
+    )
+    dashboard_current = int(dashboard.get("semantic_revision", 0)) == promotion_revision
+    if not documentation_current or not dashboard_current:
+        raise JourneyFailure("Project documentation or dashboard is not current")
+
+    registration_manifest = install_root / "service-registration.json"
+    transcript_value = {
+        "calls": cli.calls,
+        "assertions": {
+            "artifact_bound": True,
+            "provider_authenticated": True,
+            "provider_live_roles": sorted(required_roles),
+            "provider_result_self_accepted": False,
+            "service_restart": True,
+        },
+    }
+    transcript_bytes = json.dumps(
+        transcript_value, sort_keys=True, separators=(",", ":"), ensure_ascii=True
+    ).encode("utf-8")
+    provider_journey = {
+        "status": "PASS",
+        "provider_id": provider_id,
+        "project_created": True,
+        "baseline_revision": baseline_revision,
+        "plan_approved": True,
+        "envelope_approved": True,
+        "interaction_live": True,
+        "execution_live": True,
+        "workspace_isolated": workspace.get("isolated") is True,
+        "runstore_durable": True,
+        "validation_recorded": True,
+        "provider_self_accepted": False,
+        "acceptance_authority_separate": True,
+        "project_authority_promoted": True,
+        "promotion_revision": promotion_revision,
+        "documentation_current": documentation_current,
+        "dashboard_current": dashboard_current,
+        "role_certifications": {
+            "INTERACTION": role_states["INTERACTION"],
+            "EXECUTION_IMPLEMENTER": role_states["EXECUTION_IMPLEMENTER"],
+        },
+    }
+    if provider_id == "codex":
+        provider_journey.update(
+            {"frontend_closed_during_run": True, "reconnect_observed_run": True}
+        )
+    return {
+        "schema_version": "1.0",
+        "status": "PASS",
+        "cell": {
+            "id": cell_id,
+            "os": "Windows 11",
+            "display_version": DEFAULT_WINDOWS_VERSION,
+            "architecture": "x86_64",
+            "support_tier": "CORE",
+            "mode": "STANDALONE",
+            "provider": provider_id,
+            "absent_providers": list(CELL_CONTRACTS[cell_id]["absent_providers"]),
+            "journeys": list(CELL_CONTRACTS[cell_id]["journeys"]),
+        },
+        "candidate": {
+            "source_commit": source_commit,
+            "artifact_name": artifact.name,
+            "artifact_sha256": artifact_sha256,
+            "artifact_bytes": artifact.stat().st_size,
+            "contract_digest": M7_CONTRACT_DIGEST,
+            "product_disposition_sha256": product_disposition_sha256,
+        },
+        "clean_machine": {
+            "snapshot_identity_sha256": snapshot_identity,
+            "first_boot": True,
+            "prior_artifex_absent": True,
+            "prior_service_absent": True,
+            "prior_state_root_absent": True,
+            "source_checkout_absent": True,
+            "os_build": str(identity["os_build"]),
+            "ubr": int(identity["ubr"]),
+        },
+        "composition": {
+            "shipping_installer": True,
+            "public_managed_service": True,
+            "public_cli": True,
+            "source_tree_imported": False,
+            "custom_application_factory_used": False,
+            "provider_injection_used": False,
+            "simulated_provider": False,
+            "atlas_present": False,
+            "combined_provider_cell": False,
+        },
+        "installer_service": {
+            "install_status": "PASS",
+            "registration_status": "PASS",
+            "os_service_manager": WINDOWS_SERVICE_MANAGER,
+            "registration_manifest_sha256": _file_sha256(registration_manifest),
+            "executable_sha256": _file_sha256(installed_executable),
+            "service_start_status": "PASS",
+            "frontend_independent": True,
+            "authenticated_loopback_transport": True,
+            "restart_generation_before": int(before["coordinator_generation"]),
+            "restart_generation_after": int(after["coordinator_generation"]),
+            "service_process_changed": True,
+            "doctor_secret_safe": True,
+        },
+        "provider": {
+            "id": provider_id,
+            "installed": True,
+            "other_core_provider_absent": which(other_provider) is None,
+            "configured": True,
+            "authenticated": True,
+            "version": provider_version,
+            "executable_sha256": provider_executable_sha256,
+            "auth_probe_sha256": auth_probe_sha256,
+            "readiness_state": str(readiness["state"]),
+            "credential_files_read": False,
+            "pii_persisted": False,
+        },
+        "journeys": {
+            journey_id: provider_journey,
+            "J16": {
+                "status": "PASS",
+                "provider_id": provider_id,
+                "setup_sha256": setup_sha256,
+                "fresh_process_consumed_setup": bootstrap.get("fresh_process_consumed_setup")
+                is True,
+                "provider_registered_after_consumption": node.get("provider_id")
+                == provider_id,
+                "service_generation_advanced": int(after["coordinator_generation"])
+                > int(before["coordinator_generation"]),
+                "service_process_changed": int(after["process_id"])
+                != int(before["process_id"]),
+                "custom_injection_used": False,
+            },
+        },
+        "security": {
+            "credential_files_read": False,
+            "pii_persisted": False,
+            "transport_token_persisted": False,
+            "provider_result_self_acceptance": False,
+            "acceptance_authority_separate": True,
+            "project_authority_required": True,
+        },
+        "public_process_calls": cli.calls,
+        "transcript": {
+            "sha256": hashlib.sha256(transcript_bytes).hexdigest(),
+            "bytes": len(transcript_bytes),
+            "raw_output_persisted": False,
+            "secret_scan": "PASS",
+        },
+    }
+
+
 def _validate_inputs(**values: Any) -> None:
     artifact = values["artifact"]
     if not isinstance(artifact, Path) or not artifact.is_file():
@@ -493,6 +1229,298 @@ def _require_clean_guest(
         raise JourneyFailure("clean-machine preflight found a prior ARTIFEX executable")
 
 
+def _require_provider_guest(
+    *,
+    expected_provider: str,
+    provider_command: Path,
+    other_provider: str,
+    staging_root: Path,
+    install_root: Path,
+    state_root: Path,
+    project_root: Path,
+    which: Any,
+) -> None:
+    if os.environ.get("USERNAME", "").casefold() == "system" or os.environ.get(
+        "SESSIONNAME", ""
+    ).casefold() == "services":
+        raise JourneyFailure("provider qualification requires an interactive user session")
+    for name, path in (
+        ("staging root", staging_root),
+        ("install root", install_root),
+        ("state root", state_root),
+        ("project root", project_root),
+    ):
+        if path.exists():
+            raise JourneyFailure(f"clean-machine preflight found an existing {name}")
+    if not provider_command.is_file():
+        raise JourneyFailure(f"{expected_provider} cell is missing its provider executable")
+    if which(other_provider):
+        raise JourneyFailure(
+            f"{expected_provider} cell contains forbidden provider {other_provider}"
+        )
+    if which("artifex") or which("artifex.exe"):
+        raise JourneyFailure("clean-machine preflight found a prior ARTIFEX executable")
+
+
+def _require_provider_resume(
+    *,
+    expected_provider: str,
+    provider_command: Path,
+    other_provider: str,
+    staging_root: Path,
+    install_root: Path,
+    state_root: Path,
+    project_root: Path,
+    failure_capture: Path | None,
+    which: Any,
+) -> None:
+    if os.environ.get("USERNAME", "").casefold() == "system" or os.environ.get(
+        "SESSIONNAME", ""
+    ).casefold() == "services":
+        raise JourneyFailure("provider qualification requires an interactive user session")
+    for name, path in (("staging root", staging_root), ("project root", project_root)):
+        if path.exists():
+            raise JourneyFailure(f"provider resume found an existing {name}")
+    for name, path in (("install root", install_root), ("state root", state_root)):
+        if not path.exists():
+            raise JourneyFailure(f"provider resume is missing the existing {name}")
+    if not provider_command.is_file():
+        raise JourneyFailure(f"{expected_provider} cell is missing its provider executable")
+    if which(other_provider):
+        raise JourneyFailure(
+            f"{expected_provider} cell contains forbidden provider {other_provider}"
+        )
+    if failure_capture is None or not failure_capture.is_file():
+        raise JourneyFailure("provider resume requires the preserved harness failure capture")
+    try:
+        failure = _read_object(failure_capture)
+    except (OSError, json.JSONDecodeError, TypeError, ValueError) as exc:
+        raise JourneyFailure("provider resume failure capture is invalid") from exc
+    if (
+        set(failure) != {"diagnostic", "error", "schema_version", "status"}
+        or failure.get("schema_version") != "1.0"
+        or failure.get("status") != "FAIL"
+        or failure.get("error") != "JourneyFailure"
+        or failure.get("diagnostic") not in _RESUMABLE_PROVIDER_FAILURES
+    ):
+        raise JourneyFailure(
+            "provider resume failure is not an authorized preserved qualification failure"
+        )
+
+
+def _git(root: Path, *arguments: str, runner: Runner) -> str:
+    completed = runner(
+        ["git", "-C", str(root), *arguments],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+        timeout=60,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+    )
+    if completed.returncode != 0:
+        raise JourneyFailure("Git baseline operation failed")
+    return (completed.stdout or "").strip()
+
+
+def _principal(actor_id: str, actor_type: str, *permissions: str) -> dict[str, Any]:
+    return {
+        "actor_id": actor_id,
+        "actor_type": actor_type,
+        "authenticated": True,
+        "authentication_method": "m7-clean-vm-qualification",
+        "direct_permissions": list(permissions),
+    }
+
+
+def _provider_envelope(
+    *,
+    provider_id: str,
+    project_id: str,
+    workstream_id: str,
+    baseline_fingerprint: str,
+    baseline_commit: str,
+) -> dict[str, Any]:
+    return {
+        "envelope_id": f"{project_id}-envelope",
+        "version": 1,
+        "project_id": project_id,
+        "objective": f"Create one bounded M7 {provider_id} deliverable",
+        "baseline_revision": 1,
+        "actor_id": f"m7-{provider_id}-architect",
+        "allowed_paths": [f"deliverables/m7-{provider_id}.txt"],
+        "allowed_capabilities": ["repository_read", "repository_write", "test_execution"],
+        "allowed_providers": [provider_id],
+        "allowed_provider_roles": ["EXECUTION_IMPLEMENTER"],
+        "allowed_workstreams": [workstream_id],
+        "required_gates": ["validation", "acceptance-authority", "project-authority"],
+        "filesystem_permissions": ["READ", "WRITE"],
+        "network_permissions": ["PROVIDER_API"],
+        "tool_permissions": [f"{provider_id}.exec"],
+        "data_classification": "INTERNAL",
+        "credential_references": [
+            {
+                "reference_id": f"{provider_id}-cli-session",
+                "provider_id": provider_id,
+                "role": "EXECUTION_IMPLEMENTER",
+                "project_id": project_id,
+                "revoked": False,
+            }
+        ],
+        "resource_budget": {"attempts": 1},
+        "deadline_at": int(time.time()) + 3600,
+        "stop_conditions": ["MAX_ATTEMPTS", "UNKNOWN_OUTCOME"],
+        "require_durable_evidence": True,
+        "baseline_fingerprint": baseline_fingerprint,
+        "baseline_commit": baseline_commit,
+        "max_attempts": 1,
+        "recovery_policy": "RECONCILE_BEFORE_RETRY",
+        "stop_on_unknown": True,
+        "approved": False,
+        "supervision_level": "L2",
+        "network_policy": "PROVIDER_ONLY",
+        "materiality": "TACTICAL",
+    }
+
+
+def _find_provider(graph: object, provider_id: str) -> Mapping[str, Any]:
+    if not isinstance(graph, Mapping):
+        raise JourneyFailure("Capability Graph is unavailable")
+    providers = graph.get("providers")
+    if not isinstance(providers, list):
+        raise JourneyFailure("Capability Graph providers are invalid")
+    matches = [
+        item
+        for item in providers
+        if isinstance(item, Mapping) and item.get("provider_id") == provider_id
+    ]
+    if len(matches) != 1:
+        raise JourneyFailure("Capability Graph provider cardinality is not one")
+    return matches[0]
+
+
+def _is_bounded_interaction_response(value: object, marker: str) -> bool:
+    if not isinstance(value, str) or len(value) > 512:
+        return False
+    return value.count(marker) == 1
+
+
+def _role_states(value: object) -> dict[str, str]:
+    if not isinstance(value, Mapping):
+        raise JourneyFailure("provider certification report is unavailable")
+    roles = value.get("roles", value)
+    states: dict[str, str] = {}
+    if isinstance(roles, list):
+        for item in roles:
+            if isinstance(item, Mapping):
+                states[str(item.get("role"))] = str(item.get("state"))
+    elif isinstance(roles, Mapping):
+        for role, item in roles.items():
+            states[str(role)] = str(item.get("state") if isinstance(item, Mapping) else item)
+    else:
+        raise JourneyFailure("provider certification roles are malformed")
+    return states
+
+
+def _wait_for_durable_provider_execution(
+    cli: ShippingCLI,
+    *,
+    common: Mapping[str, Any],
+    project_root: Path,
+    state_root: Path,
+    provider_id: str,
+    run_id: str,
+    project_job_id: str,
+    attempt_id: str,
+) -> Mapping[str, Any]:
+    deadline = time.monotonic() + 900
+    while time.monotonic() < deadline:
+        status = _value(
+            cli.service_call(
+                "runtime.status",
+                {**common, "run_id": run_id},
+                project_root=project_root,
+                state_root=state_root,
+            )
+        )
+        execution = _durable_provider_execution(
+            status,
+            provider_id=provider_id,
+            project_job_id=project_job_id,
+            attempt_id=attempt_id,
+        )
+        if execution is not None:
+            return execution
+        time.sleep(2)
+    raise JourneyFailure("provider execution did not reach a durable terminal state")
+
+
+def _durable_provider_execution(
+    value: Mapping[str, Any],
+    *,
+    provider_id: str,
+    project_job_id: str,
+    attempt_id: str,
+) -> Mapping[str, Any] | None:
+    attempts = value.get("attempts")
+    if not isinstance(attempts, list):
+        raise JourneyFailure("durable runtime status has no Attempt projection")
+    matches = [
+        item
+        for item in attempts
+        if isinstance(item, Mapping) and item.get("attempt_id") == attempt_id
+    ]
+    if len(matches) != 1:
+        raise JourneyFailure("durable runtime status has invalid Attempt cardinality")
+    attempt = matches[0]
+    state = str(attempt.get("state", ""))
+    if state in {"PENDING", "RUNNING"}:
+        return None
+    if state != "FINISHED":
+        raise JourneyFailure("provider execution entered a non-recoverable durable state")
+    claim = str(attempt.get("result_claim", ""))
+    if (
+        f"provider={provider_id};" not in claim
+        or "status=SUCCESS;" not in claim
+    ):
+        raise JourneyFailure("provider EXECUTION_IMPLEMENTER did not finish successfully")
+    jobs = value.get("project_jobs")
+    if not isinstance(jobs, list) or not any(
+        isinstance(item, Mapping)
+        and item.get("project_job_id") == project_job_id
+        and item.get("state") == "FINISHED"
+        for item in jobs
+    ):
+        raise JourneyFailure("durable ProjectJob did not finish with the provider Attempt")
+    authorizations = value.get("dispatch_authorizations")
+    if not isinstance(authorizations, list) or not any(
+        isinstance(item, Mapping)
+        and item.get("attempt_id") == attempt_id
+        and item.get("provider_id") == provider_id
+        and item.get("provider_role") == "EXECUTION_IMPLEMENTER"
+        for item in authorizations
+    ):
+        raise JourneyFailure("durable provider dispatch authorization is unavailable")
+    records = value.get("evidence_records")
+    evidence = [
+        dict(item)
+        for item in records
+        if isinstance(item, Mapping)
+        and item.get("attempt_id") == attempt_id
+        and item.get("project_job_id") == project_job_id
+    ] if isinstance(records, list) else []
+    if not evidence or not all(bool(item.get("passed")) for item in evidence):
+        raise JourneyFailure("durable provider validation evidence did not pass")
+    return {
+        "provider_id": provider_id,
+        "live": True,
+        "status": "SUCCESS",
+        "evidence": evidence,
+    }
+
+
 def _install_shipping_candidate(
     artifact: Path,
     *,
@@ -532,6 +1560,41 @@ def _install_shipping_candidate(
     return executable
 
 
+def _resume_installed_candidate(install_root: Path) -> Path:
+    executable = install_root / "artifex.exe"
+    manifest_path = install_root / "artifex-install-manifest.json"
+    for path in (
+        executable,
+        manifest_path,
+        install_root / "service-registration.json",
+        install_root / "Uninstall.exe",
+    ):
+        if not path.is_file():
+            raise JourneyFailure(f"provider resume is missing installed file {path.name}")
+    try:
+        manifest = _read_object(manifest_path)
+        artifact_manifest = manifest["artifact_manifest"]
+        files = manifest["files"]
+        if not isinstance(artifact_manifest, Mapping) or not isinstance(files, list):
+            raise TypeError
+        executable_entry = next(
+            item
+            for item in files
+            if isinstance(item, Mapping) and item.get("path") == "artifex.exe"
+        )
+    except (OSError, json.JSONDecodeError, KeyError, StopIteration, TypeError, ValueError) as exc:
+        raise JourneyFailure("provider resume install manifest is invalid") from exc
+    digest = _file_sha256(executable)
+    if (
+        manifest.get("install_root") != str(install_root)
+        or artifact_manifest.get("artifact") != "artifex.exe"
+        or artifact_manifest.get("sha256") != digest
+        or executable_entry.get("sha256") != digest
+    ):
+        raise JourneyFailure("provider resume install manifest does not bind the executable")
+    return executable
+
+
 def _restart_registered_windows_task(*, runner: Runner) -> None:
     queried = runner(
         ["schtasks.exe", "/Query", "/FO", "CSV", "/NH"],
@@ -565,6 +1628,24 @@ def _restart_registered_windows_task(*, runner: Runner) -> None:
     )
     if started.returncode != 0:
         raise JourneyFailure("Windows managed-service task did not restart")
+
+
+def _initial_service_status(
+    cli: ShippingCLI,
+    *,
+    state_root: Path,
+    resume_installed: bool,
+    runner: Runner,
+) -> Mapping[str, Any]:
+    try:
+        return cli.direct(
+            "service.status", ["service", "status", "--state-root", str(state_root)]
+        )
+    except JourneyFailure:
+        if not resume_installed:
+            raise
+    _restart_registered_windows_task(runner=runner)
+    return _wait_for_service(cli, state_root, prior_process_id=0)
 
 
 def _wait_for_service(
@@ -640,7 +1721,12 @@ def _running_service_value(result: Mapping[str, Any]) -> Mapping[str, Any]:
     return value
 
 
-def _validate_clean_base_attestation(value: Mapping[str, Any]) -> None:
+def _validate_clean_base_attestation(
+    value: Mapping[str, Any],
+    *,
+    expected_vm_id: int = _DEFAULT_CLEAN_VM_ID,
+    expected_snapshot_name: str = _DEFAULT_CLEAN_SNAPSHOT,
+) -> None:
     expected = {
         "schema_version",
         "vm_id",
@@ -659,10 +1745,10 @@ def _validate_clean_base_attestation(value: Mapping[str, Any]) -> None:
     if value.get("providers_absent") is not True or value.get("source_checkout_absent") is not True:
         raise JourneyFailure("clean-base attestation does not prove cell separation")
     if (
-        value.get("vm_id") != 104
-        or value.get("snapshot_name") != "m7-qualified-25h2-x64-cell-base-v10"
+        value.get("vm_id") != expected_vm_id
+        or value.get("snapshot_name") != expected_snapshot_name
     ):
-        raise JourneyFailure("clean-base attestation does not identify the authorized VM104 reset")
+        raise JourneyFailure("clean-base attestation does not identify the authorized VM reset")
 
 
 def _windows_identity() -> dict[str, Any]:
@@ -738,26 +1824,56 @@ def main() -> None:
     parser.add_argument("--source-commit", required=True)
     parser.add_argument("--product-disposition-sha256", required=True)
     parser.add_argument("--clean-base-attestation", type=Path, required=True)
+    parser.add_argument("--expected-vm-id", type=int, default=_DEFAULT_CLEAN_VM_ID)
+    parser.add_argument("--expected-snapshot-name", default=_DEFAULT_CLEAN_SNAPSHOT)
     parser.add_argument("--staging-root", type=Path, required=True)
     parser.add_argument("--install-root", type=Path, required=True)
     parser.add_argument("--state-root", type=Path, required=True)
     parser.add_argument("--project-root", type=Path, required=True)
+    parser.add_argument("--provider-command", type=Path)
+    parser.add_argument("--provider-version")
+    parser.add_argument("--provider-executable-sha256")
+    parser.add_argument("--auth-probe-sha256")
+    parser.add_argument("--resume-installed-provider-cell", action="store_true")
+    parser.add_argument("--resume-failure-capture", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     arguments = parser.parse_args()
     try:
-        if arguments.cell != "M7-WIN-NOPROVIDER":
-            raise JourneyFailure("provider-cell live runner is not yet implemented")
-        result = run_j10(
-            artifact=arguments.artifact,
-            expected_artifact_sha256=arguments.expected_artifact_sha256,
-            source_commit=arguments.source_commit,
-            product_disposition_sha256=arguments.product_disposition_sha256,
-            clean_base_attestation=arguments.clean_base_attestation,
-            staging_root=arguments.staging_root,
-            install_root=arguments.install_root,
-            state_root=arguments.state_root,
-            project_root=arguments.project_root,
-        )
+        common = {
+            "artifact": arguments.artifact,
+            "expected_artifact_sha256": arguments.expected_artifact_sha256,
+            "source_commit": arguments.source_commit,
+            "product_disposition_sha256": arguments.product_disposition_sha256,
+            "clean_base_attestation": arguments.clean_base_attestation,
+            "expected_vm_id": arguments.expected_vm_id,
+            "expected_snapshot_name": arguments.expected_snapshot_name,
+            "staging_root": arguments.staging_root,
+            "install_root": arguments.install_root,
+            "state_root": arguments.state_root,
+            "project_root": arguments.project_root,
+        }
+        if arguments.cell == "M7-WIN-NOPROVIDER":
+            if arguments.resume_installed_provider_cell or arguments.resume_failure_capture:
+                raise JourneyFailure("no-provider cell cannot resume a provider qualification")
+            result = run_j10(**common)
+        else:
+            if (
+                arguments.provider_command is None
+                or arguments.provider_version is None
+                or arguments.provider_executable_sha256 is None
+                or arguments.auth_probe_sha256 is None
+            ):
+                raise JourneyFailure("provider cell requires qualified provider arguments")
+            result = run_provider_cell(
+                cell_id=arguments.cell,
+                provider_command=arguments.provider_command,
+                provider_version=arguments.provider_version,
+                provider_executable_sha256=arguments.provider_executable_sha256,
+                auth_probe_sha256=arguments.auth_probe_sha256,
+                resume_installed=arguments.resume_installed_provider_cell,
+                resume_failure_capture=arguments.resume_failure_capture,
+                **common,
+            )
     except (OSError, ValueError, subprocess.SubprocessError) as exc:
         result = {
             "schema_version": "1.0",

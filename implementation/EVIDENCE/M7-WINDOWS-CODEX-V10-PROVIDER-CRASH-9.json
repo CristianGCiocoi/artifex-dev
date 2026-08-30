@@ -1,0 +1,6 @@
+{
+  "diagnostic": "runtime.provider.execute failed: OPERATION_FAILED/CodexProcessError: Codex execution outcome is UNKNOWN: process exited non-zero (code 3221226505)",
+  "error": "JourneyFailure",
+  "schema_version": "1.0",
+  "status": "FAIL"
+}

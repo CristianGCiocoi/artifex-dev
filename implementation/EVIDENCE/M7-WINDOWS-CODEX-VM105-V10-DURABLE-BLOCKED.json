@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.0",
+  "evidence_id": "EVD-M7-WINDOWS-CODEX-VM105-V10-DURABLE-BLOCKED",
+  "recorded_date": "2026-08-30",
+  "cell_id": "M7-WIN-CODEX",
+  "status": "FAIL",
+  "classification": "EXTERNAL_PROVIDER_RETURNED_BLOCKED",
+  "environment": {
+    "vm_id": 105,
+    "snapshot_name": "m7-qualified-25h2-x64-codex-cell-v10",
+    "os": "Windows 11 Pro 25H2 x64",
+    "os_build": "26200.9168",
+    "interactive_user_logon": true,
+    "other_core_provider_absent": true,
+    "source_checkout_absent_at_cell_start": true
+  },
+  "shipping_candidate": {
+    "source_commit": "2ea4a38e1bc18a2aa3535a1d224f508ca6561d88",
+    "artifact_sha256": "daae84ec9793c0fc184cebd723670cba0d0509ce4f94f33b040b2cdacfa6a381",
+    "product_disposition_sha256": "17ed830e83f6e6ed8654d4385bd4ef224e75d67fe79ca415c35f6f5dff4020d2"
+  },
+  "provider": {
+    "id": "codex",
+    "version": "codex-cli 0.150.1",
+    "executable_sha256": "cbd657ddfe151d1a6ebad660beffdbd3265dc5aff4b3a6095124d3e2f0156f2f",
+    "installer_sha256": "391f247de2c70c7e99041979ec02dae7e76be27ac9cfc1dfe7c1eb21d48d8b97",
+    "install_evidence_sha256": "b12d70b0f2237373a7d2ef71e6f3d6403e90d43c2e66d0e34fc92f40bac95e98",
+    "authentication_probe_status": "PASS",
+    "authentication_probe_sha256": "68b6454a2d5131e1e7574845a9e6eb5ad12e6f270ef0cf3226eeebec1b220b3d"
+  },
+  "shipping_capture": {
+    "path": "EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-FAILURE.json",
+    "sha256": "b525d4bc90d0621e5545750911c1e56b6ec4397b029808da358f8dd81a369319",
+    "runner_log_sha256": "c429ad52ae9283fa9b4dcc0ec391ed3bce1f4991b0e57736d9b26b288a459243",
+    "diagnostic": "runtime.status did not return one JSON object"
+  },
+  "public_runtime_reconnection": {
+    "status": "PASS",
+    "returncode": 0,
+    "stdout_is_json": true,
+    "stderr_bytes": 0,
+    "capture_sha256": "93dd80e8b0fb880610f55865de22b36a4e0dbd15d808737669e578ab76f2de1f"
+  },
+  "durable_outcome": {
+    "run_id": "m7-codex-4559ec99c815-run",
+    "run_state": "RUNNING",
+    "project_job_id": "m7-codex-4559ec99c815-job",
+    "project_job_state": "FINISHED",
+    "attempt_id": "m7-codex-4559ec99c815-attempt",
+    "attempt_state": "FINISHED",
+    "provider_status": "BLOCKED",
+    "owned_artifacts_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "owned_artifacts_empty": true,
+    "validation_evidence_passed": false,
+    "acceptance_decision_count": 0,
+    "provider_self_acceptance": false
+  },
+  "journeys": {
+    "J01": "FAIL_EXTERNAL_PROVIDER_BLOCKED",
+    "J16": "UNCLAIMED_PARTIAL_SETUP_AND_RESTART_ONLY"
+  },
+  "qualification_policy": {
+    "m7_accepted": false,
+    "success_inferred": false,
+    "combined_provider_inference_used": false,
+    "developer_machine_evidence_used": false,
+    "automatic_retry_or_pass_selection_used": false
+  }
+}

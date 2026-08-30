@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 from pathlib import Path
@@ -9,11 +10,19 @@ import pytest
 from tools.artifex2 import run_m7_shipping_journey as journey_runner
 from tools.artifex2.qualify_m7_windows import _installed_origin, _run_json
 from tools.artifex2.run_m7_shipping_journey import (
+    FrontendDetached,
     JourneyFailure,
     ShippingCLI,
+    _durable_provider_execution,
+    _initial_service_status,
     _install_shipping_candidate,
+    _provider_envelope,
     _require_clean_guest,
+    _require_provider_guest,
+    _require_provider_resume,
     _require_windows_25h2,
+    _resume_installed_candidate,
+    _role_states,
     _validate_clean_base_attestation,
     _wait_for_process_exit,
 )
@@ -120,7 +129,182 @@ def test_clean_guest_fails_closed_for_any_provider_or_prior_root(
         )
 
 
-def test_clean_base_attestation_is_exact_and_vm104_bound() -> None:
+def test_provider_guest_requires_exact_standalone_provider_and_clean_artifex(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("USERNAME", "qualification-user")
+    monkeypatch.setenv("SESSIONNAME", "RDP-Tcp#1")
+    codex = tmp_path / "codex.exe"
+    codex.write_bytes(b"native")
+    paths = [tmp_path / name for name in ("stage", "install", "state", "project")]
+    _require_provider_guest(
+        expected_provider="codex",
+        provider_command=codex,
+        other_provider="claude",
+        staging_root=paths[0],
+        install_root=paths[1],
+        state_root=paths[2],
+        project_root=paths[3],
+        which=lambda _name: None,
+    )
+    with pytest.raises(JourneyFailure, match="forbidden provider claude"):
+        _require_provider_guest(
+            expected_provider="codex",
+            provider_command=codex,
+            other_provider="claude",
+            staging_root=paths[0],
+            install_root=paths[1],
+            state_root=paths[2],
+            project_root=paths[3],
+            which=lambda name: "C:/claude.exe" if name == "claude" else None,
+        )
+
+
+def test_provider_resume_requires_exact_preserved_harness_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("USERNAME", "qualification-user")
+    monkeypatch.setenv("SESSIONNAME", "RDP-Tcp#1")
+    codex = tmp_path / "codex.exe"
+    codex.write_bytes(b"native")
+    install_root = tmp_path / "install"
+    state_root = tmp_path / "state"
+    install_root.mkdir()
+    state_root.mkdir()
+    failure_capture = tmp_path / "failure.json"
+    failure = {
+        "diagnostic": (
+            "governance.envelope.propose failed: OPERATION_FAILED/ValueError: "
+            "service_id cannot override the managed service authority"
+        ),
+        "error": "JourneyFailure",
+        "schema_version": "1.0",
+        "status": "FAIL",
+    }
+    failure_capture.write_text(json.dumps(failure), encoding="utf-8")
+
+    _require_provider_resume(
+        expected_provider="codex",
+        provider_command=codex,
+        other_provider="claude",
+        staging_root=tmp_path / "stage",
+        install_root=install_root,
+        state_root=state_root,
+        project_root=tmp_path / "project-resume",
+        failure_capture=failure_capture,
+        which=lambda _name: None,
+    )
+
+    failure["diagnostic"] = "some other failure"
+    failure_capture.write_text(json.dumps(failure), encoding="utf-8")
+    with pytest.raises(JourneyFailure, match="authorized preserved qualification failure"):
+        _require_provider_resume(
+            expected_provider="codex",
+            provider_command=codex,
+            other_provider="claude",
+            staging_root=tmp_path / "stage",
+            install_root=install_root,
+            state_root=state_root,
+            project_root=tmp_path / "project-resume",
+            failure_capture=failure_capture,
+            which=lambda _name: None,
+        )
+
+
+def test_provider_resume_accepts_preserved_provider_terminal_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("USERNAME", "qualification-user")
+    monkeypatch.setenv("SESSIONNAME", "RDP-Tcp#1")
+    codex = tmp_path / "codex.exe"
+    codex.write_bytes(b"native")
+    install_root = tmp_path / "install"
+    state_root = tmp_path / "state"
+    install_root.mkdir()
+    state_root.mkdir()
+    failure_capture = tmp_path / "failure.json"
+    failure_capture.write_text(
+        json.dumps(
+            {
+                "diagnostic": (
+                    "provider EXECUTION_IMPLEMENTER did not finish successfully"
+                ),
+                "error": "JourneyFailure",
+                "schema_version": "1.0",
+                "status": "FAIL",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    _require_provider_resume(
+        expected_provider="codex",
+        provider_command=codex,
+        other_provider="claude",
+        staging_root=tmp_path / "stage",
+        install_root=install_root,
+        state_root=state_root,
+        project_root=tmp_path / "project-resume",
+        failure_capture=failure_capture,
+        which=lambda _name: None,
+    )
+
+
+def test_provider_resume_binds_existing_native_install_manifest(tmp_path: Path) -> None:
+    executable = tmp_path / "artifex.exe"
+    executable.write_bytes(b"native")
+    digest = hashlib.sha256(b"native").hexdigest()
+    manifest = {
+        "install_root": str(tmp_path.resolve()),
+        "artifact_manifest": {"artifact": "artifex.exe", "sha256": digest},
+        "files": [{"path": "artifex.exe", "sha256": digest}],
+    }
+    (tmp_path / "artifex-install-manifest.json").write_text(
+        json.dumps(manifest), encoding="utf-8"
+    )
+    (tmp_path / "service-registration.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "Uninstall.exe").write_bytes(b"uninstaller")
+
+    assert _resume_installed_candidate(tmp_path.resolve()) == executable.resolve()
+
+    manifest["artifact_manifest"]["sha256"] = "0" * 64
+    (tmp_path / "artifex-install-manifest.json").write_text(
+        json.dumps(manifest), encoding="utf-8"
+    )
+    with pytest.raises(JourneyFailure, match="does not bind"):
+        _resume_installed_candidate(tmp_path.resolve())
+
+
+def test_provider_envelope_is_proposed_unapproved_and_provider_bounded() -> None:
+    envelope = _provider_envelope(
+        provider_id="codex",
+        project_id="m7-codex-project",
+        workstream_id="m7-codex-workstream",
+        baseline_fingerprint="a" * 64,
+        baseline_commit="b" * 40,
+    )
+
+    assert envelope["approved"] is False
+    assert envelope["allowed_providers"] == ["codex"]
+    assert envelope["allowed_provider_roles"] == ["EXECUTION_IMPLEMENTER"]
+    assert envelope["credential_references"][0]["revoked"] is False
+
+
+def test_role_state_projection_requires_typed_certification_roles() -> None:
+    assert _role_states(
+        {
+            "roles": [
+                {"role": "INTERACTION", "state": "LIVE_ROLE_CERTIFIED"},
+                {"role": "EXECUTION_IMPLEMENTER", "state": "LIVE_ROLE_CERTIFIED"},
+            ]
+        }
+    ) == {
+        "INTERACTION": "LIVE_ROLE_CERTIFIED",
+        "EXECUTION_IMPLEMENTER": "LIVE_ROLE_CERTIFIED",
+    }
+
+
+def test_clean_base_attestation_is_exact_and_operator_bound() -> None:
     value = {
         "schema_version": "1.0",
         "vm_id": 104,
@@ -132,11 +316,28 @@ def test_clean_base_attestation_is_exact_and_vm104_bound() -> None:
         "source_checkout_absent": True,
     }
     _validate_clean_base_attestation(value)
-    with pytest.raises(JourneyFailure, match="authorized VM104"):
+    with pytest.raises(JourneyFailure, match="authorized VM reset"):
         _validate_clean_base_attestation({**value, "vm_id": 101})
-    with pytest.raises(JourneyFailure, match="authorized VM104"):
+    with pytest.raises(JourneyFailure, match="authorized VM reset"):
         _validate_clean_base_attestation(
             {**value, "snapshot_name": "m7-qualified-25h2-x64-cell-base-v9"}
+        )
+
+    vm105 = {
+        **value,
+        "vm_id": 105,
+        "snapshot_name": "m7-qualified-25h2-x64-codex-cell-v10",
+    }
+    _validate_clean_base_attestation(
+        vm105,
+        expected_vm_id=105,
+        expected_snapshot_name="m7-qualified-25h2-x64-codex-cell-v10",
+    )
+    with pytest.raises(JourneyFailure, match="authorized VM reset"):
+        _validate_clean_base_attestation(
+            vm105,
+            expected_vm_id=105,
+            expected_snapshot_name="m7-qualified-25h2-x64-claude-cell-v10",
         )
 
 
@@ -165,6 +366,38 @@ def test_restart_boundary_waits_for_old_process_to_exit(
     monkeypatch.setattr("tools.artifex2.run_m7_shipping_journey.time.sleep", lambda _value: None)
 
     _wait_for_process_exit(123)
+
+
+def test_resume_recovers_a_stopped_registered_service(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    class FailedCLI:
+        def direct(self, *_args: object, **_kwargs: object) -> dict[str, object]:
+            raise JourneyFailure("service.status did not return one JSON object")
+
+    restarted: list[bool] = []
+    expected = {"ok": True, "value": {"lifecycle_state": "RUNNING"}}
+    monkeypatch.setattr(
+        journey_runner,
+        "_restart_registered_windows_task",
+        lambda **_kwargs: restarted.append(True),
+    )
+    monkeypatch.setattr(
+        journey_runner,
+        "_wait_for_service",
+        lambda *_args, **_kwargs: expected,
+    )
+
+    assert (
+        _initial_service_status(
+            FailedCLI(),  # type: ignore[arg-type]
+            state_root=tmp_path,
+            resume_installed=True,
+            runner=subprocess.run,
+        )
+        == expected
+    )
+    assert restarted == [True]
 
 
 def test_shipping_cli_records_hashes_not_raw_output(tmp_path: Path) -> None:
@@ -216,6 +449,76 @@ def test_shipping_cli_surfaces_only_normalized_failure(tmp_path: Path) -> None:
     ):
         cli.direct("distribution.install", ["install"])
     assert cli.calls == []
+
+
+def test_provider_execution_frontend_detach_is_hash_only(tmp_path: Path) -> None:
+    executable = tmp_path / "artifex.exe"
+    executable.write_bytes(b"native")
+
+    def runner(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess([], 1, "frontend transport timeout", "")
+
+    cli = ShippingCLI(executable, cwd=tmp_path, runner=runner)
+    with pytest.raises(FrontendDetached, match="durable result"):
+        cli.direct("runtime.provider.execute", ["service", "call"])
+    assert cli.calls[0]["frontend_detached"] is True
+    assert "frontend transport timeout" not in json.dumps(cli.calls)
+
+
+def test_durable_provider_execution_requires_success_and_passed_evidence() -> None:
+    running = {
+        "attempts": [{"attempt_id": "attempt", "state": "RUNNING"}],
+    }
+    assert (
+        _durable_provider_execution(
+            running,
+            provider_id="codex",
+            project_job_id="job",
+            attempt_id="attempt",
+        )
+        is None
+    )
+    finished = {
+        "attempts": [
+            {
+                "attempt_id": "attempt",
+                "state": "FINISHED",
+                "result_claim": "provider=codex; status=SUCCESS; owned_artifacts_sha256="
+                + "a" * 64,
+            }
+        ],
+        "project_jobs": [{"project_job_id": "job", "state": "FINISHED"}],
+        "dispatch_authorizations": [
+            {
+                "attempt_id": "attempt",
+                "provider_id": "codex",
+                "provider_role": "EXECUTION_IMPLEMENTER",
+            }
+        ],
+        "evidence_records": [
+            {
+                "attempt_id": "attempt",
+                "project_job_id": "job",
+                "evidence_id": "evidence-1",
+                "passed": 1,
+            }
+        ],
+    }
+    assert _durable_provider_execution(
+        finished,
+        provider_id="codex",
+        project_job_id="job",
+        attempt_id="attempt",
+    )["status"] == "SUCCESS"
+
+    finished["attempts"][0]["result_claim"] = "provider=codex; status=BLOCKED;"
+    with pytest.raises(JourneyFailure, match="did not finish successfully"):
+        _durable_provider_execution(
+            finished,
+            provider_id="codex",
+            project_job_id="job",
+            attempt_id="attempt",
+        )
 
 
 def test_qualifier_executes_installed_native_cli_without_python_module(tmp_path: Path) -> None:

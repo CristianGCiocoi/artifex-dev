@@ -1,0 +1,13 @@
+{
+  "application": "codex.exe",
+  "application_path": "C:\\Users\\Crugger\\.codex\\packages\\standalone\\releases\\0.151.0-x86_64-pc-windows-msvc\\bin\\codex.exe",
+  "bucket_id": "88d217bf442cc660624c0761529a76c3",
+  "diagnostic_only": true,
+  "event_type": "BEX64",
+  "exception_code": "c0000409",
+  "exception_data": "0000000000000007",
+  "fault_offset": "000000000e202ae9",
+  "os_version": "10.0.26200.2.0.0.256.48",
+  "report_id": "90578ac2-8441-41e4-9307-4ee58f04100a",
+  "schema_version": "1.0"
+}

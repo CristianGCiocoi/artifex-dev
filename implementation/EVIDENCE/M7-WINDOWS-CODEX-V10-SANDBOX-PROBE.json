@@ -1,0 +1,14 @@
+{
+  "probe_exists": true,
+  "probe_sha256": "bfbc02e5fe7b7fcdd92546c71f5887ee8d9b46daeb7d21fdcb392352f83ac551",
+  "returncode": 0,
+  "schema_version": "1.0",
+  "stderr_bytes": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_bytes": 4017,
+  "stdout_sha256": "81a50fb74766d29d40b574fa91610e9a88392ea3a64c3c5010bdc47320aab62c",
+  "structured_result": {
+    "message": "Created `probe.txt` and verified exact content: 31 bytes, ending with one newline. No tracked files were modified.",
+    "status": "SUCCESS"
+  }
+}

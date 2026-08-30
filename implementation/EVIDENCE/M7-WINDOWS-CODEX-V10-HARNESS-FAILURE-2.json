@@ -1,0 +1,6 @@
+{
+  "diagnostic": "governance.envelope.propose failed: OPERATION_FAILED/ValueError: full M4 Execution Envelope fields are missing: ['deadline_at']",
+  "error": "JourneyFailure",
+  "schema_version": "1.0",
+  "status": "FAIL"
+}

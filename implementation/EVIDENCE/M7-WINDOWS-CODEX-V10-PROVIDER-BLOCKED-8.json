@@ -1,0 +1,6 @@
+{
+  "diagnostic": "provider EXECUTION_IMPLEMENTER did not finish successfully",
+  "error": "JourneyFailure",
+  "schema_version": "1.0",
+  "status": "FAIL"
+}

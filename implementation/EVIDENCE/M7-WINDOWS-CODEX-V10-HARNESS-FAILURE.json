@@ -1,0 +1,6 @@
+{
+  "diagnostic": "governance.envelope.propose failed: OPERATION_FAILED/ValueError: service_id cannot override the managed service authority",
+  "error": "JourneyFailure",
+  "schema_version": "1.0",
+  "status": "FAIL"
+}

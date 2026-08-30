@@ -1,0 +1,24 @@
+{
+  "antivirus_enabled": true,
+  "exact_process_exclusions": [
+    {
+      "name": "codex.exe",
+      "sha256": "cf68265897197ac5f3bff6a10c168eec159842b353129726da5e3ed6b91ef0f4"
+    },
+    {
+      "name": "codex-code-mode-host.exe",
+      "sha256": "4ea17cf938023f2d0c292b6dbcd4d51e7fbdf72f3885cf341017a380a87e77dc"
+    },
+    {
+      "name": "codex-command-runner.exe",
+      "sha256": "5a84820fc507e5e3c8689047434259d96197730e92d88e6a915b0da97c758da6"
+    },
+    {
+      "name": "codex-windows-sandbox-setup.exe",
+      "sha256": "46b9f3adb62ea6030ea026647b6a29f10566bff7307ca76d10f3a1c1189bd6e9"
+    }
+  ],
+  "path_exclusions_added": false,
+  "real_time_protection_enabled": true,
+  "schema_version": "1.0"
+}
