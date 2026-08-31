@@ -871,7 +871,7 @@ def run_j20(
             "maximum_sensitivity": "SENSITIVE",
             "require_validation": True,
         },
-        "verified_against": [source_commit],
+        "verified_against": [],
         "revisit_triggers": [],
         "state": "CURRENT",
         "project_id": project_id,
