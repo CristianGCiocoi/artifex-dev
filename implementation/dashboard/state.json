@@ -1,6 +1,6 @@
 {
   "acceptance": {
-    "acceptance_commit": null,
+    "acceptance_commit": "7ca029ffe2a987ef9ffee938fe3e0dc6e9258ac2",
     "blocked": [],
     "contract_digest": "af6f2fa7ac2ae06942d9dfd4531ee384d75aed4d434c4e7a41a54b7fb6bd3d52",
     "evidence_classes": {
@@ -1796,9 +1796,9 @@
       "sha256": "2949c928d07bfa185282515e48b0f657cb2c19a0bbda008c3a6990f2edbb54a6"
     },
     {
-      "bytes": 3916,
+      "bytes": 3952,
       "path": "implementation/EVIDENCE/M9-VALIDATION.yaml",
-      "sha256": "fad51f6511380b070a6310888679aa439a77cc26922bf994e649e3e6cc03925c"
+      "sha256": "3adb0487c3d1b36646d0ea01881a78eba5bbcead1b4ae36ced062e30153d8caf"
     },
     {
       "bytes": 1879,
@@ -3388,7 +3388,7 @@
   "program": {
     "architecture_status": "FROZEN",
     "branch": "codex/artifex-2-m9",
-    "canonical_integration_baseline": "6bcf289f365f4137812e88ec3672fa988d452723",
+    "canonical_integration_baseline": "7ca029ffe2a987ef9ffee938fe3e0dc6e9258ac2",
     "current_milestone": "M9",
     "current_status": "ACCEPTED",
     "dashboard_state": "CURRENT",
@@ -3400,7 +3400,7 @@
     "id": "ARTIFEX-2.0-IMPLEMENTATION",
     "implementation_plan_status": "FROZEN",
     "intake_commit": "5cc5dcfeb420a6df171a44426c04a0f08fa1e877",
-    "latest_accepted_commit": "6bcf289f365f4137812e88ec3672fa988d452723",
+    "latest_accepted_commit": "7ca029ffe2a987ef9ffee938fe3e0dc6e9258ac2",
     "m1_started": true,
     "m2_started": true,
     "m3_started": true,

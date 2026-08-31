@@ -6,7 +6,7 @@ recorded_date: '2026-08-31'
 canonical_base_commit: 72a7f8b5c5b470760eaf4d85f2b4c19db6cc83f6
 m9_shipping_implementation_baseline_commit: 6854bfbd07863fcb0f176adca1c4807890fcbec1
 m9_qualification_harness_baseline_commit: 8bfea15a6be5ba70f9052477a44aa466333c6d71
-m9_acceptance_commit: null
+m9_acceptance_commit: 7ca029ffe2a987ef9ffee938fe3e0dc6e9258ac2
 m9_contract_digest: af6f2fa7ac2ae06942d9dfd4531ee384d75aed4d434c4e7a41a54b7fb6bd3d52
 source_quality:
   ruff_all: PASS

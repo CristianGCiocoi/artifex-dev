@@ -13,8 +13,8 @@ program:
   branch: codex/artifex-2-m9
   current_milestone: M9
   current_status: ACCEPTED
-  latest_accepted_commit: 6bcf289f365f4137812e88ec3672fa988d452723
-  canonical_integration_baseline: 6bcf289f365f4137812e88ec3672fa988d452723
+  latest_accepted_commit: 7ca029ffe2a987ef9ffee938fe3e0dc6e9258ac2
+  canonical_integration_baseline: 7ca029ffe2a987ef9ffee938fe3e0dc6e9258ac2
   next_integration_point: Integrate the accepted M9 baseline on canonical main, canonicalize milestone provenance, then activate M12 from that exact baseline
   m1_started: true
   m2_started: true
