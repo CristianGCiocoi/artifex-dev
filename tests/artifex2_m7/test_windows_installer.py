@@ -106,6 +106,22 @@ def test_installer_in_process_identity_is_frozen_and_path_bound(
         windows_installer._running_artifact_identity(source, 60)
 
 
+@pytest.mark.packaging
+def test_nsis_silent_mode_is_fast_and_cannot_block_on_error_dialogs() -> None:
+    script = (
+        Path(__file__).resolve().parents[2]
+        / "packaging"
+        / "windows"
+        / "ARTIFEX-Setup.nsi"
+    ).read_text(encoding="utf-8")
+    assert "SetCompressor zlib" in script
+    message_boxes = [
+        line.strip() for line in script.splitlines() if line.strip().startswith("MessageBox ")
+    ]
+    assert len(message_boxes) == 3
+    assert all(line.endswith("/SD IDOK") for line in message_boxes)
+
+
 @pytest.mark.unit
 def test_installer_bridge_uninstall_consumes_fresh_bound_token(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch

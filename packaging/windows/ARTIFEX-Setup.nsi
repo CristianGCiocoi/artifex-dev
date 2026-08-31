@@ -1,6 +1,6 @@
 Unicode true
 RequestExecutionLevel admin
-SetCompressor /SOLID lzma
+SetCompressor zlib
 CRCCheck force
 
 !include "MUI2.nsh"
@@ -51,7 +51,7 @@ Section "ARTIFEX" section_core
   Pop $1
   ${If} $0 != 0
     DetailPrint "$1"
-    MessageBox MB_ICONSTOP|MB_OK "ARTIFEX could not be installed. No incomplete installation will be retained."
+    MessageBox MB_ICONSTOP|MB_OK "ARTIFEX could not be installed. No incomplete installation will be retained." /SD IDOK
     SetErrorLevel $0
     Abort
   ${EndIf}
@@ -75,7 +75,7 @@ Section "Uninstall"
   Pop $1
   ${If} $0 != 0
     DetailPrint "$1"
-    MessageBox MB_ICONSTOP|MB_OK "ARTIFEX could not be removed safely. The installation has been preserved."
+    MessageBox MB_ICONSTOP|MB_OK "ARTIFEX could not be removed safely. The installation has been preserved." /SD IDOK
     SetErrorLevel $0
     Abort
   ${EndIf}
@@ -87,7 +87,7 @@ Section "Uninstall"
     IntOp $2 $2 + 1
     IntCmp $2 120 lifecycle_timeout wait_for_lifecycle wait_for_lifecycle
   lifecycle_timeout:
-    MessageBox MB_ICONSTOP|MB_OK "ARTIFEX removal did not complete within 60 seconds. The uninstaller has been preserved."
+    MessageBox MB_ICONSTOP|MB_OK "ARTIFEX removal did not complete within 60 seconds. The uninstaller has been preserved." /SD IDOK
     SetErrorLevel 1
     Abort
   lifecycle_complete:
