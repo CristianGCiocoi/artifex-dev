@@ -544,15 +544,42 @@ def _validate_calls(values: Sequence[Any], cell_id: str) -> None:
     calls: list[str] = []
     for index, item in enumerate(values):
         call = _mapping(item, f"public_process_calls[{index}]")
-        _exact_keys(
-            call,
-            {"operation", "returncode", "ok", "stdout_sha256", "stderr_sha256"},
-            "public process call",
-        )
         operation = _text(call.get("operation"), "public process operation")
         calls.append(operation)
-        _equal(call.get("returncode"), 0, f"{operation} returncode")
-        _true(call.get("ok"), f"{operation} ok")
+        if "frontend_detached" in call:
+            _exact_keys(
+                call,
+                {
+                    "operation",
+                    "returncode",
+                    "ok",
+                    "frontend_detached",
+                    "stdout_sha256",
+                    "stderr_sha256",
+                },
+                "public process call",
+            )
+            if cell_id != "M7-WIN-CODEX" or operation != "runtime.provider.execute":
+                raise M7EvidenceError(
+                    "frontend detachment is only valid for the J01 provider execution call"
+                )
+            returncode = call.get("returncode")
+            if (
+                not isinstance(returncode, int)
+                or isinstance(returncode, bool)
+                or returncode == 0
+            ):
+                raise M7EvidenceError("detached provider execution requires a nonzero returncode")
+            _equal(call.get("ok"), None, f"{operation} ok")
+            _true(call.get("frontend_detached"), f"{operation} frontend_detached")
+        else:
+            _exact_keys(
+                call,
+                {"operation", "returncode", "ok", "stdout_sha256", "stderr_sha256"},
+                "public process call",
+            )
+            _equal(call.get("returncode"), 0, f"{operation} returncode")
+            _true(call.get("ok"), f"{operation} ok")
         _digest(call.get("stdout_sha256"), f"{operation} stdout_sha256")
         _digest(call.get("stderr_sha256"), f"{operation} stderr_sha256")
     common = {"service.status", "distribution.bootstrap", "distribution.doctor"}

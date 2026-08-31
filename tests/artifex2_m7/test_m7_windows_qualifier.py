@@ -407,6 +407,35 @@ def test_incomplete_journey_or_public_call_cannot_pass() -> None:
         validate_cell_outcome(value)
 
 
+def test_j01_accepts_only_the_hash_only_frontend_detach_shape() -> None:
+    value = _outcome("M7-WIN-CODEX")
+    provider_call = next(
+        item
+        for item in value["public_process_calls"]
+        if item["operation"] == "runtime.provider.execute"
+    )
+    provider_call.update(returncode=1, ok=None, frontend_detached=True)
+
+    validate_cell_outcome(value)
+
+    provider_call["returncode"] = 0
+    with pytest.raises(M7EvidenceError, match="nonzero returncode"):
+        validate_cell_outcome(value)
+
+
+def test_frontend_detach_cannot_expand_beyond_j01_provider_execution() -> None:
+    value = _outcome("M7-WIN-CLAUDE")
+    provider_call = next(
+        item
+        for item in value["public_process_calls"]
+        if item["operation"] == "runtime.provider.execute"
+    )
+    provider_call.update(returncode=1, ok=None, frontend_detached=True)
+
+    with pytest.raises(M7EvidenceError, match="only valid for the J01"):
+        validate_cell_outcome(value)
+
+
 def test_secret_bearing_keys_and_self_issued_probe_shape_fail_closed() -> None:
     value = _outcome("M7-WIN-CODEX")
     value["security"]["api_key"] = "must-not-persist"
