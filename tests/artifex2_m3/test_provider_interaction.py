@@ -160,7 +160,7 @@ def test_read_only_interaction_preserves_baseline_and_stores_hashes_only(
     assert "--ephemeral" in command
     assert "--json" in command
     if os.name == "nt":
-        assert command[command.index("-c") + 1] == 'windows.sandbox="elevated"'
+        assert command[command.index("-c") + 1] == 'windows.sandbox="unelevated"'
     assert result["live"] is True
     assert result["response"] == "Safe response"
     assert _git(root, "status", "--porcelain") == ""

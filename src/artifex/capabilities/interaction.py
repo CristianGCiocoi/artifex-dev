@@ -194,10 +194,10 @@ def _interaction_command(provider: ProviderInstance, root: Path, prompt: str) ->
 
 
 def _windows_sandbox_override() -> tuple[str, ...]:
-    # M7 provisions the native elevated sandbox once under administrator
-    # authority. ARTIFEX itself remains least-privilege and delegates only the
-    # bounded provider process into that pre-provisioned sandbox.
-    return ("-c", 'windows.sandbox="elevated"') if os.name == "nt" else ()
+    # Codex 0.151.0 restores the supported unelevated Windows sandbox path.
+    # ARTIFEX remains least-privilege and grants Modify only on the verified
+    # execution workspace before delegating the bounded provider process.
+    return ("-c", 'windows.sandbox="unelevated"') if os.name == "nt" else ()
 
 
 def _validated_codex_prefix(command: Sequence[str]) -> tuple[str, ...]:

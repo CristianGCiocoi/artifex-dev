@@ -1017,7 +1017,7 @@ def _codex_exec_command(command_prefix: Sequence[str], root: Path, prompt: str) 
 
 
 def _windows_sandbox_override() -> tuple[str, ...]:
-    return ("-c", 'windows.sandbox="elevated"') if os.name == "nt" else ()
+    return ("-c", 'windows.sandbox="unelevated"') if os.name == "nt" else ()
 
 
 def _codex_execution_result_schema(packet: ExecutionPacket) -> Mapping[str, Any]:
