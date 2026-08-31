@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "evidence_class": "M7_J10_FAILED_ATTEMPT_NOT_ACCEPTANCE",
+  "cell": "M7-WIN-NOPROVIDER",
+  "vm_id": 104,
+  "source_commit": "077b08c86c85257f19a93846e4e435275686e727",
+  "candidate_sha256": "6a45d787120d41ea75dd1cd9f6dc3efe9c33d6b1f5cb6ddf77d07af77105405b",
+  "clean_base_snapshot": "m7-qualified-25h2-x64-cell-base-v14",
+  "interactive_resume_snapshot": "m7-noprovider-interactive-ready-v14",
+  "status": "FAIL",
+  "journey": "J10",
+  "failure": {
+    "phase": "shipping-installer",
+    "diagnostic": "operating-system failure during shipping-installer",
+    "error": "TimeoutExpired",
+    "timeout_seconds": 180,
+    "scheduled_task_result": 1,
+    "capture_sha256": "71b5a0a0ead304bc18861b95fa4a0450a44513bed030f4c97c37c9e6337b6dfc",
+    "runner_log_sha256": "efdb76bfa66954f1bbf0fa63548c6504ab387551e710d1a7b1202f8402830a5a"
+  },
+  "post_failure_observations": {
+    "install_root_retained": false,
+    "state_root_retained": false,
+    "managed_service_task_retained": false,
+    "installer_payload_extracted": true,
+    "visible_dialog_after_timeout": false,
+    "defender_antivirus_enabled": true,
+    "defender_realtime_enabled": true,
+    "defender_detection_count": 0
+  },
+  "bounded_diagnostics": {
+    "frozen_binary_system_version": {
+      "status": "PASS",
+      "elapsed_ms": 2287,
+      "stdout_sha256": "ca61c1efca6c61db615407b928a5bfd8614e4389ac26d45aad693d2ee89a36c8",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "direct_installer_lifecycle": {
+      "status": "PASS",
+      "purpose": "diagnostic only; not journey evidence",
+      "log_sha256": "6993292a04d89d22e9b31f20d19c189e4429d29b14caf10a0d644b88697d90b2",
+      "installed_executable_sha256": "ad7cade370cb5690d8eca51155d39fafc093760d523a53f81b5852328b0f625a",
+      "install_manifest_sha256": "85c988f1697e030e34754021e8aee7d96155e2a8ce9e55b8d77595f4c780d110",
+      "service_registration_sha256": "50a20a6ea88474f900a070a17391252378264e4018fb5839ce71f7593bb46f0e"
+    }
+  },
+  "disposition": "Preserved as non-acceptance baseline. Restore the pre-run RAM snapshot before one controlled clean retry; do not infer J10 success from diagnostics."
+}

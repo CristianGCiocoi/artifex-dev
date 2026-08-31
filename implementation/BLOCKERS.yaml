@@ -38,18 +38,6 @@ blockers:
   required_authority: HUMAN_ENVIRONMENT_OWNER
   resolution: Explicitly approve and complete the administrator-owned native Codex elevated-sandbox setup on VM105 while retaining the least-privilege ARTIFEX service, then run one new candidate-bound Codex qualification
   unrelated_work_may_continue: true
-- id: BLK-M7-WINDOWS-V14-INTERACTIVE-LOGON
-  scope: M7_V14_J10_REQUALIFICATION
-  class: HUMAN_ENVIRONMENT
-  status: OPEN_WAITING_VM104_INTERACTIVE_LOGON
-  summary: VM104 exact V14 clean snapshot is staged and booted, but the existing RDP window rejects its stored credentials; J10 requires one real InteractiveToken user session
-  evidence:
-  - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V14.yaml
-  - EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V14.json
-  - EVIDENCE/M7-WINDOWS-V14-CLEAN-PREFLIGHT.json
-  required_authority: HUMAN_ENVIRONMENT_OWNER
-  resolution: Complete one manual RDP logon on the already-open VM104 window; the orchestrator will preserve a RAM snapshot and execute J10 without further credential entry
-  unrelated_work_may_continue: true
 - id: BLK-M8C-DEEPSEEK-LIVE-PREREQUISITES
   scope: M8C
   class: EXTERNAL_PREREQUISITE
@@ -71,6 +59,18 @@ blockers:
   resolution: Provide a real Pandora runtime, supported RESEARCH exchange identity, and independent live qualification evidence
   unrelated_work_may_continue: true
 observations:
+- id: BLK-M7-WINDOWS-V14-INTERACTIVE-LOGON
+  scope: M7_V14_J10_REQUALIFICATION
+  state: RESOLVED_INTERACTIVE_SESSION_AND_J10_V14_INDEPENDENT_QUALIFICATION_PASS
+  evidence:
+  - EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V14.yaml
+  - EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V14.json
+  - EVIDENCE/M7-WINDOWS-V14-CLEAN-PREFLIGHT.json
+  - EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V14-FIRST-ATTEMPT-FAIL.json
+  - EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V14-PASS.json
+  - EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V14-QUALIFIED.json
+  required_authority: HUMAN_ENVIRONMENT_OWNER
+  unrelated_work_may_continue: true
 - id: BLK-M7-CLAUDE-INTERACTION-LEASE
   scope: M7_ACCEPTANCE
   state: RESOLVED_V14_J02_J16_INDEPENDENT_QUALIFICATION_PASS

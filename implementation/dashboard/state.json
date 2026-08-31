@@ -2,8 +2,7 @@
   "acceptance": {
     "acceptance_commit": null,
     "blocked": [
-      "BLK-M7-CODEX-PROVIDER-BLOCKED",
-      "BLK-M7-WINDOWS-V14-INTERACTIVE-LOGON"
+      "BLK-M7-CODEX-PROVIDER-BLOCKED"
     ],
     "contract_digest": "3eac41de4cacf7be80aab12e478b99ec7c5066dccddfff6ca00a03cf5a157d48",
     "evidence_classes": {
@@ -12,10 +11,12 @@
           "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
           "EVIDENCE/M7-WINDOWS-J10-V13-QUALIFIED.json",
           "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V14.yaml",
-          "EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V14-QUALIFIED.json"
+          "EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V14-QUALIFIED.json",
+          "EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V14-PASS.json",
+          "EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V14-QUALIFIED.json"
         ],
         "required_m7": true,
-        "status": "PARTIAL_PASS_V14_CLAUDE_J10_REQUALIFICATION_PENDING"
+        "status": "PARTIAL_PASS_V14_CLAUDE_J10_PASS_CODEX_PENDING"
       },
       "COMPONENT": {
         "evidence": [
@@ -78,10 +79,11 @@
           "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V13.yaml",
           "EVIDENCE/M7-WINDOWS-J10-V13-QUALIFIED.json",
           "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V14.yaml",
-          "EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V14-QUALIFIED.json"
+          "EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V14-QUALIFIED.json",
+          "EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V14-QUALIFIED.json"
         ],
         "required_m7": true,
-        "status": "PARTIAL_PASS_V14_CLAUDE_J10_REQUALIFICATION_PENDING"
+        "status": "PARTIAL_PASS_V14_CLAUDE_J10_PASS_CODEX_PENDING"
       },
       "SECURITY_AUTHORITY": {
         "evidence": [
@@ -106,7 +108,7 @@
     "schema_version": "1.0",
     "superseded": [],
     "unresolved_contradiction": null,
-    "verdict": "ACTIVE_V14_CLAUDE_PASS_J10_WAITING_VM104_LOGON_CODEX_SANDBOX_SETUP_BLOCKED"
+    "verdict": "ACTIVE_V14_CLAUDE_AND_J10_PASS_CODEX_SANDBOX_SETUP_BLOCKED"
   },
   "adrs": [
     {
@@ -779,21 +781,6 @@
       "unrelated_work_may_continue": true
     },
     {
-      "class": "HUMAN_ENVIRONMENT",
-      "evidence": [
-        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V14.yaml",
-        "EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V14.json",
-        "EVIDENCE/M7-WINDOWS-V14-CLEAN-PREFLIGHT.json"
-      ],
-      "id": "BLK-M7-WINDOWS-V14-INTERACTIVE-LOGON",
-      "required_authority": "HUMAN_ENVIRONMENT_OWNER",
-      "resolution": "Complete one manual RDP logon on the already-open VM104 window; the orchestrator will preserve a RAM snapshot and execute J10 without further credential entry",
-      "scope": "M7_V14_J10_REQUALIFICATION",
-      "status": "OPEN_WAITING_VM104_INTERACTIVE_LOGON",
-      "summary": "VM104 exact V14 clean snapshot is staged and booted, but the existing RDP window rejects its stored credentials; J10 requires one real InteractiveToken user session",
-      "unrelated_work_may_continue": true
-    },
-    {
       "class": "EXTERNAL_PREREQUISITE",
       "evidence": [
         "EVIDENCE/M8C-PUBLIC-OUTCOME.json"
@@ -1290,6 +1277,21 @@
       "bytes": 6231,
       "path": "implementation/EVIDENCE/M7-WINDOWS-J10-V13-QUALIFIED.json",
       "sha256": "172dd20e6a1de08c71af4b156bb7865f28bbf09303c5fd6221a3a489cc28cf66"
+    },
+    {
+      "bytes": 2214,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V14-FIRST-ATTEMPT-FAIL.json",
+      "sha256": "bebebf9a6fb8539f8190fa0ae072077bf676914383130b15e9da354ec4076956"
+    },
+    {
+      "bytes": 5693,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V14-PASS.json",
+      "sha256": "1f57b39169e4f1ee544836a645bd66c9d5b77e12bce987f689205207ee3a1e54"
+    },
+    {
+      "bytes": 6231,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V14-QUALIFIED.json",
+      "sha256": "2f588545edc26f80638b3e94f479803a83cff35141d1eeed62d6735c99183564"
     },
     {
       "bytes": 3272,
@@ -2320,7 +2322,7 @@
       "title": "J09 — V1 Migration"
     },
     {
-      "blocker": "BLK-M7-WINDOWS-V14-INTERACTIVE-LOGON",
+      "blocker": null,
       "environment": "WINDOWS_11_25H2_X64_CLEAN_VM_NO_AUTOMATED_PROVIDER",
       "evidence": [
         "EVIDENCE/M7-FOUNDATION-OUTCOME.json",
@@ -2345,12 +2347,15 @@
         "EVIDENCE/M7-WINDOWS-J10-V13-QUALIFIED.json",
         "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V14.yaml",
         "EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V14.json",
-        "EVIDENCE/M7-WINDOWS-V14-CLEAN-PREFLIGHT.json"
+        "EVIDENCE/M7-WINDOWS-V14-CLEAN-PREFLIGHT.json",
+        "EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V14-FIRST-ATTEMPT-FAIL.json",
+        "EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V14-PASS.json",
+        "EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V14-QUALIFIED.json"
       ],
       "id": "J10",
       "last_run": "2026-08-31",
       "public_shipping_composition": "ARTIFEX_SETUP_NUITKA_NSIS_PUBLIC_MANAGED_SERVICE_MULTI_PROCESS",
-      "status": "READY_V14_WAITING_INTERACTIVE_LOGON",
+      "status": "PASS",
       "title": "J10 — No Automated Provider"
     },
     {
@@ -2795,6 +2800,21 @@
   "observations": [
     {
       "evidence": [
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V14.yaml",
+        "EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V14.json",
+        "EVIDENCE/M7-WINDOWS-V14-CLEAN-PREFLIGHT.json",
+        "EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V14-FIRST-ATTEMPT-FAIL.json",
+        "EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V14-PASS.json",
+        "EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V14-QUALIFIED.json"
+      ],
+      "id": "BLK-M7-WINDOWS-V14-INTERACTIVE-LOGON",
+      "required_authority": "HUMAN_ENVIRONMENT_OWNER",
+      "scope": "M7_V14_J10_REQUALIFICATION",
+      "state": "RESOLVED_INTERACTIVE_SESSION_AND_J10_V14_INDEPENDENT_QUALIFICATION_PASS",
+      "unrelated_work_may_continue": true
+    },
+    {
+      "evidence": [
         "EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V13-DURABLE-BLOCKED.json",
         "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V14.yaml",
         "EVIDENCE/M7-WINDOWS-CLAUDE-PROVIDER-READY-ATTESTATION-VM106-V14.json",
@@ -2966,7 +2986,7 @@
     "m8a_started": true,
     "m8b_started": true,
     "m8c_started": true,
-    "next_integration_point": "Complete one manual VM104 RDP logon for V14 J10, then approve administrator-owned Codex native elevated-sandbox setup on VM105 while the ARTIFEX service stays least privilege",
+    "next_integration_point": "Approve administrator-owned Codex native elevated-sandbox setup on VM105 while the ARTIFEX service stays least privilege, then run one candidate-bound Codex J01 and J16 qualification",
     "recorded_date": "2026-08-31",
     "target_release": "2.0.0"
   },
@@ -3253,19 +3273,18 @@
   "summary": {
     "acceptance_classes_passing": 7,
     "acceptance_classes_required": 10,
-    "active_blockers": 4,
+    "active_blockers": 3,
     "adr_count": 24,
     "current_milestone": "M7",
     "current_milestone_progress_percent": 70,
-    "evidence_items": 119,
+    "evidence_items": 122,
     "invariant_count": 34,
     "journey_states": {
       "BLOCKED_EXTERNAL_PREREQUISITE": 1,
       "FAIL_V13_CODEX_NATIVE_FASTFAIL_LEAST_PRIVILEGE": 1,
       "NOT_STARTED": 3,
       "PARTIAL_PASS_CLAUDE_V14_CODEX_BLOCKED": 1,
-      "PASS": 13,
-      "READY_V14_WAITING_INTERACTIVE_LOGON": 1
+      "PASS": 14
     },
     "milestones_accepted": 8,
     "milestones_started": 11,

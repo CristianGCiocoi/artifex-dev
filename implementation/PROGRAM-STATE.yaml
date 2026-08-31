@@ -15,7 +15,7 @@ program:
   current_status: ACTIVE
   latest_accepted_commit: d7fa3c4ad419bd97e401ad765128dc3560484d90
   canonical_integration_baseline: 2ea4a38e1bc18a2aa3535a1d224f508ca6561d88
-  next_integration_point: Complete one manual VM104 RDP logon for V14 J10, then approve administrator-owned Codex native elevated-sandbox setup on VM105 while the ARTIFEX service stays least privilege
+  next_integration_point: Approve administrator-owned Codex native elevated-sandbox setup on VM105 while the ARTIFEX service stays least privilege, then run one candidate-bound Codex J01 and J16 qualification
   m1_started: true
   m2_started: true
   m3_started: true
