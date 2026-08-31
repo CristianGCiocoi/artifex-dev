@@ -87,6 +87,7 @@ from artifex.knowledge import (
     OrganizationalKnowledgeService,
     Sensitivity,
 )
+from artifex.migration import V1MigrationService
 from artifex.project import (
     LifecycleContribution,
     LifecycleStage,
@@ -215,6 +216,12 @@ class Application:
         self.register("project.propose", self._project_propose)
         self.register("project.accept", self._project_accept)
         self.register("project.observe", self._project_observe)
+        self.register("migration.inspect", self._migration_inspect)
+        self.register("migration.plan", self._migration_plan)
+        self.register("migration.apply", self._migration_apply)
+        self.register("migration.validate", self._migration_validate)
+        self.register("migration.rollback.plan", self._migration_rollback_plan)
+        self.register("migration.rollback", self._migration_rollback)
         self.register("knowledge.project.lesson.record", self._knowledge_lesson_record)
         self.register("knowledge.organizational.promote", self._knowledge_promote)
         self.register("knowledge.organizational.search", self._knowledge_search)
@@ -604,6 +611,43 @@ class Application:
     def _project_observe(request: OperationRequest) -> OperationResult:
         result = _project_service(request).observe_external(
             _required_string(request.arguments, "name"), actor=request.context.actor
+        )
+        return OperationResult(ok=True, value=result)
+
+    @staticmethod
+    def _migration_inspect(request: OperationRequest) -> OperationResult:
+        return OperationResult(ok=True, value=_migration_service(request).inspect())
+
+    @staticmethod
+    def _migration_plan(request: OperationRequest) -> OperationResult:
+        return OperationResult(ok=True, value=_migration_service(request).plan())
+
+    @staticmethod
+    def _migration_apply(request: OperationRequest) -> OperationResult:
+        result = _migration_service(request).apply(
+            _optional_string(request.arguments, "confirmation_token")
+        )
+        return OperationResult(ok=True, value=result)
+
+    @staticmethod
+    def _migration_validate(request: OperationRequest) -> OperationResult:
+        result = _migration_service(request).validate(
+            _required_string(request.arguments, "record_path")
+        )
+        return OperationResult(ok=True, value=result)
+
+    @staticmethod
+    def _migration_rollback_plan(request: OperationRequest) -> OperationResult:
+        result = _migration_service(request).rollback_plan(
+            _required_string(request.arguments, "record_path")
+        )
+        return OperationResult(ok=True, value=result)
+
+    @staticmethod
+    def _migration_rollback(request: OperationRequest) -> OperationResult:
+        result = _migration_service(request).rollback(
+            _required_string(request.arguments, "record_path"),
+            _optional_string(request.arguments, "confirmation_token"),
         )
         return OperationResult(ok=True, value=result)
 
@@ -1798,6 +1842,15 @@ def _project_service(request: OperationRequest) -> ProjectControlService:
     if not isinstance(catalog, str) or not catalog:
         raise TypeError("catalog_path must be a string")
     return ProjectControlService(catalog)
+
+
+def _migration_service(request: OperationRequest) -> V1MigrationService:
+    return V1MigrationService(
+        _project_root(request),
+        catalog_path=_required_string(request.arguments, "catalog_path"),
+        runstore_path=_required_string(request.arguments, "runstore_path"),
+        state_root=_required_string(request.arguments, "state_root"),
+    )
 
 
 def _runtime_service(request: OperationRequest) -> ManagedRuntimeService:

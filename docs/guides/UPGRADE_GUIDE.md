@@ -1,21 +1,69 @@
-# ARTIFEX Upgrade Guide
+# ARTIFEX V1 to 2.0 Upgrade Guide
 
-Candidate: 9189765d392c2e03db81056e05da64e060097652
+ARTIFEX 2.0 adopts an existing V1 Project without rewriting Git history or
+inventing historical runtime activity. The supported Windows path uses the
+installed shipping executable and keeps the Project repository separate from
+the instance Catalog, RunStore, approval records, and migration backups.
 
-Model: 82364730319cfe057f28cb6b2a6482a5e298c86b76fb4da2867e14754f43d76d
+## Before migration
 
-## Purpose
+Use a clean V1 Git worktree and choose new external paths for the Catalog and
+RunStore. Keep the migration state directory on storage covered by the normal
+backup policy. Provider authentication remains provider-owned; ARTIFEX never
+copies credentials into the Project or migration record.
 
-This upgrade guide explains upgrade compatibility, authenticated backup, atomic activation, and rollback. ARTIFEX keeps repository and Git state canonical while generated narrative remains inspectable but non-canonical. The document connects upgrade, compatibility, and rollback to version 1.0.0 without presenting a build as release authority. Its component context includes Project Model and Git Store, Workflow Engine, Validation and Evidence, Compilation and Understanding, Integration Registry, Knowledge and Controlled Evolution, Distribution and Beginner Experience, Application API, CLI, and MCP.
+First inspect, then request the dry-run plan:
 
-## Authority
+```console
+artifex migration inspect --project-root C:\Projects\example --catalog C:\ProgramData\ARTIFEX\catalog.sqlite3 --runstore C:\ProgramData\ARTIFEX\runstore.sqlite3 --state-root C:\ProgramData\ARTIFEX\migrations
+artifex migration plan --project-root C:\Projects\example --catalog C:\ProgramData\ARTIFEX\catalog.sqlite3 --runstore C:\ProgramData\ARTIFEX\runstore.sqlite3 --state-root C:\ProgramData\ARTIFEX\migrations
+```
 
-ARTIFEX Core alone evaluates acceptance for this upgrade guide. Immutable contracts bind the exact source commit, Project Model fingerprint, validator registry, and evidence scope before any promotion. Executors and integrations may report results, but their claims cannot alter canonical state. Human, architecture, or policy gates remain explicit when required, and external content is always treated as untrusted data rather than instructions.
+Inspection and planning are read-only. The plan reports the exact effects,
+rollback path, fingerprint, and a short-lived single-use confirmation token.
 
-## Controls
+## Apply and validate
 
-The rollback control path fails closed on stale commits, mismatched hashes, duplicate identities, unsafe paths, unexpected files, missing measurements, or privilege expansion. Evidence is secret-safe, append-only, independently produced, and tied to the frozen candidate. Replaceable providers preserve the same semantic API, while rollback and recovery remain explicit rather than silently rewriting history.
+Apply only the token from the unchanged plan:
 
-## Verification
+```console
+artifex migration apply --project-root C:\Projects\example --catalog C:\ProgramData\ARTIFEX\catalog.sqlite3 --runstore C:\ProgramData\ARTIFEX\runstore.sqlite3 --state-root C:\ProgramData\ARTIFEX\migrations --confirm <confirmation-token>
+```
 
-Verification for this upgrade guide replays deterministic checks, validates typed schemas, compares package inventories to candidate S, and checks upgrade results across Linux, Windows, and macOS. Independent review confirms compatibility boundaries, the comprehension result, audit ordering, traceability, and all nonwaivable gates. The current source is a candidate until the release verifier returns PASS and Core records the promotion; publisher signing and notarization are not claimed in V1.
+The operation creates a verified backup before mutation, accepts the first
+2.0 Project Authority revision, registers the stable Project ID, generates
+current documentation and dashboard projections, and initializes an empty
+RunStore. Existing provider setup is preserved and consumed by a fresh
+readiness loader; no provider certification is copied forward.
+
+The returned migration record path can be checked at any time:
+
+```console
+artifex migration validate --record <record-path> --project-root C:\Projects\example --catalog C:\ProgramData\ARTIFEX\catalog.sqlite3 --runstore C:\ProgramData\ARTIFEX\runstore.sqlite3 --state-root C:\ProgramData\ARTIFEX\migrations
+```
+
+Activation remains pending until exactly one new 2.0 Run finishes and is
+accepted. V1 activity is never converted into Runs, ProjectJobs, Attempts,
+leases, workspaces, scheduler decisions, or provider runtime events.
+
+## Rollback
+
+Rollback is separately planned and approved:
+
+```console
+artifex migration rollback-plan --record <record-path> --project-root C:\Projects\example --catalog C:\ProgramData\ARTIFEX\catalog.sqlite3 --runstore C:\ProgramData\ARTIFEX\runstore.sqlite3 --state-root C:\ProgramData\ARTIFEX\migrations
+artifex migration rollback --record <record-path> --project-root C:\Projects\example --catalog C:\ProgramData\ARTIFEX\catalog.sqlite3 --runstore C:\ProgramData\ARTIFEX\runstore.sqlite3 --state-root C:\ProgramData\ARTIFEX\migrations --confirm <rollback-token>
+```
+
+Rollback is allowed only while the Project bootstrap state, Catalog, and
+RunStore still match the recorded post-migration state. If a new Run or other
+state change exists, ARTIFEX refuses rollback rather than discarding it.
+
+## Authority and evidence
+
+The Project repository and Git remain semantic authority. The migration record
+contains pre/post fingerprints, the preserved/extended/added asset inventory,
+bootstrap actions, empty-history proof, provider readiness disposition,
+backup digest, validation checks, and rollback reference. J09 acceptance must
+be reproduced with the native shipping candidate and a real copy of the V1
+release; source-only or developer-only execution is not release evidence.

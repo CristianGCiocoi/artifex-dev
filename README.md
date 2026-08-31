@@ -111,6 +111,7 @@ are not claimed.
 - [Product definition](docs/product/PRODUCT_DEFINITION.md) and [roadmap](docs/product/ROADMAP.md)
 - [Architecture](docs/architecture/ARCHITECTURE.md), [integration contract](docs/architecture/INTEGRATION_CONTRACT.md), and [security guidance](docs/guides/SECURITY_GUIDE.md)
 - [ARTIFEX 2.0 durable runtime authority](docs/architecture/DURABLE_RUNTIME.md)
+- [V1 migration authority](docs/architecture/V1_MIGRATION.md) and [V1 to 2.0 upgrade guide](docs/guides/UPGRADE_GUIDE.md)
 - [Developer guide](docs/guides/DEVELOPER_GUIDE.md), [administrator guide](docs/guides/ADMIN_GUIDE.md), and [user guide](docs/guides/USER_GUIDE.md)
 - [V1 release record](.artifex/releases/v1.0.0.yaml) and [release evidence](.artifex/validation/evidence/EVD-V1-RELEASE.yaml)
 - [Dashboard deployment](docs/implementation/dashboard-deployment.md)

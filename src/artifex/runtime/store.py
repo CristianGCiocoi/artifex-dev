@@ -6,7 +6,7 @@ import hashlib
 import json
 import sqlite3
 from collections.abc import Iterator, Mapping
-from contextlib import contextmanager
+from contextlib import closing, contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -142,7 +142,7 @@ class SQLiteRunStore:
             )
 
     def envelope(self, envelope_id: str, version: int) -> Mapping[str, Any] | None:
-        with self._connect() as connection:
+        with closing(self._connect()) as connection, connection:
             row = connection.execute(
                 "SELECT payload FROM envelopes WHERE envelope_id = ? AND version = ?",
                 (envelope_id, version),
@@ -150,7 +150,7 @@ class SQLiteRunStore:
         return json.loads(str(row["payload"])) if row is not None else None
 
     def envelope_for_attempt(self, attempt_id: str) -> Mapping[str, Any]:
-        with self._connect() as connection:
+        with closing(self._connect()) as connection, connection:
             row = connection.execute(
                 """SELECT e.payload FROM envelopes e
                    JOIN runs r ON r.envelope_id = e.envelope_id
@@ -213,7 +213,7 @@ class SQLiteRunStore:
             )
 
     def dispatch_authorization(self, attempt_id: str) -> dict[str, Any] | None:
-        with self._connect() as connection:
+        with closing(self._connect()) as connection, connection:
             row = connection.execute(
                 "SELECT * FROM dispatch_authorizations WHERE attempt_id = ?",
                 (attempt_id,),
@@ -275,7 +275,7 @@ class SQLiteRunStore:
         if not evidence_ids:
             return ()
         placeholders = ",".join("?" for _ in evidence_ids)
-        with self._connect() as connection:
+        with closing(self._connect()) as connection, connection:
             rows = connection.execute(
                 f"SELECT * FROM evidence_records WHERE evidence_id IN ({placeholders})",
                 evidence_ids,
@@ -494,7 +494,7 @@ class SQLiteRunStore:
         }
         if (table, id_column) not in allowed:
             raise ValueError("unsupported runtime lookup")
-        with self._connect() as connection:
+        with closing(self._connect()) as connection, connection:
             row = connection.execute(
                 f"SELECT * FROM {table} WHERE {id_column} = ?",
                 (identifier,),
@@ -548,7 +548,7 @@ class SQLiteRunStore:
             )
 
     def envelope_proposal(self, envelope_id: str, version: int) -> Mapping[str, Any] | None:
-        with self._connect() as connection:
+        with closing(self._connect()) as connection, connection:
             row = connection.execute(
                 """SELECT * FROM envelope_proposals
                    WHERE envelope_id = ? AND version = ?""",
@@ -619,7 +619,7 @@ class SQLiteRunStore:
             )
 
     def interaction_session(self, session_id: str) -> dict[str, Any] | None:
-        with self._connect() as connection:
+        with closing(self._connect()) as connection, connection:
             row = connection.execute(
                 "SELECT * FROM interaction_sessions WHERE session_id = ?", (session_id,)
             ).fetchone()
@@ -630,7 +630,7 @@ class SQLiteRunStore:
         return value
 
     def interaction_sessions(self, project_id: str) -> tuple[dict[str, Any], ...]:
-        with self._connect() as connection:
+        with closing(self._connect()) as connection, connection:
             rows = connection.execute(
                 "SELECT * FROM interaction_sessions WHERE project_id = ? ORDER BY created_at",
                 (project_id,),
@@ -732,7 +732,7 @@ class SQLiteRunStore:
             )
 
     def decision_request(self, decision_request_id: str) -> dict[str, Any] | None:
-        with self._connect() as connection:
+        with closing(self._connect()) as connection, connection:
             row = connection.execute(
                 "SELECT * FROM decision_requests WHERE decision_request_id = ?",
                 (decision_request_id,),
@@ -740,7 +740,7 @@ class SQLiteRunStore:
         return _decision_row(row)
 
     def decision_requests(self, project_id: str) -> tuple[dict[str, Any], ...]:
-        with self._connect() as connection:
+        with closing(self._connect()) as connection, connection:
             rows = connection.execute(
                 "SELECT * FROM decision_requests WHERE project_id = ? ORDER BY created_at",
                 (project_id,),
@@ -864,7 +864,7 @@ class SQLiteRunStore:
             )
 
     def operational_control(self, scope_type: str, scope_id: str) -> dict[str, Any] | None:
-        with self._connect() as connection:
+        with closing(self._connect()) as connection, connection:
             row = connection.execute(
                 "SELECT * FROM operational_controls WHERE scope_type = ? AND scope_id = ?",
                 (scope_type, scope_id),
@@ -872,14 +872,14 @@ class SQLiteRunStore:
         return dict(row) if row is not None else None
 
     def operational_controls(self) -> tuple[dict[str, Any], ...]:
-        with self._connect() as connection:
+        with closing(self._connect()) as connection, connection:
             rows = connection.execute(
                 "SELECT * FROM operational_controls ORDER BY scope_type, scope_id"
             ).fetchall()
         return tuple(dict(row) for row in rows)
 
     def snapshot_run(self, run_id: str) -> dict[str, Any]:
-        with self._connect() as connection:
+        with closing(self._connect()) as connection, connection:
             run = connection.execute("SELECT * FROM runs WHERE run_id = ?", (run_id,)).fetchone()
             if run is None:
                 raise KeyError(f"unknown Run: {run_id}")
@@ -943,7 +943,7 @@ class SQLiteRunStore:
         }
 
     def audit(self) -> tuple[dict[str, Any], ...]:
-        with self._connect() as connection:
+        with closing(self._connect()) as connection, connection:
             rows = connection.execute("SELECT * FROM runtime_audit ORDER BY sequence").fetchall()
         return tuple({**dict(row), "payload": json.loads(str(row["payload"]))} for row in rows)
 
@@ -974,7 +974,7 @@ class SQLiteRunStore:
             )
 
     def acceptance(self, project_job_id: str) -> dict[str, Any] | None:
-        with self._connect() as connection:
+        with closing(self._connect()) as connection, connection:
             row = connection.execute(
                 """SELECT * FROM acceptance_decisions WHERE project_job_id = ?
                    ORDER BY decided_at DESC LIMIT 1""",
@@ -1058,7 +1058,7 @@ class SQLiteRunStore:
         return connection
 
     def _initialize(self) -> None:
-        with self._connect() as connection:
+        with closing(self._connect()) as connection, connection:
             connection.executescript(
                 """
                 CREATE TABLE IF NOT EXISTS coordinator_lease (

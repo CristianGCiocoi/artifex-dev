@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sqlite3
+from contextlib import closing
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -72,7 +73,7 @@ class ProjectCatalog:
     ) -> CatalogEntry:
         resolved_location = str(Path(location).expanduser().resolve())
         names = tuple(dict.fromkeys((name, *aliases)))
-        with self._connect() as connection:
+        with closing(self._connect()) as connection, connection:
             try:
                 connection.execute(
                     """
@@ -107,7 +108,7 @@ class ProjectCatalog:
         return self.get(project_id)
 
     def resolve(self, name_or_alias: str) -> CatalogEntry:
-        with self._connect() as connection:
+        with closing(self._connect()) as connection, connection:
             rows = connection.execute(
                 "SELECT project_id FROM aliases WHERE alias_key = ?",
                 (_alias_key(name_or_alias),),
@@ -119,7 +120,7 @@ class ProjectCatalog:
         return self.get(str(rows[0][0]))
 
     def get(self, project_id: str) -> CatalogEntry:
-        with self._connect() as connection:
+        with closing(self._connect()) as connection, connection:
             row = connection.execute(
                 "SELECT * FROM projects WHERE project_id = ?", (project_id,)
             ).fetchone()
@@ -160,7 +161,7 @@ class ProjectCatalog:
         )
 
     def list(self) -> tuple[CatalogEntry, ...]:
-        with self._connect() as connection:
+        with closing(self._connect()) as connection, connection:
             identifiers = tuple(
                 str(row[0])
                 for row in connection.execute("SELECT project_id FROM projects ORDER BY project_id")
@@ -181,7 +182,7 @@ class ProjectCatalog:
 
     def move(self, project_id: str, location: str | Path) -> CatalogEntry:
         resolved = str(Path(location).expanduser().resolve())
-        with self._connect() as connection:
+        with closing(self._connect()) as connection, connection:
             try:
                 connection.execute("DELETE FROM locations WHERE project_id = ?", (project_id,))
                 connection.execute(
@@ -195,7 +196,7 @@ class ProjectCatalog:
         return self.get(project_id)
 
     def record_revision(self, project_id: str, revision: int, activity: str) -> CatalogEntry:
-        with self._connect() as connection:
+        with closing(self._connect()) as connection, connection:
             cursor = connection.execute(
                 """
                 UPDATE projects
@@ -218,7 +219,7 @@ class ProjectCatalog:
         }
 
     def _set_reachable(self, project_id: str, reachable: bool) -> None:
-        with self._connect() as connection:
+        with closing(self._connect()) as connection, connection:
             connection.execute(
                 "UPDATE projects SET reachable = ? WHERE project_id = ?",
                 (int(reachable), project_id),
@@ -232,7 +233,7 @@ class ProjectCatalog:
         return connection
 
     def _initialize(self) -> None:
-        with self._connect() as connection:
+        with closing(self._connect()) as connection, connection:
             connection.executescript(
                 """
                 CREATE TABLE IF NOT EXISTS projects (

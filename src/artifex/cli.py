@@ -25,6 +25,7 @@ documentation_app = typer.Typer(help="Inspect and selectively regenerate Project
 dashboard_app = typer.Typer(help="Inspect Project and Platform operational views.")
 reality_app = typer.Typer(help="Inspect sourced Observed Reality and divergences.")
 service_app = typer.Typer(help="Use the frontend-independent ARTIFEX managed service.")
+migration_app = typer.Typer(help="Inspect and migrate a real ARTIFEX V1 Project.")
 app.add_typer(system_app, name="system")
 app.add_typer(integration_app, name="integration")
 app.add_typer(manual_app, name="manual")
@@ -35,6 +36,7 @@ app.add_typer(documentation_app, name="documentation")
 app.add_typer(dashboard_app, name="dashboard")
 app.add_typer(reality_app, name="reality")
 app.add_typer(service_app, name="service")
+app.add_typer(migration_app, name="migration")
 
 
 def _emit(
@@ -181,6 +183,113 @@ def bootstrap(project_root: str = typer.Option(..., "--project-root")) -> None:
     """Consume persisted setup in this process and show the public provider path."""
 
     _emit("distribution.bootstrap", project_root=project_root)
+
+
+def _migration_arguments(
+    project_root: str,
+    catalog_path: str,
+    runstore_path: str,
+    state_root: str,
+) -> dict[str, Any]:
+    return {
+        "project_root": project_root,
+        "catalog_path": catalog_path,
+        "runstore_path": runstore_path,
+        "state_root": state_root,
+    }
+
+
+@migration_app.command("inspect")
+def migration_inspect(
+    project_root: str = typer.Option(..., "--project-root"),
+    catalog_path: str = typer.Option(..., "--catalog"),
+    runstore_path: str = typer.Option(..., "--runstore"),
+    state_root: str = typer.Option(..., "--state-root"),
+) -> None:
+    """Read and classify a V1 Project without mutation."""
+
+    _emit(
+        "migration.inspect",
+        _migration_arguments(project_root, catalog_path, runstore_path, state_root),
+        project_root=project_root,
+    )
+
+
+@migration_app.command("plan")
+def migration_plan(
+    project_root: str = typer.Option(..., "--project-root"),
+    catalog_path: str = typer.Option(..., "--catalog"),
+    runstore_path: str = typer.Option(..., "--runstore"),
+    state_root: str = typer.Option(..., "--state-root"),
+) -> None:
+    """Dry-run the exact reversible migration and issue a bounded approval token."""
+
+    _emit(
+        "migration.plan",
+        _migration_arguments(project_root, catalog_path, runstore_path, state_root),
+        project_root=project_root,
+    )
+
+
+@migration_app.command("apply")
+def migration_apply(
+    project_root: str = typer.Option(..., "--project-root"),
+    catalog_path: str = typer.Option(..., "--catalog"),
+    runstore_path: str = typer.Option(..., "--runstore"),
+    state_root: str = typer.Option(..., "--state-root"),
+    confirm: str | None = typer.Option(None, "--confirm"),
+) -> None:
+    """Apply the approved backup-bound migration."""
+
+    arguments = _migration_arguments(project_root, catalog_path, runstore_path, state_root)
+    arguments["confirmation_token"] = confirm
+    _emit("migration.apply", arguments, project_root=project_root)
+
+
+@migration_app.command("validate")
+def migration_validate(
+    record_path: str = typer.Option(..., "--record"),
+    project_root: str = typer.Option(..., "--project-root"),
+    catalog_path: str = typer.Option(..., "--catalog"),
+    runstore_path: str = typer.Option(..., "--runstore"),
+    state_root: str = typer.Option(..., "--state-root"),
+) -> None:
+    """Validate semantic preservation, bootstrap state and the first new Run."""
+
+    arguments = _migration_arguments(project_root, catalog_path, runstore_path, state_root)
+    arguments["record_path"] = record_path
+    _emit("migration.validate", arguments, project_root=project_root)
+
+
+@migration_app.command("rollback-plan")
+def migration_rollback_plan(
+    record_path: str = typer.Option(..., "--record"),
+    project_root: str = typer.Option(..., "--project-root"),
+    catalog_path: str = typer.Option(..., "--catalog"),
+    runstore_path: str = typer.Option(..., "--runstore"),
+    state_root: str = typer.Option(..., "--state-root"),
+) -> None:
+    """Dry-run rollback to the exact pre-migration snapshot."""
+
+    arguments = _migration_arguments(project_root, catalog_path, runstore_path, state_root)
+    arguments["record_path"] = record_path
+    _emit("migration.rollback.plan", arguments, project_root=project_root)
+
+
+@migration_app.command("rollback")
+def migration_rollback(
+    record_path: str = typer.Option(..., "--record"),
+    project_root: str = typer.Option(..., "--project-root"),
+    catalog_path: str = typer.Option(..., "--catalog"),
+    runstore_path: str = typer.Option(..., "--runstore"),
+    state_root: str = typer.Option(..., "--state-root"),
+    confirm: str | None = typer.Option(None, "--confirm"),
+) -> None:
+    """Restore the exact approved V1 snapshot if no post-migration drift exists."""
+
+    arguments = _migration_arguments(project_root, catalog_path, runstore_path, state_root)
+    arguments.update({"record_path": record_path, "confirmation_token": confirm})
+    _emit("migration.rollback", arguments, project_root=project_root)
 
 
 @app.command("discover")
