@@ -190,6 +190,19 @@ def test_artifact_identity_probe_must_execute_and_match_manifest(tmp_path: Path)
         verify_artifact(source, identity_probe=lambda _source, _timeout: spoofed)
 
 
+def test_artifact_identity_probe_allows_bounded_windows_cold_start(tmp_path: Path) -> None:
+    source = _write_test_artifact(tmp_path / "release", b"native")
+    observed: list[float] = []
+
+    def capture_timeout(path: Path, timeout_seconds: float) -> dict[str, object]:
+        observed.append(timeout_seconds)
+        return _test_identity_probe(path, timeout_seconds)
+
+    verify_artifact(source, identity_probe=capture_timeout)
+
+    assert observed == [60.0]
+
+
 @pytest.mark.adversarial
 def test_artifact_manifest_rejects_unknown_fields_and_bundle_tampering(
     tmp_path: Path,

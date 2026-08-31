@@ -26,7 +26,10 @@ PACKAGER_FORMATS = {
 }
 PRODUCT_ID = "ARTIFEX"
 MAX_IDENTITY_OUTPUT_BYTES = 4096
-IDENTITY_PROBE_TIMEOUT_SECONDS = 10.0
+# A first launch of a freshly extracted, self-contained Windows binary can be
+# delayed by endpoint-protection inspection. Keep the probe bounded while
+# allowing the clean-machine shipping path to complete without a warm cache.
+IDENTITY_PROBE_TIMEOUT_SECONDS = 60.0
 _FIELDS = frozenset(
     {
         "schema_version",
