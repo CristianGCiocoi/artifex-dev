@@ -13,7 +13,7 @@
 - Current status: `ACCEPTED`
 - Accepted milestones: `M0, M1, M2, M3, M4, M5, M6A, M7, M8A`
 - Ready milestones: `M9`
-- Latest accepted commit: `d7fa3c4ad419bd97e401ad765128dc3560484d90`
+- Latest accepted commit: `6bcf289f365f4137812e88ec3672fa988d452723`
 - Next integration point: `Integrate the accepted M7 baseline on canonical main, canonicalize milestone provenance, then activate M9 from that exact baseline`
 - M7 started: `true`
 

@@ -13,8 +13,8 @@ program:
   branch: codex/artifex-2-m7-qualification-live
   current_milestone: M7
   current_status: ACCEPTED
-  latest_accepted_commit: d7fa3c4ad419bd97e401ad765128dc3560484d90
-  canonical_integration_baseline: 2ea4a38e1bc18a2aa3535a1d224f508ca6561d88
+  latest_accepted_commit: 6bcf289f365f4137812e88ec3672fa988d452723
+  canonical_integration_baseline: 6bcf289f365f4137812e88ec3672fa988d452723
   next_integration_point: Integrate the accepted M7 baseline on canonical main, canonicalize milestone provenance, then activate M9 from that exact baseline
   m1_started: true
   m2_started: true
