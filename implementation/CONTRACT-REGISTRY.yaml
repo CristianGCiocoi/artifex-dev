@@ -352,7 +352,9 @@ contracts:
   evidence_references:
   - ACCEPTANCE/M9.yaml
   - MIGRATION/V1-RELEASE-FIXTURE.yaml
-  implementation_state: ACTIVE
+  - EVIDENCE/M9-J09-SHIPPING-QUALIFIED.json
+  - EVIDENCE/M9-VALIDATION.yaml
+  implementation_state: ACCEPTED
   m0_baseline_state: NOT_APPLICABLE
 adrs:
 - id: ADR-T001

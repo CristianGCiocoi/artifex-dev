@@ -10,11 +10,11 @@
 - Intake baseline: `5cc5dcfeb420a6df171a44426c04a0f08fa1e877`
 - Branch: `codex/artifex-2-m9`
 - Current milestone: `M9`
-- Current status: `ACTIVE`
-- Accepted milestones: `M0, M1, M2, M3, M4, M5, M6A, M7, M8A`
-- Ready milestones: `none`
+- Current status: `ACCEPTED`
+- Accepted milestones: `M0, M1, M2, M3, M4, M5, M6A, M7, M8A, M9`
+- Ready milestones: `M12`
 - Latest accepted commit: `6bcf289f365f4137812e88ec3672fa988d452723`
-- Next integration point: `Complete M9 inspect and dry-run gap assessment against the immutable V1 release fixture, then implement only the missing shipping-path migration contract`
+- Next integration point: `Integrate the accepted M9 baseline on canonical main, canonicalize milestone provenance, then activate M12 from that exact baseline`
 - M9 started: `true`
 
 ## Work
@@ -27,7 +27,7 @@
 
 ## Acceptance
 
-- M9 verdict: `ACTIVE`
-- Mandatory work complete: `false`
+- M9 verdict: `ACCEPTED`
+- Mandatory work complete: `true`
 - Mandatory journeys: `J09`
-- Next integration point: `Complete M9 inspect and dry-run gap assessment against the immutable V1 release fixture, then implement only the missing shipping-path migration contract`
+- Next integration point: `Integrate the accepted M9 baseline on canonical main, canonicalize milestone provenance, then activate M12 from that exact baseline`

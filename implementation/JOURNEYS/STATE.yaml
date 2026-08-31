@@ -131,12 +131,15 @@ journeys:
   blocker: null
 - id: J09
   title: J09 — V1 Migration
-  status: ACTIVE
-  environment: IMMUTABLE_V1_RELEASE_FIXTURE_COPY_WITH_SHIPPING_ARTIFEX_2_0
-  public_shipping_composition: ARTIFEX_SETUP_NUITKA_NSIS_PUBLIC_MANAGED_SERVICE
+  status: PASS
+  environment: WINDOWS_11_25H2_X64_VM104_CHECKPOINT_REAL_V1_GIT_COPY
+  public_shipping_composition: INSTALLED_NATIVE_PUBLIC_CLI_REAL_V1_GIT_COPY_MULTI_PROCESS
   evidence:
   - MIGRATION/V1-RELEASE-FIXTURE.yaml
-  last_run: null
+  - EVIDENCE/M9-WINDOWS-SHIPPING-CANDIDATE.yaml
+  - EVIDENCE/M9-J09-SHIPPING-QUALIFIED.json
+  - EVIDENCE/M9-VALIDATION.yaml
+  last_run: '2026-08-31'
   blocker: null
 - id: J10
   title: J10 — No Automated Provider

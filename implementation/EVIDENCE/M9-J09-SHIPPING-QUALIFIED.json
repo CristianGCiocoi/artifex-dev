@@ -1,0 +1,120 @@
+{
+  "approval_tokens_retained": false,
+  "candidate": {
+    "artifact_bytes": 23308554,
+    "artifact_name": "ARTIFEX-SETUP.EXE",
+    "artifact_sha256": "6f532c163ddf83546ab9d77773e46efc630ad72e4b416477a7de39563373bb85",
+    "installed": {
+      "executable_sha256": "08015badbb8561311436ac3d43bd1d1ce019c0421d206ab3006ef2721d316fb6",
+      "manifest_sha256": "aa73479339eb3468acf887c959d00fbab121e69d7e42bd576551b0c2ffe1d9f3",
+      "native": true,
+      "source_commit": "6854bfbd07863fcb0f176adca1c4807890fcbec1"
+    },
+    "source_commit": "6854bfbd07863fcb0f176adca1c4807890fcbec1"
+  },
+  "composition": "INSTALLED_NATIVE_PUBLIC_CLI_REAL_V1_GIT_COPY_MULTI_PROCESS",
+  "custom_application_factory_used": false,
+  "journeys": {
+    "J09": {
+      "activation_state": "ACTIVE",
+      "backup_sha256": "a688c962ff8d4f9dd512752c380081e762433420c8ad15cbf7f05826ee1dcd41",
+      "dry_run_read_only": true,
+      "empty_legacy_runtime_history": true,
+      "exact_rollback": true,
+      "first_new_2_0_run": "PASS",
+      "git_head_after": "317ec177df8655ae4f94e24162107fd2acecceec",
+      "git_head_before": "317ec177df8655ae4f94e24162107fd2acecceec",
+      "inspect_read_only": true,
+      "real_v1_git_copy": true,
+      "semantic_fingerprint_after": "82364730319cfe057f28cb6b2a6482a5e298c86b76fb4da2867e14754f43d76d",
+      "semantic_fingerprint_before": "82364730319cfe057f28cb6b2a6482a5e298c86b76fb4da2867e14754f43d76d",
+      "status": "PASS"
+    }
+  },
+  "provider_setup_invented": false,
+  "public_process_calls": [
+    {
+      "operation": "migration.inspect",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "7501a81def8778eff3e463d663d5acb38fe16dd16c435e33b0cf589c3fa9f6b1"
+    },
+    {
+      "operation": "migration.plan",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "6cd6b94eda3e8eb190141a8872573b94a86a5f2a68a28fd69fccd6b109b0e6f4"
+    },
+    {
+      "operation": "migration.apply",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "572b63774fd96eb92cea49311035362e61efe5f086c47f0fb4edac4ac0a8c492"
+    },
+    {
+      "operation": "migration.rollback.plan",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "d60dbaeee03fb89679a69fcf31c4a28a81395efb458037e9bf9bb075327f1f31"
+    },
+    {
+      "operation": "migration.rollback",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "a6a886f084cd939bb67749b6cacf3617bbdf051b77d2e1c41415c9774ede2dd2"
+    },
+    {
+      "operation": "migration.plan",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "f2228dc057d201367c150333b0549f6b1ce7f9f1e58397f15d5890ea3475358c"
+    },
+    {
+      "operation": "migration.apply",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "7927c83ffc7645f308e30ab049c255bbeea484021e474f75e6a3d6229594d582"
+    },
+    {
+      "operation": "runtime.bootstrap",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "7195139cb3cc1d17e8b9c6d9404f78dba100ebbf718f7ca7f64eab534a0476e0"
+    },
+    {
+      "operation": "runtime.attempt.finish",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "1b17c003377bd94a2938576d35685ec86ec0f80f14355b6fc8500e78c28af54a"
+    },
+    {
+      "operation": "runtime.accept",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e00fb7f86439584836d88ba805b2751f2863124a2f0c98e9ebbe9c2bced7a916"
+    },
+    {
+      "operation": "migration.validate",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "c22698d1bbc298a68e3d490525aa8833261c3f41ba71405606641f587b17e7e9"
+    },
+    {
+      "operation": "migration.inspect",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "ab3929138852d314ae7fda89123dd89a255ff2acf7adcb1c0fce1e26eb35f511"
+    }
+  ],
+  "schema_version": "artifex.m9-j09-qualification/v1",
+  "simulated_migration": false,
+  "source_tree_imported": false,
+  "status": "PASS",
+  "v1_fixture": {
+    "head": "317ec177df8655ae4f94e24162107fd2acecceec",
+    "model_sha256": "e970778462f6639675c8f862c0b1ca3247830e5a2290085ea3e95b90c4703394",
+    "status": "",
+    "tree": "ef130f94c2ef8f4d98ae925cd6e59e259b94b473"
+  }
+}
+

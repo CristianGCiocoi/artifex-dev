@@ -1,0 +1,46 @@
+schema_version: '1.0'
+evidence_id: EVD-M9-WINDOWS-SHIPPING-CANDIDATE
+milestone: M9
+status: PASS
+recorded_date: '2026-08-31'
+canonical_base_commit: 72a7f8b5c5b470760eaf4d85f2b4c19db6cc83f6
+contract_digest: af6f2fa7ac2ae06942d9dfd4531ee384d75aed4d434c4e7a41a54b7fb6bd3d52
+candidate:
+  source_commit: 6854bfbd07863fcb0f176adca1c4807890fcbec1
+  installer: ARTIFEX-Setup.exe
+  installer_sha256: 6f532c163ddf83546ab9d77773e46efc630ad72e4b416477a7de39563373bb85
+  installer_bytes: 23308554
+  installed_executable_sha256: 08015badbb8561311436ac3d43bd1d1ce019c0421d206ab3006ef2721d316fb6
+  packaging: NUITKA_STANDALONE_NSIS
+  sqlite_dump_dynamic_module_included: true
+qualification_media:
+  v1_bundle_sha256: af27199e0c777aa23b3c44a2ca3153d4db77c6ad10f704923fb534d444d79b99
+  harness_commit: 8bfea15a6be5ba70f9052477a44aa466333c6d71
+  harness_sha256: 7fcd7952ca058b4932826ab5122a1054b58d0f648268ed9eae1e4a83ffbe072b
+  iso_sha256: 17a2e1cb6151ae96328727b6f99e30619a45a21817560242b20d445b757f3946
+environment:
+  vm_id: 104
+  os: Windows 11 25H2 x64
+  os_build: '26200'
+  source_checkpoint: m9-pre-shipping-286f087
+  checkpoint_disk_only: true
+  active_rdp_preserved: true
+  vm_restart_required: false
+  vm101_touched: false
+  vm105_touched: false
+  vm106_touched: false
+upgrade:
+  existing_install_source_commit: 777cd3a6bdc3ce64be41f2af598e6b54cc69199a
+  existing_service_state_root_preserved: true
+  launched_with_existing_interactive_windows_token: true
+  credentials_automated: false
+  installer_result: PASS
+  installed_manifest_source_commit: 6854bfbd07863fcb0f176adca1c4807890fcbec1
+qualification:
+  evidence: EVIDENCE/M9-J09-SHIPPING-QUALIFIED.json
+  composition: INSTALLED_NATIVE_PUBLIC_CLI_REAL_V1_GIT_COPY_MULTI_PROCESS
+  status: PASS
+  m7_acceptance_evidence_mutated: false
+  developer_only_acceptance_used: false
+  source_tree_imported: false
+  approval_tokens_retained: false

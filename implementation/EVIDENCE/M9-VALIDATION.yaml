@@ -1,0 +1,106 @@
+schema_version: '1.0'
+evidence_id: EVD-M9-VALIDATION
+milestone: M9
+status: PASS
+recorded_date: '2026-08-31'
+canonical_base_commit: 72a7f8b5c5b470760eaf4d85f2b4c19db6cc83f6
+m9_shipping_implementation_baseline_commit: 6854bfbd07863fcb0f176adca1c4807890fcbec1
+m9_qualification_harness_baseline_commit: 8bfea15a6be5ba70f9052477a44aa466333c6d71
+m9_acceptance_commit: null
+m9_contract_digest: af6f2fa7ac2ae06942d9dfd4531ee384d75aed4d434c4e7a41a54b7fb6bd3d52
+source_quality:
+  ruff_all: PASS
+  mypy_strict: PASS
+  mypy_source_files: 95
+focused_validation:
+  command: .venv/Scripts/python.exe -m pytest tests/artifex2_m9 -q
+  result: PASS
+  passed: 13
+  failed: 0
+  duration_seconds: 40.07
+accepted_dependency_integration:
+  command: .venv/Scripts/python.exe -m pytest tests/artifex2_m1 tests/artifex2_m2 tests/artifex2_m9 -q
+  result: PASS
+  passed: 35
+  failed: 0
+  duration_seconds: 114.00
+domain_integration:
+  command: .venv/Scripts/python.exe -m pytest -q -x --ignore=tests/test_release.py
+  result: PASS
+  passed: 558
+  skipped: 7
+  failed: 0
+  duration_seconds: 796.62
+  platform_skips: WINDOWS_SYMLINK_CREATION_UNAVAILABLE
+  intermediate_observation:
+    classification: NONREPRODUCED_TRANSIENT_MULTI_PROCESS_TEST_OBSERVATION
+    first_run_stopped_for_DIAGNOSIS: true
+    affected_test_group_isolated_result: 9_PASS_0_FAIL
+    complete_fail_fast_rerun_result: 558_PASS_0_FAIL_7_SKIP
+    source_change_made_for_observation: false
+public_composition:
+  artifact: ARTIFEX-Setup.exe
+  artifact_sha256: 6f532c163ddf83546ab9d77773e46efc630ad72e4b416477a7de39563373bb85
+  artifact_bytes: 23308554
+  installed_executable_sha256: 08015badbb8561311436ac3d43bd1d1ce019c0421d206ab3006ef2721d316fb6
+  source_commit: 6854bfbd07863fcb0f176adca1c4807890fcbec1
+  composition: INSTALLED_NATIVE_PUBLIC_CLI_REAL_V1_GIT_COPY_MULTI_PROCESS
+  evidence: EVIDENCE/M9-J09-SHIPPING-QUALIFIED.json
+  validator: tools/artifex2/validate_m9.py
+  status: PASS
+j09:
+  real_v1_git_copy: PASS
+  inspect_read_only: PASS
+  dry_run_read_only: PASS
+  durable_backup: PASS
+  exact_rollback: PASS
+  semantic_fingerprint_preserved: PASS
+  git_commit_preserved: PASS
+  git_tree_preserved: PASS
+  empty_legacy_runtime_history: PASS
+  first_new_2_0_run: PASS
+  activation_state: ACTIVE
+security_authority:
+  approval_tokens_retained: false
+  source_tree_imported: false
+  custom_application_factory_used: false
+  simulated_migration: false
+  provider_setup_invented: false
+  project_authority_accepted_first_new_run: true
+documentation:
+  architecture: docs/architecture/V1_MIGRATION.md
+  guide: docs/guides/UPGRADE_GUIDE.md
+  status: CURRENT
+dashboard:
+  implementation_projection: PASS
+  authoritative: false
+  project_dashboard_initialized_by_shipping_migration: PASS
+migration:
+  acceptance_class: PASS
+  catalog_registered: PASS
+  runstore_initially_empty: PASS
+  runtime_history_fabricated: false
+  semantic_asset_inventory_preserved: PASS
+  provider_setup_preserved_where_present: PASS
+  provider_readiness_freshly_revalidated: PASS
+  provider_certification_carried_forward: false
+  rollback_refuses_post_migration_drift: PASS
+pre_acceptance_diagnostics:
+  - classification: WINDOWS_NATIVE_BUNDLE_DYNAMIC_STDLIB_OMISSION
+    observed: sqlite3.dump unavailable during shipping migration backup
+    correction_commit: 6854bfbd07863fcb0f176adca1c4807890fcbec1
+    final_shipping_result: PASS
+  - classification: GIT_FOR_WINDOWS_DEVICE_PATH_INCOMPATIBILITY
+    observed: extended optical-drive path rejected by Git for Windows
+    correction_commit: 8bfea15a6be5ba70f9052477a44aa466333c6d71
+    final_harness_result: PASS
+control_plane:
+  deterministic_projection: PASS
+  m0_validator: PASS
+  m9_validator: PASS
+v1_release_harness_regression:
+  classification: V1-R01-DASHBOARD-FIXTURE-SCHEMA-DRIFT
+  disposition: REPRODUCED_AND_PRESERVED
+  current_expected_failure: "'release' is a required property"
+  source_repaired_by_m9: false
+unexpected_failures: []

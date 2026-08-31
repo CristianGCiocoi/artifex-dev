@@ -5,68 +5,88 @@
     "contract_digest": "af6f2fa7ac2ae06942d9dfd4531ee384d75aed4d434c4e7a41a54b7fb6bd3d52",
     "evidence_classes": {
       "BLACK_BOX_OUTCOME": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M9-J09-SHIPPING-QUALIFIED.json"
+        ],
         "required_m9": true,
-        "status": "NOT_STARTED"
+        "status": "PASS"
       },
       "COMPONENT": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M9-VALIDATION.yaml"
+        ],
         "required_m9": true,
-        "status": "NOT_STARTED"
+        "status": "PASS"
       },
       "DASHBOARD": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M9-VALIDATION.yaml"
+        ],
         "required_m9": true,
-        "status": "NOT_STARTED"
+        "status": "PASS"
       },
       "DESIGN_CONFORMANCE": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M9-VALIDATION.yaml"
+        ],
         "required_m9": true,
-        "status": "NOT_STARTED"
+        "status": "PASS"
       },
       "DOCUMENTATION": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M9-VALIDATION.yaml"
+        ],
         "required_m9": true,
-        "status": "NOT_STARTED"
+        "status": "PASS"
       },
       "DOMAIN_INTEGRATION": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M9-VALIDATION.yaml"
+        ],
         "required_m9": true,
-        "status": "NOT_STARTED"
+        "status": "PASS"
       },
       "MIGRATION": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M9-J09-SHIPPING-QUALIFIED.json"
+        ],
         "required_m9": true,
-        "status": "NOT_STARTED"
+        "status": "PASS"
       },
       "PROVIDER_CERTIFICATION": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M9-VALIDATION.yaml"
+        ],
         "required_m9": true,
-        "status": "NOT_STARTED"
+        "status": "PASS"
       },
       "PUBLIC_COMPOSITION": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M9-J09-SHIPPING-QUALIFIED.json"
+        ],
         "required_m9": true,
-        "status": "NOT_STARTED"
+        "status": "PASS"
       },
       "SECURITY_AUTHORITY": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M9-VALIDATION.yaml"
+        ],
         "required_m9": true,
-        "status": "NOT_STARTED"
+        "status": "PASS"
       }
     },
     "frozen_architecture_baseline": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
-    "implementation_baseline_commit": "72a7f8b5c5b470760eaf4d85f2b4c19db6cc83f6",
+    "implementation_baseline_commit": "6854bfbd07863fcb0f176adca1c4807890fcbec1",
     "mandatory_journeys": [
       "J09"
     ],
-    "mandatory_work_complete": false,
-    "migration": "INSPECT_DRY_RUN_ACTIVE_NO_PROJECT_MUTATION",
+    "mandatory_work_complete": true,
+    "migration": "SHIPPING_J09_PASS_SEMANTIC_AND_GIT_PRESERVED_NO_LEGACY_RUNTIME_FIRST_NEW_RUN_PASS",
     "milestone": "M9",
     "schema_version": "1.0",
     "superseded": [],
     "unresolved_contradiction": null,
-    "verdict": "ACTIVE"
+    "verdict": "ACCEPTED"
   },
   "adrs": [
     {
@@ -1771,6 +1791,21 @@
       "sha256": "0de9cf5564ebf056e870522a7bfbe459f380fc615bed75f3fca7ca492efa93f8"
     },
     {
+      "bytes": 4992,
+      "path": "implementation/EVIDENCE/M9-J09-SHIPPING-QUALIFIED.json",
+      "sha256": "2949c928d07bfa185282515e48b0f657cb2c19a0bbda008c3a6990f2edbb54a6"
+    },
+    {
+      "bytes": 3916,
+      "path": "implementation/EVIDENCE/M9-VALIDATION.yaml",
+      "sha256": "fad51f6511380b070a6310888679aa439a77cc26922bf994e649e3e6cc03925c"
+    },
+    {
+      "bytes": 1879,
+      "path": "implementation/EVIDENCE/M9-WINDOWS-SHIPPING-CANDIDATE.yaml",
+      "sha256": "adca154b2f6deb80f248c5fef5e6a32d2a5fbb055d9903f52530608d52d1e1a8"
+    },
+    {
       "bytes": 3220,
       "path": "implementation/EVIDENCE/V1-KNOWN-GAPS.yaml",
       "sha256": "c89819d87662f71f38c776ef50a5f94957bd2da8798a338d1a899dd2ee7de72c"
@@ -2686,14 +2721,17 @@
     },
     {
       "blocker": null,
-      "environment": "IMMUTABLE_V1_RELEASE_FIXTURE_COPY_WITH_SHIPPING_ARTIFEX_2_0",
+      "environment": "WINDOWS_11_25H2_X64_VM104_CHECKPOINT_REAL_V1_GIT_COPY",
       "evidence": [
-        "MIGRATION/V1-RELEASE-FIXTURE.yaml"
+        "MIGRATION/V1-RELEASE-FIXTURE.yaml",
+        "EVIDENCE/M9-WINDOWS-SHIPPING-CANDIDATE.yaml",
+        "EVIDENCE/M9-J09-SHIPPING-QUALIFIED.json",
+        "EVIDENCE/M9-VALIDATION.yaml"
       ],
       "id": "J09",
-      "last_run": null,
-      "public_shipping_composition": "ARTIFEX_SETUP_NUITKA_NSIS_PUBLIC_MANAGED_SERVICE",
-      "status": "ACTIVE",
+      "last_run": "2026-08-31",
+      "public_shipping_composition": "INSTALLED_NATIVE_PUBLIC_CLI_REAL_V1_GIT_COPY_MULTI_PROCESS",
+      "status": "PASS",
       "title": "J09 — V1 Migration"
     },
     {
@@ -2976,10 +3014,8 @@
     "verdict": "ACCEPTED"
   },
   "migration": {
-    "active_parallel_wave": [
-      "M9"
-    ],
-    "active_wave_migration_policy": "SHIPPING_PATH_FINAL_ACCEPTANCE_NO_LEGACY_RUNTIME_FABRICATION",
+    "active_parallel_wave": [],
+    "active_wave_migration_policy": "M9_ACCEPTED_NO_LEGACY_RUNTIME_FABRICATION",
     "fixture": "MIGRATION/V1-RELEASE-FIXTURE.yaml",
     "fixture_state": "M0_BASELINE_ACCEPTED",
     "m4_target_interaction_governance_state": "M4_ACCEPTED_ADDITIVE_STATE",
@@ -2988,14 +3024,14 @@
     "m7_shipping_upgrade_foundation": "ACCEPTED_WINDOWS_CORE_V21",
     "m8a_v1_instance_knowledge_promotion": "CLASSIFICATION_QUARANTINE_ONLY_ACCEPTANCE_NA",
     "m8c_v1_deepseek_setup_revalidation": "PASS_FAIL_CLOSED_NOT_DETECTED_NO_STALE_CLAIM",
-    "m9_first_new_run_state": "REQUIRED_NOT_YET_QUALIFIED",
-    "m9_journey": "J09_ACTIVE",
+    "m9_first_new_run_state": "PASS_ACTIVATION_ACTIVE",
+    "m9_journey": "J09_PASS",
     "m9_lifecycle": "INSPECT_DRY_RUN_BASELINE_BACKUP_MIGRATE_VALIDATE_ACTIVATE",
-    "m9_rollback_state": "REQUIRED_NOT_YET_QUALIFIED",
-    "m9_shipping_candidate": "M7_WINDOWS_CORE_V21",
+    "m9_rollback_state": "PASS_EXACT_V1_RESTORE",
+    "m9_shipping_candidate": "ARTIFEX_SETUP_6854BFB_SHA256_6F532C16",
     "migration_execution": "M2_ACCEPTED_EMPTY_RUNSTORE",
     "milestone": "M9",
-    "mode": "M9_ACTIVE_INSPECT_DRY_RUN",
+    "mode": "M9_ACCEPTED_SHIPPING_MIGRATION",
     "project_mutation": false,
     "provider_setup_migration": "M3_ACCEPTED_SECRET_FREE_PROVIDER_SETUP_SCHEMA",
     "rollback": "REMOVE_NEW_PROVIDER_SETUP_STATE_ONLY; accepted M2 RunStore and Project semantics remain authoritative",
@@ -3135,7 +3171,7 @@
       "title": "DeepSeek Productization / Experimental Certification"
     },
     {
-      "accepted": false,
+      "accepted": true,
       "depends_on": [
         "M7",
         "M5"
@@ -3143,7 +3179,7 @@
       "id": "M9",
       "mandatory_for_core_ga": true,
       "started": true,
-      "state": "ACTIVE",
+      "state": "ACCEPTED",
       "title": "Final V1 Migration / Upgrade Acceptance"
     },
     {
@@ -3182,7 +3218,7 @@
       "id": "M12",
       "mandatory_for_core_ga": true,
       "started": false,
-      "state": "BLOCKED_DEPENDENCY",
+      "state": "READY",
       "title": "ARTIFEX 2.0 Product Outcome Certification & GA"
     }
   ],
@@ -3354,7 +3390,7 @@
     "branch": "codex/artifex-2-m9",
     "canonical_integration_baseline": "6bcf289f365f4137812e88ec3672fa988d452723",
     "current_milestone": "M9",
-    "current_status": "ACTIVE",
+    "current_status": "ACCEPTED",
     "dashboard_state": "CURRENT",
     "directory_variance": "PACKAGING_NAME_VARIANCE_ACCEPTED",
     "handoff_declared_directory": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF",
@@ -3376,7 +3412,7 @@
     "m8b_started": true,
     "m8c_started": true,
     "m9_started": true,
-    "next_integration_point": "Complete M9 inspect and dry-run gap assessment against the immutable V1 release fixture, then implement only the missing shipping-path migration contract",
+    "next_integration_point": "Integrate the accepted M9 baseline on canonical main, canonicalize milestone provenance, then activate M12 from that exact baseline",
     "recorded_date": "2026-08-31",
     "target_release": "2.0.0"
   },
@@ -3661,35 +3697,35 @@
   },
   "schema_version": "1.0",
   "summary": {
-    "acceptance_classes_passing": 0,
+    "acceptance_classes_passing": 10,
     "acceptance_classes_required": 10,
     "active_blockers": 3,
     "adr_count": 24,
     "current_milestone": "M9",
-    "current_milestone_progress_percent": 0,
-    "evidence_items": 202,
+    "current_milestone_progress_percent": 100,
+    "evidence_items": 205,
     "invariant_count": 34,
     "journey_states": {
-      "ACTIVE": 1,
       "BLOCKED_EXTERNAL_PREREQUISITE": 1,
       "NOT_STARTED": 2,
-      "PASS": 16
+      "PASS": 17
     },
-    "milestones_accepted": 9,
+    "milestones_accepted": 10,
     "milestones_started": 12,
     "milestones_total": 16,
-    "program_progress_percent": 56,
+    "program_progress_percent": 62,
     "provider_step_states": {
       "IN_PROGRESS": 2,
       "NOT_APPLICABLE": 10,
       "NOT_STARTED": 55,
       "PASS": 28
     },
-    "ready_milestones": [],
+    "ready_milestones": [
+      "M12"
+    ],
     "workstream_states": {
-      "ACTIVE": 1,
       "BLOCKED_EXTERNAL_PREREQUISITE": 2,
-      "COMPLETE": 20
+      "COMPLETE": 21
     }
   },
   "target_system": {
@@ -4141,7 +4177,7 @@
         "J09",
         "FROZEN-INVARIANTS"
       ],
-      "state": "ACTIVE",
+      "state": "COMPLETE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m9"
     }
   ]

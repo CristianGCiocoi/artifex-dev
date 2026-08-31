@@ -277,6 +277,6 @@ workstreams:
   branch: codex/artifex-2-m9
   base_commit: 72a7f8b5c5b470760eaf4d85f2b4c19db6cc83f6
   shared_contracts: [M9-CONTRACT, ADR-T001, ADR-T018, ADR-T019, J09, FROZEN-INVARIANTS]
-  state: ACTIVE
+  state: COMPLETE
   blockers: []
   integration_owner: ARTIFEX_2_ORCHESTRATOR
