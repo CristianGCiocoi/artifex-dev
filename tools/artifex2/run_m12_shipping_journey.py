@@ -1030,11 +1030,16 @@ def main() -> None:
             execution_provider=arguments.execution_provider,
         )
     except Exception as exc:  # evidence boundary must always emit a resumable receipt
+        message = str(exc)
+        safe_message = (
+            "message withheld" if _SENSITIVE.search(message) else message[:300]
+        )
         result = {
             "schema_version": SCHEMA,
             "status": "FAIL",
             "error": type(exc).__name__,
-            "message_sha256": hashlib.sha256(str(exc).encode("utf-8")).hexdigest(),
+            "message": safe_message,
+            "message_sha256": hashlib.sha256(message.encode("utf-8")).hexdigest(),
         }
     rendered = json.dumps(result, indent=2, sort_keys=True) + "\n"
     arguments.output.write_text(rendered, encoding="utf-8", newline="\n")
