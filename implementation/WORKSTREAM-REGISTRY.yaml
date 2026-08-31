@@ -280,3 +280,14 @@ workstreams:
   state: COMPLETE
   blockers: []
   integration_owner: ARTIFEX_2_ORCHESTRATOR
+- id: WS-M12-PRODUCT-OUTCOME-CERTIFICATION
+  milestone: M12
+  purpose: Certify one exact shipping ARTIFEX 2.0 Core candidate through the truthful claim matrix, mandatory Journey reconciliation and J20 full lifecycle
+  owner_subagent: ARTIFEX_2_ORCHESTRATOR
+  worktree: C:\aidev\artifex-worktrees\artifex-2-m12
+  branch: codex/artifex-2-m12
+  base_commit: 9556ab13c96ae009a34493e2ae9859dd3cab5543
+  shared_contracts: [M12-CONTRACT, M9-CONTRACT, ADR-T018, J20, FROZEN-INVARIANTS]
+  state: ACTIVE
+  blockers: []
+  integration_owner: ARTIFEX_2_ORCHESTRATOR

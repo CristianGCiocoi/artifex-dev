@@ -1,92 +1,89 @@
 {
   "acceptance": {
-    "acceptance_commit": "7ca029ffe2a987ef9ffee938fe3e0dc6e9258ac2",
+    "acceptance_commit": null,
     "blocked": [],
-    "contract_digest": "af6f2fa7ac2ae06942d9dfd4531ee384d75aed4d434c4e7a41a54b7fb6bd3d52",
+    "contract_digest": "54529f748cac59ce8b57e2f9a8376fe51c515e0ffca6b0b7da51ae2cbc5a2c6a",
     "evidence_classes": {
       "BLACK_BOX_OUTCOME": {
-        "evidence": [
-          "EVIDENCE/M9-J09-SHIPPING-QUALIFIED.json"
-        ],
-        "required_m9": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m12": true,
+        "status": "NOT_STARTED"
       },
       "COMPONENT": {
-        "evidence": [
-          "EVIDENCE/M9-VALIDATION.yaml"
-        ],
-        "required_m9": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m12": true,
+        "status": "NOT_STARTED"
       },
       "DASHBOARD": {
-        "evidence": [
-          "EVIDENCE/M9-VALIDATION.yaml"
-        ],
-        "required_m9": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m12": true,
+        "status": "NOT_STARTED"
       },
       "DESIGN_CONFORMANCE": {
-        "evidence": [
-          "EVIDENCE/M9-VALIDATION.yaml"
-        ],
-        "required_m9": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m12": true,
+        "status": "NOT_STARTED"
       },
       "DOCUMENTATION": {
-        "evidence": [
-          "EVIDENCE/M9-VALIDATION.yaml"
-        ],
-        "required_m9": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m12": true,
+        "status": "NOT_STARTED"
       },
       "DOMAIN_INTEGRATION": {
-        "evidence": [
-          "EVIDENCE/M9-VALIDATION.yaml"
-        ],
-        "required_m9": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m12": true,
+        "status": "NOT_STARTED"
       },
       "MIGRATION": {
-        "evidence": [
-          "EVIDENCE/M9-J09-SHIPPING-QUALIFIED.json"
-        ],
-        "required_m9": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m12": true,
+        "status": "NOT_STARTED"
       },
       "PROVIDER_CERTIFICATION": {
-        "evidence": [
-          "EVIDENCE/M9-VALIDATION.yaml"
-        ],
-        "required_m9": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m12": true,
+        "status": "NOT_STARTED"
       },
       "PUBLIC_COMPOSITION": {
-        "evidence": [
-          "EVIDENCE/M9-J09-SHIPPING-QUALIFIED.json"
-        ],
-        "required_m9": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m12": true,
+        "status": "NOT_STARTED"
       },
       "SECURITY_AUTHORITY": {
-        "evidence": [
-          "EVIDENCE/M9-VALIDATION.yaml"
-        ],
-        "required_m9": true,
-        "status": "PASS"
+        "evidence": [],
+        "required_m12": true,
+        "status": "NOT_STARTED"
       }
     },
     "frozen_architecture_baseline": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
-    "implementation_baseline_commit": "6854bfbd07863fcb0f176adca1c4807890fcbec1",
+    "implementation_baseline_commit": "9556ab13c96ae009a34493e2ae9859dd3cab5543",
     "mandatory_journeys": [
-      "J09"
+      "J01",
+      "J02",
+      "J03",
+      "J04",
+      "J05",
+      "J06",
+      "J07",
+      "J08",
+      "J09",
+      "J10",
+      "J11",
+      "J12",
+      "J14",
+      "J15",
+      "J16",
+      "J18",
+      "J19",
+      "J20"
     ],
-    "mandatory_work_complete": true,
-    "migration": "SHIPPING_J09_PASS_SEMANTIC_AND_GIT_PRESERVED_NO_LEGACY_RUNTIME_FIRST_NEW_RUN_PASS",
-    "milestone": "M9",
+    "mandatory_work_complete": false,
+    "migration": "M9_ACCEPTED_RELEASE_CANDIDATE_REVALIDATION_PENDING",
+    "milestone": "M12",
     "schema_version": "1.0",
     "superseded": [],
     "unresolved_contradiction": null,
-    "verdict": "ACCEPTED"
+    "verdict": "ACTIVE"
   },
   "adrs": [
     {
@@ -551,7 +548,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "ADR-T018",
-      "implementation_state": "NOT_STARTED",
+      "implementation_state": "M12_ACTIVE_OUTCOME_CERTIFICATION",
       "m0_baseline_state": "CAPTURED",
       "title": "ADR-T018 — Outcome Acceptance",
       "type": "FROZEN_ADR"
@@ -577,7 +574,7 @@
       ],
       "frozen_at": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
       "id": "ADR-T019",
-      "implementation_state": "M1_ADAPTER_ACCEPTED_M9_FINAL_ACCEPTANCE_PENDING",
+      "implementation_state": "M9_FINAL_MIGRATION_ACCEPTED",
       "m0_baseline_state": "CAPTURED",
       "title": "ADR-T019 — V1 Project Migration",
       "type": "FROZEN_ADR"
@@ -2918,13 +2915,15 @@
       "title": "J19 — IDEA → APPROVED PLAN"
     },
     {
-      "blocker": "M0 has no mandatory journeys; milestone dependencies not accepted",
-      "environment": null,
-      "evidence": [],
+      "blocker": null,
+      "environment": "EXACT_M12_RELEASE_CANDIDATE_QUALIFICATION_ENVIRONMENT_PENDING",
+      "evidence": [
+        "ACCEPTANCE/M12.yaml"
+      ],
       "id": "J20",
       "last_run": null,
-      "public_shipping_composition": null,
-      "status": "NOT_STARTED",
+      "public_shipping_composition": "INSTALLED_NATIVE_PUBLIC_COMPOSITION_PENDING",
+      "status": "ACTIVE",
       "title": "J20 — FULL ARTIFEX PROJECT LIFECYCLE"
     }
   ],
@@ -3014,10 +3013,14 @@
     "verdict": "ACCEPTED"
   },
   "migration": {
-    "active_parallel_wave": [],
-    "active_wave_migration_policy": "M9_ACCEPTED_NO_LEGACY_RUNTIME_FABRICATION",
+    "active_parallel_wave": [
+      "M12"
+    ],
+    "active_wave_migration_policy": "REVALIDATE_ACCEPTED_M9_ON_EXACT_RELEASE_CANDIDATE",
     "fixture": "MIGRATION/V1-RELEASE-FIXTURE.yaml",
     "fixture_state": "M0_BASELINE_ACCEPTED",
+    "m12_j09_revalidation": "REQUIRED_NOT_YET_RUN",
+    "m12_j20_migration_continuity": "REQUIRED_NOT_YET_RUN",
     "m4_target_interaction_governance_state": "M4_ACCEPTED_ADDITIVE_STATE",
     "m5_docs_dashboard_classification": "M5_ACCEPTED_CURRENT_STALE_MISSING_CLASSIFICATION",
     "m6a_v1_claude_setup_revalidation": "PASS_FRESH_PROCESS_REAL_CLAUDE_READINESS",
@@ -3030,8 +3033,8 @@
     "m9_rollback_state": "PASS_EXACT_V1_RESTORE",
     "m9_shipping_candidate": "ARTIFEX_SETUP_6854BFB_SHA256_6F532C16",
     "migration_execution": "M2_ACCEPTED_EMPTY_RUNSTORE",
-    "milestone": "M9",
-    "mode": "M9_ACCEPTED_SHIPPING_MIGRATION",
+    "milestone": "M12",
+    "mode": "M12_ACTIVE_RELEASE_CANDIDATE_REVALIDATION",
     "project_mutation": false,
     "provider_setup_migration": "M3_ACCEPTED_SECRET_FREE_PROVIDER_SETUP_SCHEMA",
     "rollback": "REMOVE_NEW_PROVIDER_SETUP_STATE_ONLY; accepted M2 RunStore and Project semantics remain authoritative",
@@ -3217,8 +3220,8 @@
       ],
       "id": "M12",
       "mandatory_for_core_ga": true,
-      "started": false,
-      "state": "READY",
+      "started": true,
+      "state": "ACTIVE",
       "title": "ARTIFEX 2.0 Product Outcome Certification & GA"
     }
   ],
@@ -3387,10 +3390,10 @@
   ],
   "program": {
     "architecture_status": "FROZEN",
-    "branch": "codex/artifex-2-m9",
+    "branch": "codex/artifex-2-m12",
     "canonical_integration_baseline": "7ca029ffe2a987ef9ffee938fe3e0dc6e9258ac2",
-    "current_milestone": "M9",
-    "current_status": "ACCEPTED",
+    "current_milestone": "M12",
+    "current_status": "ACTIVE",
     "dashboard_state": "CURRENT",
     "directory_variance": "PACKAGING_NAME_VARIANCE_ACCEPTED",
     "handoff_declared_directory": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF",
@@ -3401,6 +3404,7 @@
     "implementation_plan_status": "FROZEN",
     "intake_commit": "5cc5dcfeb420a6df171a44426c04a0f08fa1e877",
     "latest_accepted_commit": "7ca029ffe2a987ef9ffee938fe3e0dc6e9258ac2",
+    "m12_started": true,
     "m1_started": true,
     "m2_started": true,
     "m3_started": true,
@@ -3412,7 +3416,7 @@
     "m8b_started": true,
     "m8c_started": true,
     "m9_started": true,
-    "next_integration_point": "Integrate the accepted M9 baseline on canonical main, canonicalize milestone provenance, then activate M12 from that exact baseline",
+    "next_integration_point": "Freeze the exact M12 Core release claim matrix and candidate, implement the installed-native J20 qualifier, then revalidate all mandatory shipping journeys",
     "recorded_date": "2026-08-31",
     "target_release": "2.0.0"
   },
@@ -3697,21 +3701,22 @@
   },
   "schema_version": "1.0",
   "summary": {
-    "acceptance_classes_passing": 10,
+    "acceptance_classes_passing": 0,
     "acceptance_classes_required": 10,
     "active_blockers": 3,
     "adr_count": 24,
-    "current_milestone": "M9",
-    "current_milestone_progress_percent": 100,
+    "current_milestone": "M12",
+    "current_milestone_progress_percent": 0,
     "evidence_items": 205,
     "invariant_count": 34,
     "journey_states": {
+      "ACTIVE": 1,
       "BLOCKED_EXTERNAL_PREREQUISITE": 1,
-      "NOT_STARTED": 2,
+      "NOT_STARTED": 1,
       "PASS": 17
     },
     "milestones_accepted": 10,
-    "milestones_started": 12,
+    "milestones_started": 13,
     "milestones_total": 16,
     "program_progress_percent": 62,
     "provider_step_states": {
@@ -3720,10 +3725,9 @@
       "NOT_STARTED": 55,
       "PASS": 28
     },
-    "ready_milestones": [
-      "M12"
-    ],
+    "ready_milestones": [],
     "workstream_states": {
+      "ACTIVE": 1,
       "BLOCKED_EXTERNAL_PREREQUISITE": 2,
       "COMPLETE": 21
     }
@@ -4179,6 +4183,25 @@
       ],
       "state": "COMPLETE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m9"
+    },
+    {
+      "base_commit": "9556ab13c96ae009a34493e2ae9859dd3cab5543",
+      "blockers": [],
+      "branch": "codex/artifex-2-m12",
+      "id": "WS-M12-PRODUCT-OUTCOME-CERTIFICATION",
+      "integration_owner": "ARTIFEX_2_ORCHESTRATOR",
+      "milestone": "M12",
+      "owner_subagent": "ARTIFEX_2_ORCHESTRATOR",
+      "purpose": "Certify one exact shipping ARTIFEX 2.0 Core candidate through the truthful claim matrix, mandatory Journey reconciliation and J20 full lifecycle",
+      "shared_contracts": [
+        "M12-CONTRACT",
+        "M9-CONTRACT",
+        "ADR-T018",
+        "J20",
+        "FROZEN-INVARIANTS"
+      ],
+      "state": "ACTIVE",
+      "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m12"
     }
   ]
 }

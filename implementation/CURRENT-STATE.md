@@ -8,14 +8,14 @@
 - Target release: `2.0.0`
 - Handoff: `ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1`
 - Intake baseline: `5cc5dcfeb420a6df171a44426c04a0f08fa1e877`
-- Branch: `codex/artifex-2-m9`
-- Current milestone: `M9`
-- Current status: `ACCEPTED`
+- Branch: `codex/artifex-2-m12`
+- Current milestone: `M12`
+- Current status: `ACTIVE`
 - Accepted milestones: `M0, M1, M2, M3, M4, M5, M6A, M7, M8A, M9`
-- Ready milestones: `M12`
+- Ready milestones: `none`
 - Latest accepted commit: `7ca029ffe2a987ef9ffee938fe3e0dc6e9258ac2`
-- Next integration point: `Integrate the accepted M9 baseline on canonical main, canonicalize milestone provenance, then activate M12 from that exact baseline`
-- M9 started: `true`
+- Next integration point: `Freeze the exact M12 Core release claim matrix and candidate, implement the installed-native J20 qualifier, then revalidate all mandatory shipping journeys`
+- M12 started: `true`
 
 ## Work
 
@@ -27,7 +27,7 @@
 
 ## Acceptance
 
-- M9 verdict: `ACCEPTED`
-- Mandatory work complete: `true`
-- Mandatory journeys: `J09`
-- Next integration point: `Integrate the accepted M9 baseline on canonical main, canonicalize milestone provenance, then activate M12 from that exact baseline`
+- M12 verdict: `ACTIVE`
+- Mandatory work complete: `false`
+- Mandatory journeys: `J01, J02, J03, J04, J05, J06, J07, J08, J09, J10, J11, J12, J14, J15, J16, J18, J19, J20`
+- Next integration point: `Freeze the exact M12 Core release claim matrix and candidate, implement the installed-native J20 qualifier, then revalidate all mandatory shipping journeys`

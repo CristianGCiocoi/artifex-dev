@@ -356,6 +356,35 @@ contracts:
   - EVIDENCE/M9-VALIDATION.yaml
   implementation_state: ACCEPTED
   m0_baseline_state: NOT_APPLICABLE
+- id: M12-CONTRACT
+  title: M12 — ARTIFEX 2.0 Product Outcome Certification & GA
+  type: MILESTONE_CONTRACT
+  digest: 54529f748cac59ce8b57e2f9a8376fe51c515e0ffca6b0b7da51ae2cbc5a2c6a
+  digest_algorithm: sha256
+  frozen_at: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+  base_commit: 9556ab13c96ae009a34493e2ae9859dd3cab5543
+  dependencies:
+  - M4-CONTRACT
+  - M5-CONTRACT
+  - M6A-CONTRACT
+  - M7-CONTRACT
+  - M8A-CONTRACT
+  - M9-CONTRACT
+  authority_sources:
+  - MILESTONES/M12.md
+  - JOURNEYS/J20.md
+  - 09-PROVIDER-CERTIFICATION-POLICY.md
+  - 10-OUTCOME-ACCEPTANCE-POLICY.md
+  acceptance_criteria:
+  - Every Core release claim is bound to a passed mandatory Journey
+  - J20 passes through one exact installed shipping release candidate
+  - J09 is revalidated on that exact release candidate
+  - Optional unaccepted capabilities are excluded from the release manifest
+  - Release hash, provenance and signing evidence are truthful
+  evidence_references:
+  - ACCEPTANCE/M12.yaml
+  implementation_state: ACTIVE
+  m0_baseline_state: NOT_APPLICABLE
 adrs:
 - id: ADR-T001
   title: ADR-T001 — Project Authority vs Portable Semantic Representation
@@ -714,7 +743,7 @@ adrs:
   - Any implementation need to alter this decision is an Architect escalation.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: NOT_STARTED
+  implementation_state: M12_ACTIVE_OUTCOME_CERTIFICATION
   m0_baseline_state: CAPTURED
 - id: ADR-T019
   title: ADR-T019 — V1 Project Migration
@@ -734,7 +763,7 @@ adrs:
   - Any implementation need to alter this decision is an Architect escalation.
   evidence_references:
   - EVIDENCE/HANDOFF-INTEGRITY.yaml
-  implementation_state: M1_ADAPTER_ACCEPTED_M9_FINAL_ACCEPTANCE_PENDING
+  implementation_state: M9_FINAL_MIGRATION_ACCEPTED
   m0_baseline_state: CAPTURED
 - id: ADR-T020
   title: ADR-T020 — Project Catalog & Discovery

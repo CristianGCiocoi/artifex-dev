@@ -1,0 +1,24 @@
+schema_version: '1.0'
+milestone: M12
+contract_digest: 54529f748cac59ce8b57e2f9a8376fe51c515e0ffca6b0b7da51ae2cbc5a2c6a
+implementation_baseline_commit: 9556ab13c96ae009a34493e2ae9859dd3cab5543
+acceptance_commit: null
+frozen_architecture_baseline: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+mandatory_work_complete: false
+blocked: []
+superseded: []
+evidence_classes:
+  DESIGN_CONFORMANCE: {required_m12: true, status: NOT_STARTED, evidence: []}
+  COMPONENT: {required_m12: true, status: NOT_STARTED, evidence: []}
+  DOMAIN_INTEGRATION: {required_m12: true, status: NOT_STARTED, evidence: []}
+  PUBLIC_COMPOSITION: {required_m12: true, status: NOT_STARTED, evidence: []}
+  BLACK_BOX_OUTCOME: {required_m12: true, status: NOT_STARTED, evidence: []}
+  SECURITY_AUTHORITY: {required_m12: true, status: NOT_STARTED, evidence: []}
+  DOCUMENTATION: {required_m12: true, status: NOT_STARTED, evidence: []}
+  DASHBOARD: {required_m12: true, status: NOT_STARTED, evidence: []}
+  MIGRATION: {required_m12: true, status: NOT_STARTED, evidence: []}
+  PROVIDER_CERTIFICATION: {required_m12: true, status: NOT_STARTED, evidence: []}
+mandatory_journeys: [J01, J02, J03, J04, J05, J06, J07, J08, J09, J10, J11, J12, J14, J15, J16, J18, J19, J20]
+unresolved_contradiction: null
+migration: M9_ACCEPTED_RELEASE_CANDIDATE_REVALIDATION_PENDING
+verdict: ACTIVE

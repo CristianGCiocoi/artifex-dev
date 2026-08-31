@@ -297,9 +297,10 @@ journeys:
   blocker: null
 - id: J20
   title: J20 — FULL ARTIFEX PROJECT LIFECYCLE
-  status: NOT_STARTED
-  environment: null
-  public_shipping_composition: null
-  evidence: []
+  status: ACTIVE
+  environment: EXACT_M12_RELEASE_CANDIDATE_QUALIFICATION_ENVIRONMENT_PENDING
+  public_shipping_composition: INSTALLED_NATIVE_PUBLIC_COMPOSITION_PENDING
+  evidence:
+  - ACCEPTANCE/M12.yaml
   last_run: null
-  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+  blocker: null
