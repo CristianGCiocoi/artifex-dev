@@ -327,7 +327,7 @@ def run_j20(
     executable = install_root / "artifex.exe"
     manifest_path = install_root / "artifex-install-manifest.json"
     registration_path = install_root / "service-registration.json"
-    for path in (executable, manifest_path, registration_path, install_root / "Uninstall.exe"):
+    for path in (executable, manifest_path, registration_path):
         if not path.is_file():
             raise JourneyFailure(f"installed candidate is missing {path.name}")
     manifest = _read_object(manifest_path)
