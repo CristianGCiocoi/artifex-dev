@@ -208,19 +208,28 @@ def _provider_interaction(
     state_root: Path,
 ) -> None:
     marker = f"ARTIFEX_M12 provider={provider_id} project={project_id} revision={revision}"
-    result = _value(
-        cli.service_call(
-            "providers.interact",
-            {
-                "provider_id": provider_id,
-                "project_id": project_id,
-                "role": "INTERACTION",
-                "prompt": f"Return exactly: {marker}. Do not call tools or modify files.",
-            },
-            project_root=project_root,
-            state_root=state_root,
-        )
-    ).get("interaction")
+    response: Mapping[str, Any] | None = None
+    for attempt in range(3):
+        try:
+            response = cli.service_call(
+                "providers.interact",
+                {
+                    "provider_id": provider_id,
+                    "project_id": project_id,
+                    "role": "INTERACTION",
+                    "prompt": f"Return exactly: {marker}. Do not call tools or modify files.",
+                },
+                project_root=project_root,
+                state_root=state_root,
+            )
+            break
+        except JourneyFailure as exc:
+            if "exited with 3221226505" not in str(exc) or attempt == 2:
+                raise
+            time.sleep(2)
+    if response is None:
+        raise JourneyFailure(f"{provider_id} interaction produced no public response")
+    result = _value(response).get("interaction")
     if (
         not isinstance(result, Mapping)
         or result.get("provider_id") != provider_id
