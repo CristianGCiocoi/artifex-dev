@@ -858,7 +858,7 @@ def test_codex_process_runner_materializes_secure_bounded_exec_and_parses_result
     assert isinstance(arguments, list)
     assert arguments[:4] == ["npx", "--yes", "@openai/codex@0.150.1", "exec"]
     if os.name == "nt":
-        assert arguments[arguments.index("-c") + 1] == 'windows.sandbox="unelevated"'
+        assert arguments[arguments.index("-c") + 1] == 'windows.sandbox="elevated"'
     assert arguments[arguments.index("--sandbox") + 1] == "workspace-write"
     assert "--ephemeral" in arguments
     assert "--json" in arguments

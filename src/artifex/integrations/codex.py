@@ -411,9 +411,10 @@ class CodexProcessRunner:
 
         schema = _codex_execution_result_schema(plan.packet)
         # Keep Codex-managed structured I/O inside the already authorized
-        # Execution Workspace.  In the supported Windows unelevated sandbox,
-        # an arbitrary system-temp result path is outside the filesystem ACL
-        # boundary and cannot be written by the worker process.
+        # Execution Workspace.  The administrator-provisioned Windows sandbox
+        # still runs the provider from the least-privilege ARTIFEX service, and
+        # an arbitrary system-temp result path remains outside its workspace
+        # filesystem boundary.
         with tempfile.TemporaryDirectory(
             prefix=".artifex-codex-", dir=root, ignore_cleanup_errors=True
         ) as temporary:
@@ -965,7 +966,7 @@ def _codex_exec_command(command_prefix: Sequence[str], root: Path, prompt: str) 
 
 
 def _windows_sandbox_override() -> tuple[str, ...]:
-    return ("-c", 'windows.sandbox="unelevated"') if os.name == "nt" else ()
+    return ("-c", 'windows.sandbox="elevated"') if os.name == "nt" else ()
 
 
 def _codex_execution_result_schema(packet: ExecutionPacket) -> Mapping[str, Any]:

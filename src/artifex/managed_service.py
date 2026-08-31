@@ -101,12 +101,11 @@ def _managed_workspace_root(
     """Keep Windows provider sandboxes outside the private RunStore DACL tree.
 
     The Windows managed-service state root is intentionally restricted to the
-    current user and LocalSystem.  Codex's supported unelevated sandbox runs
-    under a per-workspace capability SID, so a workspace nested beneath that
-    private root is not traversable even after Codex authorizes the workspace
-    leaf.  A deterministic sibling remains service-owned and isolated while
-    preserving the private ACL boundary around RunStore, fencing and transport
-    credentials.
+    current user and LocalSystem. Codex's native Windows sandbox runs under a
+    dedicated sandbox identity, so a workspace nested beneath that private root
+    is not traversable even after Codex authorizes the workspace leaf. A
+    deterministic sibling remains service-owned and isolated while preserving
+    the private ACL boundary around RunStore, fencing and transport credentials.
     """
 
     if platform_name == "nt":
