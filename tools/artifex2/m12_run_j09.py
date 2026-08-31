@@ -8,7 +8,6 @@ import sys
 import traceback
 from pathlib import Path
 
-
 MEDIA_ROOT = Path(r"C:\ARTIFEX-M12-Media")
 USER_ROOT = Path(r"C:\Users\crugger\AppData\Local")
 HARNESS = MEDIA_ROOT / "qualify_m9_black_box.py"
@@ -73,7 +72,7 @@ def main() -> None:
             exit_code=code,
         )
         raise
-    except BaseException:  # noqa: BLE001 - evidence wrapper must retain the failure class
+    except BaseException:
         _write_diagnostic(
             status="FAIL",
             exit_code=1,
