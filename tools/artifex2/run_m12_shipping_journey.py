@@ -729,7 +729,9 @@ def run_j20(
                 **common,
                 "project_id": project_id,
                 "run_id": run_id,
-                "question": "May the accepted release outcome change its public architecture?",
+                "question": (
+                    "May execution continue while preserving the accepted public architecture?"
+                ),
                 "affected_workstreams": [workstream_id],
                 "materiality": "STRATEGIC_MATERIAL",
                 "actor": _principal(
@@ -755,8 +757,8 @@ def run_j20(
         {
             **common,
             "decision_request_id": decision_request["decision_request_id"],
-            "outcome": "REJECT",
-            "resolution": "Preserve the accepted ARTIFEX 2.0 public architecture",
+            "outcome": "APPROVE",
+            "resolution": "Continue without changing the accepted ARTIFEX 2.0 architecture",
             "actor": _principal(
                 "m12-release-owner", "USER", "governance:resolve-decision"
             ),
