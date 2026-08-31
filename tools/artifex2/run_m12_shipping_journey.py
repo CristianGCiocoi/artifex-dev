@@ -63,6 +63,32 @@ def _provider_spec(provider_id: str, command: Path) -> dict[str, Any]:
     }
 
 
+def _start_managed_service(cli: ShippingCLI, state_root: Path) -> None:
+    environment = os.environ.copy()
+    environment.pop("PYTHONPATH", None)
+    environment["PYTHONNOUSERSITE"] = "1"
+    subprocess.Popen(
+        [
+            str(cli.executable),
+            "service",
+            "serve",
+            "--state-root",
+            str(state_root),
+            "--service-id",
+            "artifex-managed-service",
+        ],
+        cwd=cli.cwd,
+        env=environment,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        creationflags=(
+            getattr(subprocess, "CREATE_NO_WINDOW", 0)
+            | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
+        ),
+    )
+
+
 def _envelope(
     *,
     project_id: str,
@@ -378,7 +404,7 @@ def run_j20(
 
     cli.direct("service.stop", ["service", "stop", "--state-root", str(state_root)])
     _wait_for_process_exit(int(before["process_id"]))
-    cli.direct("service.start", ["service", "start", "--state-root", str(state_root)])
+    _start_managed_service(cli, state_root)
     after_setup = _running_service_value(
         _wait_for_service(cli, state_root, prior_process_id=int(before["process_id"]))
     )
@@ -874,7 +900,7 @@ def run_j20(
     )
     cli.direct("service.stop", ["service", "stop", "--state-root", str(state_root)])
     _wait_for_process_exit(int(before_restart["process_id"]))
-    cli.direct("service.start", ["service", "start", "--state-root", str(state_root)])
+    _start_managed_service(cli, state_root)
     after_restart = _running_service_value(
         _wait_for_service(
             cli,
