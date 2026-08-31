@@ -357,6 +357,55 @@ class CodexProcessError(IntegrationError):
         super().__init__(f"Codex execution outcome is UNKNOWN: {reason}")
 
 
+WorkspacePreparer = Callable[[Path], None]
+
+
+def prepare_codex_workspace(
+    root: Path,
+    *,
+    platform_name: str = os.name,
+    computer_name: str | None = None,
+    runner: Callable[..., subprocess.CompletedProcess[str]] = subprocess.run,
+) -> None:
+    """Grant the provisioned Windows sandbox write access to one bound workspace."""
+
+    if platform_name != "nt":
+        return
+    machine = computer_name if computer_name is not None else os.environ.get("COMPUTERNAME")
+    principal = f"{machine}\\CodexSandboxUsers" if machine else "CodexSandboxUsers"
+    commands = (
+        (
+            "icacls.exe",
+            str(root),
+            "/grant:r",
+            f"{principal}:(OI)(CI)M",
+        ),
+        ("icacls.exe", str(root), "/verify"),
+    )
+    for command in commands:
+        try:
+            completed = runner(
+                list(command),
+                check=False,
+                stdin=subprocess.DEVNULL,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=15,
+                shell=False,
+                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+            )
+        except (OSError, subprocess.SubprocessError):
+            raise CodexProcessError(
+                "Windows sandbox workspace ACL could not be prepared"
+            ) from None
+        if completed.returncode != 0:
+            raise CodexProcessError(
+                "Windows sandbox workspace ACL could not be prepared"
+            )
+
+
 @dataclass(frozen=True, slots=True)
 class CodexProcessRunner:
     """Bounded, fail-closed runner for one ephemeral Codex ``exec`` process.
@@ -371,6 +420,7 @@ class CodexProcessRunner:
     timeout_seconds: float = 900.0
     max_output_bytes: int = _DEFAULT_CODEX_OUTPUT_BYTES
     process_runner: ProcessRunner = subprocess.run
+    workspace_preparer: WorkspacePreparer = prepare_codex_workspace
 
     def __post_init__(self) -> None:
         command = _validate_codex_command_prefix(self.command)
@@ -408,6 +458,7 @@ class CodexProcessRunner:
         expected = _codex_exec_command(self.command, root, plan.prompt)
         if plan.command != expected:
             raise CodexProcessError("prepared command does not match the bound execution plan")
+        self.workspace_preparer(root)
 
         schema = _codex_execution_result_schema(plan.packet)
         # Keep Codex-managed structured I/O inside the already authorized

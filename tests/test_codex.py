@@ -26,6 +26,7 @@ from artifex.integrations.codex import (
     create_codex_application,
     detect_codex,
     discover_agents_hierarchy,
+    prepare_codex_workspace,
     render_agents_shim,
 )
 from artifex.integrations.conformance import IntegrationConformanceSuite
@@ -82,6 +83,54 @@ def _completed(
     returncode: int = 0,
 ) -> subprocess.CompletedProcess[str]:
     return subprocess.CompletedProcess(arguments, returncode, stdout, stderr)
+
+
+def test_windows_workspace_preparer_grants_only_the_bound_root(tmp_path: Path) -> None:
+    observed: list[tuple[list[str], dict[str, object]]] = []
+
+    def run(arguments: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        observed.append((arguments, kwargs))
+        return subprocess.CompletedProcess(arguments, 0, "", "")
+
+    root = tmp_path / "execution-workspace"
+    root.mkdir()
+    prepare_codex_workspace(
+        root,
+        platform_name="nt",
+        computer_name="M7-WIN-BASE",
+        runner=run,
+    )
+
+    assert [item[0] for item in observed] == [
+        [
+            "icacls.exe",
+            str(root),
+            "/grant:r",
+            "M7-WIN-BASE\\CodexSandboxUsers:(OI)(CI)M",
+        ],
+        ["icacls.exe", str(root), "/verify"],
+    ]
+    assert all(item[1]["shell"] is False for item in observed)
+    assert all(item[1]["timeout"] == 15 for item in observed)
+
+
+def test_windows_workspace_preparer_fails_closed_without_diagnostics(
+    tmp_path: Path,
+) -> None:
+    marker = "credential-like-diagnostic-must-not-escape"
+
+    def reject(arguments: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(arguments, 5, marker, marker)
+
+    with pytest.raises(CodexProcessError) as failure:
+        prepare_codex_workspace(
+            tmp_path,
+            platform_name="nt",
+            computer_name="M7-WIN-BASE",
+            runner=reject,
+        )
+
+    assert marker not in str(failure.value)
 
 
 def _git(root: Path, *arguments: str) -> str:
@@ -849,6 +898,7 @@ def test_codex_process_runner_materializes_secure_bounded_exec_and_parses_result
         ("npx", "--yes", "@openai/codex@0.150.1"),
         timeout_seconds=30,
         process_runner=process,
+        workspace_preparer=lambda _root: None,
     )
     result = runner(plan)
 
@@ -895,7 +945,11 @@ def test_codex_process_runner_maps_uncertain_process_outcomes_to_sanitized_unkno
             raise subprocess.TimeoutExpired(arguments, timeout=1, stderr=secret)
         return _completed(arguments, stderr=secret, returncode=17)
 
-    runner = CodexProcessRunner(("npx", "--yes", "@openai/codex@0.150.1"), process_runner=process)
+    runner = CodexProcessRunner(
+        ("npx", "--yes", "@openai/codex@0.150.1"),
+        process_runner=process,
+        workspace_preparer=lambda _root: None,
+    )
     with pytest.raises(CodexProcessError) as captured:
         runner(plan)
     assert captured.value.outcome == "UNKNOWN"
@@ -923,6 +977,10 @@ def test_codex_process_runner_rejects_malformed_ambiguous_or_unbound_results(
         result_path.write_text(result_text, encoding="utf-8")
         return _completed(arguments, stdout=stdout)
 
-    runner = CodexProcessRunner(("npx", "--yes", "@openai/codex@0.150.1"), process_runner=process)
+    runner = CodexProcessRunner(
+        ("npx", "--yes", "@openai/codex@0.150.1"),
+        process_runner=process,
+        workspace_preparer=lambda _root: None,
+    )
     with pytest.raises(CodexProcessError, match="UNKNOWN"):
         runner(plan)

@@ -267,7 +267,9 @@ def test_public_provider_execution_is_bound_evidenced_and_not_accepted(
     application = Application(
         provider_loader=_provider_loader(),
         codex_runner_factory=lambda command: CodexProcessRunner(
-            command=command, process_runner=process_runner
+            command=command,
+            process_runner=process_runner,
+            workspace_preparer=lambda _root: None,
         ),
     )
     result = application.dispatch(
@@ -383,7 +385,9 @@ def test_public_provider_timeout_is_durably_unknown(tmp_path: Path) -> None:
     application = Application(
         provider_loader=_provider_loader(),
         codex_runner_factory=lambda command: CodexProcessRunner(
-            command=command, process_runner=process_runner
+            command=command,
+            process_runner=process_runner,
+            workspace_preparer=lambda _root: None,
         ),
     )
     result = application.dispatch(
@@ -434,7 +438,9 @@ def test_public_provider_blocked_result_is_durably_observed_not_unknown(tmp_path
     application = Application(
         provider_loader=_provider_loader(),
         codex_runner_factory=lambda command: CodexProcessRunner(
-            command=command, process_runner=process_runner
+            command=command,
+            process_runner=process_runner,
+            workspace_preparer=lambda _root: None,
         ),
     )
     result = application.dispatch(
