@@ -29,7 +29,6 @@ from tools.artifex2.run_m7_shipping_journey import (
     _principal,
     _provider_workspace_root,
     _read_object,
-    _restart_registered_windows_task,
     _role_states,
     _running_service_value,
     _value,
@@ -379,7 +378,7 @@ def run_j20(
 
     cli.direct("service.stop", ["service", "stop", "--state-root", str(state_root)])
     _wait_for_process_exit(int(before["process_id"]))
-    _restart_registered_windows_task(runner=subprocess.run)
+    cli.direct("service.start", ["service", "start", "--state-root", str(state_root)])
     after_setup = _running_service_value(
         _wait_for_service(cli, state_root, prior_process_id=int(before["process_id"]))
     )
@@ -875,7 +874,7 @@ def run_j20(
     )
     cli.direct("service.stop", ["service", "stop", "--state-root", str(state_root)])
     _wait_for_process_exit(int(before_restart["process_id"]))
-    _restart_registered_windows_task(runner=subprocess.run)
+    cli.direct("service.start", ["service", "start", "--state-root", str(state_root)])
     after_restart = _running_service_value(
         _wait_for_service(
             cli,
