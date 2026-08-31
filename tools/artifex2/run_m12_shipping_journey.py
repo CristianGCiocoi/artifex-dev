@@ -946,8 +946,12 @@ def run_j20(
             state_root=state_root,
         )
     )
+    continued_project = continued.get("project")
+    continued_project_id = (
+        continued_project.get("id") if isinstance(continued_project, Mapping) else None
+    )
     if (
-        continued.get("project_id") != project_id
+        continued_project_id != project_id
         or int(continued.get("semantic_revision", 0)) != promotion_revision
         or restored["run"]["run_id"] != run_id
     ):
