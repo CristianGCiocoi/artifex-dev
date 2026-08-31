@@ -3,6 +3,16 @@ param()
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
+$wrapperErrorLog = 'C:\ARTIFEX-M12-J09-wrapper-error.log'
+
+trap {
+    [System.IO.File]::WriteAllText(
+        $wrapperErrorLog,
+        ($_ | Out-String),
+        [System.Text.UTF8Encoding]::new($false)
+    )
+    exit 1
+}
 
 $python = 'C:\Program Files\Python312\python.exe'
 $harness = 'E:\qualify_m9_black_box.py'
@@ -24,6 +34,7 @@ $expected = [ordered]@{
     failed_root = 'C:\ARTIFEX-M12-J09-ATTEMPT1-FAIL'
     output = 'C:\ARTIFEX-M12-J09-PASS.json'
     log = 'C:\ARTIFEX-M12-J09.log'
+    wrapper_error_log = 'C:\ARTIFEX-M12-J09-wrapper-error.log'
 }
 $actual = [ordered]@{
     python = $python
@@ -35,6 +46,7 @@ $actual = [ordered]@{
     failed_root = $failedRoot
     output = $output
     log = $log
+    wrapper_error_log = $wrapperErrorLog
 }
 foreach ($name in $expected.Keys) {
     $resolved = [System.IO.Path]::GetFullPath($actual[$name])
