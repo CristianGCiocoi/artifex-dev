@@ -1,0 +1,12 @@
+{
+  "credential_material_extracted": false,
+  "duration_seconds": 38.203,
+  "install_manifest_present": true,
+  "installed_executable_present": true,
+  "process_exit_code": 0,
+  "schema_version": "1.0",
+  "service_registration_present": true,
+  "status": "PASS",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_sha256": "02bf6fddac009be55a149dc2bf8c8ac118268843cb666b5d91a07f9775f911d8"
+}

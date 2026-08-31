@@ -1,0 +1,81 @@
+schema_version: '1.0'
+evidence_id: EVD-M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V21
+recorded_date: '2026-08-31'
+scope: SINGLE_EXACT_CODEX_0151_UNELEVATED_SANDBOX_BOUND_SHIPPING_CANDIDATE_FOR_ALL_M7_WINDOWS_CORE_CELLS
+authority:
+  decision: ARCHITECT_PRODUCT_PACKAGING_DISPOSITION
+  decision_sha256: d3cf45b8589992abc8acb6f86f00a85d426b4ef94d8f88009be081d52a4a36ca
+  primary_packaging: NUITKA_STANDALONE_PLUS_NSIS
+  onefile_authorized: false
+  fallback_invoked: false
+artifact:
+  name: ARTIFEX-Setup.exe
+  sha256: 74c99dff2c18a9b0da42b36746d6ab0425e5811898d9d879190e28ddf9fe9ddb
+  bytes: 23184318
+  format: nuitka-standalone+nsis
+  source_commit: 777cd3a6bdc3ce64be41f2af598e6b54cc69199a
+  product_version: 1.0.0
+  platform: windows
+  architecture: x86_64
+  nuitka_version: '4.2'
+  nsis_version: '3.12'
+  python_version: 3.12.13
+  standalone_executable_sha256: 6cfd14c4be2915b3f8374cf5cbac6b2ecfb9e070b9febf91d899e32dd16e8cfe
+  bundle_file_inventory_count: 80
+  provenance_sha256: a5696f42033448d309e3c9b56a08be1c69e3f7acaa2f150a7a3649061b50556b
+  qualification_harness_source_commit: 777cd3a6bdc3ce64be41f2af598e6b54cc69199a
+  qualification_harness_sha256: 2d98ae91cbac378c8a79a55d824de871657ab2f628a8ba776ead7b570d035808
+  qualification_runner_sha256: c70b73e656f4ff715c9fabe698086c23d08af7d9a87d0d23a65ccc9361c57a3e
+  independent_qualifier_sha256: 4986db2915019207b3a42c4dd3b16e3e44e790a466279ce0e853b66256f0f6a6
+  matrix_validator_sha256: f5e6ed38901ae8f9c1275dd2fb4eac560576cafcbdcea2c557d7a9654c496f2c
+codex_provider_binding:
+  qualified_version: codex-cli 0.151.0
+  executable_sha256: cf68265897197ac5f3bff6a10c168eec159842b353129726da5e3ed6b91ef0f4
+  official_package_sha1: d4b6c32d1edd57d059d589209bd4bf401263fd79
+  official_package_sha512: b0b4fbc6f203de3854ead93373044f9cc11c94a47050f6e9a349ad7f1205f4aa5d647dd5255eec336fe45d65f2bd433b66dfd87b239a7804d3132b1b473f18a2
+  sandbox: unelevated
+  install_evidence: EVIDENCE/M7-WINDOWS-CODEX-VM105-INSTALL-0151.json
+  direct_probe_evidence: EVIDENCE/M7-WINDOWS-CODEX-UNELEVATED-SANDBOX-COMMAND-V151-PASS.json
+defect_remediation:
+  source_failures:
+  - EVIDENCE/M7-WINDOWS-CODEX-VM105-V20-RUNTIME-STATUS-FAIL.json
+  - EVIDENCE/M7-WINDOWS-CODEX-VM105-V20-PROVIDER-PROCESS-ATTEMPT2-FAIL.json
+  - EVIDENCE/M7-WINDOWS-CODEX-ELEVATED-SANDBOX-COMMAND-V151-FAIL.json
+  confirming_evidence:
+  - EVIDENCE/M7-WINDOWS-CODEX-ELEVATED-SANDBOX-SETUP-V151.json
+  - EVIDENCE/M7-WINDOWS-CODEX-UNELEVATED-SANDBOX-COMMAND-V151-PASS.json
+  classification: CODEX_0150_AND_0151_ELEVATED_SANDBOX_NATIVE_INSTABILITY
+  selected_supported_path: CODEX_0151_UNELEVATED
+  workspace_acl_scope: VERIFIED_EXECUTION_WORKSPACE_ONLY
+  artifex_service_elevated: false
+  least_privilege_provider_execution_preserved: true
+  journey_contract_weakened: false
+build_validation:
+  command: uv run --python 3.12 python packaging/build_windows_installer.py --clean --smoke
+  result: PASS
+  focused_codex_m7_tests: 70_PASS
+  final_full_validation: PASS_CURRENT_SOURCE_M7_AND_CONTROL_PLANE_SCOPE
+  ruff: PASS
+  mypy_strict: PASS_93_SOURCE_FILES
+  control_plane: PASS_CURRENT_M7_100_PERCENT
+  m7_tests: 102_PASS
+  control_plane_tests: 7_PASS
+  matrix_validation: PASS
+security_preflight:
+  developer_host:
+    evidence: EVIDENCE/M7-WINDOWS-V21-HOST-DEFENDER-PREFLIGHT.json
+    microsoft_defender_realtime_enabled: true
+    custom_scan: PASS_ZERO_DETECTIONS
+    candidate_retained: true
+qualification_state:
+  M7-WIN-NOPROVIDER: PASS_J10
+  M7-WIN-CODEX: PASS_J01_J16
+  M7-WIN-CLAUDE: PASS_J02_J16
+  m7_status: ACCEPTED
+  active_blockers: []
+historical_evidence_preserved:
+- EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V20.yaml
+- EVIDENCE/M7-WINDOWS-CODEX-VM105-V20-RUNTIME-STATUS-FAIL.json
+- EVIDENCE/M7-WINDOWS-CODEX-VM105-V20-PROVIDER-PROCESS-ATTEMPT2-FAIL.json
+- EVIDENCE/M7-WINDOWS-CODEX-ELEVATED-SANDBOX-COMMAND-V151-FAIL.json
+verdict: M7_WINDOWS_CORE_V21_ACCEPTED_ALL_REQUIRED_CELLS_PASS

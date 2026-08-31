@@ -1,0 +1,6 @@
+{
+  "diagnostic": "operating-system failure during provider-shipping-installer",
+  "error": "TimeoutExpired",
+  "schema_version": "1.0",
+  "status": "FAIL"
+}

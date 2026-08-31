@@ -1,0 +1,63 @@
+schema_version: '1.0'
+evidence_id: EVD-M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V15
+recorded_date: '2026-08-31'
+scope: SINGLE_EXACT_COLD_START_REMEDIATED_SHIPPING_CANDIDATE_FOR_ALL_M7_WINDOWS_CORE_CELLS
+authority:
+  decision: ARCHITECT_PRODUCT_PACKAGING_DISPOSITION
+  decision_sha256: d3cf45b8589992abc8acb6f86f00a85d426b4ef94d8f88009be081d52a4a36ca
+  primary_packaging: NUITKA_STANDALONE_PLUS_NSIS
+  onefile_authorized: false
+  fallback_invoked: false
+artifact:
+  name: ARTIFEX-Setup.exe
+  sha256: d2eca5a686daca7c58239618e03940dba30b2025fadc56d96e907ddb4b72d40f
+  bytes: 16153440
+  format: nuitka-standalone+nsis
+  source_commit: 55143b243291c7ce65b20cede877b01e5bf8ba60
+  product_version: 1.0.0
+  platform: windows
+  architecture: x86_64
+  nuitka_version: '4.2'
+  nsis_version: '3.12'
+  python_version: 3.12.13
+  standalone_executable_sha256: d7d5ddcbffdcce9f3818801aa8a1cd00b2253343da57de3bd3369604329823a5
+  bundle_file_inventory_count: 80
+  provenance_sha256: 8d3bcb62e1259317259b3e8943a54ee05ce4c7d1b845351293744d69d24c4084
+  qualification_harness_source_commit: 31b86866f653a2b6fae1d1595bedae14bdc622e7
+  qualification_harness_sha256: 875d497095abe871fe6347930e7fb5194ddc74206042d7d2b0837b5c9fb0ee12
+  qualification_runner_sha256: c70b73e656f4ff715c9fabe698086c23d08af7d9a87d0d23a65ccc9361c57a3e
+defect_remediation:
+  source_failure: EVIDENCE/M7-WINDOWS-CODEX-VM105-V14-INSTALLER-TIMEOUT-DIAGNOSTIC.json
+  classification: WINDOWS_COLD_START_IDENTITY_PROBE_TIMEOUT
+  identity_probe_required: true
+  previous_timeout_seconds: 10
+  remediated_timeout_seconds: 60
+  timeout_bounded: true
+  fail_closed_identity_validation_preserved: true
+  journey_installer_timeout_seconds: 180
+  journey_contract_changed: false
+build_validation:
+  command: uv run --python 3.12 python packaging/build_windows_installer.py --clean --smoke
+  result: PASS
+  m0_m6a_m7_distribution_tests: 164_PASS_7_SKIP_SYMLINK_UNAVAILABLE
+  ruff: PASS_TRACKED_SOURCE_TEST_TOOL_PACKAGING_SCRIPT_SCOPE
+  mypy_strict: PASS_93_SOURCE_FILES
+  control_plane: PASS
+security_preflight:
+  developer_host:
+    evidence: EVIDENCE/M7-WINDOWS-V15-HOST-DEFENDER-PREFLIGHT.json
+    microsoft_defender_realtime_enabled: true
+    custom_scan: PASS_ZERO_DETECTIONS
+    candidate_retained: true
+qualification_state:
+  M7-WIN-NOPROVIDER: READY_V15_REBIND
+  M7-WIN-CODEX: READY_V15_REBIND
+  M7-WIN-CLAUDE: READY_V15_REBIND
+  m7_status: ACTIVE
+  active_blockers: []
+historical_evidence_preserved:
+- EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V14.yaml
+- EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V14-PASS.json
+- EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V14-PASS.json
+- EVIDENCE/M7-WINDOWS-CODEX-VM105-V14-INSTALLER-TIMEOUT-DIAGNOSTIC.json
+verdict: V15_CANDIDATE_READY_FOR_ALL_THREE_WINDOWS_CORE_CELLS

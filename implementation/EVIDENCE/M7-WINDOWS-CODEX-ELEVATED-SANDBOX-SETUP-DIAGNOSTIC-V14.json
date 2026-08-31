@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0",
+  "status": "RESOLVED",
+  "vm_id": 105,
+  "provider": "codex",
+  "provider_version": "codex-cli 0.150.1",
+  "provider_executable_sha256": "cbd657ddfe151d1a6ebad660beffdbd3265dc5aff4b3a6095124d3e2f0156f2f",
+  "source_snapshot_name": "m7-codex-provider-ready-v13",
+  "recovery_snapshot_name": "m7-codex-pre-elevated-sandbox-v14",
+  "configuration": {
+    "windows_sandbox": "elevated",
+    "project_binding_preserved": true,
+    "credential_material_extracted": false
+  },
+  "administrator_setup": {
+    "method": "linked elevated token from the active Crugger RDP session, launched by the QEMU Guest Agent SYSTEM authority",
+    "artifex_service_elevated": false,
+    "setup_marker_exists": true,
+    "setup_marker_bytes": 255,
+    "setup_marker_sha256": "aada5c4150429e99c1be0e50e617107f3e9c48f37dca57771ce2370a16ee343c",
+    "sandbox_group": "CodexSandboxUsers",
+    "sandbox_users": [
+      "CodexSandboxOffline",
+      "CodexSandboxOnline"
+    ],
+    "offline_firewall_setup_logged": true,
+    "wfp_setup_logged": true,
+    "wfp_installed_filter_count": 12,
+    "sandbox_log_name": "sandbox.2026-08-31.log",
+    "sandbox_log_bytes_after_least_privilege_probe": 9915,
+    "sandbox_log_sha256_after_least_privilege_probe": "1a8e339360039f6a26204fd1eae22bc010e14ff0bad7551d01e1e12e2501296d"
+  },
+  "bounded_setup_command": {
+    "returncode": 0,
+    "response_exact": true,
+    "probe_exact": true,
+    "probe_sha256": "f04c4b02de36923f8b5dfe3812a834fc53347ee67a35a73a6ee8a1840d559dea"
+  },
+  "least_privilege_control": {
+    "task_run_level": "least_privilege",
+    "task_high_integrity": false,
+    "returncode": 0,
+    "response_exact": true,
+    "probe_exact": true,
+    "probe_sha256": "1cb04e153a66fb55e0471d198092bd8fae2ba47e27a35302cb1d662faac16c86",
+    "result": "PASS"
+  },
+  "preserved_negative_observations": [
+    {
+      "context": "highest-run-level scheduled task with no sandboxed command",
+      "provider_returncode": 0,
+      "sandbox_setup_triggered": false,
+      "disposition": "diagnostic_only"
+    },
+    {
+      "context": "highest-run-level scheduled task with a sandboxed command but without an interactive logon SID",
+      "provider_returncode": 3221226505,
+      "provider_returncode_hex": "0xc0000409",
+      "sandbox_setup_triggered": false,
+      "disposition": "preserved_environment_regression"
+    }
+  ],
+  "conclusion": "The administrator-owned interactive setup provisioned the native elevated sandbox. A subsequent least-privilege scheduled task executed a real sandboxed Codex command successfully without elevating ARTIFEX."
+}

@@ -12,10 +12,10 @@ program:
   intake_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
   branch: codex/artifex-2-m7-qualification-live
   current_milestone: M7
-  current_status: ACTIVE
+  current_status: ACCEPTED
   latest_accepted_commit: d7fa3c4ad419bd97e401ad765128dc3560484d90
   canonical_integration_baseline: 2ea4a38e1bc18a2aa3535a1d224f508ca6561d88
-  next_integration_point: Approve administrator-owned Codex native elevated-sandbox setup on VM105 while the ARTIFEX service stays least privilege, then run one candidate-bound Codex J01 and J16 qualification
+  next_integration_point: Integrate the accepted M7 baseline on canonical main, canonicalize milestone provenance, then activate M9 from that exact baseline
   m1_started: true
   m2_started: true
   m3_started: true
@@ -81,9 +81,9 @@ milestone_states:
     started: false
     accepted: false
   M7:
-    state: ACTIVE
+    state: ACCEPTED
     started: true
-    accepted: false
+    accepted: true
   M8A:
     state: ACCEPTED
     started: true
@@ -97,7 +97,7 @@ milestone_states:
     started: true
     accepted: false
   M9:
-    state: BLOCKED_DEPENDENCY
+    state: READY
     started: false
     accepted: false
   M10:

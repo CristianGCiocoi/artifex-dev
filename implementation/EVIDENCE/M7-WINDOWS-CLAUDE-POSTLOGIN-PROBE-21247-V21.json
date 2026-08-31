@@ -1,0 +1,17 @@
+{
+  "credential_files_read": false,
+  "credential_material_extracted": false,
+  "project_unchanged": true,
+  "provider": "claude",
+  "provider_executable_sha256": "00e5be0a8b69893cad9259a1e8b80d59be8f3eb367d4a16c19f91bcd279423b7",
+  "provider_version": "2.1.247 (Claude Code)",
+  "response_exact": true,
+  "returncode": 0,
+  "schema_version": "1.0",
+  "secret_shaped_output": false,
+  "status": "PASS",
+  "stderr_bytes": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_bytes": 2042,
+  "stdout_sha256": "c8f0938dcc8679d12fcebe17a0d896d615d104aa3d31d7af2ee92616290b861e"
+}

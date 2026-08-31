@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "status": "FAIL_EXPECTED_DIAGNOSTIC",
+  "scope": "exact V17 inner lifecycle using shipping system paths after deterministic NSIS failure",
+  "vm_id": 105,
+  "candidate_sha256": "dc822f3fd87f61d5a385b986bc08bd1e619faf9120aad5a6300340f9549e4d10",
+  "standalone_executable_sha256": "cf05628f2810f84a1cd23f7973af39142216b61e98d33248d5957ed5c050b96a",
+  "process_exit_code": 1,
+  "duration_seconds": 5.984,
+  "diagnostic_code": "STALE_ARTIFEX_INSTALL_SECURITY_KEY",
+  "diagnostic": "installation security key already exists",
+  "stale_root": "C:\\Users\\Crugger\\AppData\\Local\\ARTIFEX",
+  "provider_ready_v17_attestation_invalidated": true,
+  "credential_material_extracted": false,
+  "verdict": "PROVIDER_READY_BASE_CONTAMINATED_BY_PRIOR_ARTIFEX_TEST_ARTIFACT"
+}

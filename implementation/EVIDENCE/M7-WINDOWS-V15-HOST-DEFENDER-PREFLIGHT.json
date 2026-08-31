@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "status": "PASS",
+  "scope": "developer-host exact V15 Windows shipping candidate security preflight",
+  "candidate_sha256": "d2eca5a686daca7c58239618e03940dba30b2025fadc56d96e907ddb4b72d40f",
+  "source_commit": "55143b243291c7ce65b20cede877b01e5bf8ba60",
+  "microsoft_defender_antivirus_enabled": true,
+  "microsoft_defender_realtime_enabled": true,
+  "custom_scan_detection_count": 0,
+  "candidate_retained": true,
+  "exclusions_added": false
+}

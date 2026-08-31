@@ -1,0 +1,304 @@
+{
+  "candidate": {
+    "artifact_bytes": 23184318,
+    "artifact_name": "ARTIFEX-Setup.exe",
+    "artifact_sha256": "74c99dff2c18a9b0da42b36746d6ab0425e5811898d9d879190e28ddf9fe9ddb",
+    "contract_digest": "3eac41de4cacf7be80aab12e478b99ec7c5066dccddfff6ca00a03cf5a157d48",
+    "product_disposition_sha256": "17ed830e83f6e6ed8654d4385bd4ef224e75d67fe79ca415c35f6f5dff4020d2",
+    "source_commit": "777cd3a6bdc3ce64be41f2af598e6b54cc69199a"
+  },
+  "cell": {
+    "absent_providers": [
+      "codex"
+    ],
+    "architecture": "x86_64",
+    "display_version": "25H2",
+    "id": "M7-WIN-CLAUDE",
+    "journeys": [
+      "J02",
+      "J16"
+    ],
+    "mode": "STANDALONE",
+    "os": "Windows 11",
+    "provider": "claude",
+    "support_tier": "CORE"
+  },
+  "clean_machine": {
+    "first_boot": true,
+    "os_build": "26200",
+    "prior_artifex_absent": true,
+    "prior_service_absent": true,
+    "prior_state_root_absent": true,
+    "snapshot_identity_sha256": "438739d5e6b0c672fcb41d0eb403771f1e9c2cc3fe6a1faed8f0b8fc809bd791",
+    "source_checkout_absent": true,
+    "ubr": 9168
+  },
+  "composition": {
+    "atlas_present": false,
+    "combined_provider_cell": false,
+    "custom_application_factory_used": false,
+    "provider_injection_used": false,
+    "public_cli": true,
+    "public_managed_service": true,
+    "shipping_installer": true,
+    "simulated_provider": false,
+    "source_tree_imported": false
+  },
+  "installer_service": {
+    "authenticated_loopback_transport": true,
+    "doctor_secret_safe": true,
+    "executable_sha256": "6cfd14c4be2915b3f8374cf5cbac6b2ecfb9e070b9febf91d899e32dd16e8cfe",
+    "frontend_independent": true,
+    "install_status": "PASS",
+    "os_service_manager": "WINDOWS_TASK_SCHEDULER_PER_USER",
+    "registration_manifest_sha256": "3cd28a478e809a568dd5cbf0a084a69c04d382d629eb9a78c7a3fc3d6f27e1bf",
+    "registration_status": "PASS",
+    "restart_generation_after": 2,
+    "restart_generation_before": 1,
+    "service_process_changed": true,
+    "service_start_status": "PASS"
+  },
+  "journeys": {
+    "J02": {
+      "acceptance_authority_separate": true,
+      "baseline_revision": 1,
+      "dashboard_current": true,
+      "documentation_current": true,
+      "envelope_approved": true,
+      "execution_live": true,
+      "interaction_live": true,
+      "plan_approved": true,
+      "project_authority_promoted": true,
+      "project_created": true,
+      "promotion_revision": 2,
+      "provider_id": "claude",
+      "provider_self_accepted": false,
+      "role_certifications": {
+        "EXECUTION_IMPLEMENTER": "LIVE_ROLE_CERTIFIED",
+        "INTERACTION": "LIVE_ROLE_CERTIFIED"
+      },
+      "runstore_durable": true,
+      "status": "PASS",
+      "validation_recorded": true,
+      "workspace_isolated": true
+    },
+    "J16": {
+      "custom_injection_used": false,
+      "fresh_process_consumed_setup": true,
+      "provider_id": "claude",
+      "provider_registered_after_consumption": true,
+      "service_generation_advanced": true,
+      "service_process_changed": true,
+      "setup_sha256": "814b069357ad11cabc99b86d7cc787dc9ada32f536c78b81b2b4571c23c8b233",
+      "status": "PASS"
+    }
+  },
+  "provider": {
+    "auth_probe_sha256": "a546d634e5e6594b2c1034fe80d680a346fa67d18171bf31217911f90c6da620",
+    "authenticated": true,
+    "configured": true,
+    "credential_files_read": false,
+    "executable_sha256": "00e5be0a8b69893cad9259a1e8b80d59be8f3eb367d4a16c19f91bcd279423b7",
+    "id": "claude",
+    "installed": true,
+    "other_core_provider_absent": true,
+    "pii_persisted": false,
+    "readiness_state": "AVAILABLE",
+    "version": "2.1.247 (Claude Code)"
+  },
+  "public_process_calls": [
+    {
+      "ok": true,
+      "operation": "service.status",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "a8371d9b609e3d28d60527dd7087c094b4c468c62d8a236fa1eae99949bfca95"
+    },
+    {
+      "ok": true,
+      "operation": "project.create",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "1d5a46e2e06b8e747a02ce7f54dc20da430c951af0a2d4d3184346b3d686e39c"
+    },
+    {
+      "ok": true,
+      "operation": "distribution.setup.plan",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "7f68700a3b88abdd6d53213cc4d43d7dbd293218ad5e099b9bf51e56f1663d1e"
+    },
+    {
+      "ok": true,
+      "operation": "distribution.setup.apply",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "c6ff7beb6485c9bbcfd6ae4c0641810410abc6b7ab79a287ed236aba06c2edd6"
+    },
+    {
+      "ok": true,
+      "operation": "service.stop",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "27c459c12ecdb2d91e694cef3099546096bcb6ff38d9c688b016088daa648063"
+    },
+    {
+      "ok": true,
+      "operation": "service.status",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "149971d5e25ded3c69623062da3b8b107137478e1fbaf5a4953cfe25345e47df"
+    },
+    {
+      "ok": true,
+      "operation": "distribution.bootstrap",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "bd58b8eb007e344acd1223200ec73637e06afc31d38eb3a692229702d6699fc1"
+    },
+    {
+      "ok": true,
+      "operation": "distribution.doctor",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "398e1b8b04a93d0832cab822b06606a6a7ce85886700bc04b26ccd9bd5b61540"
+    },
+    {
+      "ok": true,
+      "operation": "providers.graph",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "117641bd878df18e9b1b1f98ec87f7c3bcaf37d9e80093e0a0f899cb472435cf"
+    },
+    {
+      "ok": true,
+      "operation": "providers.readiness",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "f601ae337ff9f2aa979bbf851ba8cee07557744c7cfa2c1f6c5daa2dff844a76"
+    },
+    {
+      "ok": true,
+      "operation": "providers.interact",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "0af4c61a4440d2ebb8eac0768690e9e80ecae014bbba9e24f88a89e28339885a"
+    },
+    {
+      "ok": true,
+      "operation": "governance.envelope.propose",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "05651232eb0e476e40692e61825d401833a7d76de1a5626c9231c72676b2abc6"
+    },
+    {
+      "ok": true,
+      "operation": "governance.envelope.approve",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "0bd07087a2af264e8ff47f297df8dd487f7a5b71296d69cce096e743135f7468"
+    },
+    {
+      "ok": true,
+      "operation": "runtime.run.authorize",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "7bce9088aca7df636202f406910dcc1c74e84adbb237dc7b4d5a825d8436be9f"
+    },
+    {
+      "ok": true,
+      "operation": "runtime.workspace.create",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "21faeb30ecb93f38d9cd1ca69191509e02f4916ce2a6a8e2da4feb2f32cbb069"
+    },
+    {
+      "ok": true,
+      "operation": "runtime.provider.execute",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "7f4a36ca682297501f480e712974dd1c5c8c4259d0e2b1de10de9bb41c935a31"
+    },
+    {
+      "ok": true,
+      "operation": "runtime.status",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "ed1314a1298db054d3c20408db3e895e227eba883949aafb867356da85e3ae31"
+    },
+    {
+      "ok": true,
+      "operation": "runtime.status",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "ed1314a1298db054d3c20408db3e895e227eba883949aafb867356da85e3ae31"
+    },
+    {
+      "ok": true,
+      "operation": "runtime.accept",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "67b57bf75b188184bcac8d5b6221ca68d0ef2326463f51e1bc8006c32000f87d"
+    },
+    {
+      "ok": true,
+      "operation": "runtime.workspace.promote",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "3708b51a6887b1360776efaa44824661710076963b7a9e2f185e4b1a9a83665e"
+    },
+    {
+      "ok": true,
+      "operation": "providers.certifications",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "a5b719ca11de72907db29c2a8a0d51d5cbb270d4189b4d9e278fa0447839dd2b"
+    },
+    {
+      "ok": true,
+      "operation": "documentation.regenerate",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "2cf8fb3751dd0ded5d6c072c6676026a71cb8672471252dc0a15573be60c2629"
+    },
+    {
+      "ok": true,
+      "operation": "documentation.status",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "94bce67d5180820b2312082d4279d0608fcdf194969860df860c36c3d66c48a1"
+    },
+    {
+      "ok": true,
+      "operation": "dashboard.project",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "89e10e01b80b59f379f40b0dc682f0b5c899b260bfd7f51a852d7a79e7d96b55"
+    }
+  ],
+  "qualifier_probes": {
+    "bootstrap": "8f6a6cf4db2275a829d20489f768716c984858eb4317ef037119dcbc3cd33d9a",
+    "doctor": "f7c8a39d77861866bd930fb925e203000bca0e1e4cba30fa1ecffb1a4127801d",
+    "graph": "658d44452fdce451f52c7ee72e1535f63afb9352c119ddce4872184dae3ef482",
+    "host": "1059864991828a24644912fc826d3ae22a182752073e4193da432ba486ce3353",
+    "installed_origin": "e673a5650a126f94145cfd0a5a9a3932bdb88482be55bd176f59e66d95430fd0",
+    "readiness": "49c8a9cd950a6d1d7cc11b1d3cab37055091997fe28648a80b1799e3c0a3bfd8",
+    "service_status": "e61131b416bb14270a00d17b860a7721bded062560df4e32a69b69425f30bda5"
+  },
+  "schema_version": "1.0",
+  "security": {
+    "acceptance_authority_separate": true,
+    "credential_files_read": false,
+    "pii_persisted": false,
+    "project_authority_required": true,
+    "provider_result_self_acceptance": false,
+    "transport_token_persisted": false
+  },
+  "status": "PASS",
+  "transcript": {
+    "bytes": 5662,
+    "raw_output_persisted": false,
+    "secret_scan": "PASS",
+    "sha256": "fc14289b3d834e12366b902ee67ec8ab60698ce622a91486e57d923a754c397c"
+  }
+}

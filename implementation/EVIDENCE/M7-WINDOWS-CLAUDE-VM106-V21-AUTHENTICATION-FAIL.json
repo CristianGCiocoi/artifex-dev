@@ -1,0 +1,6 @@
+{
+  "diagnostic": "providers.interact failed: OPERATION_FAILED/ValueError: claude interaction exited with 1",
+  "error": "JourneyFailure",
+  "schema_version": "1.0",
+  "status": "FAIL"
+}

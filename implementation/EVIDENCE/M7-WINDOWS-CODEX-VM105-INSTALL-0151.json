@@ -1,0 +1,10 @@
+﻿{
+    "schema_version":  "1.0",
+    "status":  "PASS",
+    "package_sha1":  "d4b6c32d1edd57d059d589209bd4bf401263fd79",
+    "package_sha512":  "b0b4fbc6f203de3854ead93373044f9cc11c94a47050f6e9a349ad7f1205f4aa5d647dd5255eec336fe45d65f2bd433b66dfd87b239a7804d3132b1b473f18a2",
+    "installed_version":  "codex-cli 0.151.0",
+    "installed_executable_sha256":  "cf68265897197ac5f3bff6a10c168eec159842b353129726da5e3ed6b91ef0f4",
+    "prior_install_recoverable":  true,
+    "credential_material_extracted":  false
+}

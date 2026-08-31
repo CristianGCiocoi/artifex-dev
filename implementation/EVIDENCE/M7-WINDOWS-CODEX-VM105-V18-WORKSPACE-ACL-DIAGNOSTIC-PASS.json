@@ -1,0 +1,13 @@
+{
+  "credential_material_extracted": false,
+  "probe_exact": true,
+  "provider_executable_sha256": "cbd657ddfe151d1a6ebad660beffdbd3265dc5aff4b3a6095124d3e2f0156f2f",
+  "provider_version": "codex-cli 0.150.1",
+  "response_exact": true,
+  "returncode": 0,
+  "schema_version": "1.0",
+  "status": "PASS",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_sha256": "e97ac8ea51ecd25ba92fd40b285f007a47554532502f45c97b58b823acdedbfd",
+  "vm_id": 105
+}

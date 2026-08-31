@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0",
+  "vm_id": 104,
+  "snapshot_name": "m7-qualified-25h2-x64-cell-base-v21",
+  "snapshot_config_sha256": "fdbc5f194852cf6e7e87718f0a9c19b9fcaaf3568f7b0506c3580663339e7386",
+  "account_sid_sha256": "5c00407e51a59e1b439dffb4136614fdf658946ba313d3b9549390e0455621b9",
+  "candidate_sha256": "74c99dff2c18a9b0da42b36746d6ab0425e5811898d9d879190e28ddf9fe9ddb",
+  "providers_absent": true,
+  "source_checkout_absent": true
+}

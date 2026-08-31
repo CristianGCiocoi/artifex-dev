@@ -1,114 +1,115 @@
 {
   "acceptance": {
     "acceptance_commit": null,
-    "blocked": [
-      "BLK-M7-CODEX-PROVIDER-BLOCKED"
-    ],
+    "blocked": [],
     "contract_digest": "3eac41de4cacf7be80aab12e478b99ec7c5066dccddfff6ca00a03cf5a157d48",
     "evidence_classes": {
       "BLACK_BOX_OUTCOME": {
         "evidence": [
-          "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
-          "EVIDENCE/M7-WINDOWS-J10-V13-QUALIFIED.json",
-          "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V14.yaml",
-          "EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V14-QUALIFIED.json",
-          "EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V14-PASS.json",
-          "EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V14-QUALIFIED.json"
+          "EVIDENCE/M7-WINDOWS-CORE-V21-VALIDATION.json",
+          "EVIDENCE/M7-WINDOWS-CODEX-VM105-V21-QUALIFIED.json",
+          "EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V21-QUALIFIED.json",
+          "EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V21-QUALIFIED.json"
         ],
         "required_m7": true,
-        "status": "PARTIAL_PASS_V14_CLAUDE_J10_PASS_CODEX_PENDING"
+        "status": "PASS"
       },
       "COMPONENT": {
         "evidence": [
           "EVIDENCE/M7-FOUNDATION-VALIDATION.yaml",
-          "EVIDENCE/M7-WINDOWS-SERVICE-SOURCE-VALIDATION.yaml"
+          "EVIDENCE/M7-WINDOWS-SERVICE-SOURCE-VALIDATION.yaml",
+          "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V21.yaml"
         ],
         "required_m7": true,
-        "status": "PASS_SOURCE_CANDIDATE"
+        "status": "PASS"
       },
       "DASHBOARD": {
         "evidence": [
-          "EVIDENCE/M7-FOUNDATION-VALIDATION.yaml"
+          "EVIDENCE/M7-FOUNDATION-VALIDATION.yaml",
+          "EVIDENCE/M7-WINDOWS-CORE-V21-VALIDATION.json"
         ],
         "required_m7": true,
-        "status": "PASS_FOUNDATION"
+        "status": "PASS"
       },
       "DESIGN_CONFORMANCE": {
         "evidence": [
-          "EVIDENCE/M7-FOUNDATION-VALIDATION.yaml"
+          "EVIDENCE/M7-FOUNDATION-VALIDATION.yaml",
+          "EVIDENCE/M7-WINDOWS-CORE-V21-VALIDATION.json"
         ],
         "required_m7": true,
-        "status": "PASS_FOUNDATION"
+        "status": "PASS"
       },
       "DOCUMENTATION": {
         "evidence": [
-          "EVIDENCE/M7-FOUNDATION-VALIDATION.yaml"
+          "EVIDENCE/M7-FOUNDATION-VALIDATION.yaml",
+          "EVIDENCE/M7-WINDOWS-CORE-V21-VALIDATION.json"
         ],
         "required_m7": true,
-        "status": "PASS_FOUNDATION"
+        "status": "PASS"
       },
       "DOMAIN_INTEGRATION": {
         "evidence": [
-          "EVIDENCE/M7-FOUNDATION-VALIDATION.yaml"
+          "EVIDENCE/M7-FOUNDATION-VALIDATION.yaml",
+          "EVIDENCE/M7-WINDOWS-CORE-V21-VALIDATION.json"
         ],
         "required_m7": true,
-        "status": "PASS_FOUNDATION"
+        "status": "PASS"
       },
       "MIGRATION": {
         "evidence": [
-          "EVIDENCE/M7-FOUNDATION-VALIDATION.yaml"
+          "EVIDENCE/M7-FOUNDATION-VALIDATION.yaml",
+          "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V21.yaml"
         ],
         "required_m7": true,
-        "status": "PASS_FOUNDATION"
+        "status": "PASS"
       },
       "PROVIDER_CERTIFICATION": {
         "evidence": [
-          "EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
-          "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V14.yaml",
-          "EVIDENCE/M7-WINDOWS-CLAUDE-PROVIDER-READY-ATTESTATION-VM106-V14.json",
-          "EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V14-PASS.json",
-          "EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V14-QUALIFIED.json",
-          "EVIDENCE/M7-WINDOWS-CODEX-VM105-V13-DURABLE-BLOCKED.json"
+          "EVIDENCE/M7-WINDOWS-CORE-V21-VALIDATION.json",
+          "EVIDENCE/M7-WINDOWS-CODEX-VM105-V21-QUALIFIED.json",
+          "EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V21-QUALIFIED.json"
         ],
         "required_m7": true,
-        "status": "V14_CLAUDE_PASS_CODEX_SANDBOX_SETUP_BLOCKED"
+        "status": "PASS"
       },
       "PUBLIC_COMPOSITION": {
         "evidence": [
-          "EVIDENCE/M7-FOUNDATION-OUTCOME.json",
-          "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V13.yaml",
-          "EVIDENCE/M7-WINDOWS-J10-V13-QUALIFIED.json",
-          "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V14.yaml",
-          "EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V14-QUALIFIED.json",
-          "EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V14-QUALIFIED.json"
+          "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V21.yaml",
+          "EVIDENCE/M7-WINDOWS-CODEX-VM105-V21-QUALIFIED.json",
+          "EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V21-QUALIFIED.json",
+          "EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V21-QUALIFIED.json"
         ],
         "required_m7": true,
-        "status": "PARTIAL_PASS_V14_CLAUDE_J10_PASS_CODEX_PENDING"
+        "status": "PASS"
       },
       "SECURITY_AUTHORITY": {
         "evidence": [
-          "EVIDENCE/M7-FOUNDATION-VALIDATION.yaml",
-          "EVIDENCE/M7-WINDOWS-SERVICE-SOURCE-VALIDATION.yaml"
+          "EVIDENCE/M7-WINDOWS-SERVICE-SOURCE-VALIDATION.yaml",
+          "EVIDENCE/M7-WINDOWS-CODEX-PROVIDER-READY-ATTESTATION-VM105-V21.json",
+          "EVIDENCE/M7-WINDOWS-CLAUDE-PROVIDER-READY-ATTESTATION-VM106-V21R1.json",
+          "EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V21.json"
         ],
         "required_m7": true,
-        "status": "PASS_SOURCE_CANDIDATE"
+        "status": "PASS"
       }
     },
     "frozen_architecture_baseline": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
-    "implementation_baseline_commit": "2ea4a38e1bc18a2aa3535a1d224f508ca6561d88",
+    "implementation_baseline_commit": "777cd3a6bdc3ce64be41f2af598e6b54cc69199a",
     "mandatory_journeys": [
       "J01",
       "J02",
       "J10",
       "J16"
     ],
-    "mandatory_work_complete": false,
-    "migration": "SHIPPING_UPGRADE_PATH_FOUNDATION_ACTIVE",
+    "mandatory_work_complete": true,
+    "migration": "SHIPPING_UPGRADE_PATH_FOUNDATION_PASS",
     "milestone": "M7",
     "schema_version": "1.0",
-    "superseded": [],
+    "superseded": [
+      "BLK-M7-CODEX-PROVIDER-BLOCKED"
+    ],
     "unresolved_contradiction": null,
-    "verdict": "ACTIVE_V14_CLAUDE_AND_J10_PASS_CODEX_SANDBOX_SETUP_BLOCKED"
+    "verdict": "ACCEPTED"
   },
   "adrs": [
     {
@@ -770,14 +771,18 @@
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-V13-WER-FASTFAIL.json",
         "EVIDENCE/M7-WINDOWS-CODEX-POST-FAILURE-CONTROL-V13.json",
         "EVIDENCE/M7-WINDOWS-CODEX-LEAST-PRIVILEGE-CONTROL-V13.json",
-        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V13-DURABLE-BLOCKED.json"
+        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V13-DURABLE-BLOCKED.json",
+        "EVIDENCE/M7-WINDOWS-CODEX-PROVIDER-READY-ATTESTATION-VM105-V21.json",
+        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V21-PASS.json",
+        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V21-QUALIFIED.json",
+        "EVIDENCE/M7-WINDOWS-CORE-V21-VALIDATION.json"
       ],
       "id": "BLK-M7-CODEX-PROVIDER-BLOCKED",
       "required_authority": "HUMAN_ENVIRONMENT_OWNER",
-      "resolution": "Explicitly approve and complete the administrator-owned native Codex elevated-sandbox setup on VM105 while retaining the least-privilege ARTIFEX service, then run one new candidate-bound Codex qualification",
+      "resolution": "Environment-owner approval was exercised, the provider was upgraded and rebound to the exact V21 candidate, and independent qualification passed without expanding ARTIFEX service privilege",
       "scope": "M7_ACCEPTANCE",
-      "status": "OPEN_CODEX_NATIVE_SANDBOX_SETUP_REQUIRED",
-      "summary": "Exact Codex 0.150.1 authentication passes, but its unelevated Windows sandbox fast-fails identically under an independent least-privilege InteractiveToken task; the ARTIFEX service cannot be elevated without violating the frozen security boundary",
+      "status": "RESOLVED_V21_CODEX_J01_J16_INDEPENDENT_QUALIFICATION_PASS",
+      "summary": "Historical Codex 0.150.1 native fast-fail was resolved without elevating the ARTIFEX service; exact Codex 0.151.0 now passes J01 and J16 from the candidate-bound standalone V21 cell under the accepted least-privilege execution boundary",
       "unrelated_work_may_continue": true
     },
     {
@@ -919,6 +924,11 @@
       "sha256": "7c47855fc9475a45349b4176d03b99a92c96b0595ec57c757d0c922ec03e9055"
     },
     {
+      "bytes": 623,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CLAUDE-POSTLOGIN-PROBE-21247-V21.json",
+      "sha256": "ed105a4df12b63cf7128de40455104f10e2a8db23a9a3a8c46b1fb9ce59b5172"
+    },
+    {
       "bytes": 1029,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CLAUDE-PROVIDER-READY-ATTESTATION-VM106-V13.json",
       "sha256": "516dc19ebed6645549d0422f0eeaa9f41709bcda82fff4d35bec89dc7f5a6b06"
@@ -927,6 +937,21 @@
       "bytes": 1328,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CLAUDE-PROVIDER-READY-ATTESTATION-VM106-V14.json",
       "sha256": "8ec39df266a508a0be9d36a2b0ccf28386ecc5dbcf416af6ba0ca56daa554f65"
+    },
+    {
+      "bytes": 1328,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CLAUDE-PROVIDER-READY-ATTESTATION-VM106-V15.json",
+      "sha256": "9b26735057ef8d22d1cc8f1fdd950b138e559c8e1bc441fa264539cdeb148bd0"
+    },
+    {
+      "bytes": 1328,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CLAUDE-PROVIDER-READY-ATTESTATION-VM106-V21.json",
+      "sha256": "f7eb60591f221c87ae3187b676a0171a5426c07e0099d4397ca3f79724a6ae1b"
+    },
+    {
+      "bytes": 1330,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CLAUDE-PROVIDER-READY-ATTESTATION-VM106-V21R1.json",
+      "sha256": "af219e8d5fdd57e09a054cee5269671e93a14e8915b42f793b6f993779f945d3"
     },
     {
       "bytes": 1877,
@@ -954,6 +979,66 @@
       "sha256": "d1107752bce62958f4738ae3cba9b7f398ab6df07a3d55ff37bd5492e473675c"
     },
     {
+      "bytes": 158,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V15-INSTALLER-TIMEOUT-FAIL.json",
+      "sha256": "9b89c5bd72aec6c0e94bae5946e9c3195aafcae891aaeae70b54c93f919dbfca"
+    },
+    {
+      "bytes": 765,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V15-INTERACT-DIAGNOSTIC-PASS.json",
+      "sha256": "219cbcd8e6dd2d267c18e8966016bea40604f61eddb09b552ced0cd5f80e8814"
+    },
+    {
+      "bytes": 10811,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V15-PASS.json",
+      "sha256": "c20cec6a3e4c31506adf8795c07b69ebb483180c3233c0fbf1f42eb032984be8"
+    },
+    {
+      "bytes": 148,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V15-PROVIDER-INTERACT-FAIL.json",
+      "sha256": "c3358797fc9687a172b6db20a504a824b507fe36667bcc1c1503cec7662dba5a"
+    },
+    {
+      "bytes": 11434,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V15-QUALIFIED.json",
+      "sha256": "989901a2819d7a9e019ab83d3204b9c0c8fff07f6bf512dd8c162a668f2391b5"
+    },
+    {
+      "bytes": 355,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V21-AUTHENTICATION-DIAGNOSTIC.json",
+      "sha256": "985fee0b77ec8c5fd3009e53de204d2442f8610586f679f7e59480bfe35d5291"
+    },
+    {
+      "bytes": 187,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V21-AUTHENTICATION-FAIL.json",
+      "sha256": "1cfd07218ee61a4b4850a87e563abdc368d32d616d616fb1bbe4a306a814ed65"
+    },
+    {
+      "bytes": 765,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V21-INTERACT-DIAGNOSTIC-PASS.json",
+      "sha256": "d58cb76ba560683b64a6bc4bf62b0d04d639545448ee76f610fc67c1e74f27c7"
+    },
+    {
+      "bytes": 10811,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V21-PASS.json",
+      "sha256": "54b3c09fd5c1c47fea0406ab728f0df044554eda786d908e6f334ed3ea0bd820"
+    },
+    {
+      "bytes": 148,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V21-PROVIDER-INTERACT-FAIL.json",
+      "sha256": "c3358797fc9687a172b6db20a504a824b507fe36667bcc1c1503cec7662dba5a"
+    },
+    {
+      "bytes": 155,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V21-PROVIDER-READY-ATTESTATION-IDENTITY-FAIL.json",
+      "sha256": "6164c47a40e92eee31db8e4e27ef4d79febab6e2727f7f1225a2c7bfcadb8e58"
+    },
+    {
+      "bytes": 11434,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V21-QUALIFIED.json",
+      "sha256": "15b8220d9a7e0bc64da2725e4f3799d32edcf2903b106a3f3f68ea6d4b63c1cd"
+    },
+    {
       "bytes": 444,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V10.json",
       "sha256": "3bae7ad38a5bacf1055540c9ee04f219e242292fb45b2161e71d095d48d30fa7"
@@ -977,6 +1062,26 @@
       "bytes": 444,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V14.json",
       "sha256": "a394de3b491e2bdd12ea74210ab66d3904f24cbf20f6d19987fda0baedcab062"
+    },
+    {
+      "bytes": 444,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V15.json",
+      "sha256": "f71bc2a1d995cc31499493f85a0c1f6a9edb5842c862d5d6e73923c68e56641b"
+    },
+    {
+      "bytes": 444,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V16.json",
+      "sha256": "39e88ee32618e5aa29e96a13897cea133dd44297a427662b34fe9378a459c51d"
+    },
+    {
+      "bytes": 444,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V17.json",
+      "sha256": "9291787b1efd86ba929cfb9c3c55ab9db00de50b62e693c4ddf6e5c4140d4581"
+    },
+    {
+      "bytes": 444,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V21.json",
+      "sha256": "2b85b843ea29a35b12dca6316e9c7cccaec03eb8fba35658b5b2dd378dab63b3"
     },
     {
       "bytes": 443,
@@ -1029,6 +1134,36 @@
       "sha256": "676979dca65007608d3cc97a5359da1368c5a6ed208ef3852e9eb486134928a8"
     },
     {
+      "bytes": 1564,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-ELEVATED-SANDBOX-COMMAND-V14-PASS.json",
+      "sha256": "5bb5cafd4c0a5e05def05af3c3cd341b91bd18b548101236af510f7d05e44cf8"
+    },
+    {
+      "bytes": 1512,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-ELEVATED-SANDBOX-COMMAND-V151-FAIL.json",
+      "sha256": "e407ea0b6534eced3ec8ca483d710731b995670d1a07e1d7debf7035c69b0d9c"
+    },
+    {
+      "bytes": 1565,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-ELEVATED-SANDBOX-LEAST-PRIVILEGE-V14-PASS.json",
+      "sha256": "12d6e469758d11407ee3d27986b9024c42c142af6f8684e47088aabf15434f50"
+    },
+    {
+      "bytes": 2599,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-ELEVATED-SANDBOX-SETUP-DIAGNOSTIC-V14.json",
+      "sha256": "5a791d2ef883c15b6965a4ed87141d1f1f53e1a36e8a49edd1ed9ca2ffd11b5d"
+    },
+    {
+      "bytes": 1029,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-ELEVATED-SANDBOX-SETUP-V151.json",
+      "sha256": "787733020e86e6e3f6ab7a86e9c4412582f46912f598d0c4dc41a25ea5eb0d2f"
+    },
+    {
+      "bytes": 319,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-IDENTITY-PROBE-TIMING-V14.json",
+      "sha256": "f76a05402c5eda0cd0e4a60e41eb9769c592a9ae15527265e7fdcb1f8da79b25"
+    },
+    {
       "bytes": 309,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-INSTALL-1501-V11.json",
       "sha256": "49873864ee97fe3645a8b7dd641e3a89538bf57d2cfb1f5b2ffcdf54d6f6a097"
@@ -1067,6 +1202,56 @@
       "bytes": 930,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-PROVIDER-READY-ATTESTATION-VM105-V13.json",
       "sha256": "a5d44c0b680215a618b05e750feb5608908b5244f92098b6cfabc4550bbf6487"
+    },
+    {
+      "bytes": 1339,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-PROVIDER-READY-ATTESTATION-VM105-V14.json",
+      "sha256": "77c522f6641633d04c33567bc12f7fc5d466d039a729198d4955ee705c7caacc"
+    },
+    {
+      "bytes": 1333,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-PROVIDER-READY-ATTESTATION-VM105-V15.json",
+      "sha256": "0cdbaf13c17844d6a89d6b89588cf702954b15a30d44e1bb6e3771947831796a"
+    },
+    {
+      "bytes": 1321,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-PROVIDER-READY-ATTESTATION-VM105-V16.json",
+      "sha256": "9b585fd83d90e53cfa83c52615cd2fb2a1c26337c7a07ee28b98f29ac7c2f7a0"
+    },
+    {
+      "bytes": 1327,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-PROVIDER-READY-ATTESTATION-VM105-V17-CLEAN.json",
+      "sha256": "7c9c31615181fecd6cf7eeda7e14bbb1258b84215851fb07d198bfbbaf302d43"
+    },
+    {
+      "bytes": 1322,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-PROVIDER-READY-ATTESTATION-VM105-V17.json",
+      "sha256": "48de401419775cf2c31c38d65ce61a81934a5ff84995e174051f36c82d1e8a5d"
+    },
+    {
+      "bytes": 1327,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-PROVIDER-READY-ATTESTATION-VM105-V18.json",
+      "sha256": "f32677a7d4caa282c0a4f699a12af3fec3be9dfd170b5e8a164ec39ca0eb1ec9"
+    },
+    {
+      "bytes": 1321,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-PROVIDER-READY-ATTESTATION-VM105-V19.json",
+      "sha256": "6e9df06dc2c5727600e31999a2ab1b322e62c8e9299d2d25f0d9a8399322ebf9"
+    },
+    {
+      "bytes": 1321,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-PROVIDER-READY-ATTESTATION-VM105-V20.json",
+      "sha256": "20f67d74ae29026bd057bdf87bd3607da8a306aebf876045b04bcf148d18f716"
+    },
+    {
+      "bytes": 1321,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-PROVIDER-READY-ATTESTATION-VM105-V21.json",
+      "sha256": "0629f21d614c6798f7e78f64bf41eac5798c278661d2d7bf596156e51b151f7d"
+    },
+    {
+      "bytes": 1545,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-UNELEVATED-SANDBOX-COMMAND-V151-PASS.json",
+      "sha256": "a394645e2904d8e19a81e05a0cef6181b5c0317da85b1e71842b43c6914f7bd7"
     },
     {
       "bytes": 713,
@@ -1154,6 +1339,11 @@
       "sha256": "beeef45f94201497af1ab36eb3c9efaff13d05634a3e25d4cae83cfa38fb825c"
     },
     {
+      "bytes": 515,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-VM105-INSTALL-0151.json",
+      "sha256": "c45a43df271bb0fd87e8be67a853e60e90f8888588500bcbdeb7a45f8076cd2d"
+    },
+    {
       "bytes": 2987,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-VM105-PATH-DIAGNOSTIC-1.json",
       "sha256": "969b506993e241b431f58692124a6539f3575a9a892b7f192cc5f10b79d1d26a"
@@ -1229,9 +1419,114 @@
       "sha256": "f3f35ec45a4fbc15ca6d41bdcdd8c8d792290127569f4b07cf5bcdc1c68b8ce7"
     },
     {
+      "bytes": 1875,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-VM105-V14-INSTALLER-TIMEOUT-DIAGNOSTIC.json",
+      "sha256": "645282ccf853f621ce326d930fb785b8e4f060bf0fecd0e0b537c793eb89a093"
+    },
+    {
+      "bytes": 644,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-VM105-V15-INSTALLER-HANG-DIAGNOSTIC.json",
+      "sha256": "d2b53cac25811c3b559063064be4df98331bef0fb1105729b3f56376e7aacccf"
+    },
+    {
+      "bytes": 158,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-VM105-V15-INSTALLER-TIMEOUT-FAIL.json",
+      "sha256": "9b89c5bd72aec6c0e94bae5946e9c3195aafcae891aaeae70b54c93f919dbfca"
+    },
+    {
+      "bytes": 634,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-VM105-V16-INNER-LIFECYCLE-DIAGNOSTIC-PASS.json",
+      "sha256": "5034e2618818b1c463be6f5d9c52f314114759fceba077279d212464ebbe7cd3"
+    },
+    {
+      "bytes": 438,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-VM105-V17-INNER-LIFECYCLE-DIAGNOSTIC-PASS.json",
+      "sha256": "8e286afe7ab9cb852081cacfe60680b7373936269bee65152e76b39ab837a537"
+    },
+    {
+      "bytes": 152,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-VM105-V17-INSTALLER-FAIL.json",
+      "sha256": "76cc93b1cfbea1cf97641556e05e9101495d785ccf94947632a5a1b9a314c1e0"
+    },
+    {
+      "bytes": 245,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-VM105-V17-PROVIDER-PROCESS-FAIL.json",
+      "sha256": "cf7362bd9fd02175eb4edd87e9102efddbfeeb23d61cfbf70fd3b2a08fcb1e69"
+    },
+    {
+      "bytes": 792,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-VM105-V17-SYSTEM-PATH-DIAGNOSTIC-FAIL.json",
+      "sha256": "228c7f735a0b962d27e5195f77bc043ff094c4cf6f7797870d58af34017dcbb4"
+    },
+    {
+      "bytes": 148,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-VM105-V18-INTERACT-FAIL.json",
+      "sha256": "c3358797fc9687a172b6db20a504a824b507fe36667bcc1c1503cec7662dba5a"
+    },
+    {
+      "bytes": 245,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-VM105-V18-PROVIDER-PROCESS-ATTEMPT2-FAIL.json",
+      "sha256": "cf7362bd9fd02175eb4edd87e9102efddbfeeb23d61cfbf70fd3b2a08fcb1e69"
+    },
+    {
+      "bytes": 82,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-VM105-V18-QUALIFIER-FAIL.json",
+      "sha256": "2b18e4d41fac6a62b65d5dcfa2cb277aad8d92c19bf90c1c8caa34f849a55b71"
+    },
+    {
+      "bytes": 493,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-VM105-V18-WORKSPACE-ACL-DIAGNOSTIC-PASS.json",
+      "sha256": "87fe5ca97a846929bb0e4cfb3e60f2b599b6fe0679b7c2d014a3628838ae2743"
+    },
+    {
+      "bytes": 11188,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-VM105-V19-PASS.json",
+      "sha256": "94c3fc15acbdcaacfb129ead538659ee150c51d7a2649fca8bcf6b02f3996f44"
+    },
+    {
+      "bytes": 236,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-VM105-V19-QUALIFIER-DIAGNOSTIC-FAIL.json",
+      "sha256": "f54e42ad32c194e1ccf691d12b0ddea0ba776e25ca1c975b78c03dcfdfe16ce9"
+    },
+    {
+      "bytes": 80,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-VM105-V19-QUALIFIER-FAIL.json",
+      "sha256": "7cd2e1f3d87464c6f350f532244c6a405cb4e2b7b7b590285890b99ee94a405b"
+    },
+    {
+      "bytes": 245,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-VM105-V20-PROVIDER-PROCESS-ATTEMPT2-FAIL.json",
+      "sha256": "cf7362bd9fd02175eb4edd87e9102efddbfeeb23d61cfbf70fd3b2a08fcb1e69"
+    },
+    {
+      "bytes": 502,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-VM105-V20-RUNTIME-STATUS-DIAGNOSTIC-PASS.json",
+      "sha256": "9a465f77656b5e4a6ed2ce2fde262108a6cbd1ef3aa1b43b15d4c461b3f058ba"
+    },
+    {
+      "bytes": 144,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-VM105-V20-RUNTIME-STATUS-FAIL.json",
+      "sha256": "b525d4bc90d0621e5545750911c1e56b6ec4397b029808da358f8dd81a369319"
+    },
+    {
+      "bytes": 11188,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-VM105-V21-PASS.json",
+      "sha256": "293ff7a62d2b93c08229f8354972cb54ad17d6755ef890e1ca0a83d01586d897"
+    },
+    {
+      "bytes": 11811,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CODEX-VM105-V21-QUALIFIED.json",
+      "sha256": "2db6340b6ea97e2b1d4e3a8ef730548b9ebcb1ed42aaa977cc9187867252344c"
+    },
+    {
       "bytes": 4255,
       "path": "implementation/EVIDENCE/M7-WINDOWS-CORE-MATRIX.yaml",
       "sha256": "7bc57c1c9b75fe6d92d691c6b66d88d539380abebae82c77c5f75058f2398939"
+    },
+    {
+      "bytes": 910,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-CORE-V21-VALIDATION.json",
+      "sha256": "04c91721ea4a16aba85ecc582d239a71c023a89d4fe50699580afc8fb17db0dd"
     },
     {
       "bytes": 2929,
@@ -1294,6 +1589,46 @@
       "sha256": "2f588545edc26f80638b3e94f479803a83cff35141d1eeed62d6735c99183564"
     },
     {
+      "bytes": 5693,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V15-PASS.json",
+      "sha256": "512477bafab1e46163def01ecfd271597ab95921485ddec59c323bc17fcfb80c"
+    },
+    {
+      "bytes": 6231,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V15-QUALIFIED.json",
+      "sha256": "377d1009308d7993a9f82620e4d2f336835c6f658dd505c9857682a15fcea0af"
+    },
+    {
+      "bytes": 5693,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V16-PASS.json",
+      "sha256": "2fa367ede3958de233c704b0f7f8bb1a95db9106c121a561e9fa3d2d8a1cf8ac"
+    },
+    {
+      "bytes": 6231,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V16-QUALIFIED.json",
+      "sha256": "5f5a87d6ec5839ed6ed786c3101895a1a4bf24e769b0b970cc37505480bdb174"
+    },
+    {
+      "bytes": 5693,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V17-PASS.json",
+      "sha256": "a6fa2ae91ce10d80b3ac753e12a2123720dd9a2b9c33ca80ab4eacd4e97babbd"
+    },
+    {
+      "bytes": 6231,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V17-QUALIFIED.json",
+      "sha256": "f86baab45058c2e1f7959c832e67097ac4b266d4907f7a9e06a3b20f6fe6a363"
+    },
+    {
+      "bytes": 5693,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V21-PASS.json",
+      "sha256": "7e167ed8c7be6403b4896bd4ec7f266dc67cbd76e164147703ee85b97913aafe"
+    },
+    {
+      "bytes": 6231,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V21-QUALIFIED.json",
+      "sha256": "8481b10aba2b2ad91079dabac8f17d0ebd3920cbd923cb8cd44a823d4b490066"
+    },
+    {
       "bytes": 3272,
       "path": "implementation/EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V11.yaml",
       "sha256": "d24cbe7b6c23450ff6972276cae44a5179853c0ffb0bb42b7c1de573d2a6726d"
@@ -1312,6 +1647,41 @@
       "bytes": 3763,
       "path": "implementation/EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V14.yaml",
       "sha256": "c4fe22bc54773ab36259c2e5326b06cc7f526b81a821894a060801aaecff2c0d"
+    },
+    {
+      "bytes": 2727,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V15.yaml",
+      "sha256": "d664b468858c8b2873aba4f9566b82b6825e8b23102e6011d33e96e39b65d488"
+    },
+    {
+      "bytes": 3047,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V16.yaml",
+      "sha256": "ef61fae47df472de0b03f97479a4166a0e4b1e1a8ae5195f101c803e3613fd25"
+    },
+    {
+      "bytes": 3239,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V17.yaml",
+      "sha256": "f86cb7e8c50eb95aa7351f85d866f6dc0c99e469fec987aeebe447fbf7a78e7c"
+    },
+    {
+      "bytes": 2984,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V18.yaml",
+      "sha256": "c5dd93236f085a2f9d015b966cabe85eb534aa4a9352fa06b5ba51ca0ee158d5"
+    },
+    {
+      "bytes": 3087,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V19.yaml",
+      "sha256": "18f4d0b423c78b0294bb6aad2fb68fe7e2e3f0b4709de9cd52a6e1f161180a2e"
+    },
+    {
+      "bytes": 3171,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V20.yaml",
+      "sha256": "40eea29a713f1b959f70b83b39cfce4dfee2048b8afa44d11ee75be01615a03b"
+    },
+    {
+      "bytes": 3890,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V21.yaml",
+      "sha256": "9b7e4b187b0c6d31d948b379055eee945feb795d5ee6b651eab1d3af7e1ddf47"
     },
     {
       "bytes": 2838,
@@ -1362,6 +1732,41 @@
       "bytes": 787,
       "path": "implementation/EVIDENCE/M7-WINDOWS-V14-HOST-DEFENDER-PREFLIGHT.json",
       "sha256": "0a752577ab5588bc75d21dbabfa92e6020d65cae8bf98a15d1274d1b12316a2f"
+    },
+    {
+      "bytes": 478,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-V15-HOST-DEFENDER-PREFLIGHT.json",
+      "sha256": "3df558fee3eb10111377f2a78bbeb556e4e55def38c0522dff73e81829b5042d"
+    },
+    {
+      "bytes": 509,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-V16-HOST-DEFENDER-PREFLIGHT.json",
+      "sha256": "971d7904cdcde237137fc440834bedab6e405c0d4a206349b3659ab248d471b1"
+    },
+    {
+      "bytes": 509,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-V17-HOST-DEFENDER-PREFLIGHT.json",
+      "sha256": "dc833d1be24419f94ceceb8188f26f29e010c376fb652cd9a2f55d3eec8f4a78"
+    },
+    {
+      "bytes": 509,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-V18-HOST-DEFENDER-PREFLIGHT.json",
+      "sha256": "650129a7305513106e48aa5482ed40d53dc194f707fe43d6d9ee2ac08f6d467a"
+    },
+    {
+      "bytes": 509,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-V19-HOST-DEFENDER-PREFLIGHT.json",
+      "sha256": "f6a1e8d473de24e91c357179213b812a5885c389beec178ddf792fecc27e0230"
+    },
+    {
+      "bytes": 509,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-V20-HOST-DEFENDER-PREFLIGHT.json",
+      "sha256": "407ac6f916c67dfa3d1053ad136814730d0e800edca9e4429be32cfe1d13037f"
+    },
+    {
+      "bytes": 509,
+      "path": "implementation/EVIDENCE/M7-WINDOWS-V21-HOST-DEFENDER-PREFLIGHT.json",
+      "sha256": "3916fdcfb6783bdfff4607ad6cb6a126a6ca2afda89dc6230bda5c3e4953e421"
     },
     {
       "bytes": 1909,
@@ -2171,7 +2576,7 @@
   ],
   "journeys": [
     {
-      "blocker": "BLK-M7-CODEX-PROVIDER-BLOCKED",
+      "blocker": null,
       "environment": "WINDOWS_11_25H2_X64_CLEAN_VM_CODEX_ONLY",
       "evidence": [
         "EVIDENCE/M3-PUBLIC-OUTCOME.json",
@@ -2202,12 +2607,17 @@
         "EVIDENCE/M7-WINDOWS-CODEX-VM105-V13-WER-FASTFAIL.json",
         "EVIDENCE/M7-WINDOWS-CODEX-POST-FAILURE-CONTROL-V13.json",
         "EVIDENCE/M7-WINDOWS-CODEX-LEAST-PRIVILEGE-CONTROL-V13.json",
-        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V13-DURABLE-BLOCKED.json"
+        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V13-DURABLE-BLOCKED.json",
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V21.yaml",
+        "EVIDENCE/M7-WINDOWS-CODEX-PROVIDER-READY-ATTESTATION-VM105-V21.json",
+        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V21-PASS.json",
+        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V21-QUALIFIED.json",
+        "EVIDENCE/M7-WINDOWS-CORE-V21-VALIDATION.json"
       ],
       "id": "J01",
       "last_run": "2026-08-31",
       "public_shipping_composition": "ARTIFEX_SETUP_NUITKA_NSIS_PUBLIC_CLI_REAL_CODEX_VERTICAL_SLICE",
-      "status": "FAIL_V13_CODEX_NATIVE_FASTFAIL_LEAST_PRIVILEGE",
+      "status": "PASS",
       "title": "J01 — Fresh Machine + Codex"
     },
     {
@@ -2231,7 +2641,13 @@
         "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V14.yaml",
         "EVIDENCE/M7-WINDOWS-CLAUDE-PROVIDER-READY-ATTESTATION-VM106-V14.json",
         "EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V14-PASS.json",
-        "EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V14-QUALIFIED.json"
+        "EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V14-QUALIFIED.json",
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V21.yaml",
+        "EVIDENCE/M7-WINDOWS-CLAUDE-PROVIDER-READY-ATTESTATION-VM106-V21R1.json",
+        "EVIDENCE/M7-WINDOWS-CLAUDE-POSTLOGIN-PROBE-21247-V21.json",
+        "EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V21-PASS.json",
+        "EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V21-QUALIFIED.json",
+        "EVIDENCE/M7-WINDOWS-CORE-V21-VALIDATION.json"
       ],
       "id": "J02",
       "last_run": "2026-08-31",
@@ -2350,6 +2766,11 @@
         "EVIDENCE/M7-WINDOWS-V14-CLEAN-PREFLIGHT.json",
         "EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V14-FIRST-ATTEMPT-FAIL.json",
         "EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V14-PASS.json",
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V21.yaml",
+        "EVIDENCE/M7-WINDOWS-CLEAN-BASE-ATTESTATION-V21.json",
+        "EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V21-PASS.json",
+        "EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V21-QUALIFIED.json",
+        "EVIDENCE/M7-WINDOWS-CORE-V21-VALIDATION.json",
         "EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V14-QUALIFIED.json"
       ],
       "id": "J10",
@@ -2419,7 +2840,7 @@
       "title": "J15 — Promotion Conflict"
     },
     {
-      "blocker": "BLK-M7-CODEX-PROVIDER-BLOCKED",
+      "blocker": null,
       "environment": "WINDOWS_11_25H2_X64_SEPARATE_CLEAN_PROVIDER_CELLS",
       "evidence": [
         "EVIDENCE/M3-PUBLIC-OUTCOME.json",
@@ -2451,12 +2872,18 @@
         "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V14.yaml",
         "EVIDENCE/M7-WINDOWS-CLAUDE-PROVIDER-READY-ATTESTATION-VM106-V14.json",
         "EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V14-PASS.json",
-        "EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V14-QUALIFIED.json"
+        "EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V14-QUALIFIED.json",
+        "EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V21.yaml",
+        "EVIDENCE/M7-WINDOWS-CODEX-PROVIDER-READY-ATTESTATION-VM105-V21.json",
+        "EVIDENCE/M7-WINDOWS-CODEX-VM105-V21-QUALIFIED.json",
+        "EVIDENCE/M7-WINDOWS-CLAUDE-PROVIDER-READY-ATTESTATION-VM106-V21R1.json",
+        "EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V21-QUALIFIED.json",
+        "EVIDENCE/M7-WINDOWS-CORE-V21-VALIDATION.json"
       ],
       "id": "J16",
       "last_run": "2026-08-31",
       "public_shipping_composition": "ARTIFEX_SETUP_NUITKA_NSIS_PUBLIC_CLI_MULTI_PROCESS_PROVIDER_SETUP",
-      "status": "PARTIAL_PASS_CLAUDE_V14_CODEX_BLOCKED",
+      "status": "PASS",
       "title": "J16 — Provider Setup Persistence"
     },
     {
@@ -2700,7 +3127,7 @@
       "title": "Hermes Productization & Certification"
     },
     {
-      "accepted": false,
+      "accepted": true,
       "depends_on": [
         "M4",
         "M5",
@@ -2709,7 +3136,7 @@
       "id": "M7",
       "mandatory_for_core_ga": true,
       "started": true,
-      "state": "ACTIVE",
+      "state": "ACCEPTED",
       "title": "Fresh-Machine Installation & Bootstrap"
     },
     {
@@ -2754,7 +3181,7 @@
       "id": "M9",
       "mandatory_for_core_ga": true,
       "started": false,
-      "state": "BLOCKED_DEPENDENCY",
+      "state": "READY",
       "title": "Final V1 Migration / Upgrade Acceptance"
     },
     {
@@ -2965,7 +3392,7 @@
     "branch": "codex/artifex-2-m7-qualification-live",
     "canonical_integration_baseline": "2ea4a38e1bc18a2aa3535a1d224f508ca6561d88",
     "current_milestone": "M7",
-    "current_status": "ACTIVE",
+    "current_status": "ACCEPTED",
     "dashboard_state": "CURRENT",
     "directory_variance": "PACKAGING_NAME_VARIANCE_ACCEPTED",
     "handoff_declared_directory": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF",
@@ -2986,7 +3413,7 @@
     "m8a_started": true,
     "m8b_started": true,
     "m8c_started": true,
-    "next_integration_point": "Approve administrator-owned Codex native elevated-sandbox setup on VM105 while the ARTIFEX service stays least privilege, then run one candidate-bound Codex J01 and J16 qualification",
+    "next_integration_point": "Integrate the accepted M7 baseline on canonical main, canonicalize milestone provenance, then activate M9 from that exact baseline",
     "recorded_date": "2026-08-31",
     "target_release": "2.0.0"
   },
@@ -3271,36 +3698,35 @@
   },
   "schema_version": "1.0",
   "summary": {
-    "acceptance_classes_passing": 7,
+    "acceptance_classes_passing": 10,
     "acceptance_classes_required": 10,
     "active_blockers": 3,
     "adr_count": 24,
     "current_milestone": "M7",
-    "current_milestone_progress_percent": 70,
-    "evidence_items": 122,
+    "current_milestone_progress_percent": 100,
+    "evidence_items": 202,
     "invariant_count": 34,
     "journey_states": {
       "BLOCKED_EXTERNAL_PREREQUISITE": 1,
-      "FAIL_V13_CODEX_NATIVE_FASTFAIL_LEAST_PRIVILEGE": 1,
       "NOT_STARTED": 3,
-      "PARTIAL_PASS_CLAUDE_V14_CODEX_BLOCKED": 1,
-      "PASS": 14
+      "PASS": 16
     },
-    "milestones_accepted": 8,
+    "milestones_accepted": 9,
     "milestones_started": 11,
     "milestones_total": 16,
-    "program_progress_percent": 50,
+    "program_progress_percent": 56,
     "provider_step_states": {
       "IN_PROGRESS": 2,
       "NOT_APPLICABLE": 10,
       "NOT_STARTED": 55,
       "PASS": 28
     },
-    "ready_milestones": [],
+    "ready_milestones": [
+      "M9"
+    ],
     "workstream_states": {
-      "ACTIVE": 2,
       "BLOCKED_EXTERNAL_PREREQUISITE": 2,
-      "COMPLETE": 18
+      "COMPLETE": 20
     }
   },
   "target_system": {
@@ -3714,7 +4140,7 @@
         "J16",
         "OUTCOME-ACCEPTANCE-POLICY"
       ],
-      "state": "ACTIVE",
+      "state": "COMPLETE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m7-qualification-live"
     },
     {
@@ -3732,7 +4158,7 @@
         "ADR-T015",
         "FROZEN-INVARIANTS"
       ],
-      "state": "ACTIVE",
+      "state": "COMPLETE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m7-qualification-live"
     }
   ]

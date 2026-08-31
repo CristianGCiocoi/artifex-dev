@@ -1,0 +1,6 @@
+{
+  "diagnostic": "shipping installer failed with normalized exit code 1",
+  "error": "JourneyFailure",
+  "schema_version": "1.0",
+  "status": "FAIL"
+}

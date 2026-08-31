@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "status": "FAIL",
+  "vm_id": 105,
+  "candidate_sha256": "d2eca5a686daca7c58239618e03940dba30b2025fadc56d96e907ddb4b72d40f",
+  "process_name": "ARTIFEX-Setup.exe",
+  "process_id": 10080,
+  "started_at_utc": "2026-08-31T02:29:16.4972832Z",
+  "observed_active_at_utc": "2026-08-31T02:33:20Z",
+  "observed_active_after_seconds": 243.503,
+  "child_processes_at_observation": 0,
+  "installed_executable_present": false,
+  "harness_timeout_seconds": 180,
+  "credential_material_extracted": false,
+  "diagnostic": "silent installer remained active beyond the qualification timeout after its lifecycle child had exited"
+}

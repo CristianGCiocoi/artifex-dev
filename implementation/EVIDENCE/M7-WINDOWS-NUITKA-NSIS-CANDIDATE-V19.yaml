@@ -1,0 +1,68 @@
+schema_version: '1.0'
+evidence_id: EVD-M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V19
+recorded_date: '2026-08-31'
+scope: SINGLE_EXACT_CODEX_EXECUTION_WORKSPACE_ACL_BOUND_SHIPPING_CANDIDATE_FOR_ALL_M7_WINDOWS_CORE_CELLS
+authority:
+  decision: ARCHITECT_PRODUCT_PACKAGING_DISPOSITION
+  decision_sha256: d3cf45b8589992abc8acb6f86f00a85d426b4ef94d8f88009be081d52a4a36ca
+  primary_packaging: NUITKA_STANDALONE_PLUS_NSIS
+  onefile_authorized: false
+  fallback_invoked: false
+artifact:
+  name: ARTIFEX-Setup.exe
+  sha256: 16d6a1bc86f0c58aa4e133d44eeeb035ca81080915038db54bcdde2f1eaaeb34
+  bytes: 23184322
+  format: nuitka-standalone+nsis
+  source_commit: aca9ec8e76e45cb2e5027d96a678ca5d1a8767c0
+  product_version: 1.0.0
+  platform: windows
+  architecture: x86_64
+  nuitka_version: '4.2'
+  nsis_version: '3.12'
+  python_version: 3.12.13
+  standalone_executable_sha256: b761db7fd5fb47752eb02b4944abe37edb9d494c24404fd9a362f56e690377fd
+  bundle_file_inventory_count: 80
+  provenance_sha256: 3c35d1efb5b95dde57983a10f60c096d15775e86d15f24a2b6278856eb496ca5
+  qualification_harness_source_commit: 31b86866f653a2b6fae1d1595bedae14bdc622e7
+  qualification_harness_sha256: 875d497095abe871fe6347930e7fb5194ddc74206042d7d2b0837b5c9fb0ee12
+  qualification_runner_sha256: c70b73e656f4ff715c9fabe698086c23d08af7d9a87d0d23a65ccc9361c57a3e
+defect_remediation:
+  source_failures:
+  - EVIDENCE/M7-WINDOWS-CODEX-VM105-V18-PROVIDER-PROCESS-ATTEMPT2-FAIL.json
+  - EVIDENCE/M7-WINDOWS-CODEX-VM105-V18-INTERACT-FAIL.json
+  confirming_evidence:
+  - EVIDENCE/M7-WINDOWS-CODEX-VM105-V18-WORKSPACE-ACL-DIAGNOSTIC-PASS.json
+  classification: EXECUTION_WORKSPACE_MISSING_CODEX_SANDBOX_MODIFY_ACL
+  workspace_acl_scope: VERIFIED_EXECUTION_WORKSPACE_ONLY
+  codex_sandbox_principal: LOCAL_CODEX_SANDBOX_USERS
+  codex_sandbox_workspace_access: MODIFY
+  runstore_and_token_roots_private: true
+  artifex_service_elevated: false
+  least_privilege_provider_execution_preserved: true
+  journey_contract_changed: false
+build_validation:
+  command: uv run --python 3.12 python packaging/build_windows_installer.py --clean --smoke
+  result: PASS
+  focused_codex_interaction_installer_tests: 40_PASS
+  final_full_validation: PENDING_AFTER_CORE_CELL_PROOF
+  ruff: PASS_CHANGED_SCOPE
+  mypy_strict: PASS_93_SOURCE_FILES
+  control_plane: PENDING_FINAL_REGENERATION
+security_preflight:
+  developer_host:
+    evidence: EVIDENCE/M7-WINDOWS-V19-HOST-DEFENDER-PREFLIGHT.json
+    microsoft_defender_realtime_enabled: true
+    custom_scan: PASS_ZERO_DETECTIONS
+    candidate_retained: true
+qualification_state:
+  M7-WIN-NOPROVIDER: PENDING_V19_REBIND_AFTER_CODEX
+  M7-WIN-CODEX: READY_V19_REBIND_FROM_CLEAN_V18_PROVIDER_BASE
+  M7-WIN-CLAUDE: PENDING_V19_REBIND_AFTER_CODEX
+  m7_status: ACTIVE
+  active_blockers: []
+historical_evidence_preserved:
+- EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V18.yaml
+- EVIDENCE/M7-WINDOWS-CODEX-VM105-V18-INTERACT-FAIL.json
+- EVIDENCE/M7-WINDOWS-CODEX-VM105-V18-PROVIDER-PROCESS-ATTEMPT2-FAIL.json
+- EVIDENCE/M7-WINDOWS-CODEX-VM105-V18-WORKSPACE-ACL-DIAGNOSTIC-PASS.json
+verdict: V19_CANDIDATE_READY_FOR_CODEX_CELL_FIRST

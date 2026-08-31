@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "status": "PASS",
+  "vm_id": 106,
+  "provider_id": "claude",
+  "provider_version": "2.1.247",
+  "provider_executable_sha256": "00e5be0a8b69893cad9259a1e8b80d59be8f3eb367d4a16c19f91bcd279423b7",
+  "shipping_artifact_sha256": "d7d5ddcbffdcce9f3818801aa8a1cd00b2253343da57de3bd3369604329823a5",
+  "operation": "providers.interact",
+  "process_exit_code": 0,
+  "public_cli_json_valid": true,
+  "live": true,
+  "simulated": false,
+  "response_exact": "ARTIFEX_INTERACTION diagnostic-v15",
+  "stdout_sha256": "f997c34566d76fd214e6675886e868841ca4bb28cd93233b4fa339d48c6b3346",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "credential_material_extracted": false,
+  "canonical_acceptance": false
+}

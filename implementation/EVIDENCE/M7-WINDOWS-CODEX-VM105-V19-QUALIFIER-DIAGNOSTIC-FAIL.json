@@ -1,0 +1,7 @@
+{
+  "credential_material_extracted": false,
+  "error_message": "public process call fields invalid; missing=[], extra=['frontend_detached']",
+  "error_type": "M7EvidenceError",
+  "schema_version": "1.0",
+  "status": "DIAGNOSTIC_FAIL"
+}

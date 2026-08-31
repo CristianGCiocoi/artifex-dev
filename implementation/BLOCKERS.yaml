@@ -3,8 +3,8 @@ blockers:
 - id: BLK-M7-CODEX-PROVIDER-BLOCKED
   scope: M7_ACCEPTANCE
   class: HUMAN_ENVIRONMENT
-  status: OPEN_CODEX_NATIVE_SANDBOX_SETUP_REQUIRED
-  summary: Exact Codex 0.150.1 authentication passes, but its unelevated Windows sandbox fast-fails identically under an independent least-privilege InteractiveToken task; the ARTIFEX service cannot be elevated without violating the frozen security boundary
+  status: RESOLVED_V21_CODEX_J01_J16_INDEPENDENT_QUALIFICATION_PASS
+  summary: Historical Codex 0.150.1 native fast-fail was resolved without elevating the ARTIFEX service; exact Codex 0.151.0 now passes J01 and J16 from the candidate-bound standalone V21 cell under the accepted least-privilege execution boundary
   evidence:
   - EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-FAILURE.json
   - EVIDENCE/M7-WINDOWS-CODEX-VM105-V10-DURABLE-BLOCKED.json
@@ -35,8 +35,12 @@ blockers:
   - EVIDENCE/M7-WINDOWS-CODEX-POST-FAILURE-CONTROL-V13.json
   - EVIDENCE/M7-WINDOWS-CODEX-LEAST-PRIVILEGE-CONTROL-V13.json
   - EVIDENCE/M7-WINDOWS-CODEX-VM105-V13-DURABLE-BLOCKED.json
+  - EVIDENCE/M7-WINDOWS-CODEX-PROVIDER-READY-ATTESTATION-VM105-V21.json
+  - EVIDENCE/M7-WINDOWS-CODEX-VM105-V21-PASS.json
+  - EVIDENCE/M7-WINDOWS-CODEX-VM105-V21-QUALIFIED.json
+  - EVIDENCE/M7-WINDOWS-CORE-V21-VALIDATION.json
   required_authority: HUMAN_ENVIRONMENT_OWNER
-  resolution: Explicitly approve and complete the administrator-owned native Codex elevated-sandbox setup on VM105 while retaining the least-privilege ARTIFEX service, then run one new candidate-bound Codex qualification
+  resolution: Environment-owner approval was exercised, the provider was upgraded and rebound to the exact V21 candidate, and independent qualification passed without expanding ARTIFEX service privilege
   unrelated_work_may_continue: true
 - id: BLK-M8C-DEEPSEEK-LIVE-PREREQUISITES
   scope: M8C

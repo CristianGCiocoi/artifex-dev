@@ -1,0 +1,23 @@
+{
+  "artifex_service_elevation": false,
+  "config_elevated_selected": true,
+  "config_sha256": "f5273b8f30fa5a951c3cbcce3eccdd8a584d9982d6d0b6580795cbcede68b73d",
+  "provider_executable_sha256": "cf68265897197ac5f3bff6a10c168eec159842b353129726da5e3ed6b91ef0f4",
+  "provider_version": "codex-cli 0.151.0",
+  "purpose": "administrator-owned Codex native elevated sandbox setup only",
+  "response_exact": true,
+  "response_sha256": "748fe6d82839e3cf6f722262dc30d5b6d473cfc342165cd0e6ecc3e064cd1bfa",
+  "returncode": 0,
+  "sandbox_log_bytes": null,
+  "sandbox_log_exists": false,
+  "schema_version": "1.0",
+  "setup_marker_bytes": 255,
+  "setup_marker_exists": true,
+  "setup_marker_sha256": "646254ec4e99b975e10176125c0f90c1be7e06607bd3189ec68be6bc25a90b11",
+  "status": "PASS",
+  "stderr_bytes": 143,
+  "stderr_sha256": "a425ef223641a4261d43f9b593188d6e820147b2c5c8ad5b61efb641c0004905",
+  "stdout_bytes": 384,
+  "stdout_sha256": "b9c40f6c12dd1248b8ef469850a7b1674ef77b767d0124415d105f8ffce7ac94",
+  "task_high_integrity": true
+}

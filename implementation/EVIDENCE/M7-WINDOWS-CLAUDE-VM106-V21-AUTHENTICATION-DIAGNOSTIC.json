@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "status": "FAIL",
+  "vm_id": 106,
+  "provider_id": "claude",
+  "provider_version": "2.1.247",
+  "operation": "providers.interact",
+  "provider_error": "authentication_failed",
+  "project_log_records_inspected": 8,
+  "credential_files_read": false,
+  "credential_material_extracted": false,
+  "canonical_acceptance": false
+}

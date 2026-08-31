@@ -1,0 +1,17 @@
+{
+  "codex_process_count": 1,
+  "credential_material_extracted": false,
+  "error_code": null,
+  "error_type": null,
+  "frontend_independent": true,
+  "json_object": true,
+  "lifecycle_state": "RUNNING",
+  "ok": true,
+  "returncode": 0,
+  "schema_version": "1.0",
+  "status": "PASS",
+  "stderr_bytes": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_bytes": 715,
+  "stdout_sha256": "333a95795f92a71685e5fd4337ec50633e99925fb74cc83687089930c188e793"
+}

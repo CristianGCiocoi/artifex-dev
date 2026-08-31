@@ -1,0 +1,26 @@
+{
+  "candidate": {
+    "artifact_bytes": 23184318,
+    "artifact_name": "ARTIFEX-Setup.exe",
+    "artifact_sha256": "74c99dff2c18a9b0da42b36746d6ab0425e5811898d9d879190e28ddf9fe9ddb",
+    "source_commit": "777cd3a6bdc3ce64be41f2af598e6b54cc69199a"
+  },
+  "cells": {
+    "M7-WIN-CLAUDE": "467af2aa132ab47d98c241b4a8cad7399d70ea52805394264831ecfcd41a866c",
+    "M7-WIN-CODEX": "c5754b213cef72fa3cf36027b9ef3123f19042f11f75e2f1ad6c0210826062ed",
+    "M7-WIN-NOPROVIDER": "6a604cd375362ded666cbeb5d21b6c3425f591755e2137804d2540d070dc9c16"
+  },
+  "combined_provider_cell_claimed": false,
+  "journeys": {
+    "J01": "PASS",
+    "J02": "PASS",
+    "J10": "PASS",
+    "J16": "PASS"
+  },
+  "linux_macos_required_by_m7_disposition": false,
+  "matrix": "M7_WINDOWS_11_25H2_X86_64_CORE_STANDALONE",
+  "schema_version": "1.0",
+  "selected_windows_build": "26200",
+  "selected_windows_version": "25H2",
+  "status": "PASS"
+}

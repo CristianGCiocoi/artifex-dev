@@ -10,11 +10,11 @@
 - Intake baseline: `5cc5dcfeb420a6df171a44426c04a0f08fa1e877`
 - Branch: `codex/artifex-2-m7-qualification-live`
 - Current milestone: `M7`
-- Current status: `ACTIVE`
-- Accepted milestones: `M0, M1, M2, M3, M4, M5, M6A, M8A`
-- Ready milestones: `none`
+- Current status: `ACCEPTED`
+- Accepted milestones: `M0, M1, M2, M3, M4, M5, M6A, M7, M8A`
+- Ready milestones: `M9`
 - Latest accepted commit: `d7fa3c4ad419bd97e401ad765128dc3560484d90`
-- Next integration point: `Approve administrator-owned Codex native elevated-sandbox setup on VM105 while the ARTIFEX service stays least privilege, then run one candidate-bound Codex J01 and J16 qualification`
+- Next integration point: `Integrate the accepted M7 baseline on canonical main, canonicalize milestone provenance, then activate M9 from that exact baseline`
 - M7 started: `true`
 
 ## Work
@@ -27,7 +27,7 @@
 
 ## Acceptance
 
-- M7 verdict: `ACTIVE_V14_CLAUDE_AND_J10_PASS_CODEX_SANDBOX_SETUP_BLOCKED`
-- Mandatory work complete: `false`
+- M7 verdict: `ACCEPTED`
+- Mandatory work complete: `true`
 - Mandatory journeys: `J01, J02, J10, J16`
-- Next integration point: `Approve administrator-owned Codex native elevated-sandbox setup on VM105 while the ARTIFEX service stays least privilege, then run one candidate-bound Codex J01 and J16 qualification`
+- Next integration point: `Integrate the accepted M7 baseline on canonical main, canonicalize milestone provenance, then activate M9 from that exact baseline`

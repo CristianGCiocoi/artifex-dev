@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0",
+  "status": "RESOLVED_BY_V15_CANDIDATE",
+  "vm_id": 105,
+  "candidate_sha256": "6a45d787120d41ea75dd1cd9f6dc3efe9c33d6b1f5cb6ddf77d07af77105405b",
+  "source_commit": "077b08c86c85257f19a93846e4e435275686e727",
+  "inner_executable_sha256": "ad7cade370cb5690d8eca51155d39fafc093760d523a53f81b5852328b0f625a",
+  "observed_shipping_installer_failure": {
+    "error": "TimeoutExpired",
+    "diagnostic": "operating-system failure during provider-shipping-installer",
+    "outer_timeout_seconds": 180
+  },
+  "isolated_inner_failure": {
+    "operation": "_installer-lifecycle install",
+    "diagnostic": "artifact identity probe failed: TimeoutExpired",
+    "identity_probe_timeout_seconds": 10,
+    "stderr_evidence_sha256": "586b699cf160eb3fd8ed726918ec648f3e02ba0fb8004e0ae678814670b74a6e"
+  },
+  "environment_finding": {
+    "orphan_qga_poll_process_count": 3,
+    "orphan_process_ids": [5624, 3636, 8616],
+    "scope": "session-0 PowerShell processes created by timed-out M7 poll diagnostics",
+    "rdp_processes_affected": false,
+    "vm101_affected": false
+  },
+  "post_cleanup_identity_probe": {
+    "status": "PASS",
+    "elapsed_seconds": 3.501,
+    "exit_code": 0,
+    "timing_evidence_sha256": "e2e874c1913218a10af374b77b78e25b4f2790c33d85f37f0ee4bd378efe3e53"
+  },
+  "controlled_clean_retry": {
+    "snapshot": "m7-codex-provider-ready-v14-clean-final",
+    "snapshot_memory_bytes": 3317854208,
+    "status": "FAIL",
+    "diagnostic": "operating-system failure during provider-shipping-installer",
+    "error": "TimeoutExpired"
+  },
+  "disposition": "V14 remained non-qualifying on VM105 after clean RAM-snapshot restore. Build one immutable replacement candidate with a bounded 60-second cold-start identity probe while retaining the mandatory identity check, the 180-second journey installer envelope, and all frozen J01/J16 criteria."
+}

@@ -1,0 +1,74 @@
+schema_version: '1.0'
+evidence_id: EVD-M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V17
+recorded_date: '2026-08-31'
+scope: SINGLE_EXACT_BOUNDED_SILENT_SHIPPING_CANDIDATE_FOR_ALL_M7_WINDOWS_CORE_CELLS
+authority:
+  decision: ARCHITECT_PRODUCT_PACKAGING_DISPOSITION
+  decision_sha256: d3cf45b8589992abc8acb6f86f00a85d426b4ef94d8f88009be081d52a4a36ca
+  primary_packaging: NUITKA_STANDALONE_PLUS_NSIS
+  onefile_authorized: false
+  fallback_invoked: false
+artifact:
+  name: ARTIFEX-Setup.exe
+  sha256: dc822f3fd87f61d5a385b986bc08bd1e619faf9120aad5a6300340f9549e4d10
+  bytes: 23182233
+  format: nuitka-standalone+nsis
+  source_commit: 2bce4652fba52ce9c035ab964ac94bda67273b9e
+  product_version: 1.0.0
+  platform: windows
+  architecture: x86_64
+  nuitka_version: '4.2'
+  nsis_version: '3.12'
+  python_version: 3.12.13
+  standalone_executable_sha256: cf05628f2810f84a1cd23f7973af39142216b61e98d33248d5957ed5c050b96a
+  bundle_file_inventory_count: 80
+  provenance_sha256: a511c191c06262643982a3872846ee7e11994c6f05f4abf77cff68e02dd4a1d3
+  qualification_harness_source_commit: 31b86866f653a2b6fae1d1595bedae14bdc622e7
+  qualification_harness_sha256: 875d497095abe871fe6347930e7fb5194ddc74206042d7d2b0837b5c9fb0ee12
+  qualification_runner_sha256: c70b73e656f4ff715c9fabe698086c23d08af7d9a87d0d23a65ccc9361c57a3e
+defect_remediation:
+  source_failures:
+  - EVIDENCE/M7-WINDOWS-CODEX-VM105-V16-INSTALLER-TIMEOUT-FAIL.json
+  - EVIDENCE/M7-WINDOWS-CODEX-VM105-V16-INNER-LIFECYCLE-DIAGNOSTIC-PASS.json
+  classification: NSIS_SOLID_EXTRACTION_AND_SILENT_DIALOG_BLOCKING_RISK
+  nsis_compressor: zlib
+  nsis_solid_compression: false
+  silent_message_box_default_required: true
+  silent_message_box_default: IDOK
+  manifest_validation_required: true
+  full_bundle_inventory_validation_required: true
+  executable_digest_validation_required: true
+  runtime_identity_validation_required: true
+  running_artifact_path_binding_required: true
+  external_identity_processes_per_plan_apply: 0
+  fail_closed_identity_validation_preserved: true
+  journey_installer_timeout_seconds: 180
+  journey_contract_changed: false
+build_validation:
+  command: uv run --python 3.12 python packaging/build_windows_installer.py --clean --smoke
+  result: PASS
+  focused_windows_installer_tests: 5_PASS
+  first_full_validation: 165_PASS_1_WINDOWS_ATOMIC_REPLACE_TRANSIENT_7_SKIP
+  transient_test_isolated_rerun: PASS
+  final_full_validation: 166_PASS_7_SKIP_SYMLINK_UNAVAILABLE
+  ruff: PASS_TRACKED_SOURCE_TEST_TOOL_PACKAGING_SCRIPT_SCOPE
+  mypy_strict: PASS_93_SOURCE_FILES
+  control_plane: PASS
+security_preflight:
+  developer_host:
+    evidence: EVIDENCE/M7-WINDOWS-V17-HOST-DEFENDER-PREFLIGHT.json
+    microsoft_defender_realtime_enabled: true
+    custom_scan: PASS_ZERO_DETECTIONS
+    candidate_retained: true
+qualification_state:
+  M7-WIN-NOPROVIDER: READY_V17_REBIND
+  M7-WIN-CODEX: READY_V17_REBIND
+  M7-WIN-CLAUDE: READY_V17_REBIND
+  m7_status: ACTIVE
+  active_blockers: []
+historical_evidence_preserved:
+- EVIDENCE/M7-WINDOWS-NUITKA-NSIS-CANDIDATE-V16.yaml
+- EVIDENCE/M7-WINDOWS-NOPROVIDER-VM104-V16-PASS.json
+- EVIDENCE/M7-WINDOWS-CLAUDE-VM106-V15-PASS.json
+- EVIDENCE/M7-WINDOWS-CODEX-VM105-V16-INSTALLER-TIMEOUT-FAIL.json
+verdict: V17_CANDIDATE_READY_FOR_ALL_THREE_WINDOWS_CORE_CELLS
