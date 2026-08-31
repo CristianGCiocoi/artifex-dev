@@ -49,13 +49,13 @@ foreach ($required in ($python, $harness, $artifact, $executable, (Join-Path $v1
     }
 }
 
-if (Test-Path -LiteralPath $failedRoot) {
-    throw 'The preserved J09 attempt-one failure already exists.'
-}
 if (Test-Path -LiteralPath $qualificationRoot) {
+    if (Test-Path -LiteralPath $failedRoot) {
+        throw 'The preserved J09 attempt-one failure already exists.'
+    }
     Move-Item -LiteralPath $qualificationRoot -Destination $failedRoot
 }
-if (Test-Path -LiteralPath $output -or Test-Path -LiteralPath $log) {
+if ((Test-Path -LiteralPath $output) -or (Test-Path -LiteralPath $log)) {
     throw 'A prior J09 output or diagnostic log would be overwritten.'
 }
 
