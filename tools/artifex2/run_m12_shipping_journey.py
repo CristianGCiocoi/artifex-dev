@@ -21,6 +21,7 @@ from typing import Any
 from tools.artifex2.run_m7_shipping_journey import (
     JourneyFailure,
     ShippingCLI,
+    _durable_provider_execution,
     _file_sha256,
     _find_provider,
     _git,
@@ -32,7 +33,6 @@ from tools.artifex2.run_m7_shipping_journey import (
     _role_states,
     _running_service_value,
     _value,
-    _wait_for_durable_provider_execution,
     _wait_for_process_exit,
     _wait_for_service,
 )
@@ -270,16 +270,36 @@ def _detach_provider_frontend(
             "stderr_sha256": hashlib.sha256(b"").hexdigest(),
         }
     )
-    return _wait_for_durable_provider_execution(
-        cli,
-        common=common,
-        project_root=project_root,
-        state_root=state_root,
-        provider_id=provider_id,
-        run_id=run_id,
-        project_job_id=project_job_id,
-        attempt_id=attempt_id,
+    poll_cli = ShippingCLI(
+        cli.executable,
+        cwd=cli.cwd,
+        timeout_seconds=15,
     )
+    deadline = time.monotonic() + 900
+    while time.monotonic() < deadline:
+        try:
+            status = _value(
+                poll_cli.service_call(
+                    "runtime.status",
+                    {**common, "run_id": run_id},
+                    project_root=project_root,
+                    state_root=state_root,
+                )
+            )
+        except (JourneyFailure, subprocess.TimeoutExpired):
+            time.sleep(2)
+            continue
+        execution = _durable_provider_execution(
+            status,
+            provider_id=provider_id,
+            project_job_id=project_job_id,
+            attempt_id=attempt_id,
+        )
+        if execution is not None:
+            cli.calls.extend(poll_cli.calls)
+            return execution
+        time.sleep(2)
+    raise JourneyFailure("provider execution did not reach a durable terminal state")
 
 
 def run_j20(
