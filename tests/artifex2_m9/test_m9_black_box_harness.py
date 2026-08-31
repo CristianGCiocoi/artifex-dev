@@ -10,6 +10,7 @@ from tools.artifex2.qualify_m9_black_box import (
     QualificationFailure,
     _assert_migration_validation,
     _blocked,
+    _git_native_path,
     _installed_identity,
 )
 
@@ -69,3 +70,12 @@ def test_black_box_validation_and_blocker_are_fail_closed_and_secret_safe() -> N
     blocked = _blocked("TEST", "failed approve-sensitive-value")
     assert "approve-sensitive-value" not in json.dumps(blocked)
     assert blocked["status"] == "BLOCKED"
+
+
+def test_git_native_path_removes_windows_device_prefixes() -> None:
+    assert _git_native_path(Path(r"\\?\E:\ARTIFEX-V1.BUNDLE")) == (
+        r"E:\ARTIFEX-V1.BUNDLE"
+    )
+    assert _git_native_path(Path(r"\\?\UNC\server\share\v1.bundle")) == (
+        r"\\server\share\v1.bundle"
+    )

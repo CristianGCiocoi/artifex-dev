@@ -43,6 +43,17 @@ def _sha256_text(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
+def _git_native_path(path: Path) -> str:
+    """Translate Win32 device paths into syntax accepted by Git for Windows."""
+
+    value = str(path)
+    if value.startswith("\\\\?\\UNC\\"):
+        return "\\\\" + value[len("\\\\?\\UNC\\") :]
+    if value.startswith("\\\\?\\"):
+        return value[len("\\\\?\\") :]
+    return value
+
+
 def _scrub(value: str) -> str:
     text = re.sub(r"approve-[A-Za-z0-9_-]+", "<approval-redacted>", value)
     text = re.sub(
@@ -81,7 +92,7 @@ def _git(
     cwd: Path | None = None,
 ) -> str:
     completed = _run(
-        ["git", "-C", str(root), *arguments],
+        ["git", "-C", _git_native_path(root), *arguments],
         cwd=cwd or root,
         environment=environment,
     )
@@ -225,8 +236,8 @@ def _clone_v1(
             "clone",
             "--no-hardlinks",
             "--no-checkout",
-            str(source_repository),
-            str(destination),
+            _git_native_path(source_repository),
+            _git_native_path(destination),
         ],
         cwd=destination.parent,
         environment=environment,
