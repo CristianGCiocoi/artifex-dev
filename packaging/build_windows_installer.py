@@ -125,6 +125,9 @@ def main() -> int:
         "--output-dir=" + str(work),
         "--output-filename=artifex.exe",
         "--report=" + str(report),
+        # Migration backups call sqlite3.iterdump(), which imports sqlite3.dump
+        # dynamically. Keep the standard-library helper in the native bundle.
+        "--include-module=sqlite3.dump",
         "--include-data-dir=" + str(root / "schemas") + "=artifex/schemas",
         "--include-data-dir=" + str(root / "interface_packs") + "=interface_packs",
         "--product-name=ARTIFEX",
