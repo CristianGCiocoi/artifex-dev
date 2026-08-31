@@ -23,28 +23,41 @@ def test_installer_bridge_uses_install_then_upgrade_without_weakening_approval(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     calls: list[tuple[str, str | None]] = []
+    probes: list[object] = []
+
+    def plan(token: str):
+        def capture(*args: object, **kwargs: object) -> SimpleNamespace:
+            probes.append(kwargs["identity_probe"])
+            return SimpleNamespace(confirmation_token=token)
+
+        return capture
+
     monkeypatch.setattr(
         windows_installer,
         "install_plan",
-        lambda *args, **kwargs: SimpleNamespace(confirmation_token="install-token"),
+        plan("install-token"),
     )
     monkeypatch.setattr(
         windows_installer,
         "install",
         lambda *args, **kwargs: (
-            calls.append(("install", kwargs["confirmation_token"])) or _Result("install")
+            probes.append(kwargs["identity_probe"])
+            or calls.append(("install", kwargs["confirmation_token"]))
+            or _Result("install")
         ),
     )
     monkeypatch.setattr(
         windows_installer,
         "upgrade_plan",
-        lambda *args, **kwargs: SimpleNamespace(confirmation_token="upgrade-token"),
+        plan("upgrade-token"),
     )
     monkeypatch.setattr(
         windows_installer,
         "upgrade",
         lambda *args, **kwargs: (
-            calls.append(("upgrade", kwargs["confirmation_token"])) or _Result("upgrade")
+            probes.append(kwargs["identity_probe"])
+            or calls.append(("upgrade", kwargs["confirmation_token"]))
+            or _Result("upgrade")
         ),
     )
     source = tmp_path / "candidate" / "artifex.exe"
@@ -58,6 +71,39 @@ def test_installer_bridge_uses_install_then_upgrade_without_weakening_approval(
     (root / windows_installer.MANIFEST_NAME).write_text("{}", encoding="utf-8")
     assert windows_installer.apply_installer(source, root, state)["operation"] == "upgrade"
     assert calls == [("install", "install-token"), ("upgrade", "upgrade-token")]
+    assert probes == [windows_installer._running_artifact_identity] * 4
+
+
+@pytest.mark.adversarial
+def test_installer_in_process_identity_is_frozen_and_path_bound(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source = (tmp_path / "candidate" / "artifex.exe").resolve()
+    source.parent.mkdir()
+    source.write_bytes(b"candidate")
+    identity = {
+        "product": "ARTIFEX",
+        "version": "1.0.0",
+        "format": "nuitka-standalone",
+        "artifact": "artifex.exe",
+        "sha256": "a" * 64,
+    }
+    monkeypatch.setattr(windows_installer.sys, "argv", [str(source)])
+    monkeypatch.setattr(
+        windows_installer, "runtime_release_identity", lambda: identity
+    )
+
+    assert windows_installer._running_artifact_identity(source, 60) == identity
+    with pytest.raises(ValueError, match="not the running artifact"):
+        windows_installer._running_artifact_identity(tmp_path / "other.exe", 60)
+
+    monkeypatch.setattr(
+        windows_installer,
+        "runtime_release_identity",
+        lambda: {**identity, "format": "python-source", "sha256": None},
+    )
+    with pytest.raises(ValueError, match="frozen runtime identity"):
+        windows_installer._running_artifact_identity(source, 60)
 
 
 @pytest.mark.unit
