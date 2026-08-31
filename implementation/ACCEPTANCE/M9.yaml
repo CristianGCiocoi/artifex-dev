@@ -1,0 +1,24 @@
+schema_version: '1.0'
+milestone: M9
+contract_digest: af6f2fa7ac2ae06942d9dfd4531ee384d75aed4d434c4e7a41a54b7fb6bd3d52
+implementation_baseline_commit: 72a7f8b5c5b470760eaf4d85f2b4c19db6cc83f6
+acceptance_commit: null
+frozen_architecture_baseline: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
+mandatory_work_complete: false
+blocked: []
+superseded: []
+evidence_classes:
+  DESIGN_CONFORMANCE: {required_m9: true, status: NOT_STARTED, evidence: []}
+  COMPONENT: {required_m9: true, status: NOT_STARTED, evidence: []}
+  DOMAIN_INTEGRATION: {required_m9: true, status: NOT_STARTED, evidence: []}
+  PUBLIC_COMPOSITION: {required_m9: true, status: NOT_STARTED, evidence: []}
+  BLACK_BOX_OUTCOME: {required_m9: true, status: NOT_STARTED, evidence: []}
+  SECURITY_AUTHORITY: {required_m9: true, status: NOT_STARTED, evidence: []}
+  DOCUMENTATION: {required_m9: true, status: NOT_STARTED, evidence: []}
+  DASHBOARD: {required_m9: true, status: NOT_STARTED, evidence: []}
+  MIGRATION: {required_m9: true, status: NOT_STARTED, evidence: []}
+  PROVIDER_CERTIFICATION: {required_m9: true, status: NOT_STARTED, evidence: []}
+mandatory_journeys: [J09]
+unresolved_contradiction: null
+migration: INSPECT_DRY_RUN_ACTIVE_NO_PROJECT_MUTATION
+verdict: ACTIVE

@@ -131,12 +131,13 @@ journeys:
   blocker: null
 - id: J09
   title: J09 — V1 Migration
-  status: NOT_STARTED
-  environment: null
-  public_shipping_composition: null
-  evidence: []
+  status: ACTIVE
+  environment: IMMUTABLE_V1_RELEASE_FIXTURE_COPY_WITH_SHIPPING_ARTIFEX_2_0
+  public_shipping_composition: ARTIFEX_SETUP_NUITKA_NSIS_PUBLIC_MANAGED_SERVICE
+  evidence:
+  - MIGRATION/V1-RELEASE-FIXTURE.yaml
   last_run: null
-  blocker: M0 has no mandatory journeys; milestone dependencies not accepted
+  blocker: null
 - id: J10
   title: J10 — No Automated Provider
   status: PASS
