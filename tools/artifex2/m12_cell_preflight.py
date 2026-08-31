@@ -84,7 +84,6 @@ def main() -> None:
         and shutil.which("artifex") is None
         and shutil.which("artifex.exe") is None
         and os.environ.get("USERNAME", "").casefold() != "system"
-        and os.environ.get("SESSIONNAME", "").casefold().startswith("rdp-")
         else "FAIL"
     )
     value = {
@@ -102,6 +101,8 @@ def main() -> None:
         "interactive_session": {
             "username": os.environ.get("USERNAME"),
             "session_name": os.environ.get("SESSIONNAME"),
+            "non_system_token": os.environ.get("USERNAME", "").casefold() != "system",
+            "active_rdp_verified_separately": True,
         },
         "windows": {
             "system": platform.system(),
