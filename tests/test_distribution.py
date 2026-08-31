@@ -300,8 +300,8 @@ def test_nuitka_runtime_identity_uses_compiled_launcher(
     digest = hashlib.sha256(executable.read_bytes()).hexdigest()
     assert identity == {
         "product": "ARTIFEX",
-        "version": "1.0.0",
-        "build_id": f"artifex-1.0.0-{artifact.canonical_platform()}-"
+        "version": "2.0.0",
+        "build_id": f"artifex-2.0.0-{artifact.canonical_platform()}-"
         f"{artifact.canonical_architecture()}-{digest[:16]}",
         "format": "nuitka-standalone",
         "platform": artifact.canonical_platform(),

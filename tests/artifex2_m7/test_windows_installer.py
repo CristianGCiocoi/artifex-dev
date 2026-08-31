@@ -83,7 +83,7 @@ def test_installer_in_process_identity_is_frozen_and_path_bound(
     source.write_bytes(b"candidate")
     identity = {
         "product": "ARTIFEX",
-        "version": "1.0.0",
+        "version": "2.0.0",
         "format": "nuitka-standalone",
         "artifact": "artifex.exe",
         "sha256": "a" * 64,

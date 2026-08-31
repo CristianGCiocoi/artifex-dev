@@ -1,0 +1,89 @@
+schema_version: artifex.m12-release-claim-matrix/v1
+target_release: 2.0.0
+contract_digest: 54529f748cac59ce8b57e2f9a8376fe51c515e0ffca6b0b7da51ae2cbc5a2c6a
+status: ACTIVE_PENDING_EXACT_CANDIDATE
+candidate:
+  source_commit: null
+  artifact_sha256: null
+  product_version: 2.0.0
+  provenance_sha256: null
+  signing:
+    status: UNSIGNED
+    release_claim: NOT_CLAIMED
+    reason: No authorized Authenticode signing identity has been supplied; hash and provenance qualification remain mandatory.
+qualification_cells:
+- id: M12-WIN-CODEX
+  os: Windows 11 25H2 x64
+  environment: CLEAN_VM
+  provider_state: {codex: INSTALLED_CONFIGURED_AUTHENTICATED, claude: ABSENT}
+  journeys: [J01, J16]
+  status: PENDING_EXACT_CANDIDATE
+- id: M12-WIN-CLAUDE
+  os: Windows 11 25H2 x64
+  environment: CLEAN_VM
+  provider_state: {codex: ABSENT, claude: INSTALLED_CONFIGURED_AUTHENTICATED}
+  journeys: [J02, J16]
+  status: PENDING_EXACT_CANDIDATE
+- id: M12-WIN-NOPROVIDER
+  os: Windows 11 25H2 x64
+  environment: CLEAN_VM
+  provider_state: {codex: ABSENT, claude: ABSENT}
+  journeys: [J10]
+  status: PENDING_EXACT_CANDIDATE
+- id: M12-WIN-COMBINED
+  os: Windows 11 25H2 x64
+  environment: RELEASE_ENVIRONMENT
+  provider_state: {codex: INSTALLED_CONFIGURED_AUTHENTICATED, claude: INSTALLED_CONFIGURED_AUTHENTICATED}
+  journeys: [J11, J20]
+  status: PENDING_EXACT_CANDIDATE
+core_mandatory_claims:
+  project_continuity: {status: PENDING, journeys: [J03, J04], evidence: []}
+  persistent_supervised_autonomy: {status: PENDING, journeys: [J05, J06, J07, J18], evidence: []}
+  semantic_safety: {status: PENDING, journeys: [J14, J15], evidence: []}
+  provider_setup_persistence: {status: PENDING, journeys: [J16], evidence: []}
+  codex_support: {status: PENDING, journeys: [J01, J11], evidence: []}
+  claude_support: {status: PENDING, journeys: [J02, J11], evidence: []}
+  collaborative_lifecycle: {status: PENDING, journeys: [J19], evidence: []}
+  full_product: {status: PENDING, journeys: [J20], evidence: []}
+  documentation_dashboard: {status: PENDING, journeys: [J08], evidence: []}
+  v1_migration: {status: PENDING, journeys: [J09], evidence: []}
+  manual_fallback: {status: PENDING, journeys: [J10], evidence: []}
+  organizational_knowledge: {status: PENDING, journeys: [J12], evidence: []}
+optional_claims:
+  hermes: {shipped: false, status: EXCLUDED, requires_milestone: M6B, reason: M6B is not accepted and Hermes is not in the Core release manifest.}
+  pandora: {shipped: false, status: EXCLUDED, requires_milestone: M8B, reason: M8B is blocked on its external runtime prerequisite.}
+  deepseek: {shipped: false, status: EXCLUDED, requires_milestone: M8C, reason: M8C is experimental and lacks live role certification.}
+  atlas_runtime: {shipped: false, status: EXCLUDED, requires_milestone: M11, reason: M10 and M11 are optional and unaccepted.}
+  linux_ga_certification: {shipped: false, status: EXCLUDED, requires_milestone: null, reason: Linux remains supported target scope but is not an exact Core GA certification cell.}
+  macos_ga_certification: {shipped: false, status: EXCLUDED, requires_milestone: null, reason: macOS remains supported target scope but is not an exact Core GA certification cell.}
+mandatory_journeys:
+  J01: {status: PENDING, candidate_binding: PENDING, evidence: []}
+  J02: {status: PENDING, candidate_binding: PENDING, evidence: []}
+  J03: {status: PENDING, candidate_binding: PENDING, evidence: []}
+  J04: {status: PENDING, candidate_binding: PENDING, evidence: []}
+  J05: {status: PENDING, candidate_binding: PENDING, evidence: []}
+  J06: {status: PENDING, candidate_binding: PENDING, evidence: []}
+  J07: {status: PENDING, candidate_binding: PENDING, evidence: []}
+  J08: {status: PENDING, candidate_binding: PENDING, evidence: []}
+  J09: {status: PENDING, candidate_binding: PENDING, evidence: []}
+  J10: {status: PENDING, candidate_binding: PENDING, evidence: []}
+  J11: {status: PENDING, candidate_binding: PENDING, evidence: []}
+  J12: {status: PENDING, candidate_binding: PENDING, evidence: []}
+  J14: {status: PENDING, candidate_binding: PENDING, evidence: []}
+  J15: {status: PENDING, candidate_binding: PENDING, evidence: []}
+  J16: {status: PENDING, candidate_binding: PENDING, evidence: []}
+  J18: {status: PENDING, candidate_binding: PENDING, evidence: []}
+  J19: {status: PENDING, candidate_binding: PENDING, evidence: []}
+  J20: {status: PENDING, candidate_binding: PENDING, evidence: []}
+acceptance_classes:
+  DESIGN_CONFORMANCE: {status: PENDING, evidence: []}
+  COMPONENT: {status: PENDING, evidence: []}
+  DOMAIN_INTEGRATION: {status: PENDING, evidence: []}
+  PUBLIC_COMPOSITION: {status: PENDING, evidence: []}
+  BLACK_BOX_OUTCOME: {status: PENDING, evidence: []}
+  SECURITY_AUTHORITY: {status: PENDING, evidence: []}
+  DOCUMENTATION: {status: PENDING, evidence: []}
+  DASHBOARD: {status: PENDING, evidence: []}
+  MIGRATION: {status: PENDING, evidence: []}
+  PROVIDER_CERTIFICATION: {status: PENDING, evidence: []}
+release_manifest_truthful: false

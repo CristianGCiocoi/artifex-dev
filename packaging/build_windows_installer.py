@@ -133,8 +133,8 @@ def main() -> int:
         "--product-name=ARTIFEX",
         "--company-name=ARTIFEX Contributors",
         "--file-description=ARTIFEX",
-        "--product-version=1.0.0.0",
-        "--file-version=1.0.0.0",
+        "--product-version=2.0.0.0",
+        "--file-version=2.0.0.0",
         "--copyright=Apache-2.0",
         str(root / "src" / "artifex" / "cli.py"),
     )
@@ -189,7 +189,7 @@ def main() -> int:
     provenance = {
         "schema_version": "artifex.windows-installer-provenance/v1",
         "product": "ARTIFEX",
-        "product_version": "1.0.0",
+        "product_version": "2.0.0",
         "source_commit": source_commit,
         "build_timestamp_utc": datetime.now(UTC).isoformat(),
         "packaging": {
