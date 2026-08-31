@@ -1,0 +1,21 @@
+{
+  "candidate": {
+    "artifact_bytes": 23308520,
+    "artifact_sha256": "0a094ab12420f0fe18092dd834801f4b2463ba39837e4ae0b2d0e2881ae81778",
+    "product_version": "2.0.0",
+    "source_commit": "5b5750fcee0eddc74a223334be07224c6ff4b930"
+  },
+  "composition": "INSTALLED_NATIVE_PUBLIC_CLI_REAL_PROVIDER_MANAGED_SERVICE_MULTI_PROCESS",
+  "credential_material_read": false,
+  "journeys": [
+    "J11",
+    "J20"
+  ],
+  "provider_output_retained": false,
+  "public_process_call_count": 50,
+  "raw_evidence_bytes": 16548,
+  "raw_evidence_path": "EVIDENCE/M12-J11-J20-SHIPPING-PASS.json",
+  "raw_evidence_sha256": "2545514e10f811bbf230e6542e24b2b0d8b418402391b404384ef477a3d1fd84",
+  "schema_version": "1.0",
+  "status": "PASS"
+}

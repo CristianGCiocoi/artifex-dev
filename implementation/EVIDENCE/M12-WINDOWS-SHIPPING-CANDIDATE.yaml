@@ -1,0 +1,40 @@
+schema_version: '1.0'
+evidence_id: EVD-M12-WINDOWS-SHIPPING-CANDIDATE
+milestone: M12
+status: QUALIFICATION_ACTIVE
+recorded_date: '2026-09-01'
+canonical_base_commit: 9556ab13c96ae009a34493e2ae9859dd3cab5543
+contract_digest: 54529f748cac59ce8b57e2f9a8376fe51c515e0ffca6b0b7da51ae2cbc5a2c6a
+candidate:
+  source_commit: 5b5750fcee0eddc74a223334be07224c6ff4b930
+  installer: ARTIFEX-Setup.exe
+  installer_sha256: 0a094ab12420f0fe18092dd834801f4b2463ba39837e4ae0b2d0e2881ae81778
+  installer_bytes: 23308520
+  provenance_sha256: 388db76f28139bea61a739bdf0051bd148c7529fc3dfc38869937ac3197610a4
+  installed_executable_sha256: 45682f49b0a33751d407bbc8f2d5a36358a03e0823c7fbdfde21a9233b286f32
+  product_version: 2.0.0
+  build_id: artifex-2.0.0-windows-x86_64-45682f49b0a33751
+  packaging: NUITKA_STANDALONE_NSIS
+  python_version: 3.12.13
+  nuitka_version: '4.2'
+  nsis_version: '3.12'
+  signing:
+    status: UNSIGNED
+    release_claim: NOT_CLAIMED
+    reason: No authorized Authenticode signing identity has been supplied; hash and provenance qualification remain mandatory.
+qualification_harness:
+  source_commit: f61942f9a8e3d0a3cfecc6da949719cfd12c32ea
+  candidate_rebuilt_after_harness_fixes: false
+  source_tree_imported_by_qualification: false
+qualification:
+  j11_j20_raw_evidence: EVIDENCE/M12-J11-J20-SHIPPING-PASS.json
+  j11_j20_raw_sha256: 2545514e10f811bbf230e6542e24b2b0d8b418402391b404384ef477a3d1fd84
+  j11_j20_qualified_evidence: EVIDENCE/M12-J11-J20-SHIPPING-QUALIFIED.json
+  j11_j20_status: PASS
+  remaining_exact_cells: [M12-WIN-CODEX, M12-WIN-CLAUDE, M12-WIN-NOPROVIDER, J09]
+boundaries:
+  developer_only_acceptance_used: false
+  credential_material_read: false
+  provider_output_retained: false
+  approval_tokens_retained: false
+  v1_known_regression_preserved: true
