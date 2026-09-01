@@ -1,0 +1,156 @@
+schema_version: '1.0'
+report_id: ARTIFEX-2.0.1-DELTA
+release: 2.0.1
+scope: QUALIFIED_POST_GA_MAINTENANCE_ONLY
+baseline:
+  version: 2.0.0
+  commit: e6bb13ba165fcb3d9b21cb4598d2f7539cf1bb0a
+  tree: bde13dafa99bd6a0b00335b0cf39abb67e717e6d
+  tag: v2.0.0
+candidate:
+  accepted_maintenance_commit: a9df60d5d20308a4f9d7289d5d9ce4c9b0a25bdb
+  tree: 47f46fcb6f14957f52d72db747df355a5c3eee81
+  sealed_receipt_head: 0068050325494809cbf8955f0927b719c50a3e21
+  stable_patch_id: b46ef22beead4ad2dd8e62bc700dd59cce0951b0
+  architect_disposition: ACCEPTED_PREPARE_ARTIFEX_2_0_1
+totals:
+  files_changed: 15
+  lines_added: 2110
+  lines_deleted: 26
+files:
+- path: .github/workflows/ci.yml
+  change: MODIFIED
+  classification: CI / workflow infrastructure
+  summary: Full history only where required, current 2.x validation, explicit V1-R01 lane, and reliable coverage execution.
+- path: scripts/validate_current_artifacts.py
+  change: ADDED
+  classification: release validation/tooling
+  summary: Exact-candidate wheel, sdist and native identity, inventory, hash and isolated import validation for ARTIFEX 2.x.
+- path: tools/artifex2/capture_v1_baseline.py
+  change: MODIFIED
+  classification: release validation/tooling
+  summary: Cross-platform reproduction of the accepted Windows V1 fixture bytes without changing the historical regression.
+- path: src/artifex/distribution/lifecycle.py
+  change: MODIFIED
+  classification: cross-platform compatibility
+  product_source: true
+  summary: Reject Windows anchored or drive-qualified manifest paths on every host before joining them to an installation root.
+- path: src/artifex/managed_service.py
+  change: MODIFIED
+  classification: product runtime/source
+  product_source: true
+  summary: Preserve Windows process probing while making POSIX import/typecheck safe; enforce exact private state ACLs and inherited provider-workspace ACLs.
+- path: tests/artifex2_m7/test_managed_service_windows_acl.py
+  change: MODIFIED
+  classification: tests
+  summary: Native and modeled Windows ACL enforcement, alias and inheritance coverage.
+- path: tests/artifex2_m7/test_service_registration.py
+  change: MODIFIED
+  classification: tests
+  summary: Portable Windows-version simulation on non-Windows runners.
+- path: tests/post_ga/test_cli_transport_contracts.py
+  change: ADDED
+  classification: tests
+  summary: Public CLI and managed-service transport contracts.
+- path: tests/post_ga/test_governance_boundary_contracts.py
+  change: ADDED
+  classification: tests
+  summary: Governance and acceptance-authority boundaries.
+- path: tests/post_ga/test_project_model_contracts.py
+  change: ADDED
+  classification: tests
+  summary: Project Model authority and persistence contracts.
+- path: tests/post_ga/test_public_fail_closed_contracts.py
+  change: ADDED
+  classification: tests
+  summary: Public composition failure and subprocess coverage isolation contracts.
+- path: tests/post_ga/test_runtime_model_contracts.py
+  change: ADDED
+  classification: tests
+  summary: RunStore, coordinator and execution model contracts.
+- path: tests/post_ga/test_security_boundary_contracts.py
+  change: ADDED
+  classification: tests
+  summary: Path, ACL, artifact and trust-boundary adversarial coverage.
+- path: implementation/POST-GA-CI/BASELINE-FAILURES.yaml
+  change: ADDED
+  classification: documentation
+  summary: Exact baseline failure signatures and dispositions.
+- path: implementation/POST-GA-CI/CHANGESET.md
+  change: ADDED
+  classification: documentation
+  summary: Accepted maintenance scope and explicit exclusions.
+product_impacts:
+- source: src/artifex/managed_service.py
+  affected_public_behavior:
+  - Managed-service state and transport credentials remain accessible only to the exact current user and LocalSystem on Windows.
+  - Provider workspace roots explicitly inherit their parent DACL so provider sandbox identities can traverse authorized workspaces.
+  - The built-in Administrator LA alias is accepted only for the exact current SID with reserved RID 500.
+  - Windows process-owner probing is unchanged at runtime; Linux and macOS can import and typecheck the guarded branch without advertising Windows support.
+  provider_roles: [Codex, Claude, ManualIntegration, combined Codex+Claude]
+  platforms:
+    windows: BEHAVIOR_CORRECTED
+    linux: IMPORT_TYPECHECK_CONFIRMED_RUNTIME_UNCHANGED
+    macos: IMPORT_TYPECHECK_CONFIRMED_RUNTIME_UNCHANGED
+  affected_journeys: [J01, J02, J10, J11, J16, J20]
+- source: src/artifex/distribution/lifecycle.py
+  affected_public_behavior:
+  - Install, upgrade and uninstall reject Windows absolute or drive-qualified manifest paths even when validation runs on POSIX.
+  - Valid relative artifact paths and manifest-owned cleanup behavior remain unchanged.
+  provider_roles: [provider-neutral]
+  platforms:
+    windows: PATH_CONTAINMENT_HARDENED
+    linux: CROSS_HOST_WINDOWS_PATH_REJECTION_ADDED
+    macos: CROSS_HOST_WINDOWS_PATH_REJECTION_ADDED
+  affected_journeys: [J01, J02, J10, J20]
+journey_qualification:
+  rerun:
+  - id: J01
+    reason: Codex standalone uses the installed Windows managed service and provider workspace ACL.
+  - id: J02
+    reason: Claude standalone uses the installed Windows managed service and provider workspace ACL.
+  - id: J10
+    reason: No-provider startup always prepares and validates managed-service state and workspace roots.
+  - id: J11
+    reason: Cross-provider continuity uses managed-service restart, persisted setup and provider workspaces.
+  - id: J16
+    reason: Provider setup persistence crosses the managed-service restart and private-state boundary.
+  - id: J20
+    reason: Full installed lifecycle uses the managed service, provider workspaces and restart recovery.
+  proven_unaffected:
+  - {id: J03, reason: Project continuity uses ProjectRepository/public CLI; neither changed source module participates.}
+  - {id: J04, reason: Multi-session interaction governance does not import distribution lifecycle or managed_service.}
+  - {id: J05, reason: Uses artifex.runtime ManagedRuntimeService and RunStore directly; managed_service host and distribution lifecycle are not invoked.}
+  - {id: J06, reason: Material-decision governance surface is outside both changed source modules.}
+  - {id: J07, reason: Pause/recovery governance surface is outside both changed source modules.}
+  - {id: J08, reason: Documentation/dashboard projection source is unchanged.}
+  - {id: J09, reason: V1 semantic migration and rollback use migration authority, not distribution lifecycle artifact cleanup or managed_service.}
+  - {id: J12, reason: Organizational knowledge source and public composition are unchanged.}
+  - {id: J14, reason: External reality drift source and public composition are unchanged.}
+  - {id: J15, reason: Uses artifex.runtime ExecutionWorkspace with an explicit workspace root, not managed_service ServicePaths.}
+  - {id: J18, reason: UNKNOWN reconciliation uses RunStore/runtime transitions, not the changed managed-service host.}
+  - {id: J19, reason: Collaborative lifecycle governance source is unchanged.}
+  excluded:
+  - {id: J13, reason: Optional Pandora milestone remains prohibited and is not a Core release claim.}
+  - {id: J17, reason: ATLAS integration remains prohibited and was not part of ARTIFEX 2.0 Core GA.}
+mandatory_release_gates:
+- CLEAN_BUILD_AND_PACKAGE
+- NATIVE_WINDOWS_X64_PACKAGE
+- NATIVE_LINUX_X64_PACKAGE
+- NATIVE_MACOS_ARM64_PACKAGE
+- WHEEL_AND_SDIST_EXACT_CANDIDATE
+- FULL_CI_WINDOWS_LINUX_MACOS_PYTHON_3_12_3_13
+- COVERAGE_AT_LEAST_85
+- VERSION_RELEASE_PROVENANCE_VALIDATION
+- V1_R01_REPRODUCED_AND_PRESERVED
+- PUBLIC_COMPOSITION_SMOKE
+- INSTALL_IMPORT_STARTUP_LIFECYCLE_SMOKE
+- AFFECTED_JOURNEYS_J01_J02_J10_J11_J16_J20
+scope_exclusions:
+- M6B Hermes
+- M8B Pandora
+- M8C DeepSeek
+- M10 ATLAS readiness
+- M11 ATLAS runtime
+- VM101
+- ATLAS
