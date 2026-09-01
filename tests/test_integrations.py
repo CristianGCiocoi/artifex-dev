@@ -69,6 +69,15 @@ def test_registry_metadata_health_schema_and_capability_policy() -> None:
 
 
 @pytest.mark.unit
+def test_builtin_manual_integration_reports_core_2x_compatibility() -> None:
+    compatibility = ManualIntegration().metadata.compatibility
+
+    assert compatibility.supports("2.0.0")
+    assert compatibility.supports("2.99.0")
+    assert not compatibility.supports("3.0.0")
+
+
+@pytest.mark.unit
 def test_manual_packet_result_ingest_and_stale_mapping() -> None:
     manual = ManualIntegration()
     packet = _packet()

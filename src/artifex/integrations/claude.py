@@ -388,7 +388,7 @@ class ClaudeIntegration:
             integration_id="claude",
             name="Claude",
             version=CLAUDE_INTEGRATION_VERSION,
-            compatibility=CompatibilityRange("0.1.0", "2.0.0"),
+            compatibility=CompatibilityRange("0.1.0", "3.0.0"),
             tested_external_versions=(self.detection.version or "not-detected",),
             roles=frozenset(
                 {

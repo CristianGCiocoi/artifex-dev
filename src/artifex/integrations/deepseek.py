@@ -268,7 +268,7 @@ class DeepSeekHarnessAdapter:
             integration_id="deepseek",
             name="DeepSeek Harness",
             version="1.0.0",
-            compatibility=CompatibilityRange("0.1.0", "2.0.0"),
+            compatibility=CompatibilityRange("0.1.0", "3.0.0"),
             tested_external_versions=(self.detection.version or "not-detected",),
             roles=frozenset(roles),
             capabilities=self.detection.capabilities,
