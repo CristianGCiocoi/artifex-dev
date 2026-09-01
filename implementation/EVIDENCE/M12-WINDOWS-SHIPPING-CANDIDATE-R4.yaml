@@ -28,8 +28,8 @@ qualification_harness:
   source_tree_imported_by_qualification: false
 qualification:
   prior_candidate_evidence_carried_forward: false
-  remaining_exact_cells: [M12-WIN-CODEX, M12-WIN-CLAUDE, M12-WIN-NOPROVIDER, M12-WIN-COMBINED, J09]
-  mandatory_journeys_requiring_exact_r4_binding: [J01, J02, J09, J10, J11, J16, J20]
+  remaining_exact_cells: [M12-WIN-COMBINED, J09]
+  mandatory_journeys_requiring_exact_r4_binding: [J09, J11, J20]
 boundaries:
   developer_only_acceptance_used: false
   credential_material_read: false

@@ -1,0 +1,167 @@
+{
+  "candidate": {
+    "artifact_bytes": 23309865,
+    "artifact_name": "ARTIFEX-Setup.exe",
+    "artifact_sha256": "130eb9804369e1ba655fa11ed98be54e606c948b78c30ba297f20d838faca720",
+    "contract_digest": "3eac41de4cacf7be80aab12e478b99ec7c5066dccddfff6ca00a03cf5a157d48",
+    "product_disposition_sha256": "17ed830e83f6e6ed8654d4385bd4ef224e75d67fe79ca415c35f6f5dff4020d2",
+    "source_commit": "498cd012830748ea5c492c466146e4129cdbe455"
+  },
+  "cell": {
+    "absent_providers": [
+      "claude",
+      "codex"
+    ],
+    "architecture": "x86_64",
+    "display_version": "25H2",
+    "id": "M7-WIN-NOPROVIDER",
+    "journeys": [
+      "J10"
+    ],
+    "mode": "STANDALONE",
+    "os": "Windows 11",
+    "provider": "none",
+    "support_tier": "CORE"
+  },
+  "clean_machine": {
+    "first_boot": true,
+    "os_build": "26200",
+    "prior_artifex_absent": true,
+    "prior_service_absent": true,
+    "prior_state_root_absent": true,
+    "snapshot_identity_sha256": "2aedd5545b52d3019f51af180c726ce737b7c01d6389c7a794c867d57e72c805",
+    "source_checkout_absent": true,
+    "ubr": 9168
+  },
+  "composition": {
+    "atlas_present": false,
+    "combined_provider_cell": false,
+    "custom_application_factory_used": false,
+    "provider_injection_used": false,
+    "public_cli": true,
+    "public_managed_service": true,
+    "shipping_installer": true,
+    "simulated_provider": false,
+    "source_tree_imported": false
+  },
+  "installer_service": {
+    "authenticated_loopback_transport": true,
+    "doctor_secret_safe": true,
+    "executable_sha256": "7bfc3e75b0ee13d42c902d2d41ac2f7654465abb54f3425d55658182386c1f8d",
+    "frontend_independent": true,
+    "install_status": "PASS",
+    "os_service_manager": "WINDOWS_TASK_SCHEDULER_PER_USER",
+    "registration_manifest_sha256": "56e5108fff32427c90019d2724d42ac6fccaab89a5ca02489004075608ea6041",
+    "registration_status": "PASS",
+    "restart_generation_after": 2,
+    "restart_generation_before": 1,
+    "service_process_changed": true,
+    "service_start_status": "PASS"
+  },
+  "journeys": {
+    "J10": {
+      "automated_candidates": [],
+      "automated_dispatch_occurred": false,
+      "beginner_start_succeeded": true,
+      "bootstrap_status": "MANUAL_FALLBACK",
+      "doctor_actionable": true,
+      "manual_fallback_selected": true,
+      "manual_operations": [
+        "manual.packet.create",
+        "manual.result.submit"
+      ],
+      "manual_result_self_accepted": false,
+      "no_false_automated_ready": true,
+      "status": "PASS"
+    }
+  },
+  "provider": {
+    "automated_candidates": [],
+    "claude_present": false,
+    "codex_present": false,
+    "credential_files_read": false,
+    "id": "none",
+    "pii_persisted": false
+  },
+  "public_process_calls": [
+    {
+      "ok": true,
+      "operation": "service.status",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "1bb254b43be5dd7c3393337cb25489436d6e3b92e4d343404f03b4b16c752e15"
+    },
+    {
+      "ok": true,
+      "operation": "service.stop",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "27c459c12ecdb2d91e694cef3099546096bcb6ff38d9c688b016088daa648063"
+    },
+    {
+      "ok": true,
+      "operation": "service.status",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "efe4a1c7fc531eae38828f5c77281695901fbe6e22ab5e6fce98ad5c4f74f575"
+    },
+    {
+      "ok": true,
+      "operation": "distribution.bootstrap",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "f67260e9c26ecd8bdfee230f32f1fcd63d4202f9216a2359466630e33d68c21d"
+    },
+    {
+      "ok": true,
+      "operation": "distribution.doctor",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "149e31ba9444f5f3dc1b749cfeb55648f65ee0617ace70c7bb51b7b8e0f9bcdc"
+    },
+    {
+      "ok": true,
+      "operation": "providers.graph",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "97e93d4ee5d0b97395d3edf94f5563c295c9841ed5049865dc9ca8f139e93d89"
+    },
+    {
+      "ok": true,
+      "operation": "beginner.start",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "4bf326fa628b414227fb9b588a0982d77d58c4857c14747a98e025f091c45c4d"
+    },
+    {
+      "ok": true,
+      "operation": "manual.packet.create",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "f491423765b265bd3d504f4b30bf3e216a807473fb701985f7c2ce57fd62a889"
+    },
+    {
+      "ok": true,
+      "operation": "manual.result.submit",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "1f26eac50b9484ad6491fdeb73d80a67c2be914e1d5895a486ecc09fd4d23365"
+    }
+  ],
+  "schema_version": "1.0",
+  "security": {
+    "acceptance_authority_separate": true,
+    "credential_files_read": false,
+    "pii_persisted": false,
+    "project_authority_required": true,
+    "provider_result_self_acceptance": false,
+    "transport_token_persisted": false
+  },
+  "status": "PASS",
+  "transcript": {
+    "bytes": 2152,
+    "raw_output_persisted": false,
+    "secret_scan": "PASS",
+    "sha256": "e33bac62764d49e6d2835e1073e0b78efc70038ec9e196b1e4746e17e3d5e416"
+  }
+}

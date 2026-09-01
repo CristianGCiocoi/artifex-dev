@@ -1048,6 +1048,16 @@
       "sha256": "57532c5ae0fed384f2f92456ed16045bab7e276f1d533429f299934ee6e0584b"
     },
     {
+      "bytes": 10883,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CODEX-VM105-R4R1-PASS.json",
+      "sha256": "112941e739fd8805f11fad58fae8a024e188cf4d6963a039096b5d04abe4481c"
+    },
+    {
+      "bytes": 11506,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CODEX-VM105-R4R1-QUALIFIED-R1.json",
+      "sha256": "963107c6f4672bb90ec609d0c0d253be41d6e8f79d7b3d3a0aacc1ea5bcff9ce"
+    },
+    {
       "bytes": 175,
       "path": "implementation/EVIDENCE/M12-WINDOWS-CODEX-VM105-UNAUTHORIZED-RESUME-FAIL.json",
       "sha256": "74aa5c30550c751cae4017f4e31d53d5c21d9bbfdb44c377661037b17931f669"
@@ -1078,6 +1088,16 @@
       "sha256": "af44ec65070e817652f0a22866bd00f10574b2309a904a14fcb18f5f1f295aae"
     },
     {
+      "bytes": 5693,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-NOPROVIDER-VM104-R4R1-PASS.json",
+      "sha256": "1ae8743b31d270287f493d07e78f9ee585edfa0fc0f2821b02666514b7a66274"
+    },
+    {
+      "bytes": 6231,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-NOPROVIDER-VM104-R4R1-QUALIFIED-R1.json",
+      "sha256": "47edfc9dead53c6d30036e6d0030d9bb939ebdbe21d536220b02329972483c20"
+    },
+    {
       "bytes": 1075,
       "path": "implementation/EVIDENCE/M12-WINDOWS-SHIPPING-CANDIDATE-R1-DISPOSITION.yaml",
       "sha256": "034e2441e62a959c684bca3e9fe32b917f870cdc36e4bca250b8edb6546d3fa7"
@@ -1103,9 +1123,9 @@
       "sha256": "d1a76948c7c8ae6b12a7366b4352240bc732bdcddc3c9b17f2e75629cb5abb1d"
     },
     {
-      "bytes": 1703,
+      "bytes": 1632,
       "path": "implementation/EVIDENCE/M12-WINDOWS-SHIPPING-CANDIDATE-R4.yaml",
-      "sha256": "9ef8ce76fb0f2da63d0d319392b49e23ad3c994485e6db883b3190a274a0a681"
+      "sha256": "9a048a65bf4517dc5dd6bf538987337768a55e0bc7e4ab026cb2dc3397f61f93"
     },
     {
       "bytes": 1778,
@@ -4007,7 +4027,7 @@
     "adr_count": 24,
     "current_milestone": "M12",
     "current_milestone_progress_percent": 0,
-    "evidence_items": 265,
+    "evidence_items": 269,
     "invariant_count": 34,
     "journey_states": {
       "ACTIVE": 1,
