@@ -1,0 +1,6 @@
+{
+  "diagnostic": "project.create failed: OPERATION_FAILED/OperationalError: unable to open database file",
+  "error": "JourneyFailure",
+  "schema_version": "1.0",
+  "status": "FAIL"
+}

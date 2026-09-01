@@ -1,0 +1,6 @@
+{
+  "diagnostic": "provider resume failure is not an authorized preserved qualification failure",
+  "error": "JourneyFailure",
+  "schema_version": "1.0",
+  "status": "FAIL"
+}
