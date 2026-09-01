@@ -1,0 +1,28 @@
+schema_version: '1.0'
+evidence_id: EVD-M12-WINDOWS-SHIPPING-CANDIDATE-R2-DISPOSITION
+milestone: M12
+status: REJECTED_QUALIFICATION
+recorded_date: '2026-09-01'
+candidate:
+  source_commit: e7fe88336f04e3f9e7c8b45299f7af90d3a4a1fe
+  installer_sha256: ff00500fface43eb4a15d0c0ec7b93ccef46af9ffd17d516870b51b3838c2bf8
+  provenance_sha256: 4491bed9560ce67a8fcce10f16273373b202c263dab2a8f518ebdcc105597b34
+disposition:
+  reason: The exact Claude standalone cell completed a live INTERACTION and retained a valid capability receipt, but the unconstrained Claude JSON result did not contain the mandatory bounded protocol marker.
+  candidate_remains_immutable: true
+  accepted_evidence_carried_forward: false
+  requires_new_exact_candidate: true
+diagnosis:
+  managed_service_lifecycle_state: RUNNING
+  interaction_role_state: LIVE_ROLE_CERTIFIED
+  provider_process_succeeded: true
+  bounded_marker_contract_satisfied: false
+  repair_owner: CLAUDE_INTERACTION_OUTPUT_BINDING
+evidence:
+  - EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R4-INTERACTION-FAIL.json
+  - EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R4-INTERACTION-DIAGNOSTIC.json
+boundaries:
+  provider_output_retained: false
+  credential_material_read: false
+  j02_validator_weakened: false
+  v1_known_regression_preserved: true

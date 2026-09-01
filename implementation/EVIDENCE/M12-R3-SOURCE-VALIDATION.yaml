@@ -1,0 +1,37 @@
+schema_version: '1.0'
+evidence_id: EVD-M12-R3-SOURCE-VALIDATION
+milestone: M12
+status: PASS
+recorded_date: '2026-09-01'
+candidate_source_commit: 717b9781c2f1d2b11b95725826db21746c252c09
+repair:
+  claude_interaction_output_binding:
+    status: PASS
+    behavior: Claude INTERACTION now requests one structured response field and rejects missing, additional, empty, malformed, or error-shaped structured output before issuing a capability receipt.
+    j02_bounded_marker_validator_changed: false
+focused_validation:
+  interaction_claude_service_contracts:
+    passed: 40
+    failed: 0
+  interaction_distribution_managed_service_regressions:
+    passed: 110
+    skipped: 7
+    failed: 0
+domain_integration:
+  command: .venv/Scripts/python.exe -m pytest -q -x --ignore=tests/test_release.py
+  result: PASS
+  passed: 569
+  skipped: 7
+  failed: 0
+  duration_seconds: 604.73
+  platform_skips: WINDOWS_SYMLINK_CREATION_UNAVAILABLE
+static_validation:
+  ruff_all: PASS
+  mypy_strict: PASS
+  mypy_source_files: 95
+v1_release_harness_regression:
+  classification: V1-R01-DASHBOARD-FIXTURE-SCHEMA-DRIFT
+  disposition: REPRODUCED_AND_PRESERVED
+  canonical_test: tests/test_release.py::test_candidate_passes_without_optional_m10_gate
+  source_repaired_by_m12: false
+unexpected_failures: []
