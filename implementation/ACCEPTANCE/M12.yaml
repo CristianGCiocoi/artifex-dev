@@ -1,7 +1,7 @@
 schema_version: '1.0'
 milestone: M12
 contract_digest: 54529f748cac59ce8b57e2f9a8376fe51c515e0ffca6b0b7da51ae2cbc5a2c6a
-implementation_baseline_commit: 9556ab13c96ae009a34493e2ae9859dd3cab5543
+implementation_baseline_commit: 498cd012830748ea5c492c466146e4129cdbe455
 acceptance_commit: null
 frozen_architecture_baseline: ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1
 mandatory_work_complete: true
@@ -21,4 +21,4 @@ evidence_classes:
 mandatory_journeys: [J01, J02, J03, J04, J05, J06, J07, J08, J09, J10, J11, J12, J14, J15, J16, J18, J19, J20]
 unresolved_contradiction: null
 migration: M9_ACCEPTED_R4_EXACT_NATIVE_REVALIDATION_PASS
-verdict: READY_FOR_ARCHITECT_ACCEPTANCE
+verdict: ACCEPTED

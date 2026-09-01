@@ -1,14 +1,14 @@
 schema_version: '1.0'
 milestone: M12
-mode: M12_R4_QUALIFIED_PENDING_ARCHITECT_ACCEPTANCE
+mode: M12_ACCEPTED_R4_EXACT_NATIVE_MIGRATION_REVALIDATED
 project_mutation: false
 fixture: MIGRATION/V1-RELEASE-FIXTURE.yaml
 fixture_state: M0_BASELINE_ACCEPTED
 migration_execution: M2_ACCEPTED_EMPTY_RUNSTORE
 provider_setup_migration: M3_ACCEPTED_SECRET_FREE_PROVIDER_SETUP_SCHEMA
 rollback: REMOVE_NEW_PROVIDER_SETUP_STATE_ONLY; accepted M2 RunStore and Project semantics remain authoritative
-active_parallel_wave: [M12]
-active_wave_migration_policy: REVALIDATE_ACCEPTED_M9_ON_EXACT_RELEASE_CANDIDATE
+active_parallel_wave: []
+active_wave_migration_policy: M12_ACCEPTED_NO_LEGACY_RUNTIME_FABRICATION
 m7_shipping_upgrade_foundation: ACCEPTED_WINDOWS_CORE_V21
 m4_target_interaction_governance_state: M4_ACCEPTED_ADDITIVE_STATE
 m5_docs_dashboard_classification: M5_ACCEPTED_CURRENT_STALE_MISSING_CLASSIFICATION

@@ -89,7 +89,7 @@
       }
     },
     "frozen_architecture_baseline": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
-    "implementation_baseline_commit": "9556ab13c96ae009a34493e2ae9859dd3cab5543",
+    "implementation_baseline_commit": "498cd012830748ea5c492c466146e4129cdbe455",
     "mandatory_journeys": [
       "J01",
       "J02",
@@ -116,7 +116,7 @@
     "schema_version": "1.0",
     "superseded": [],
     "unresolved_contradiction": null,
-    "verdict": "READY_FOR_ARCHITECT_ACCEPTANCE"
+    "verdict": "ACCEPTED"
   },
   "adrs": [
     {
@@ -3400,10 +3400,8 @@
     "verdict": "ACCEPTED"
   },
   "migration": {
-    "active_parallel_wave": [
-      "M12"
-    ],
-    "active_wave_migration_policy": "REVALIDATE_ACCEPTED_M9_ON_EXACT_RELEASE_CANDIDATE",
+    "active_parallel_wave": [],
+    "active_wave_migration_policy": "M12_ACCEPTED_NO_LEGACY_RUNTIME_FABRICATION",
     "fixture": "MIGRATION/V1-RELEASE-FIXTURE.yaml",
     "fixture_state": "M0_BASELINE_ACCEPTED",
     "m12_j09_revalidation": "PASS_EXACT_R4_NATIVE_V1_COPY",
@@ -3421,7 +3419,7 @@
     "m9_shipping_candidate": "ARTIFEX_SETUP_6854BFB_SHA256_6F532C16",
     "migration_execution": "M2_ACCEPTED_EMPTY_RUNSTORE",
     "milestone": "M12",
-    "mode": "M12_R4_QUALIFIED_PENDING_ARCHITECT_ACCEPTANCE",
+    "mode": "M12_ACCEPTED_R4_EXACT_NATIVE_MIGRATION_REVALIDATED",
     "project_mutation": false,
     "provider_setup_migration": "M3_ACCEPTED_SECRET_FREE_PROVIDER_SETUP_SCHEMA",
     "rollback": "REMOVE_NEW_PROVIDER_SETUP_STATE_ONLY; accepted M2 RunStore and Project semantics remain authoritative",
@@ -3596,7 +3594,7 @@
       "title": "Optional ATLAS Governed Runtime Integration"
     },
     {
-      "accepted": false,
+      "accepted": true,
       "depends_on": [
         "M4",
         "M5",
@@ -3608,7 +3606,7 @@
       "id": "M12",
       "mandatory_for_core_ga": true,
       "started": true,
-      "state": "ACTIVE",
+      "state": "ACCEPTED",
       "title": "ARTIFEX 2.0 Product Outcome Certification & GA"
     }
   ],
@@ -3780,7 +3778,7 @@
     "branch": "codex/artifex-2-m12",
     "canonical_integration_baseline": "7ca029ffe2a987ef9ffee938fe3e0dc6e9258ac2",
     "current_milestone": "M12",
-    "current_status": "ACTIVE",
+    "current_status": "ACCEPTED",
     "dashboard_state": "CURRENT",
     "directory_variance": "PACKAGING_NAME_VARIANCE_ACCEPTED",
     "handoff_declared_directory": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF",
@@ -3803,7 +3801,7 @@
     "m8b_started": true,
     "m8c_started": true,
     "m9_started": true,
-    "next_integration_point": "Architect disposition on the complete exact-R4 M12 qualification and GA release authority",
+    "next_integration_point": "Integrate the accepted exact-R4 M12 checkpoint on canonical main and run frozen post-promotion release gates",
     "recorded_date": "2026-09-01",
     "target_release": "2.0.0"
   },
@@ -4101,10 +4099,10 @@
       "NOT_STARTED": 1,
       "PASS": 18
     },
-    "milestones_accepted": 10,
+    "milestones_accepted": 11,
     "milestones_started": 13,
     "milestones_total": 16,
-    "program_progress_percent": 62,
+    "program_progress_percent": 69,
     "provider_step_states": {
       "IN_PROGRESS": 2,
       "NOT_APPLICABLE": 10,
@@ -4113,9 +4111,8 @@
     },
     "ready_milestones": [],
     "workstream_states": {
-      "ACTIVE": 1,
       "BLOCKED_EXTERNAL_PREREQUISITE": 2,
-      "COMPLETE": 21
+      "COMPLETE": 22
     }
   },
   "target_system": {
@@ -4586,7 +4583,7 @@
         "J20",
         "FROZEN-INVARIANTS"
       ],
-      "state": "ACTIVE",
+      "state": "COMPLETE",
       "worktree": "C:\\aidev\\artifex-worktrees\\artifex-2-m12"
     }
   ]
