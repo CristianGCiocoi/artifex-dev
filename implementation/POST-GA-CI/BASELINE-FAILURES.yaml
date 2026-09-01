@@ -54,6 +54,11 @@ classifications:
   jobs: [test/windows]
   signature: current 2.0 source was evaluated by tests/test_release.py V1 candidate assumptions
   disposition: REMOVE_FROM_2X_GATE_PRESERVE_V1_CONTRACT
+- id: PGCI-F09
+  class: CROSS-PLATFORM TEST / HISTORICAL FIXTURE
+  jobs: [test/ubuntu, test/macos]
+  signature: accepted Windows V1 archive fixture aggregate differed under POSIX Git EOL export
+  disposition: CANONICALIZE_TO_ACCEPTED_FIXTURE_REPRESENTATION
 new_product_defects:
 - Windows private ACL normalization is environment-sensitive on GitHub-hosted runners.
 - Windows rooted-without-drive lifecycle paths can escape the installation root

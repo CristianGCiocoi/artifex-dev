@@ -29,6 +29,9 @@ def test_every_public_operation_normalizes_empty_input_without_uncaught_failure(
     """
 
     monkeypatch.chdir(tmp_path)
+    for name in tuple(os.environ):
+        if name.startswith("COV_CORE_") or name == "COVERAGE_PROCESS_START":
+            monkeypatch.delenv(name, raising=False)
     result = Application().dispatch(
         OperationRequest(
             operation,

@@ -26,7 +26,8 @@ jobs:
       - run: uv run ruff check .
       - run: uv run mypy src
       - run: uv run coverage erase
-      - run: uv run pytest --ignore=tests/test_release.py --cov=artifex --cov-report=term-missing
+      - run: uv run coverage run --branch -m pytest -p no:pytest_cov --ignore=tests/test_release.py
+      - run: uv run coverage report
 
   preserved-v1-regression:
     name: preserved-v1-regression (V1-R01)
@@ -54,8 +55,9 @@ jobs:
           status=${PIPESTATUS[0]}
           set -e
           test "$status" -eq 1
-          grep -F "dashboard fixture is missing required release property" \
+          grep -F "dashboard is not deterministic noncanonical candidate-bound output" \
             "$RUNNER_TEMP/v1-r01.log"
+          grep -F "'release' is a required property" "$RUNNER_TEMP/v1-r01.log"
           echo "V1-R01-DASHBOARD-FIXTURE-SCHEMA-DRIFT: REPRODUCED_AND_PRESERVED"
 
   native-package:

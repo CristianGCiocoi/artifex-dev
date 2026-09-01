@@ -19,7 +19,8 @@ workstream does not rebuild or replace ARTIFEX 2.0.0.
 - derive current source/native artifact identity from the exact candidate commit;
 - run the historical V1 release harness separately from current 2.x gates;
 - reproduce V1-R01 at its frozen intake commit with its exact signature;
-- measure the unchanged `>=85%` coverage threshold on current 2.x source.
+- measure the unchanged `>=85%` coverage threshold on current 2.x source without
+  injecting incompatible coverage modes into tested subprocesses.
 
 Classification: `WORKFLOW / CI INFRASTRUCTURE`, `HISTORICAL V1 VALIDATOR`,
 `RELEASE VERSION DISCOVERY`, `COVERAGE`, and `KNOWN V1 REGRESSION`.

@@ -676,6 +676,7 @@ def test_windows_platform_guard_accepts_each_authorized_build(
         service_registration.sys,
         "getwindowsversion",
         lambda: SimpleNamespace(build=build, product_type=1),
+        raising=False,
     )
     assert service_registration._is_qualified_windows_11_x64() is True
 
@@ -690,6 +691,7 @@ def test_windows_platform_guard_rejects_unqualified_builds(
         service_registration.sys,
         "getwindowsversion",
         lambda: SimpleNamespace(build=build, product_type=1),
+        raising=False,
     )
     assert service_registration._is_qualified_windows_11_x64() is False
 
@@ -703,5 +705,6 @@ def test_windows_platform_guard_rejects_server_product_type(
         service_registration.sys,
         "getwindowsversion",
         lambda: SimpleNamespace(build=26200, product_type=3),
+        raising=False,
     )
     assert service_registration._is_qualified_windows_11_x64() is False

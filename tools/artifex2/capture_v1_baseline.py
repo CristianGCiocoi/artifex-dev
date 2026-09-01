@@ -22,6 +22,18 @@ def _git(root: Path, *arguments: str) -> bytes:
     return completed.stdout
 
 
+def _accepted_fixture_bytes(content: bytes) -> bytes:
+    """Reproduce the accepted Windows V1 archive text representation everywhere."""
+
+    if b"\0" in content:
+        return content
+    try:
+        content.decode("utf-8")
+    except UnicodeDecodeError:
+        return content
+    return content.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n")
+
+
 def capture(root: Path, source_ref: str, intake_commit: str) -> dict[str, Any]:
     """Return a content-hash manifest without checking out or changing the source ref."""
 
@@ -37,7 +49,7 @@ def capture(root: Path, source_ref: str, intake_commit: str) -> dict[str, Any]:
             extracted = stream.extractfile(member)
             if extracted is None:
                 raise RuntimeError(f"unable to read archived file: {member.name}")
-            content = extracted.read()
+            content = _accepted_fixture_bytes(extracted.read())
             files.append(
                 {
                     "path": member.name,
