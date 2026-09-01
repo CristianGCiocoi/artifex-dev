@@ -1321,6 +1321,7 @@ def _safe_child(root: Path, relative_text: str) -> Path:
     relative = Path(relative_text)
     if (
         relative.is_absolute()
+        or bool(relative.anchor)
         or not relative.parts
         or ".." in relative.parts
         or relative_text != relative.as_posix()

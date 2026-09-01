@@ -29,7 +29,7 @@ from contextlib import suppress
 from dataclasses import dataclass
 from pathlib import Path
 from time import sleep, time
-from typing import Any
+from typing import Any, cast
 
 from artifex.application import Application, OperationContext, OperationRequest
 from artifex.runtime import ManagedRuntimeService
@@ -696,6 +696,9 @@ def _enforce_windows_private_acl(path: Path, *, directory: bool) -> None:
             str(path),
             "/remove:g",
             "*S-1-5-32-544",
+            "*S-1-5-32-545",
+            "*S-1-5-11",
+            "*S-1-3-0",
             "*S-1-3-4",
         )
     )
@@ -829,7 +832,10 @@ def _process_exists(process_id: int) -> bool:
     if os.name == "nt":
         process_query_limited_information = 0x1000
         still_active = 259
-        kernel32 = ctypes.windll.kernel32
+        # ``windll`` exists only on Windows. The runtime branch is already
+        # guarded by ``os.name``; the cast keeps POSIX type checking honest
+        # without weakening the Windows process-ownership check.
+        kernel32 = cast(Any, ctypes).windll.kernel32
         handle = kernel32.OpenProcess(process_query_limited_information, False, process_id)
         if not handle:
             # Access denied is treated as a live owner; only invalid PIDs recover.
