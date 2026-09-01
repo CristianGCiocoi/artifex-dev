@@ -1,0 +1,6 @@
+{
+  "diagnostic": "providers.interact did not return one JSON object",
+  "error": "JourneyFailure",
+  "schema_version": "1.0",
+  "status": "FAIL"
+}
