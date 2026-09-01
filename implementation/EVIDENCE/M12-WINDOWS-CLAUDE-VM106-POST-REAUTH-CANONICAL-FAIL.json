@@ -1,0 +1,6 @@
+{
+  "diagnostic": "provider INTERACTION did not return the bounded live response",
+  "error": "JourneyFailure",
+  "schema_version": "1.0",
+  "status": "FAIL"
+}

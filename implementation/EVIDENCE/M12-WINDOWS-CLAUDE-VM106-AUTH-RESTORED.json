@@ -1,0 +1,24 @@
+{
+  "canonical_acceptance": false,
+  "credential_files_read": false,
+  "credential_material_extracted": false,
+  "direct_invocation": {
+    "process_exit_code": 0,
+    "public_cli_json_valid": true,
+    "response_exact": true,
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "70b14e1701904a034359ddf554a439ac3abee4e770d059cab24e878c53a74594"
+  },
+  "provider_id": "claude",
+  "provider_version": "2.1.247 (Claude Code)",
+  "schema_version": "1.0",
+  "status": "PASS",
+  "status_probe": {
+    "logged_in": true,
+    "process_exit_code": 0,
+    "public_cli_json_valid": true,
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "4d979d256183e55cb60f3e6f2bee1d37ee43c41b163c57eebc10da56852565d8"
+  },
+  "vm_id": 106
+}
