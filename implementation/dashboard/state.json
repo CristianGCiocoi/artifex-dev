@@ -933,6 +933,11 @@
       "sha256": "29d266bb1bf00f8f3c63d0f80b42d02b316aff5a7807006dbbc63d4bef61c634"
     },
     {
+      "bytes": 1080,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R4-PREFLIGHT.json",
+      "sha256": "f397387a640dc3dde7a3fbb2ef850d5299955f104d8faed97d625cb9eaa472d3"
+    },
+    {
       "bytes": 148,
       "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-VM106-SECOND-CANONICAL-ATTEMPT-FAIL.json",
       "sha256": "c3358797fc9687a172b6db20a504a824b507fe36667bcc1c1503cec7662dba5a"
@@ -3887,7 +3892,7 @@
     "adr_count": 24,
     "current_milestone": "M12",
     "current_milestone_progress_percent": 0,
-    "evidence_items": 241,
+    "evidence_items": 242,
     "invariant_count": 34,
     "journey_states": {
       "ACTIVE": 1,
