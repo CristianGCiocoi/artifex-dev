@@ -10,12 +10,12 @@ program:
   architecture_status: FROZEN
   implementation_plan_status: FROZEN
   intake_commit: 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
-  branch: codex/artifex-2-m12
+  branch: main
   current_milestone: M12
   current_status: ACCEPTED
-  latest_accepted_commit: 7ca029ffe2a987ef9ffee938fe3e0dc6e9258ac2
-  canonical_integration_baseline: 7ca029ffe2a987ef9ffee938fe3e0dc6e9258ac2
-  next_integration_point: Integrate the accepted exact-R4 M12 checkpoint on canonical main and run frozen post-promotion release gates
+  latest_accepted_commit: a9aa4c916d076bef9a95506084a0d212536af749
+  canonical_integration_baseline: a9aa4c916d076bef9a95506084a0d212536af749
+  next_integration_point: Run exact-R4 post-promotion gates and publish ARTIFEX 2.0.0 GA only while every gate remains PASS
   m1_started: true
   m2_started: true
   m3_started: true

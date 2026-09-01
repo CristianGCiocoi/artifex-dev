@@ -1,6 +1,6 @@
 {
   "acceptance": {
-    "acceptance_commit": null,
+    "acceptance_commit": "a9aa4c916d076bef9a95506084a0d212536af749",
     "blocked": [],
     "contract_digest": "54529f748cac59ce8b57e2f9a8376fe51c515e0ffca6b0b7da51ae2cbc5a2c6a",
     "evidence_classes": {
@@ -3775,8 +3775,8 @@
   ],
   "program": {
     "architecture_status": "FROZEN",
-    "branch": "codex/artifex-2-m12",
-    "canonical_integration_baseline": "7ca029ffe2a987ef9ffee938fe3e0dc6e9258ac2",
+    "branch": "main",
+    "canonical_integration_baseline": "a9aa4c916d076bef9a95506084a0d212536af749",
     "current_milestone": "M12",
     "current_status": "ACCEPTED",
     "dashboard_state": "CURRENT",
@@ -3788,7 +3788,7 @@
     "id": "ARTIFEX-2.0-IMPLEMENTATION",
     "implementation_plan_status": "FROZEN",
     "intake_commit": "5cc5dcfeb420a6df171a44426c04a0f08fa1e877",
-    "latest_accepted_commit": "7ca029ffe2a987ef9ffee938fe3e0dc6e9258ac2",
+    "latest_accepted_commit": "a9aa4c916d076bef9a95506084a0d212536af749",
     "m12_started": true,
     "m1_started": true,
     "m2_started": true,
@@ -3801,7 +3801,7 @@
     "m8b_started": true,
     "m8c_started": true,
     "m9_started": true,
-    "next_integration_point": "Integrate the accepted exact-R4 M12 checkpoint on canonical main and run frozen post-promotion release gates",
+    "next_integration_point": "Run exact-R4 post-promotion gates and publish ARTIFEX 2.0.0 GA only while every gate remains PASS",
     "recorded_date": "2026-09-01",
     "target_release": "2.0.0"
   },
