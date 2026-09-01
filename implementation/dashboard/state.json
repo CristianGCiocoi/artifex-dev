@@ -1013,6 +1013,11 @@
       "sha256": "71918ae1d653215d66cea650ad1604d3b7cd87061cb5f523cbd039420bc629a2"
     },
     {
+      "bytes": 1338,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CODEX-PROVIDER-READY-ATTESTATION-VM105-R4.json",
+      "sha256": "f7ef90434500a09af4fba7a7395d9eac76e08e3a1973d0d1bb97c1705f986430"
+    },
+    {
       "bytes": 1326,
       "path": "implementation/EVIDENCE/M12-WINDOWS-CODEX-PROVIDER-READY-ATTESTATION-VM105.json",
       "sha256": "118f1b50b413ed6261338c6aa6a1359012103e44d4d92917f7477547a0ebfa66"
@@ -1033,9 +1038,24 @@
       "sha256": "46cfd81e56e954be1e87f015e2bcb5db276252a2db46fbeb6961f54f69d9a5ab"
     },
     {
+      "bytes": 165,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CODEX-VM105-R4-LAUNCHER-FAIL.json",
+      "sha256": "3e3696d04308386212a8e3f0ad8266e8c975404ca997456edd5696dc742f0dcb"
+    },
+    {
+      "bytes": 1120,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CODEX-VM105-R4-PREFLIGHT.json",
+      "sha256": "57532c5ae0fed384f2f92456ed16045bab7e276f1d533429f299934ee6e0584b"
+    },
+    {
       "bytes": 175,
       "path": "implementation/EVIDENCE/M12-WINDOWS-CODEX-VM105-UNAUTHORIZED-RESUME-FAIL.json",
       "sha256": "74aa5c30550c751cae4017f4e31d53d5c21d9bbfdb44c377661037b17931f669"
+    },
+    {
+      "bytes": 443,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-NOPROVIDER-CLEAN-BASE-ATTESTATION-VM104-R4.json",
+      "sha256": "3155e244e480bc7d152af2fb3cc3d524feaf4a7bf58a85fe77f1b2c623e2fec8"
     },
     {
       "bytes": 5693,
@@ -1046,6 +1066,16 @@
       "bytes": 6231,
       "path": "implementation/EVIDENCE/M12-WINDOWS-NOPROVIDER-VM104-QUALIFIED.json",
       "sha256": "f1790f09a48d90f8029be45cb8999f45d8d72d803eedc334c7f49a4683cc1cd9"
+    },
+    {
+      "bytes": 165,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-NOPROVIDER-VM104-R4-LAUNCHER-FAIL.json",
+      "sha256": "3e3696d04308386212a8e3f0ad8266e8c975404ca997456edd5696dc742f0dcb"
+    },
+    {
+      "bytes": 857,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-NOPROVIDER-VM104-R4-PREFLIGHT.json",
+      "sha256": "af44ec65070e817652f0a22866bd00f10574b2309a904a14fcb18f5f1f295aae"
     },
     {
       "bytes": 1075,
@@ -3977,7 +4007,7 @@
     "adr_count": 24,
     "current_milestone": "M12",
     "current_milestone_progress_percent": 0,
-    "evidence_items": 259,
+    "evidence_items": 265,
     "invariant_count": 34,
     "journey_states": {
       "ACTIVE": 1,

@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0",
+  "vm_id": 104,
+  "snapshot_name": "m12-r4-noprovider-clean-498cd01-r4",
+  "snapshot_config_sha256": "7bc56dbe5ec62fce76116d3a99c9819bee055c037b16acbaaeaafcd34369ead3",
+  "account_sid_sha256": "5c00407e51a59e1b439dffb4136614fdf658946ba313d3b9549390e0455621b9",
+  "candidate_sha256": "130eb9804369e1ba655fa11ed98be54e606c948b78c30ba297f20d838faca720",
+  "providers_absent": true,
+  "source_checkout_absent": true
+}

@@ -1,0 +1,6 @@
+{
+  "diagnostic": "qualification must use the standard ARTIFEX installation locations",
+  "error": "JourneyFailure",
+  "schema_version": "1.0",
+  "status": "FAIL"
+}
