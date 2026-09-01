@@ -1,0 +1,24 @@
+{
+  "canonical_acceptance": false,
+  "credential_files_read": false,
+  "credential_material_extracted": false,
+  "direct_invocation": {
+    "process_exit_code": 1,
+    "public_cli_json_valid": true,
+    "response_exact": false,
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "ea24658ff5b9f26991e07fd4d9d2ce43b3fc791039797cfc597f05850858ee59"
+  },
+  "provider_id": "claude",
+  "provider_version": "2.1.247 (Claude Code)",
+  "schema_version": "1.0",
+  "status": "BLOCKED_EXTERNAL_AUTHENTICATION",
+  "status_probe": {
+    "logged_in": false,
+    "process_exit_code": 1,
+    "public_cli_json_valid": true,
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "e95ee16c2b1a0e423558477d4e81a36b10dab7e0ac0b18c39b4bbf583d9456a7"
+  },
+  "vm_id": 106
+}
