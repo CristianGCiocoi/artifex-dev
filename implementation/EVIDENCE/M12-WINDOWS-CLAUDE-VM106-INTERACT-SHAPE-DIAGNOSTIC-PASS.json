@@ -1,0 +1,20 @@
+{
+  "canonical_acceptance": false,
+  "credential_files_read": false,
+  "credential_material_extracted": false,
+  "live": true,
+  "marker_count": 1,
+  "operation": "providers.interact diagnostic",
+  "process_exit_code": 0,
+  "provider_id": "claude",
+  "provider_output_retained": false,
+  "public_cli_json_valid": true,
+  "public_cli_ok": true,
+  "response_length": 81,
+  "response_sha256": "0f5d820756255dd3799606bcc0c12c824ae6b92665e798ce7c06e1a184227631",
+  "schema_version": "1.0",
+  "status": "PASS",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_sha256": "cd2cd21664a17a774fa98ba426ac4e7fa9c0844beeed4ea3a4574abfae759925",
+  "vm_id": 106
+}
