@@ -17,7 +17,7 @@ from collections.abc import Callable, Mapping
 from contextlib import suppress
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any
 
 from artifex import __version__
@@ -1322,6 +1322,7 @@ def _safe_child(root: Path, relative_text: str) -> Path:
     if (
         relative.is_absolute()
         or bool(relative.anchor)
+        or bool(PureWindowsPath(relative_text).drive)
         or not relative.parts
         or ".." in relative.parts
         or relative_text != relative.as_posix()
