@@ -394,7 +394,12 @@ def test_public_claude_interaction_preserves_project_identity_and_baseline(
         assert interaction_schema["required"] == ["response"]
         assert interaction_schema["additionalProperties"] is False
         assert "Read the durable project identity and revision." not in arguments
-        assert stdin_prompt == "Read the durable project identity and revision."
+        assert stdin_prompt == (
+            "Return the user-visible answer only through the required JSON schema's "
+            "response field. The response field value must satisfy the following "
+            "user request exactly.\n"
+            'USER_REQUEST_JSON="Read the durable project identity and revision."'
+        )
         return _completed(
             arguments,
             stdout=json.dumps(
@@ -472,7 +477,12 @@ def test_hosted_claude_interaction_renews_coordinator_during_long_provider_call(
         arguments: Sequence[str], observed_root: Path, stdin_prompt: str | None
     ) -> subprocess.CompletedProcess[str]:
         assert observed_root == root.resolve()
-        assert stdin_prompt == "Return the bounded response."
+        assert stdin_prompt == (
+            "Return the user-visible answer only through the required JSON schema's "
+            "response field. The response field value must satisfy the following "
+            "user request exactly.\n"
+            'USER_REQUEST_JSON="Return the bounded response."'
+        )
         sleep(3.5)
         return _completed(
             arguments,

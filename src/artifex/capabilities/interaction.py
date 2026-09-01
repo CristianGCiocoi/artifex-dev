@@ -88,7 +88,9 @@ class ProviderInteractionService:
             completed = self.runner(
                 command,
                 root,
-                prompt if provider.provider_id == "claude" else None,
+                _claude_transport_prompt(prompt)
+                if provider.provider_id == "claude"
+                else None,
             )
         except (OSError, subprocess.SubprocessError) as exc:
             raise ValueError(
@@ -377,6 +379,16 @@ def _claude_interaction_schema() -> str:
         },
         sort_keys=True,
         separators=(",", ":"),
+    )
+
+
+def _claude_transport_prompt(prompt: str) -> str:
+    """Keep the caller's response contract inside Claude's JSON envelope."""
+    return (
+        "Return the user-visible answer only through the required JSON schema's "
+        "response field. The response field value must satisfy the following "
+        "user request exactly.\nUSER_REQUEST_JSON="
+        + json.dumps(prompt, ensure_ascii=False)
     )
 
 
