@@ -24,7 +24,7 @@ candidate:
     release_claim: NOT_CLAIMED
     reason: No authorized Authenticode signing identity was supplied; hash and provenance qualification remain mandatory.
 qualification_harness:
-  source_commit: 4a4c2fcf13761ed7d426138701b8085548250418
+  source_commit: cd8635d42bc7d54458009a882894e8c46ee92729
   source_tree_imported_by_qualification: false
 qualification:
   prior_candidate_evidence_carried_forward: false
