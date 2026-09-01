@@ -1,0 +1,111 @@
+schema_version: '1.0'
+receipt_id: ARTIFEX-POST-GA-CI-2026-09-01
+workstream: POST-GA_CI_NORMALIZATION
+recorded_at_utc: '2026-09-01T21:12:00Z'
+base_release:
+  product: ARTIFEX 2.0.0
+  status: GA
+  canonical_main_commit: e6bb13ba165fcb3d9b21cb4598d2f7539cf1bb0a
+  tag: v2.0.0
+  tag_commit: e6bb13ba165fcb3d9b21cb4598d2f7539cf1bb0a
+  qualified_product_source: 498cd012830748ea5c492c466146e4129cdbe455
+  m12_status: ACCEPTED
+maintenance:
+  branch: codex/post-ga-ci-normalization
+  qualified_candidate_commit: a9df60d5d20308a4f9d7289d5d9ce4c9b0a25bdb
+  base_commit: e6bb13ba165fcb3d9b21cb4598d2f7539cf1bb0a
+  product_source_changed: true
+  classification:
+  - WORKFLOW / CI INFRASTRUCTURE
+  - HISTORICAL V1 VALIDATOR
+  - RELEASE VERSION DISCOVERY
+  - CROSS-PLATFORM SOURCE / TYPECHECK
+  - COVERAGE
+  - KNOWN V1 REGRESSION
+  - PRODUCT MAINTENANCE
+  versioning_disposition: ARTIFEX_2.0.1_CANDIDATE_NOT_PUBLISHED
+  changed_files:
+  - .github/workflows/ci.yml
+  - implementation/POST-GA-CI/BASELINE-FAILURES.yaml
+  - implementation/POST-GA-CI/CHANGESET.md
+  - implementation/POST-GA-CI/RECEIPT.yaml
+  - scripts/validate_current_artifacts.py
+  - src/artifex/distribution/lifecycle.py
+  - src/artifex/managed_service.py
+  - tests/artifex2_m7/test_managed_service_windows_acl.py
+  - tests/artifex2_m7/test_service_registration.py
+  - tests/post_ga/test_cli_transport_contracts.py
+  - tests/post_ga/test_governance_boundary_contracts.py
+  - tests/post_ga/test_project_model_contracts.py
+  - tests/post_ga/test_public_fail_closed_contracts.py
+  - tests/post_ga/test_runtime_model_contracts.py
+  - tests/post_ga/test_security_boundary_contracts.py
+  - tools/artifex2/capture_v1_baseline.py
+github_actions:
+  run_id: 33559413657
+  url: https://github.com/CristianGCiocoi/artifex-dev/actions/runs/33559413657
+  candidate_commit: a9df60d5d20308a4f9d7289d5d9ce4c9b0a25bdb
+  conclusion: PASS
+  authoritative_environment: CLEAN_GITHUB_HOSTED_RUNNERS
+  jobs:
+  - {name: preserved-v1-regression (V1-R01), result: PASS}
+  - {name: native-package (windows-latest, native-windows-x64), result: PASS}
+  - {name: native-package (ubuntu-latest, native-linux-x64), result: PASS}
+  - {name: native-package (macos-latest, native-macos-arm64), result: PASS}
+  - {name: source-package, result: PASS}
+  - {name: test (windows-latest, '3.12'), result: PASS, tests: 805}
+  - {name: test (windows-latest, '3.13'), result: PASS, tests: 805}
+  - {name: test (ubuntu-latest, '3.12'), result: PASS, tests: 801, skipped: 4}
+  - {name: test (ubuntu-latest, '3.13'), result: PASS, tests: 801, skipped: 4}
+  - {name: test (macos-latest, '3.12'), result: PASS, tests: 801, skipped: 4}
+  - {name: test (macos-latest, '3.13'), result: PASS, tests: 801, skipped: 4}
+coverage:
+  threshold_percent: 85
+  threshold_changed: false
+  windows:
+    statements: 13836
+    missed: 1536
+    branches: 4010
+    partial_branches: 975
+    reported_percent: 85
+    result: PASS
+  linux_macos:
+    statements: 13836
+    missed: 1549
+    branches: 4010
+    partial_branches: 967
+    reported_percent: 85
+    result: PASS
+known_v1_regression:
+  id: V1-R01-DASHBOARD-FIXTURE-SCHEMA-DRIFT
+  state: REPRODUCED_AND_PRESERVED
+  repaired: false
+  xfail_substitution: false
+  current_2x_gate_failure: false
+release_immutability:
+  verified_at_utc: '2026-09-01T21:15:00Z'
+  tag_unchanged: true
+  release_assets_unchanged: true
+  assets:
+  - name: ARTIFEX-Setup.exe
+    bytes: 23309865
+    sha256: 130eb9804369e1ba655fa11ed98be54e606c948b78c30ba297f20d838faca720
+  - name: ARTIFEX-Setup.provenance.json
+    bytes: 16599
+    sha256: f8449ae73d7a5fde8b216c4735b39034777e393ca77e32a7c3294fb52f945c9d
+  - name: ARTIFEX-2.0.0-SHA256SUMS.txt
+    bytes: 180
+    sha256: f5fbbb2a85132bf7b5ca6b6e53441672514ffab0cfbbc410a9334e7432e7871d
+  verification: DOWNLOADED_AND_SHA256_RECOMPUTED
+scope_confirmation:
+  vm101_modified: false
+  vm105_modified: false
+  atlas_modified: false
+  optional_milestones_started: []
+  explicitly_not_started: [M6B, M8B, M8C, M10, M11]
+conclusion:
+  artifex_2_0_0_ga_qualification: PASS
+  published_release_artifacts: UNCHANGED
+  post_ga_ci_normalization: PASS
+  v2_0_0_tag: UNCHANGED
+  maintenance_candidate: QUALIFIED_NOT_RELEASED
