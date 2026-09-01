@@ -783,7 +783,10 @@ def _validate_windows_private_sddl(
     required_sids = {current_sid.upper(), "S-1-5-18"}
     if len(entries) != len(required_sids):
         raise ManagedServiceError("Windows ACL contains an unexpected principal")
-    expected_sids = {current_sid.upper(), "S-1-5-18", "SY"}
+    normalized_current_sid = current_sid.upper()
+    expected_sids = {normalized_current_sid, "S-1-5-18", "SY"}
+    if normalized_current_sid.rsplit("-", 1)[-1] == "500":
+        expected_sids.add("LA")
     observed: set[str] = set()
     for entry in entries:
         fields = entry.split(";")
@@ -799,7 +802,12 @@ def _validate_windows_private_sddl(
             raise ManagedServiceError("Windows directory ACL does not protect child objects")
         if not directory and flags:
             raise ManagedServiceError("Windows token ACL has unexpected inheritance flags")
-        observed.add("S-1-5-18" if normalized_sid == "SY" else normalized_sid)
+        if normalized_sid == "SY":
+            observed.add("S-1-5-18")
+        elif normalized_sid == "LA":
+            observed.add(normalized_current_sid)
+        else:
+            observed.add(normalized_sid)
     if observed != required_sids:
         raise ManagedServiceError("Windows ACL principals are incomplete")
 

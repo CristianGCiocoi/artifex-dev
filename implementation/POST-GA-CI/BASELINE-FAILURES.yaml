@@ -59,6 +59,12 @@ classifications:
   jobs: [test/ubuntu, test/macos]
   signature: accepted Windows V1 archive fixture aggregate differed under POSIX Git EOL export
   disposition: CANONICALIZE_TO_ACCEPTED_FIXTURE_REPRESENTATION
+- id: PGCI-F10
+  class: WINDOWS ACL SERIALIZATION
+  jobs: [test/windows-python-3.12]
+  signature: icacls serialized the built-in local Administrator SID as the equivalent LA SDDL alias
+  affected_tests: 8
+  disposition: ACCEPT_LA_ONLY_WHEN_CURRENT_USER_SID_HAS_RESERVED_RID_500
 new_product_defects:
 - Windows private ACL normalization is environment-sensitive on GitHub-hosted runners.
 - Windows rooted-without-drive lifecycle paths can escape the installation root

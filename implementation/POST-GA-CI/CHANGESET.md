@@ -30,7 +30,9 @@ Classification: `WORKFLOW / CI INFRASTRUCTURE`, `HISTORICAL V1 VALIDATOR`,
 - retain the existing Windows runtime guard while making `ctypes.windll` portable
   to MyPy on Linux and macOS;
 - normalize private Windows ACLs by removing common inherited/explicit broad
-  principals before enforcing and verifying the exact user plus LocalSystem DACL.
+  principals before enforcing and verifying the exact user plus LocalSystem DACL;
+- recognize the standard `LA` SDDL serialization only when it represents the
+  exact current built-in local Administrator SID with reserved RID `500`;
 - reject Windows rooted-without-drive artifact paths before joining them to an
   installation root, preserving the lifecycle boundary on every host OS.
 

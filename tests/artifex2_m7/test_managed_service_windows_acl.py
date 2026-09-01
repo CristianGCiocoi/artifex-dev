@@ -140,6 +140,22 @@ def test_sddl_verification_rejects_inheritance_and_unexpected_principals() -> No
         )
 
 
+def test_sddl_verification_accepts_local_administrator_alias_only_for_rid_500() -> None:
+    local_administrator_sid = "S-1-5-21-100-200-300-500"
+    aliased = "state\r\nD:P(A;OICI;FA;;;LA)(A;OICI;FA;;;SY)\r\n"
+
+    managed_service._validate_windows_private_sddl(
+        aliased, current_sid=local_administrator_sid, directory=True
+    )
+
+    with pytest.raises(ManagedServiceError, match="unexpected principal"):
+        managed_service._validate_windows_private_sddl(
+            aliased,
+            current_sid="S-1-5-21-100-200-300-400",
+            directory=True,
+        )
+
+
 @pytest.mark.skipif(os.name != "nt", reason="requires native icacls")
 def test_native_windows_state_root_and_token_acl_round_trip(tmp_path: Path) -> None:
     paths = ServicePaths.resolve(tmp_path / "state")
