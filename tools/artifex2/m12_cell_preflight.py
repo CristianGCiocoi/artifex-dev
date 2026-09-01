@@ -12,7 +12,7 @@ import subprocess
 from pathlib import Path
 
 EXPECTED_ARTIFACT_SHA256 = (
-    "9f57889b2e0e685ba72e27853a1eda1eb9ea7fd8770f4a2338041bb4421141a9"
+    "130eb9804369e1ba655fa11ed98be54e606c948b78c30ba297f20d838faca720"
 )
 MEDIA_ROOT = Path(r"C:\ARTIFEX-M12-Media")
 FORBIDDEN_PATHS = (
@@ -105,7 +105,7 @@ def main() -> None:
         "candidate": {
             "path": str(artifact),
             "sha256": artifact_sha256,
-            "source_commit": "717b9781c2f1d2b11b95725826db21746c252c09",
+            "source_commit": "498cd012830748ea5c492c466146e4129cdbe455",
         },
         "interactive_session": {
             "username": os.environ.get("USERNAME"),

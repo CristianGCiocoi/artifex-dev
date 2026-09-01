@@ -75,8 +75,8 @@ $arguments = @(
     $harness,
     '--artifex-executable', $executable,
     '--candidate-artifact', $artifact,
-    '--expected-artifact-sha256', '9f57889b2e0e685ba72e27853a1eda1eb9ea7fd8770f4a2338041bb4421141a9',
-    '--expected-source-commit', '717b9781c2f1d2b11b95725826db21746c252c09',
+    '--expected-artifact-sha256', '130eb9804369e1ba655fa11ed98be54e606c948b78c30ba297f20d838faca720',
+    '--expected-source-commit', '498cd012830748ea5c492c466146e4129cdbe455',
     '--v1-repository', $v1Repository,
     '--qualification-root', $qualificationRoot,
     '--output', $output
