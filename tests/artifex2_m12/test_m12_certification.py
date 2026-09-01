@@ -6,7 +6,7 @@ import pytest
 
 from artifex import __version__
 from tools.artifex2.m12_cell_preflight import (
-    FORBIDDEN_PATHS,
+    _forbidden_paths,
     _present_forbidden_paths,
 )
 from tools.artifex2.validate_m12 import (
@@ -28,18 +28,20 @@ DIGEST = "a" * 64
 COMMIT = "b" * 40
 
 
-def test_m12_preflight_forbids_vm106_project_and_sibling_catalog_residue(
-    tmp_path: Path,
+@pytest.mark.parametrize("vm_id", [104, 105, 106])
+def test_m12_preflight_forbids_cell_project_and_sibling_catalog_residue(
+    tmp_path: Path, vm_id: int
 ) -> None:
     required = {
-        Path(r"C:\Users\crugger\AppData\Local\ARTIFEX-M12-Project-VM106"),
+        Path(fr"C:\Users\crugger\AppData\Local\ARTIFEX-M12-Project-VM{vm_id}"),
         Path(
-            r"C:\Users\crugger\AppData\Local\ARTIFEX-M12-Project-VM106-catalog.sqlite3"
+            fr"C:\Users\crugger\AppData\Local\ARTIFEX-M12-Project-VM{vm_id}"
+            "-catalog.sqlite3"
         ),
         Path(r"C:\Users\crugger\AppData\Local\ARTIFEX-M12-Evidence"),
-        Path(r"C:\ARTIFEX-M12-M7-Staging-VM106"),
+        Path(fr"C:\ARTIFEX-M12-M7-Staging-VM{vm_id}"),
     }
-    assert required <= set(FORBIDDEN_PATHS)
+    assert required <= set(_forbidden_paths(vm_id))
 
     project_root = tmp_path / "project"
     project_root.mkdir()
@@ -50,6 +52,11 @@ def test_m12_preflight_forbids_vm106_project_and_sibling_catalog_residue(
         str(project_root),
         str(catalog),
     ]
+
+
+def test_m12_preflight_rejects_unapproved_vm() -> None:
+    with pytest.raises(ValueError, match="unsupported qualification VM"):
+        _forbidden_paths(101)
 
 
 def _j20() -> dict[str, object]:

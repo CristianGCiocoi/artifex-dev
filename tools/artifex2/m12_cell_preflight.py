@@ -15,20 +15,29 @@ EXPECTED_ARTIFACT_SHA256 = (
     "130eb9804369e1ba655fa11ed98be54e606c948b78c30ba297f20d838faca720"
 )
 MEDIA_ROOT = Path(r"C:\ARTIFEX-M12-Media")
-FORBIDDEN_PATHS = (
-    Path(r"C:\Program Files\ARTIFEX"),
-    Path(r"C:\Users\crugger\AppData\Local\ARTIFEX"),
-    Path(r"C:\Users\crugger\AppData\Local\ARTIFEX-M12-Project-VM106"),
-    Path(r"C:\Users\crugger\AppData\Local\ARTIFEX-M12-Project-VM106-catalog.sqlite3"),
-    Path(r"C:\Users\crugger\AppData\Local\ARTIFEX-M12-Evidence"),
-    Path(r"C:\ARTIFEX-M12-M7-Staging-VM106"),
-    Path(r"C:\ARTIFEX-M7-Qualification"),
-    Path(r"C:\ARTIFEX-M12-Qualification"),
-    Path(r"C:\ARTIFEX-M12-J09-Qualification"),
-    Path(r"C:\ARTIFEX-M12-J09-Qualification-V2"),
-    Path(r"C:\ARTIFEX-M9-Qualification"),
-    Path(r"C:\aidev\artifex"),
-)
+SUPPORTED_VM_IDS = (104, 105, 106)
+
+
+def _forbidden_paths(vm_id: int) -> tuple[Path, ...]:
+    if vm_id not in SUPPORTED_VM_IDS:
+        raise ValueError(f"unsupported qualification VM: {vm_id}")
+    return (
+        Path(r"C:\Program Files\ARTIFEX"),
+        Path(r"C:\Users\crugger\AppData\Local\ARTIFEX"),
+        Path(fr"C:\Users\crugger\AppData\Local\ARTIFEX-M12-Project-VM{vm_id}"),
+        Path(
+            fr"C:\Users\crugger\AppData\Local\ARTIFEX-M12-Project-VM{vm_id}"
+            "-catalog.sqlite3"
+        ),
+        Path(r"C:\Users\crugger\AppData\Local\ARTIFEX-M12-Evidence"),
+        Path(fr"C:\ARTIFEX-M12-M7-Staging-VM{vm_id}"),
+        Path(r"C:\ARTIFEX-M7-Qualification"),
+        Path(r"C:\ARTIFEX-M12-Qualification"),
+        Path(r"C:\ARTIFEX-M12-J09-Qualification"),
+        Path(r"C:\ARTIFEX-M12-J09-Qualification-V2"),
+        Path(r"C:\ARTIFEX-M9-Qualification"),
+        Path(r"C:\aidev\artifex"),
+    )
 
 
 def _present_forbidden_paths(paths: tuple[Path, ...]) -> list[str]:
@@ -73,6 +82,7 @@ def _provider(provider_id: str) -> dict[str, object] | None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cell", required=True)
+    parser.add_argument("--vm-id", type=int, choices=SUPPORTED_VM_IDS, required=True)
     parser.add_argument("--expected-provider", choices=("codex", "claude", "none"), required=True)
     parser.add_argument("--output", type=Path, required=True)
     arguments = parser.parse_args()
@@ -83,7 +93,7 @@ def main() -> None:
     expected_present = (
         [] if arguments.expected_provider == "none" else [arguments.expected_provider]
     )
-    present_forbidden_paths = _present_forbidden_paths(FORBIDDEN_PATHS)
+    present_forbidden_paths = _present_forbidden_paths(_forbidden_paths(arguments.vm_id))
     artifact_sha256 = _sha256(artifact) if artifact.is_file() else None
     status = (
         "PASS"
@@ -99,6 +109,7 @@ def main() -> None:
         "schema_version": "1.0",
         "status": status,
         "cell": arguments.cell,
+        "vm_id": arguments.vm_id,
         "expected_provider": arguments.expected_provider,
         "present_providers": present,
         "providers": providers,
