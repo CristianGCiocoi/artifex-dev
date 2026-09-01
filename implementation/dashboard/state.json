@@ -853,6 +853,11 @@
       "sha256": "ec36d4f6ccae91a91fe3b06962f57d110b73f9e953866216f2f1e0d9c2b0f743"
     },
     {
+      "bytes": 1344,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-PROVIDER-READY-ATTESTATION-VM106-R4.json",
+      "sha256": "5a5b1859558b30a8dfd1275f7c1e6dc2eb2ca4f66c46615e0057db7988128154"
+    },
+    {
       "bytes": 1335,
       "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-PROVIDER-READY-ATTESTATION-VM106.json",
       "sha256": "c964040389f3e166c7e883c79e571b62667d08abcbcc3cc58211aa25a55f045b"
@@ -3892,7 +3897,7 @@
     "adr_count": 24,
     "current_milestone": "M12",
     "current_milestone_progress_percent": 0,
-    "evidence_items": 242,
+    "evidence_items": 243,
     "invariant_count": 34,
     "journey_states": {
       "ACTIVE": 1,
