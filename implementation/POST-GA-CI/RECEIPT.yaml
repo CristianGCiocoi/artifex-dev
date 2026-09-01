@@ -48,17 +48,17 @@ github_actions:
   conclusion: PASS
   authoritative_environment: CLEAN_GITHUB_HOSTED_RUNNERS
   jobs:
-  - {name: preserved-v1-regression (V1-R01), result: PASS}
-  - {name: native-package (windows-latest, native-windows-x64), result: PASS}
-  - {name: native-package (ubuntu-latest, native-linux-x64), result: PASS}
-  - {name: native-package (macos-latest, native-macos-arm64), result: PASS}
+  - {name: 'preserved-v1-regression (V1-R01)', result: PASS}
+  - {name: 'native-package (windows-latest, native-windows-x64)', result: PASS}
+  - {name: 'native-package (ubuntu-latest, native-linux-x64)', result: PASS}
+  - {name: 'native-package (macos-latest, native-macos-arm64)', result: PASS}
   - {name: source-package, result: PASS}
-  - {name: test (windows-latest, '3.12'), result: PASS, tests: 805}
-  - {name: test (windows-latest, '3.13'), result: PASS, tests: 805}
-  - {name: test (ubuntu-latest, '3.12'), result: PASS, tests: 801, skipped: 4}
-  - {name: test (ubuntu-latest, '3.13'), result: PASS, tests: 801, skipped: 4}
-  - {name: test (macos-latest, '3.12'), result: PASS, tests: 801, skipped: 4}
-  - {name: test (macos-latest, '3.13'), result: PASS, tests: 801, skipped: 4}
+  - {name: 'test (windows-latest, 3.12)', result: PASS, tests: 805}
+  - {name: 'test (windows-latest, 3.13)', result: PASS, tests: 805}
+  - {name: 'test (ubuntu-latest, 3.12)', result: PASS, tests: 801, skipped: 4}
+  - {name: 'test (ubuntu-latest, 3.13)', result: PASS, tests: 801, skipped: 4}
+  - {name: 'test (macos-latest, 3.12)', result: PASS, tests: 801, skipped: 4}
+  - {name: 'test (macos-latest, 3.13)', result: PASS, tests: 801, skipped: 4}
 coverage:
   threshold_percent: 85
   threshold_changed: false
