@@ -1876,11 +1876,12 @@ def _validate_provider_ready_rebinding_attestation(
         "journey_project_absent",
         "source_checkout_absent",
         "interactive_session_active",
-        "vm_memory_included",
         "defender_realtime_enabled",
     )
     if any(value.get(field) is not True for field in required_true):
         raise JourneyFailure("provider-ready rebinding attestation does not prove clean state")
+    if not isinstance(value.get("vm_memory_included"), bool):
+        raise JourneyFailure("provider-ready rebinding attestation memory state is invalid")
     if (
         value.get("defender_candidate_detection_count") != 0
         or value.get("defender_candidate_excluded") is not False

@@ -430,6 +430,9 @@ def test_provider_ready_rebinding_is_exact_and_preserves_clean_lineage(
         "expected_auth_probe_sha256": "3" * 64,
     }
     _validate_provider_ready_rebinding_attestation(rebound, **arguments)
+    _validate_provider_ready_rebinding_attestation(
+        {**rebound, "vm_memory_included": False}, **arguments
+    )
 
     with pytest.raises(JourneyFailure, match="security state"):
         _validate_provider_ready_rebinding_attestation(
@@ -438,6 +441,10 @@ def test_provider_ready_rebinding_is_exact_and_preserves_clean_lineage(
     with pytest.raises(JourneyFailure, match="identity"):
         _validate_provider_ready_rebinding_attestation(
             {**rebound, "candidate_sha256": "4" * 64}, **arguments
+        )
+    with pytest.raises(JourneyFailure, match="memory state"):
+        _validate_provider_ready_rebinding_attestation(
+            {**rebound, "vm_memory_included": "no"}, **arguments
         )
 
 
