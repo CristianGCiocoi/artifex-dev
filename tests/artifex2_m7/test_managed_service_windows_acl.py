@@ -156,6 +156,22 @@ def test_sddl_verification_accepts_local_administrator_alias_only_for_rid_500() 
         )
 
 
+def test_workspace_sddl_verification_requires_enabled_inheritance_and_inherited_ace() -> None:
+    managed_service._validate_windows_inherited_sddl(
+        "workspace\r\nD:AI(A;OICIIOID;GA;;;CO)(A;OICIID;FA;;;SY)\r\n"
+    )
+
+    with pytest.raises(ManagedServiceError, match="remains disabled"):
+        managed_service._validate_windows_inherited_sddl(
+            "workspace\r\nD:PAI(A;OICIIOID;GA;;;CO)\r\n"
+        )
+
+    with pytest.raises(ManagedServiceError, match="no inherited principal"):
+        managed_service._validate_windows_inherited_sddl(
+            "workspace\r\nD:AI(A;OICI;FA;;;SY)\r\n"
+        )
+
+
 @pytest.mark.skipif(os.name != "nt", reason="requires native icacls")
 def test_native_windows_state_root_and_token_acl_round_trip(tmp_path: Path) -> None:
     paths = ServicePaths.resolve(tmp_path / "state")

@@ -91,7 +91,9 @@ class ServicePaths:
             )
         if not self.workspace_root.is_dir():
             raise ManagedServiceError("managed service workspace root must be a directory")
-        if os.name != "nt":
+        if os.name == "nt":
+            _enforce_windows_inherited_acl(self.workspace_root)
+        else:
             _restrict_directory(self.workspace_root)
 
 
@@ -706,6 +708,24 @@ def _enforce_windows_private_acl(path: Path, *, directory: bool) -> None:
     _verify_windows_private_acl(path, current_sid=current_sid, directory=directory)
 
 
+def _enforce_windows_inherited_acl(path: Path) -> None:
+    """Enable and verify the normal inherited DACL for provider workspaces."""
+
+    if os.name != "nt":
+        raise ManagedServiceError("Windows ACL enforcement is unavailable on this platform")
+    _run_windows_command(("icacls.exe", str(path), "/inheritance:e"))
+    _run_windows_command(("icacls.exe", str(path), "/verify"))
+    acl_file = path.parent / f".artifex-acl-{uuid.uuid4().hex}.txt"
+    try:
+        _run_windows_command(("icacls.exe", str(path), "/save", str(acl_file)))
+        raw = acl_file.read_bytes()
+    except OSError as exc:
+        raise ManagedServiceError("Windows ACL verification data is unavailable") from exc
+    finally:
+        acl_file.unlink(missing_ok=True)
+    _validate_windows_inherited_sddl(_decode_icacls_acl(raw))
+
+
 def _windows_current_user_sid() -> str:
     output = _run_windows_command(("whoami.exe", "/user", "/fo", "csv", "/nh"))
     try:
@@ -810,6 +830,23 @@ def _validate_windows_private_sddl(
             observed.add(normalized_sid)
     if observed != required_sids:
         raise ManagedServiceError("Windows ACL principals are incomplete")
+
+
+def _validate_windows_inherited_sddl(value: str) -> None:
+    match = re.search(r"D:([^\r\n]+)", value)
+    if match is None:
+        raise ManagedServiceError("Windows ACL verification did not return a DACL")
+    dacl = match.group(0)
+    prefix = dacl.split("(", 1)[0]
+    if "P" in prefix[2:]:
+        raise ManagedServiceError("Windows workspace ACL inheritance remains disabled")
+    entries = re.findall(r"\(([^()]*)\)", dacl)
+    if not entries or not any(
+        "ID" in entry.split(";")[1]
+        for entry in entries
+        if len(entry.split(";")) == 6
+    ):
+        raise ManagedServiceError("Windows workspace ACL has no inherited principal")
 
 
 def _write_json_atomic(path: Path, value: Mapping[str, object]) -> None:

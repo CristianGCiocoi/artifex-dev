@@ -65,8 +65,15 @@ classifications:
   signature: icacls serialized the built-in local Administrator SID as the equivalent LA SDDL alias
   affected_tests: 8
   disposition: ACCEPT_LA_ONLY_WHEN_CURRENT_USER_SID_HAS_RESERVED_RID_500
+- id: PGCI-F11
+  class: WINDOWS WORKSPACE ACL
+  jobs: [test/windows]
+  signature: pathlib-created provider workspace roots did not reliably inherit the parent DACL on hosted runners
+  affected_tests: 1
+  disposition: ENABLE_AND_VERIFY_INHERITANCE_EXPLICITLY_FOR_PROVIDER_WORKSPACE_ROOT
 new_product_defects:
 - Windows private ACL normalization is environment-sensitive on GitHub-hosted runners.
+- Windows provider workspace inheritance is environment-sensitive on GitHub-hosted runners.
 - Windows rooted-without-drive lifecycle paths can escape the installation root
   when Path.is_absolute alone is used as the cross-platform guard.
 optional_milestones_started: []

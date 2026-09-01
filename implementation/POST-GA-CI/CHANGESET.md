@@ -33,6 +33,8 @@ Classification: `WORKFLOW / CI INFRASTRUCTURE`, `HISTORICAL V1 VALIDATOR`,
   principals before enforcing and verifying the exact user plus LocalSystem DACL;
 - recognize the standard `LA` SDDL serialization only when it represents the
   exact current built-in local Administrator SID with reserved RID `500`;
+- explicitly enable and verify the inherited DACL on the separate Windows
+  provider-workspace root while keeping RunStore and transport state private;
 - reject Windows rooted-without-drive artifact paths before joining them to an
   installation root, preserving the lifecycle boundary on every host OS.
 
