@@ -814,6 +814,16 @@
     },
     {
       "bytes": 4991,
+      "path": "implementation/EVIDENCE/M12-J09-R4-SHIPPING-PASS.json",
+      "sha256": "b4529078eed45e2327bb2f47a87c4332f08ef9f7f5054eb0d26bf1d2df469296"
+    },
+    {
+      "bytes": 1088,
+      "path": "implementation/EVIDENCE/M12-J09-R4-SHIPPING-QUALIFIED.json",
+      "sha256": "acd4f43cceaaaa642b430094cbc2985455c90f34efd7729bc566bb298516e87d"
+    },
+    {
+      "bytes": 4991,
       "path": "implementation/EVIDENCE/M12-J09-SHIPPING-PASS.json",
       "sha256": "212ba6e83207af2951360fd14a012503b3d17ecb380329d72d9dcd70f0f05339"
     },
@@ -1123,9 +1133,9 @@
       "sha256": "d1a76948c7c8ae6b12a7366b4352240bc732bdcddc3c9b17f2e75629cb5abb1d"
     },
     {
-      "bytes": 1632,
+      "bytes": 1622,
       "path": "implementation/EVIDENCE/M12-WINDOWS-SHIPPING-CANDIDATE-R4.yaml",
-      "sha256": "9a048a65bf4517dc5dd6bf538987337768a55e0bc7e4ab026cb2dc3397f61f93"
+      "sha256": "997d965f76d0aece3a913a7df1c2cbee01a26cecdeeab1e6626213d6116c4bdb"
     },
     {
       "bytes": 1778,
@@ -4027,7 +4037,7 @@
     "adr_count": 24,
     "current_milestone": "M12",
     "current_milestone_progress_percent": 0,
-    "evidence_items": 269,
+    "evidence_items": 271,
     "invariant_count": 34,
     "journey_states": {
       "ACTIVE": 1,

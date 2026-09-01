@@ -55,7 +55,7 @@ core_mandatory_claims:
   collaborative_lifecycle: {status: PENDING, journeys: [J19], evidence: []}
   full_product: {status: PENDING, journeys: [J20], evidence: []}
   documentation_dashboard: {status: PENDING, journeys: [J08], evidence: []}
-  v1_migration: {status: PENDING, journeys: [J09], evidence: []}
+  v1_migration: {status: PASS, journeys: [J09], evidence: [EVIDENCE/M12-J09-R4-SHIPPING-PASS.json, EVIDENCE/M12-J09-R4-SHIPPING-QUALIFIED.json]}
   manual_fallback: {status: PASS, journeys: [J10], evidence: [EVIDENCE/M12-WINDOWS-NOPROVIDER-VM104-R4R1-QUALIFIED-R1.json]}
   organizational_knowledge: {status: PENDING, journeys: [J12], evidence: []}
 optional_claims:
@@ -74,7 +74,7 @@ mandatory_journeys:
   J06: {status: PENDING, candidate_binding: PENDING, evidence: []}
   J07: {status: PENDING, candidate_binding: PENDING, evidence: []}
   J08: {status: PENDING, candidate_binding: PENDING, evidence: []}
-  J09: {status: PENDING, candidate_binding: PENDING, evidence: []}
+  J09: {status: PASS, candidate_binding: EXACT_R4, evidence: [EVIDENCE/M12-J09-R4-SHIPPING-PASS.json, EVIDENCE/M12-J09-R4-SHIPPING-QUALIFIED.json]}
   J10: {status: PASS, candidate_binding: EXACT_R4, evidence: [EVIDENCE/M12-WINDOWS-NOPROVIDER-VM104-R4R1-PASS.json, EVIDENCE/M12-WINDOWS-NOPROVIDER-VM104-R4R1-QUALIFIED-R1.json]}
   J11: {status: PENDING, candidate_binding: PENDING, evidence: []}
   J12: {status: PENDING, candidate_binding: PENDING, evidence: []}
@@ -93,6 +93,6 @@ acceptance_classes:
   SECURITY_AUTHORITY: {status: PENDING, evidence: []}
   DOCUMENTATION: {status: PENDING, evidence: []}
   DASHBOARD: {status: PENDING, evidence: []}
-  MIGRATION: {status: PENDING, evidence: []}
+  MIGRATION: {status: PASS, evidence: [EVIDENCE/M12-J09-R4-SHIPPING-PASS.json, EVIDENCE/M12-J09-R4-SHIPPING-QUALIFIED.json]}
   PROVIDER_CERTIFICATION: {status: PENDING, evidence: []}
 release_manifest_truthful: false

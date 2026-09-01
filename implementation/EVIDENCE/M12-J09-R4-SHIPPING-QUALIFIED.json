@@ -1,0 +1,23 @@
+{
+  "approval_tokens_retained": false,
+  "backup_sha256": "e461be3f58099f4aa2885e85cb7e3eb23d5bf78641f4db5c31642a2e393fcdcb",
+  "candidate": {
+    "artifact_bytes": 23309865,
+    "artifact_sha256": "130eb9804369e1ba655fa11ed98be54e606c948b78c30ba297f20d838faca720",
+    "installed_executable_sha256": "7bfc3e75b0ee13d42c902d2d41ac2f7654465abb54f3425d55658182386c1f8d",
+    "source_commit": "498cd012830748ea5c492c466146e4129cdbe455"
+  },
+  "composition": "INSTALLED_NATIVE_PUBLIC_CLI_REAL_V1_GIT_COPY_MULTI_PROCESS",
+  "journey": "J09",
+  "public_process_call_count": 12,
+  "raw_evidence_path": "EVIDENCE/M12-J09-R4-SHIPPING-PASS.json",
+  "raw_evidence_sha256": "b4529078eed45e2327bb2f47a87c4332f08ef9f7f5054eb0d26bf1d2df469296",
+  "schema_version": "1.0",
+  "semantic_fingerprint": "82364730319cfe057f28cb6b2a6482a5e298c86b76fb4da2867e14754f43d76d",
+  "status": "PASS",
+  "v1": {
+    "commit": "317ec177df8655ae4f94e24162107fd2acecceec",
+    "model_sha256": "e970778462f6639675c8f862c0b1ca3247830e5a2290085ea3e95b90c4703394",
+    "tree": "ef130f94c2ef8f4d98ae925cd6e59e259b94b473"
+  }
+}
