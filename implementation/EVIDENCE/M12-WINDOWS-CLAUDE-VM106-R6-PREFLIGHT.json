@@ -1,0 +1,39 @@
+{
+  "artifex_command_absent": true,
+  "candidate": {
+    "path": "C:\\ARTIFEX-M12-Media\\ARTIFEX-Setup.exe",
+    "sha256": "130eb9804369e1ba655fa11ed98be54e606c948b78c30ba297f20d838faca720",
+    "source_commit": "498cd012830748ea5c492c466146e4129cdbe455"
+  },
+  "cell": "M7-WIN-CLAUDE",
+  "credential_material_read": false,
+  "expected_provider": "claude",
+  "interactive_session": {
+    "active_rdp_verified_separately": true,
+    "non_system_token": true,
+    "session_name": null,
+    "username": "Crugger"
+  },
+  "present_forbidden_paths": [],
+  "present_providers": [
+    "claude"
+  ],
+  "providers": {
+    "claude": {
+      "command": "C:\\Program Files\\Claude Code\\claude.exe",
+      "executable_sha256": "00e5be0a8b69893cad9259a1e8b80d59be8f3eb367d4a16c19f91bcd279423b7",
+      "id": "claude",
+      "version": "2.1.247 (Claude Code)"
+    },
+    "codex": null
+  },
+  "schema_version": "1.0",
+  "source_tree_imported": false,
+  "status": "PASS",
+  "windows": {
+    "architecture": "AMD64",
+    "release": "11",
+    "system": "Windows",
+    "version": "10.0.26200"
+  }
+}
