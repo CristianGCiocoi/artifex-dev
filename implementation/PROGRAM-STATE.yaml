@@ -15,7 +15,7 @@ program:
   current_status: ACTIVE
   latest_accepted_commit: 7ca029ffe2a987ef9ffee938fe3e0dc6e9258ac2
   canonical_integration_baseline: 7ca029ffe2a987ef9ffee938fe3e0dc6e9258ac2
-  next_integration_point: Freeze the exact M12 Core release claim matrix and candidate, implement the installed-native J20 qualifier, then revalidate all mandatory shipping journeys
+  next_integration_point: Architect disposition on the complete exact-R4 M12 qualification and GA release authority
   m1_started: true
   m2_started: true
   m3_started: true
@@ -28,7 +28,7 @@ program:
   m8c_started: true
   m9_started: true
   m12_started: true
-  recorded_date: '2026-08-31'
+  recorded_date: '2026-09-01'
   dashboard_state: CURRENT
 target_system:
   overview: Persistent project-centric engineering control platform with separate

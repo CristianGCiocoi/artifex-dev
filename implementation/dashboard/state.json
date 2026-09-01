@@ -5,9 +5,13 @@
     "contract_digest": "54529f748cac59ce8b57e2f9a8376fe51c515e0ffca6b0b7da51ae2cbc5a2c6a",
     "evidence_classes": {
       "BLACK_BOX_OUTCOME": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M12-J11-J20-R4-SHIPPING-PASS.json",
+          "EVIDENCE/M12-J11-J20-R4-SHIPPING-QUALIFIED.json",
+          "EVIDENCE/M12-R4-FINAL-VALIDATION.json"
+        ],
         "required_m12": true,
-        "status": "NOT_STARTED"
+        "status": "PASS"
       },
       "COMPONENT": {
         "evidence": [
@@ -66,14 +70,22 @@
         "status": "PASS"
       },
       "PUBLIC_COMPOSITION": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M12-J11-J20-R4-SHIPPING-PASS.json",
+          "EVIDENCE/M12-J11-J20-R4-SHIPPING-QUALIFIED.json",
+          "EVIDENCE/M12-R4-FINAL-VALIDATION.json"
+        ],
         "required_m12": true,
-        "status": "NOT_STARTED"
+        "status": "PASS"
       },
       "SECURITY_AUTHORITY": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M12-J11-J20-R4-SHIPPING-PASS.json",
+          "EVIDENCE/M12-J11-J20-R4-SHIPPING-QUALIFIED.json",
+          "EVIDENCE/M12-R4-FINAL-VALIDATION.json"
+        ],
         "required_m12": true,
-        "status": "NOT_STARTED"
+        "status": "PASS"
       }
     },
     "frozen_architecture_baseline": "ARTIFEX-2.0-IMPLEMENTATION-HANDOFF-FROZEN-v1",
@@ -98,13 +110,13 @@
       "J19",
       "J20"
     ],
-    "mandatory_work_complete": false,
+    "mandatory_work_complete": true,
     "migration": "M9_ACCEPTED_R4_EXACT_NATIVE_REVALIDATION_PASS",
     "milestone": "M12",
     "schema_version": "1.0",
     "superseded": [],
     "unresolved_contradiction": null,
-    "verdict": "ACTIVE"
+    "verdict": "READY_FOR_ARCHITECT_ACCEPTANCE"
   },
   "adrs": [
     {
@@ -855,6 +867,16 @@
     },
     {
       "bytes": 16548,
+      "path": "implementation/EVIDENCE/M12-J11-J20-R4-SHIPPING-PASS.json",
+      "sha256": "950a14be7c606d3b3d979906a45c1cf7ecb5f193cf3b77592372ef96a3319df8"
+    },
+    {
+      "bytes": 727,
+      "path": "implementation/EVIDENCE/M12-J11-J20-R4-SHIPPING-QUALIFIED.json",
+      "sha256": "d9ac319200996015e6ae38ce749fec746059d40a860da0733a28b3971996a6d9"
+    },
+    {
+      "bytes": 16548,
       "path": "implementation/EVIDENCE/M12-J11-J20-SHIPPING-PASS.json",
       "sha256": "2545514e10f811bbf230e6542e24b2b0d8b418402391b404384ef477a3d1fd84"
     },
@@ -872,6 +894,11 @@
       "bytes": 1275,
       "path": "implementation/EVIDENCE/M12-R3-SOURCE-VALIDATION.yaml",
       "sha256": "e1610c43ab8d7b0aa38154094f4b5c5261dda6d0db0d8620fc26820a9b4753de"
+    },
+    {
+      "bytes": 1016,
+      "path": "implementation/EVIDENCE/M12-R4-FINAL-VALIDATION.json",
+      "sha256": "558d460413a05c7d988be9062edd5990b86bc4f98dd7f2cadab09e41f6967667"
     },
     {
       "bytes": 2115,
@@ -1159,9 +1186,9 @@
       "sha256": "d1a76948c7c8ae6b12a7366b4352240bc732bdcddc3c9b17f2e75629cb5abb1d"
     },
     {
-      "bytes": 1622,
+      "bytes": 1973,
       "path": "implementation/EVIDENCE/M12-WINDOWS-SHIPPING-CANDIDATE-R4.yaml",
-      "sha256": "997d965f76d0aece3a913a7df1c2cbee01a26cecdeeab1e6626213d6116c4bdb"
+      "sha256": "f17f466d37e41fed4b148274657a393e485dbedcc4499c7a668480e833241929"
     },
     {
       "bytes": 1778,
@@ -3131,13 +3158,15 @@
     },
     {
       "blocker": null,
-      "environment": "CLEAN_INSTALLED_WHEEL_WINDOWS_REAL_CODEX_AND_CLAUDE",
+      "environment": "WINDOWS_11_25H2_X64_VM105_EXACT_R4_REAL_CODEX_AND_CLAUDE",
       "evidence": [
-        "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json"
+        "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json",
+        "EVIDENCE/M12-J11-J20-R4-SHIPPING-PASS.json",
+        "EVIDENCE/M12-J11-J20-R4-SHIPPING-QUALIFIED.json"
       ],
       "id": "J11",
-      "last_run": "2026-08-28",
-      "public_shipping_composition": "INSTALLED_WHEEL_PUBLIC_CLI_REAL_PROVIDER_MULTI_PROCESS",
+      "last_run": "2026-09-01",
+      "public_shipping_composition": "INSTALLED_NATIVE_PUBLIC_CLI_REAL_PROVIDER_MANAGED_SERVICE_MULTI_PROCESS",
       "status": "PASS",
       "title": "J11 — Cross-provider Continuity"
     },
@@ -3272,14 +3301,16 @@
     },
     {
       "blocker": null,
-      "environment": "EXACT_M12_RELEASE_CANDIDATE_QUALIFICATION_ENVIRONMENT_PENDING",
+      "environment": "WINDOWS_11_25H2_X64_VM105_EXACT_R4_REAL_CODEX_AND_CLAUDE",
       "evidence": [
-        "ACCEPTANCE/M12.yaml"
+        "ACCEPTANCE/M12.yaml",
+        "EVIDENCE/M12-J11-J20-R4-SHIPPING-PASS.json",
+        "EVIDENCE/M12-J11-J20-R4-SHIPPING-QUALIFIED.json"
       ],
       "id": "J20",
-      "last_run": null,
-      "public_shipping_composition": "INSTALLED_NATIVE_PUBLIC_COMPOSITION_PENDING",
-      "status": "ACTIVE",
+      "last_run": "2026-09-01",
+      "public_shipping_composition": "INSTALLED_NATIVE_PUBLIC_CLI_REAL_PROVIDER_MANAGED_SERVICE_MULTI_PROCESS",
+      "status": "PASS",
       "title": "J20 — FULL ARTIFEX PROJECT LIFECYCLE"
     }
   ],
@@ -3375,8 +3406,8 @@
     "active_wave_migration_policy": "REVALIDATE_ACCEPTED_M9_ON_EXACT_RELEASE_CANDIDATE",
     "fixture": "MIGRATION/V1-RELEASE-FIXTURE.yaml",
     "fixture_state": "M0_BASELINE_ACCEPTED",
-    "m12_j09_revalidation": "REQUIRED_NOT_YET_RUN",
-    "m12_j20_migration_continuity": "REQUIRED_NOT_YET_RUN",
+    "m12_j09_revalidation": "PASS_EXACT_R4_NATIVE_V1_COPY",
+    "m12_j20_migration_continuity": "PASS_EXACT_R4_NATIVE_FULL_LIFECYCLE",
     "m4_target_interaction_governance_state": "M4_ACCEPTED_ADDITIVE_STATE",
     "m5_docs_dashboard_classification": "M5_ACCEPTED_CURRENT_STALE_MISSING_CLASSIFICATION",
     "m6a_v1_claude_setup_revalidation": "PASS_FRESH_PROCESS_REAL_CLAUDE_READINESS",
@@ -3390,7 +3421,7 @@
     "m9_shipping_candidate": "ARTIFEX_SETUP_6854BFB_SHA256_6F532C16",
     "migration_execution": "M2_ACCEPTED_EMPTY_RUNSTORE",
     "milestone": "M12",
-    "mode": "M12_ACTIVE_RELEASE_CANDIDATE_REVALIDATION",
+    "mode": "M12_R4_QUALIFIED_PENDING_ARCHITECT_ACCEPTANCE",
     "project_mutation": false,
     "provider_setup_migration": "M3_ACCEPTED_SECRET_FREE_PROVIDER_SETUP_SCHEMA",
     "rollback": "REMOVE_NEW_PROVIDER_SETUP_STATE_ONLY; accepted M2 RunStore and Project semantics remain authoritative",
@@ -3772,8 +3803,8 @@
     "m8b_started": true,
     "m8c_started": true,
     "m9_started": true,
-    "next_integration_point": "Freeze the exact M12 Core release claim matrix and candidate, implement the installed-native J20 qualifier, then revalidate all mandatory shipping journeys",
-    "recorded_date": "2026-08-31",
+    "next_integration_point": "Architect disposition on the complete exact-R4 M12 qualification and GA release authority",
+    "recorded_date": "2026-09-01",
     "target_release": "2.0.0"
   },
   "projection": {
@@ -4057,19 +4088,18 @@
   },
   "schema_version": "1.0",
   "summary": {
-    "acceptance_classes_passing": 7,
+    "acceptance_classes_passing": 10,
     "acceptance_classes_required": 10,
     "active_blockers": 3,
     "adr_count": 24,
     "current_milestone": "M12",
-    "current_milestone_progress_percent": 70,
-    "evidence_items": 272,
+    "current_milestone_progress_percent": 100,
+    "evidence_items": 275,
     "invariant_count": 34,
     "journey_states": {
-      "ACTIVE": 1,
       "BLOCKED_EXTERNAL_PREREQUISITE": 1,
       "NOT_STARTED": 1,
-      "PASS": 17
+      "PASS": 18
     },
     "milestones_accepted": 10,
     "milestones_started": 13,

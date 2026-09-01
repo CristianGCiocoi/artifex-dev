@@ -1,0 +1,424 @@
+{
+  "approval_tokens_retained": false,
+  "candidate": {
+    "artifact_bytes": 23309865,
+    "artifact_name": "ARTIFEX-Setup.exe",
+    "artifact_sha256": "130eb9804369e1ba655fa11ed98be54e606c948b78c30ba297f20d838faca720",
+    "installed_executable_sha256": "7bfc3e75b0ee13d42c902d2d41ac2f7654465abb54f3425d55658182386c1f8d",
+    "installed_manifest_sha256": "b0b9ff45ee36f4ad448aa4c66e557d114477f7c0bd446251f02f31878e34867f",
+    "product_version": "2.0.0",
+    "service_registration_sha256": "56e5108fff32427c90019d2724d42ac6fccaab89a5ca02489004075608ea6041",
+    "source_commit": "498cd012830748ea5c492c466146e4129cdbe455"
+  },
+  "composition": "INSTALLED_NATIVE_PUBLIC_CLI_REAL_PROVIDER_MANAGED_SERVICE_MULTI_PROCESS",
+  "credential_material_read": false,
+  "custom_application_factory_used": false,
+  "journeys": {
+    "J11": {
+      "authority_roles_preserved": true,
+      "no_export_or_migration": true,
+      "real_claude": true,
+      "real_codex": true,
+      "same_project_identity": true,
+      "same_semantic_revision": true,
+      "status": "PASS"
+    },
+    "J20": {
+      "acceptance_authority_separate": true,
+      "coordinator_generation_advanced": true,
+      "dashboard_current": true,
+      "documentation_current": true,
+      "envelope_approved": true,
+      "execution_continued_after_frontend_close": true,
+      "frontend_closed_during_run": true,
+      "intent_captured": true,
+      "lifecycle_stages_accepted": [
+        "EXPLORATION",
+        "RESEARCH",
+        "DEFINITION",
+        "ARCHITECTURE",
+        "REQUIREMENTS_ADRS",
+        "PLAN",
+        "ENVELOPE_PROPOSED",
+        "APPROVED_PLAN"
+      ],
+      "managed_service_restarted": true,
+      "material_decision_blocked": true,
+      "material_decision_resolved_by_user": true,
+      "organizational_knowledge_candidate": "LES-M12-J20",
+      "outcome_reached": true,
+      "persistent_execution": true,
+      "project_authority_promoted": true,
+      "project_created": true,
+      "project_restored": true,
+      "promotion_revision": 10,
+      "provider_self_accepted": false,
+      "run_restored": true,
+      "session_restored": true,
+      "status": "PASS",
+      "tactical_deviation_bounded": true,
+      "validation_evidence_recorded": true,
+      "workspace_isolated": true
+    }
+  },
+  "public_process_calls": [
+    {
+      "ok": true,
+      "operation": "service.status",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "ea70925c0362d5b701d3a9748afc2ccf741b6ca0dfaea0325a2575acfbe2d57f"
+    },
+    {
+      "ok": true,
+      "operation": "project.create",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "8be6ad2da2cbd31de9c3f688470a1d04bfe65de6d1ca59cf655c09dd2923beaa"
+    },
+    {
+      "ok": true,
+      "operation": "distribution.setup.plan",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "9f598692da23076ba70f97a558b727809cf055195b33e776fff07c1b931459a1"
+    },
+    {
+      "ok": true,
+      "operation": "distribution.setup.apply",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "f00eb6d7d6e76c66863bd98a985a33427142f6116dc40bf359f5a57388d95390"
+    },
+    {
+      "ok": true,
+      "operation": "service.stop",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "27c459c12ecdb2d91e694cef3099546096bcb6ff38d9c688b016088daa648063"
+    },
+    {
+      "ok": true,
+      "operation": "service.status",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "7fbb16bc1489bae42cfeed8b089e178d5b98feb424b5a6ef97caaf2a1c72e633"
+    },
+    {
+      "ok": true,
+      "operation": "distribution.bootstrap",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "43bdeeb02f4a2e16f291199970fab894d4bcf0f213d15a8322ef47d3b908c494"
+    },
+    {
+      "ok": true,
+      "operation": "providers.graph",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e92a7c645601051fe4ba0babfc7a27d4daf4e98fdac2deb48c64c7b79ddd16fb"
+    },
+    {
+      "ok": true,
+      "operation": "providers.readiness",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "5bbffad3d3b17b13c759bfa8e8b4e72a55375f6e370c23d4df11570e5add7ecd"
+    },
+    {
+      "ok": true,
+      "operation": "providers.graph",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e92a7c645601051fe4ba0babfc7a27d4daf4e98fdac2deb48c64c7b79ddd16fb"
+    },
+    {
+      "ok": true,
+      "operation": "providers.readiness",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "1e64ff7ad0955d909d803dd1d0b467fc796cc47339603b519ed99645d4380a40"
+    },
+    {
+      "ok": true,
+      "operation": "interaction.open",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "9804be0838300b682df7f2bed9f17a1f1cc98f9c7deceb694f3816dac350912b"
+    },
+    {
+      "ok": true,
+      "operation": "providers.interact",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "5661593d2244dc089edac64e2831a4c33392d18a88e8ea3a86adaafa332de5f2"
+    },
+    {
+      "ok": true,
+      "operation": "interaction.disconnect",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "58889bdcab85d23b117a41c89c4173a1f91dc3e8e4e23ed4bb5acdc9457c77ac"
+    },
+    {
+      "ok": true,
+      "operation": "providers.interact",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "727acd696038e25b5358a75280b7ba00181553bdfcb4d7d7d6d3ffedad32448c"
+    },
+    {
+      "ok": true,
+      "operation": "interaction.reconnect",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "c00d614daa73c7eacbfff5a23e8795b8ad5159bdc884e7281c6f6cdc84efdb95"
+    },
+    {
+      "ok": true,
+      "operation": "interaction.lifecycle.advance",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "ba11d1dfd79bcd5f8699b7a28eba5fa94b7ba10ecddfdb541a4c7aef5cfa1d37"
+    },
+    {
+      "ok": true,
+      "operation": "interaction.lifecycle.advance",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "a8371c50010062b90cfbba8d2089d4d6a5bf2d31aedb59a00bd0f27eade4f44e"
+    },
+    {
+      "ok": true,
+      "operation": "interaction.lifecycle.advance",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "6486ad0d8aaa907dab1392ffa1f5f7d5397d3a28ade2cc48e4f0a826ead52849"
+    },
+    {
+      "ok": true,
+      "operation": "interaction.lifecycle.advance",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "278bfdb843aaa670bf34e4bcfe26f0e6f8ff2165276b9e836cebbb146d1ee98e"
+    },
+    {
+      "ok": true,
+      "operation": "interaction.lifecycle.advance",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "878fa55397cb8f9be1522a7eaa34a81bcef6e5dbbf2bf7bee201595aa7730abe"
+    },
+    {
+      "ok": true,
+      "operation": "interaction.lifecycle.advance",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "3166ef9e5473fcb29f12b9550f4efc37b1ba35a68831805273943a74285b85f7"
+    },
+    {
+      "ok": true,
+      "operation": "governance.envelope.propose",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e8defd636d1833e774cdffd9a1aeb42d41a1371f02bc300b4efa0822cfad6211"
+    },
+    {
+      "ok": true,
+      "operation": "interaction.lifecycle.advance",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "a95e304d65e41c2f44706f27b0e73e6e24ec4fd050f973fd64a327ca25c8e1f2"
+    },
+    {
+      "ok": true,
+      "operation": "governance.envelope.approve",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "49b167fc43e1c368808a280e1f6462773d2ccff28c0f47e479e2ba3d655b9f98"
+    },
+    {
+      "ok": true,
+      "operation": "interaction.lifecycle.advance",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "16748e2a9d55f35fdc4a6fe141f0e5ec51234c373c70c96ab52711daf2f65094"
+    },
+    {
+      "ok": true,
+      "operation": "governance.envelope.propose",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "a3cb8d3acb4f54deacb09f7dec540c9be81dac0905bab463d31dbdaa790a8e94"
+    },
+    {
+      "ok": true,
+      "operation": "governance.envelope.approve",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "abf35181e0e29f7ea851cd2cea8e6287f7b6acdba287867dcce0a57850de1254"
+    },
+    {
+      "ok": true,
+      "operation": "runtime.run.authorize",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "87cf08737716c6312d630d4c88be25c5fe6ecb61ea06fc4b053ecaf3effdb596"
+    },
+    {
+      "ok": true,
+      "operation": "runtime.workspace.create",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "48095b625c734423cd66e045c8349d1d35c12167aa47fd25540513e576713892"
+    },
+    {
+      "frontend_detached": true,
+      "ok": null,
+      "operation": "runtime.provider.execute",
+      "returncode": null,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "ok": true,
+      "operation": "runtime.status",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "1043209d7bbc0cc17e76120b1fa0def36166d8d6f629b83951b6a8401f45b615"
+    },
+    {
+      "ok": true,
+      "operation": "governance.decision.request",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "8e12705df6b9186f7e0fb4277afe876a547a9cb3a1fbe55ffce0f1b23799fcfb"
+    },
+    {
+      "ok": true,
+      "operation": "runtime.status",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "b7803b7bf597ed9dc04fa4f3f09b9e0fc35661de916f4c9fe455202b23534203"
+    },
+    {
+      "ok": true,
+      "operation": "governance.decision.resolve",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "a7df57cf05222bdfd669cbc00f48e904219fa49520d44875939213a9286ef27c"
+    },
+    {
+      "ok": true,
+      "operation": "runtime.status",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "336361c2b7b7984f8c578a469503581866b22c8682d9a1e2cf0bcf07c8418c50"
+    },
+    {
+      "ok": true,
+      "operation": "runtime.accept",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "6c70fcabde1759c01ae9d2454d01929840f5147d69322d0aeaee9039001f6368"
+    },
+    {
+      "ok": true,
+      "operation": "runtime.workspace.promote",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "29525a0d062ca8470c89a45b856ac8b1237d016b126fb7001c605af7a369d5af"
+    },
+    {
+      "ok": true,
+      "operation": "documentation.regenerate",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "4626748413f6242cfe3a0b94f9bd600313653448ea0dcdb636b83afbc09dc9e7"
+    },
+    {
+      "ok": true,
+      "operation": "documentation.status",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "bbca4afdf088a63ca2b9c39aac03094945d584005950430828d45cfa388cb7f4"
+    },
+    {
+      "ok": true,
+      "operation": "dashboard.project",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "66b69ddbf742827c29d335551f5721f3fdd14e168a9f09558d96025baa840319"
+    },
+    {
+      "ok": true,
+      "operation": "knowledge.project.lesson.record",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "49e14a6f1640a548c57e18e50f3dafd2e7efbf35a97f8539d68b75a4e67c1dc2"
+    },
+    {
+      "ok": true,
+      "operation": "interaction.disconnect",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "eac5eee37f4c3225a17d9d94c9d5ab2d019e8ee95a728ebff4f15aa433b4478a"
+    },
+    {
+      "ok": true,
+      "operation": "service.status",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "7fbb16bc1489bae42cfeed8b089e178d5b98feb424b5a6ef97caaf2a1c72e633"
+    },
+    {
+      "ok": true,
+      "operation": "service.stop",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "27c459c12ecdb2d91e694cef3099546096bcb6ff38d9c688b016088daa648063"
+    },
+    {
+      "ok": true,
+      "operation": "service.status",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "ee3686a0eff214f879d387019bb663854a5a43eb1dfdb0a8ec31b7bd452ca1df"
+    },
+    {
+      "ok": true,
+      "operation": "project.continue",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "6d1d2f2f3fc7ee7736052955405ed9f0c671c693c6dc00fbc5c1528d10327e4b"
+    },
+    {
+      "ok": true,
+      "operation": "interaction.reconnect",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "1ee4d467cbdb268a186b630952f0fc197c11f90cb29b7c93540c9e2745482664"
+    },
+    {
+      "ok": true,
+      "operation": "runtime.status",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "99281f54eca7f4fb137db21e7b66cfc217775a456c8528edc82c31f22dcbfdfb"
+    },
+    {
+      "ok": true,
+      "operation": "providers.certifications",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "aaf3813705a15ab7a8785690e27d53099344003f2544868cdc2ae84c3f036770"
+    }
+  ],
+  "role_certifications": {
+    "EXECUTION_IMPLEMENTER": "LIVE_ROLE_CERTIFIED",
+    "INTERACTION": "LIVE_ROLE_CERTIFIED"
+  },
+  "schema_version": "artifex.m12-j20-qualification/v1",
+  "source_tree_imported": false,
+  "status": "PASS"
+}

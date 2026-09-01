@@ -1,6 +1,6 @@
 schema_version: '1.0'
 milestone: M12
-mode: M12_ACTIVE_RELEASE_CANDIDATE_REVALIDATION
+mode: M12_R4_QUALIFIED_PENDING_ARCHITECT_ACCEPTANCE
 project_mutation: false
 fixture: MIGRATION/V1-RELEASE-FIXTURE.yaml
 fixture_state: M0_BASELINE_ACCEPTED
@@ -20,5 +20,5 @@ m9_journey: J09_PASS
 m9_shipping_candidate: ARTIFEX_SETUP_6854BFB_SHA256_6F532C16
 m9_rollback_state: PASS_EXACT_V1_RESTORE
 m9_first_new_run_state: PASS_ACTIVATION_ACTIVE
-m12_j09_revalidation: REQUIRED_NOT_YET_RUN
-m12_j20_migration_continuity: REQUIRED_NOT_YET_RUN
+m12_j09_revalidation: PASS_EXACT_R4_NATIVE_V1_COPY
+m12_j20_migration_continuity: PASS_EXACT_R4_NATIVE_FULL_LIFECYCLE

@@ -183,11 +183,13 @@ journeys:
 - id: J11
   title: J11 — Cross-provider Continuity
   status: PASS
-  environment: CLEAN_INSTALLED_WHEEL_WINDOWS_REAL_CODEX_AND_CLAUDE
-  public_shipping_composition: INSTALLED_WHEEL_PUBLIC_CLI_REAL_PROVIDER_MULTI_PROCESS
+  environment: WINDOWS_11_25H2_X64_VM105_EXACT_R4_REAL_CODEX_AND_CLAUDE
+  public_shipping_composition: INSTALLED_NATIVE_PUBLIC_CLI_REAL_PROVIDER_MANAGED_SERVICE_MULTI_PROCESS
   evidence:
   - EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json
-  last_run: '2026-08-28'
+  - EVIDENCE/M12-J11-J20-R4-SHIPPING-PASS.json
+  - EVIDENCE/M12-J11-J20-R4-SHIPPING-QUALIFIED.json
+  last_run: '2026-09-01'
   blocker: null
 - id: J12
   title: J12 — Organizational Knowledge
@@ -297,10 +299,12 @@ journeys:
   blocker: null
 - id: J20
   title: J20 — FULL ARTIFEX PROJECT LIFECYCLE
-  status: ACTIVE
-  environment: EXACT_M12_RELEASE_CANDIDATE_QUALIFICATION_ENVIRONMENT_PENDING
-  public_shipping_composition: INSTALLED_NATIVE_PUBLIC_COMPOSITION_PENDING
+  status: PASS
+  environment: WINDOWS_11_25H2_X64_VM105_EXACT_R4_REAL_CODEX_AND_CLAUDE
+  public_shipping_composition: INSTALLED_NATIVE_PUBLIC_CLI_REAL_PROVIDER_MANAGED_SERVICE_MULTI_PROCESS
   evidence:
   - ACCEPTANCE/M12.yaml
-  last_run: null
+  - EVIDENCE/M12-J11-J20-R4-SHIPPING-PASS.json
+  - EVIDENCE/M12-J11-J20-R4-SHIPPING-QUALIFIED.json
+  last_run: '2026-09-01'
   blocker: null

@@ -1,7 +1,7 @@
 schema_version: '1.0'
 evidence_id: EVD-M12-WINDOWS-SHIPPING-CANDIDATE-R4
 milestone: M12
-status: QUALIFICATION_READY
+status: QUALIFIED_READY_FOR_ARCHITECT_ACCEPTANCE
 recorded_date: '2026-09-01'
 canonical_base_commit: 9556ab13c96ae009a34493e2ae9859dd3cab5543
 contract_digest: 54529f748cac59ce8b57e2f9a8376fe51c515e0ffca6b0b7da51ae2cbc5a2c6a
@@ -28,8 +28,14 @@ qualification_harness:
   source_tree_imported_by_qualification: false
 qualification:
   prior_candidate_evidence_carried_forward: false
-  remaining_exact_cells: [M12-WIN-COMBINED]
-  mandatory_journeys_requiring_exact_r4_binding: [J11, J20]
+  j11_j20_raw_evidence: EVIDENCE/M12-J11-J20-R4-SHIPPING-PASS.json
+  j11_j20_raw_sha256: 950a14be7c606d3b3d979906a45c1cf7ecb5f193cf3b77592372ef96a3319df8
+  j11_j20_qualified_evidence: EVIDENCE/M12-J11-J20-R4-SHIPPING-QUALIFIED.json
+  j11_j20_status: PASS
+  final_validation_evidence: EVIDENCE/M12-R4-FINAL-VALIDATION.json
+  final_validation_status: PASS
+  remaining_exact_cells: []
+  mandatory_journeys_requiring_exact_r4_binding: []
 boundaries:
   developer_only_acceptance_used: false
   credential_material_read: false
