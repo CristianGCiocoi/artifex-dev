@@ -938,6 +938,16 @@
       "sha256": "29d266bb1bf00f8f3c63d0f80b42d02b316aff5a7807006dbbc63d4bef61c634"
     },
     {
+      "bytes": 2013,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R4-INTERACTION-DIAGNOSTIC.json",
+      "sha256": "89ce4ad00a70b565195ca77145aefdfb7a795c9f86cba6c988f11c04a7aad187"
+    },
+    {
+      "bytes": 160,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R4-INTERACTION-FAIL.json",
+      "sha256": "1e6516e182532c75aec829e3461ea3e657244384eabf197fe5e87f150348dd5f"
+    },
+    {
       "bytes": 1080,
       "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R4-PREFLIGHT.json",
       "sha256": "f397387a640dc3dde7a3fbb2ef850d5299955f104d8faed97d625cb9eaa472d3"
@@ -3897,7 +3907,7 @@
     "adr_count": 24,
     "current_milestone": "M12",
     "current_milestone_progress_percent": 0,
-    "evidence_items": 243,
+    "evidence_items": 245,
     "invariant_count": 34,
     "journey_states": {
       "ACTIVE": 1,

@@ -1,0 +1,58 @@
+{
+  "candidate_sha256": "ff00500fface43eb4a15d0c0ec7b93ccef46af9ffd17d516870b51b3838c2bf8",
+  "certifications_query": {
+    "certifications_present": true,
+    "certifications_sha256": "13342818e4b0313cfcc443e87e6b4a3cef74cff1e1878c50d6aa2eecd3c71071",
+    "ok": true,
+    "returncode": 0,
+    "roles": [
+      {
+        "evidence": [],
+        "provider": "claude",
+        "role": "EXECUTION_IMPLEMENTER",
+        "state": "PUBLIC_COMPOSITION_VERIFIED",
+        "steps": {
+          "ADAPTER_IMPLEMENTED": "PASS",
+          "LIVE_ROLE_CERTIFIED": "IN_PROGRESS",
+          "PACKAGED": "PASS",
+          "PUBLIC_COMPOSITION_VERIFIED": "PASS",
+          "ROLE_CONFORMANCE_VERIFIED": "PASS"
+        },
+        "supported_version_range": ">=2.1.3,<3"
+      },
+      {
+        "evidence": [
+          "capability-receipt:a93b94371eedf485d529c4be027b9b9969f81abf323d8df3ff7de37f057f1438"
+        ],
+        "provider": "claude",
+        "role": "INTERACTION",
+        "state": "LIVE_ROLE_CERTIFIED",
+        "steps": {
+          "ADAPTER_IMPLEMENTED": "PASS",
+          "LIVE_ROLE_CERTIFIED": "PASS",
+          "PACKAGED": "PASS",
+          "PUBLIC_COMPOSITION_VERIFIED": "PASS",
+          "ROLE_CONFORMANCE_VERIFIED": "PASS"
+        },
+        "supported_version_range": ">=2.1.3,<3"
+      }
+    ],
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "e55a65a730cfacf9ae82ee3d358babf209c7613e7e0ff300fa2b976b6422184c"
+  },
+  "credential_material_read": false,
+  "failed_capture_sha256": "1e6516e182532c75aec829e3461ea3e657244384eabf197fe5e87f150348dd5f",
+  "managed_service_after_failure": {
+    "coordinator_generation": 2,
+    "frontend_independent": true,
+    "lifecycle_state": "RUNNING",
+    "ok": true,
+    "process_id": 6304,
+    "returncode": 0,
+    "status_query_sha256": "b8a9f1bb42cca517c5e053c1512d49ee65c1ec0065757e54a05c81a2c9a4e844"
+  },
+  "provider_output_retained": false,
+  "schema_version": "1.0",
+  "status": "DIAGNOSED",
+  "vm_id": 106
+}
