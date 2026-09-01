@@ -846,6 +846,11 @@
       "sha256": "bc235728bfeff21948d9a1bafd06cd846eb110e82a941b44c68069b19ff17dc0"
     },
     {
+      "bytes": 1368,
+      "path": "implementation/EVIDENCE/M12-GA-POST-PROMOTION.yaml",
+      "sha256": "29aa2ecfbb9fa49e7c49d9df7881d7e7cae7a9a64780968efbdd73e70953a8ac"
+    },
+    {
       "bytes": 4991,
       "path": "implementation/EVIDENCE/M12-J09-R4-SHIPPING-PASS.json",
       "sha256": "b4529078eed45e2327bb2f47a87c4332f08ef9f7f5054eb0d26bf1d2df469296"
@@ -3801,7 +3806,7 @@
     "m8b_started": true,
     "m8c_started": true,
     "m9_started": true,
-    "next_integration_point": "Run exact-R4 post-promotion gates and publish ARTIFEX 2.0.0 GA only while every gate remains PASS",
+    "next_integration_point": "ARTIFEX 2.0.0 GA published; optional provider and ATLAS runtime work remains independently claim-gated",
     "recorded_date": "2026-09-01",
     "target_release": "2.0.0"
   },
@@ -3815,7 +3820,9 @@
       {
         "evidence": [
           "EVIDENCE/M3-VALIDATION.yaml",
-          "EVIDENCE/M3-PUBLIC-OUTCOME.json"
+          "EVIDENCE/M3-PUBLIC-OUTCOME.json",
+          "EVIDENCE/M12-WINDOWS-CODEX-VM105-R4R1-QUALIFIED-R1.json",
+          "EVIDENCE/M12-J11-J20-R4-SHIPPING-QUALIFIED.json"
         ],
         "provider": "codex",
         "requirement": "MANDATORY",
@@ -3831,7 +3838,9 @@
       {
         "evidence": [
           "EVIDENCE/M3-VALIDATION.yaml",
-          "EVIDENCE/M3-PUBLIC-OUTCOME.json"
+          "EVIDENCE/M3-PUBLIC-OUTCOME.json",
+          "EVIDENCE/M12-WINDOWS-CODEX-VM105-R4R1-QUALIFIED-R1.json",
+          "EVIDENCE/M12-J11-J20-R4-SHIPPING-QUALIFIED.json"
         ],
         "provider": "codex",
         "requirement": "MANDATORY",
@@ -3860,7 +3869,9 @@
       {
         "evidence": [
           "EVIDENCE/M6A-NONLIVE-QUALIFICATION.json",
-          "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json"
+          "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json",
+          "EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R6R1-QUALIFIED-R1.json",
+          "EVIDENCE/M12-J11-J20-R4-SHIPPING-QUALIFIED.json"
         ],
         "provider": "claude",
         "requirement": "MANDATORY",
@@ -3876,7 +3887,9 @@
       {
         "evidence": [
           "EVIDENCE/M6A-NONLIVE-QUALIFICATION.json",
-          "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json"
+          "EVIDENCE/M6A-LIVE-PUBLIC-OUTCOME.json",
+          "EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R6R1-QUALIFIED-R1.json",
+          "EVIDENCE/M12-J11-J20-R4-SHIPPING-QUALIFIED.json"
         ],
         "provider": "claude",
         "requirement": "MANDATORY",
@@ -4092,7 +4105,7 @@
     "adr_count": 24,
     "current_milestone": "M12",
     "current_milestone_progress_percent": 100,
-    "evidence_items": 275,
+    "evidence_items": 276,
     "invariant_count": 34,
     "journey_states": {
       "BLOCKED_EXTERNAL_PREREQUISITE": 1,

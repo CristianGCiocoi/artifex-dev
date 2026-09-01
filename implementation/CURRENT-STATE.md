@@ -14,7 +14,7 @@
 - Accepted milestones: `M0, M1, M2, M3, M4, M5, M6A, M7, M8A, M9, M12`
 - Ready milestones: `none`
 - Latest accepted commit: `a9aa4c916d076bef9a95506084a0d212536af749`
-- Next integration point: `Run exact-R4 post-promotion gates and publish ARTIFEX 2.0.0 GA only while every gate remains PASS`
+- Next integration point: `ARTIFEX 2.0.0 GA published; optional provider and ATLAS runtime work remains independently claim-gated`
 - M12 started: `true`
 
 ## Work
@@ -30,4 +30,4 @@
 - M12 verdict: `ACCEPTED`
 - Mandatory work complete: `true`
 - Mandatory journeys: `J01, J02, J03, J04, J05, J06, J07, J08, J09, J10, J11, J12, J14, J15, J16, J18, J19, J20`
-- Next integration point: `Run exact-R4 post-promotion gates and publish ARTIFEX 2.0.0 GA only while every gate remains PASS`
+- Next integration point: `ARTIFEX 2.0.0 GA published; optional provider and ATLAS runtime work remains independently claim-gated`

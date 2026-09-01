@@ -47,10 +47,12 @@ Controlled backward transitions are allowed when evidence reveals that an
 earlier decision must be revisited. Git/files retain semantic meaning;
 databases, when introduced, are for coordination, indexing, and telemetry.
 
-ARTIFEX 1.0.0 is released. M00 through M11 are accepted and the immutable
-release tag is [`v1.0.0`](https://github.com/CristianGCiocoi/artifex-dev/releases/tag/v1.0.0).
-Canonical release status is stored in `.artifex/status.yaml`; the dashboard is
-a derived view. A version string or successful build is not release authority.
+ARTIFEX 2.0.0 is released. Its exact qualified source, installer hash, M12
+acceptance, provider certifications and Journey evidence are bound by the
+immutable [`v2.0.0`](https://github.com/CristianGCiocoi/artifex-dev/releases/tag/v2.0.0)
+release. Canonical release status is stored in the release/control records; the
+dashboard is a derived view. A version string or successful build is not release
+authority.
 
 ## Release scope and roadmap
 
@@ -62,15 +64,15 @@ dashboard views, beginner-to-expert modes, ChangeSets, controlled knowledge,
 and standalone Hermes/Codex/Claude/Manual integration paths. Optional DeepSeek
 and Pandora providers do not block the Core release.
 
-### V2 — Automate (planned)
+### V2 — Automate (released)
 
-V2 is planned to make development durable, resumable, orchestrated, and more
-cross-project aware. Candidate work includes a SQLite RunStore/index/metrics,
-an executable task DAG, durable runs and resume points, capability-based
-harness routing, parallel worktrees/workers, stronger generator/evaluator
-isolation, replay, cross-project portfolio/knowledge, overlay rebase/update
-classification, methodology import, optional Maestro execution, and richer
-Pandora orchestration.
+V2 makes development durable, resumable and orchestrated through a SQLite
+RunStore, single-coordinator fencing, isolated execution workspaces, persistent
+Runs/ProjectJobs/Attempts, restart/recovery, explicit Execution Envelopes and
+separate Execution, Validation, Acceptance and Project promotion authority.
+Codex and Claude are first-class standalone providers and passed combined real
+provider product qualification. Optional provider and ATLAS runtime work remains
+claim-driven and is not part of the Core 2.0.0 GA manifest.
 
 ### V3 — Evolve (planned)
 
@@ -113,6 +115,7 @@ are not claimed.
 - [ARTIFEX 2.0 durable runtime authority](docs/architecture/DURABLE_RUNTIME.md)
 - [V1 migration authority](docs/architecture/V1_MIGRATION.md) and [V1 to 2.0 upgrade guide](docs/guides/UPGRADE_GUIDE.md)
 - [Developer guide](docs/guides/DEVELOPER_GUIDE.md), [administrator guide](docs/guides/ADMIN_GUIDE.md), and [user guide](docs/guides/USER_GUIDE.md)
+- [ARTIFEX 2.0.0 GA notes](docs/releases/ARTIFEX-2.0.0.md), [release record](.artifex/releases/v2.0.0.yaml), and [release claim matrix](implementation/RELEASE-CLAIM-MATRIX.yaml)
 - [V1 release record](.artifex/releases/v1.0.0.yaml) and [release evidence](.artifex/validation/evidence/EVD-V1-RELEASE.yaml)
 - [Dashboard deployment](docs/implementation/dashboard-deployment.md)
 

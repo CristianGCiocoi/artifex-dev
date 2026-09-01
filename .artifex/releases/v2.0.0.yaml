@@ -1,0 +1,44 @@
+schema_version: '1.0'
+version: 2.0.0
+status: RELEASED
+release_identity:
+  tag: v2.0.0
+  qualified_product_source: 498cd012830748ea5c492c466146e4129cdbe455
+  qualification_checkpoint: 8c5fabedfd4f20369d31d5e39602a9e52a233640
+  m12_acceptance_commit: a9aa4c916d076bef9a95506084a0d212536af749
+  canonical_promotion_checkpoint: 08894082b74402d00cdc8cf82e1c2f60fbe79224
+  contract_digest: 54529f748cac59ce8b57e2f9a8376fe51c515e0ffca6b0b7da51ae2cbc5a2c6a
+artifacts:
+- kind: native-windows-x86_64-installer
+  name: ARTIFEX-Setup.exe
+  bytes: 23309865
+  sha256: 130eb9804369e1ba655fa11ed98be54e606c948b78c30ba297f20d838faca720
+  provenance_name: ARTIFEX-Setup.provenance.json
+  provenance_sha256: f8449ae73d7a5fde8b216c4735b39034777e393ca77e32a7c3294fb52f945c9d
+  installed_executable_sha256: 7bfc3e75b0ee13d42c902d2d41ac2f7654465abb54f3425d55658182386c1f8d
+  build_id: artifex-2.0.0-windows-x86_64-7bfc3e75b0ee13d4
+  signing:
+    status: UNSIGNED
+    claim: NOT_CLAIMED
+qualification:
+  mandatory_journeys: {passed: 18, required: 18}
+  core_claims: {passed: 12, required: 12}
+  evidence_classes: {passed: 10, required: 10}
+  public_provider_calls: 50
+  j11_real_codex_and_claude: PASS
+  j20_real_codex_and_claude: PASS
+  release_claim_matrix: implementation/RELEASE-CLAIM-MATRIX.yaml
+  final_validation: implementation/EVIDENCE/M12-R4-FINAL-VALIDATION.json
+  post_promotion_validation: implementation/EVIDENCE/M12-GA-POST-PROMOTION.yaml
+provider_certification: implementation/PROVIDERS/ARTIFEX-2.0.0-GA-CERTIFICATION.yaml
+migration_compatibility: implementation/MIGRATION/ARTIFEX-2.0.0-GA-COMPATIBILITY.yaml
+known_regression:
+  id: V1-R01-DASHBOARD-FIXTURE-SCHEMA-DRIFT
+  state: REPRODUCED_AND_PRESERVED
+  waived: false
+  repaired_by_release: false
+optional_unclaimed:
+- Hermes M6B
+- Pandora M8B
+- DeepSeek M8C
+- ATLAS runtime M11

@@ -15,7 +15,7 @@ program:
   current_status: ACCEPTED
   latest_accepted_commit: a9aa4c916d076bef9a95506084a0d212536af749
   canonical_integration_baseline: a9aa4c916d076bef9a95506084a0d212536af749
-  next_integration_point: Run exact-R4 post-promotion gates and publish ARTIFEX 2.0.0 GA only while every gate remains PASS
+  next_integration_point: ARTIFEX 2.0.0 GA published; optional provider and ATLAS runtime work remains independently claim-gated
   m1_started: true
   m2_started: true
   m3_started: true
