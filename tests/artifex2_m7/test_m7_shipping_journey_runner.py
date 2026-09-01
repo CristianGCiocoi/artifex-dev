@@ -13,6 +13,7 @@ from tools.artifex2.run_m7_shipping_journey import (
     FrontendDetached,
     JourneyFailure,
     ShippingCLI,
+    _bounded_interaction_prompt,
     _durable_provider_execution,
     _initial_service_status,
     _install_shipping_candidate,
@@ -28,6 +29,17 @@ from tools.artifex2.run_m7_shipping_journey import (
     _validate_provider_ready_rebinding_attestation,
     _wait_for_process_exit,
 )
+
+
+def test_provider_interaction_prompt_requires_only_the_exact_bounded_marker() -> None:
+    marker = "ARTIFEX_INTERACTION project_id=project semantic_revision=1"
+    prompt = _bounded_interaction_prompt(marker)
+
+    assert prompt.endswith("\n" + marker)
+    assert prompt.count(marker) == 1
+    assert "entire final response" in prompt
+    assert "Do not call tools" in prompt
+    assert "do not modify files" in prompt
 
 
 def test_journey_failures_are_operator_safe_messages() -> None:

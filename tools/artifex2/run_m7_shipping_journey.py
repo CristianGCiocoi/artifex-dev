@@ -823,7 +823,7 @@ def run_provider_cell(
                 "provider_id": provider_id,
                 "project_id": project_id,
                 "role": "INTERACTION",
-                "prompt": f"Return exactly: {marker}. Do not call tools and do not modify files.",
+                "prompt": _bounded_interaction_prompt(marker),
             },
             project_root=project_root,
             state_root=state_root,
@@ -1429,6 +1429,16 @@ def _is_bounded_interaction_response(value: object, marker: str) -> bool:
     if not isinstance(value, str) or len(value) > 512:
         return False
     return value.count(marker) == 1
+
+
+def _bounded_interaction_prompt(marker: str) -> str:
+    """Request one protocol marker without weakening the bounded validator."""
+    return (
+        "Your sole task is protocol echo. Return exactly the marker on the next line "
+        "as your entire final response. Do not add quotes, punctuation, Markdown, "
+        "preamble, explanation, or any other text. Do not call tools and do not "
+        f"modify files.\n{marker}"
+    )
 
 
 def _role_states(value: object) -> dict[str, str]:
