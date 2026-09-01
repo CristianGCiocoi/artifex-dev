@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0",
+  "vm_id": 104,
+  "snapshot_name": "m12-noprovider-clean-5b5750f",
+  "snapshot_config_sha256": "6cb03268411ebba9f96521592d7eca077cc88a88a3ecddd42a42c9394e998580",
+  "account_sid_sha256": "5c00407e51a59e1b439dffb4136614fdf658946ba313d3b9549390e0455621b9",
+  "candidate_sha256": "0a094ab12420f0fe18092dd834801f4b2463ba39837e4ae0b2d0e2881ae81778",
+  "providers_absent": true,
+  "source_checkout_absent": true
+}
