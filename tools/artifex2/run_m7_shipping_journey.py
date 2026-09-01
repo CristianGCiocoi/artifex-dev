@@ -120,6 +120,8 @@ class ShippingCLI:
                 str(project_root),
                 "--state-root",
                 str(state_root),
+                "--timeout-seconds",
+                str(self.timeout_seconds),
             ],
         )
 

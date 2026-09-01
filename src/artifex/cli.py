@@ -115,6 +115,13 @@ def service_call(
     arguments: str = typer.Option("{}", "--arguments"),
     state_root: str | None = typer.Option(None, "--state-root"),
     project_root: str | None = typer.Option(None, "--project-root"),
+    timeout_seconds: float = typer.Option(
+        30.0,
+        "--timeout-seconds",
+        min=0.1,
+        max=3600.0,
+        help="Bounded wait for the managed-service response.",
+    ),
 ) -> None:
     """Call an Application operation through the persistent managed service."""
 
@@ -127,7 +134,7 @@ def service_call(
     if not isinstance(value, dict):
         raise typer.BadParameter("arguments must be a JSON object")
     _emit_service_result(
-        LocalServiceClient(state_root).call(
+        LocalServiceClient(state_root, timeout_seconds=timeout_seconds).call(
             operation,
             value,
             project_root=project_root,

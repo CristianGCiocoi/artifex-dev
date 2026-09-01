@@ -520,6 +520,32 @@ def test_shipping_cli_records_hashes_not_raw_output(tmp_path: Path) -> None:
     assert "value" not in cli.calls[0]
 
 
+def test_shipping_cli_propagates_bounded_service_response_timeout(tmp_path: Path) -> None:
+    executable = tmp_path / "artifex.exe"
+    executable.write_bytes(b"native")
+    observed: list[tuple[list[str], int]] = []
+
+    def runner(
+        command: list[str], **kwargs: object
+    ) -> subprocess.CompletedProcess[str]:
+        observed.append((command, int(kwargs["timeout"])))
+        return subprocess.CompletedProcess(
+            command, 0, stdout='{"ok":true,"value":{}}\n', stderr=""
+        )
+
+    cli = ShippingCLI(executable, cwd=tmp_path, runner=runner, timeout_seconds=900)
+    cli.service_call(
+        "providers.interact",
+        {},
+        project_root=tmp_path / "project",
+        state_root=tmp_path / "state",
+    )
+
+    command, subprocess_timeout = observed[0]
+    assert command[command.index("--timeout-seconds") + 1] == "900"
+    assert subprocess_timeout == 900
+
+
 def test_shipping_cli_surfaces_only_normalized_failure(tmp_path: Path) -> None:
     executable = tmp_path / "artifex.exe"
     executable.write_bytes(b"native")

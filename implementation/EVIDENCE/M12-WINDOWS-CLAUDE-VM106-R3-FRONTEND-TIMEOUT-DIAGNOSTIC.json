@@ -1,0 +1,26 @@
+{
+  "candidate_sha256": "0a094ab12420f0fe18092dd834801f4b2463ba39837e4ae0b2d0e2881ae81778",
+  "certifications_query": {
+    "certifications_present": true,
+    "certifications_sha256": "405051711dedb6d742ef22ff099ff3cc7efaff9dfe641345b6ae4208e2131e59",
+    "returncode": 0,
+    "status": "PASS",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "edf00fbfa96c8e0fc83f9c9d4b85ee1213814a102501810edee86760806bf7a3"
+  },
+  "credential_material_read": false,
+  "diagnosis": "The public frontend retained the LocalServiceClient 30 second default while Claude INTERACTION permits up to 300 seconds. The frontend returned no JSON after its bounded wait, while the managed service completed the operation and retained certification evidence.",
+  "failed_capture_sha256": "c3358797fc9687a172b6db20a504a824b507fe36667bcc1c1503cec7662dba5a",
+  "managed_service_after_failure": {
+    "coordinator_generation": 2,
+    "frontend_independent": true,
+    "lifecycle_state": "RUNNING",
+    "process_id": 7276,
+    "shutdown_reason": null,
+    "status_query_sha256": "521f16a900630cb053ec9ad62ee6c5f06e6be0d77b431afc8076dbdf5c8f3fb6"
+  },
+  "provider_output_retained": false,
+  "schema_version": "1.0",
+  "status": "DIAGNOSED",
+  "vm_id": 106
+}

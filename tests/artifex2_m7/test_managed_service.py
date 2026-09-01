@@ -274,6 +274,8 @@ def test_public_cli_routes_application_calls_through_managed_service(tmp_path: P
                 str(root),
                 "--arguments",
                 "{}",
+                "--timeout-seconds",
+                "120",
             ],
         )
         assert health.exit_code == 0, health.stdout
