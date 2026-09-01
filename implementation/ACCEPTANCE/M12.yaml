@@ -8,17 +8,17 @@ mandatory_work_complete: false
 blocked: []
 superseded: []
 evidence_classes:
-  DESIGN_CONFORMANCE: {required_m12: true, status: NOT_STARTED, evidence: []}
-  COMPONENT: {required_m12: true, status: NOT_STARTED, evidence: []}
-  DOMAIN_INTEGRATION: {required_m12: true, status: NOT_STARTED, evidence: []}
+  DESIGN_CONFORMANCE: {required_m12: true, status: PASS, evidence: [EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml, EVIDENCE/M12-R4-SOURCE-VALIDATION.yaml]}
+  COMPONENT: {required_m12: true, status: PASS, evidence: [EVIDENCE/M12-R4-SOURCE-VALIDATION.yaml]}
+  DOMAIN_INTEGRATION: {required_m12: true, status: PASS, evidence: [EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml, EVIDENCE/M12-R4-SOURCE-VALIDATION.yaml]}
   PUBLIC_COMPOSITION: {required_m12: true, status: NOT_STARTED, evidence: []}
   BLACK_BOX_OUTCOME: {required_m12: true, status: NOT_STARTED, evidence: []}
   SECURITY_AUTHORITY: {required_m12: true, status: NOT_STARTED, evidence: []}
-  DOCUMENTATION: {required_m12: true, status: NOT_STARTED, evidence: []}
-  DASHBOARD: {required_m12: true, status: NOT_STARTED, evidence: []}
-  MIGRATION: {required_m12: true, status: NOT_STARTED, evidence: []}
-  PROVIDER_CERTIFICATION: {required_m12: true, status: NOT_STARTED, evidence: []}
+  DOCUMENTATION: {required_m12: true, status: PASS, evidence: [EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml, EVIDENCE/M5-PUBLIC-OUTCOME.json]}
+  DASHBOARD: {required_m12: true, status: PASS, evidence: [EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml, dashboard/index.html]}
+  MIGRATION: {required_m12: true, status: PASS, evidence: [EVIDENCE/M12-J09-R4-SHIPPING-PASS.json, EVIDENCE/M12-J09-R4-SHIPPING-QUALIFIED.json]}
+  PROVIDER_CERTIFICATION: {required_m12: true, status: PASS, evidence: [EVIDENCE/M12-WINDOWS-CODEX-VM105-R4R1-QUALIFIED-R1.json, EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R6R1-QUALIFIED-R1.json, EVIDENCE/M12-WINDOWS-NOPROVIDER-VM104-R4R1-QUALIFIED-R1.json]}
 mandatory_journeys: [J01, J02, J03, J04, J05, J06, J07, J08, J09, J10, J11, J12, J14, J15, J16, J18, J19, J20]
 unresolved_contradiction: null
-migration: M9_ACCEPTED_RELEASE_CANDIDATE_REVALIDATION_PENDING
+migration: M9_ACCEPTED_R4_EXACT_NATIVE_REVALIDATION_PASS
 verdict: ACTIVE

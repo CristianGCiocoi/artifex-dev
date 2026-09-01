@@ -10,39 +10,60 @@
         "status": "NOT_STARTED"
       },
       "COMPONENT": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M12-R4-SOURCE-VALIDATION.yaml"
+        ],
         "required_m12": true,
-        "status": "NOT_STARTED"
+        "status": "PASS"
       },
       "DASHBOARD": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml",
+          "dashboard/index.html"
+        ],
         "required_m12": true,
-        "status": "NOT_STARTED"
+        "status": "PASS"
       },
       "DESIGN_CONFORMANCE": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml",
+          "EVIDENCE/M12-R4-SOURCE-VALIDATION.yaml"
+        ],
         "required_m12": true,
-        "status": "NOT_STARTED"
+        "status": "PASS"
       },
       "DOCUMENTATION": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml",
+          "EVIDENCE/M5-PUBLIC-OUTCOME.json"
+        ],
         "required_m12": true,
-        "status": "NOT_STARTED"
+        "status": "PASS"
       },
       "DOMAIN_INTEGRATION": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml",
+          "EVIDENCE/M12-R4-SOURCE-VALIDATION.yaml"
+        ],
         "required_m12": true,
-        "status": "NOT_STARTED"
+        "status": "PASS"
       },
       "MIGRATION": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M12-J09-R4-SHIPPING-PASS.json",
+          "EVIDENCE/M12-J09-R4-SHIPPING-QUALIFIED.json"
+        ],
         "required_m12": true,
-        "status": "NOT_STARTED"
+        "status": "PASS"
       },
       "PROVIDER_CERTIFICATION": {
-        "evidence": [],
+        "evidence": [
+          "EVIDENCE/M12-WINDOWS-CODEX-VM105-R4R1-QUALIFIED-R1.json",
+          "EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R6R1-QUALIFIED-R1.json",
+          "EVIDENCE/M12-WINDOWS-NOPROVIDER-VM104-R4R1-QUALIFIED-R1.json"
+        ],
         "required_m12": true,
-        "status": "NOT_STARTED"
+        "status": "PASS"
       },
       "PUBLIC_COMPOSITION": {
         "evidence": [],
@@ -78,7 +99,7 @@
       "J20"
     ],
     "mandatory_work_complete": false,
-    "migration": "M9_ACCEPTED_RELEASE_CANDIDATE_REVALIDATION_PENDING",
+    "migration": "M9_ACCEPTED_R4_EXACT_NATIVE_REVALIDATION_PASS",
     "milestone": "M12",
     "schema_version": "1.0",
     "superseded": [],
@@ -851,6 +872,11 @@
       "bytes": 1275,
       "path": "implementation/EVIDENCE/M12-R3-SOURCE-VALIDATION.yaml",
       "sha256": "e1610c43ab8d7b0aa38154094f4b5c5261dda6d0db0d8620fc26820a9b4753de"
+    },
+    {
+      "bytes": 2115,
+      "path": "implementation/EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml",
+      "sha256": "0dbe46a68cf3e4e3ce67647b12d81f1ecc11a703b56c7a3adf34ce466be7ea00"
     },
     {
       "bytes": 1330,
@@ -4031,13 +4057,13 @@
   },
   "schema_version": "1.0",
   "summary": {
-    "acceptance_classes_passing": 0,
+    "acceptance_classes_passing": 7,
     "acceptance_classes_required": 10,
     "active_blockers": 3,
     "adr_count": 24,
     "current_milestone": "M12",
-    "current_milestone_progress_percent": 0,
-    "evidence_items": 271,
+    "current_milestone_progress_percent": 70,
+    "evidence_items": 272,
     "invariant_count": 34,
     "journey_states": {
       "ACTIVE": 1,

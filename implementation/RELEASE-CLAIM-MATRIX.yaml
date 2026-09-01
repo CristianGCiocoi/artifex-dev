@@ -46,18 +46,18 @@ qualification_cells:
   journeys: [J11, J20]
   status: PENDING_R4_REQUALIFICATION
 core_mandatory_claims:
-  project_continuity: {status: PENDING, journeys: [J03, J04], evidence: []}
-  persistent_supervised_autonomy: {status: PENDING, journeys: [J05, J06, J07, J18], evidence: []}
-  semantic_safety: {status: PENDING, journeys: [J14, J15], evidence: []}
+  project_continuity: {status: PASS, journeys: [J03, J04], evidence: [EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml, EVIDENCE/M12-R4-SOURCE-VALIDATION.yaml, EVIDENCE/M1-VALIDATION.yaml, EVIDENCE/M4-PUBLIC-OUTCOME.json]}
+  persistent_supervised_autonomy: {status: PASS, journeys: [J05, J06, J07, J18], evidence: [EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml, EVIDENCE/M12-R4-SOURCE-VALIDATION.yaml, EVIDENCE/M2-VALIDATION.yaml, EVIDENCE/M4-PUBLIC-OUTCOME.json]}
+  semantic_safety: {status: PASS, journeys: [J14, J15], evidence: [EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml, EVIDENCE/M12-R4-SOURCE-VALIDATION.yaml, EVIDENCE/M5-PUBLIC-OUTCOME.json, EVIDENCE/M2-VALIDATION.yaml]}
   provider_setup_persistence: {status: PASS, journeys: [J16], evidence: [EVIDENCE/M12-WINDOWS-CODEX-VM105-R4R1-QUALIFIED-R1.json, EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R6R1-QUALIFIED-R1.json]}
   codex_support: {status: PARTIAL_J01_PASS, journeys: [J01, J11], evidence: [EVIDENCE/M12-WINDOWS-CODEX-VM105-R4R1-QUALIFIED-R1.json]}
   claude_support: {status: PARTIAL_J02_PASS, journeys: [J02, J11], evidence: [EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R6R1-QUALIFIED-R1.json]}
-  collaborative_lifecycle: {status: PENDING, journeys: [J19], evidence: []}
+  collaborative_lifecycle: {status: PASS, journeys: [J19], evidence: [EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml, EVIDENCE/M12-R4-SOURCE-VALIDATION.yaml, EVIDENCE/M4-PUBLIC-OUTCOME.json]}
   full_product: {status: PENDING, journeys: [J20], evidence: []}
-  documentation_dashboard: {status: PENDING, journeys: [J08], evidence: []}
+  documentation_dashboard: {status: PASS, journeys: [J08], evidence: [EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml, EVIDENCE/M12-R4-SOURCE-VALIDATION.yaml, EVIDENCE/M5-PUBLIC-OUTCOME.json]}
   v1_migration: {status: PASS, journeys: [J09], evidence: [EVIDENCE/M12-J09-R4-SHIPPING-PASS.json, EVIDENCE/M12-J09-R4-SHIPPING-QUALIFIED.json]}
   manual_fallback: {status: PASS, journeys: [J10], evidence: [EVIDENCE/M12-WINDOWS-NOPROVIDER-VM104-R4R1-QUALIFIED-R1.json]}
-  organizational_knowledge: {status: PENDING, journeys: [J12], evidence: []}
+  organizational_knowledge: {status: PASS, journeys: [J12], evidence: [EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml, EVIDENCE/M12-R4-SOURCE-VALIDATION.yaml, EVIDENCE/M8A-PUBLIC-OUTCOME.json]}
 optional_claims:
   hermes: {shipped: false, status: EXCLUDED, requires_milestone: M6B, reason: M6B is not accepted and Hermes is not in the Core release manifest.}
   pandora: {shipped: false, status: EXCLUDED, requires_milestone: M8B, reason: M8B is blocked on its external runtime prerequisite.}
@@ -68,31 +68,31 @@ optional_claims:
 mandatory_journeys:
   J01: {status: PASS, candidate_binding: EXACT_R4, evidence: [EVIDENCE/M12-WINDOWS-CODEX-VM105-R4R1-PASS.json, EVIDENCE/M12-WINDOWS-CODEX-VM105-R4R1-QUALIFIED-R1.json]}
   J02: {status: PASS, candidate_binding: EXACT_R4, evidence: [EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R6R1-PASS.json, EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R6R1-QUALIFIED-R1.json]}
-  J03: {status: PENDING, candidate_binding: PENDING, evidence: []}
-  J04: {status: PENDING, candidate_binding: PENDING, evidence: []}
-  J05: {status: PENDING, candidate_binding: PENDING, evidence: []}
-  J06: {status: PENDING, candidate_binding: PENDING, evidence: []}
-  J07: {status: PENDING, candidate_binding: PENDING, evidence: []}
-  J08: {status: PENDING, candidate_binding: PENDING, evidence: []}
+  J03: {status: PASS, candidate_binding: SOURCE_COMMIT, evidence: [EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml, EVIDENCE/M12-R4-SOURCE-VALIDATION.yaml, EVIDENCE/M1-VALIDATION.yaml]}
+  J04: {status: PASS, candidate_binding: SOURCE_COMMIT, evidence: [EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml, EVIDENCE/M12-R4-SOURCE-VALIDATION.yaml, EVIDENCE/M4-PUBLIC-OUTCOME.json]}
+  J05: {status: PASS, candidate_binding: SOURCE_COMMIT, evidence: [EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml, EVIDENCE/M12-R4-SOURCE-VALIDATION.yaml, EVIDENCE/M2-VALIDATION.yaml]}
+  J06: {status: PASS, candidate_binding: SOURCE_COMMIT, evidence: [EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml, EVIDENCE/M12-R4-SOURCE-VALIDATION.yaml, EVIDENCE/M4-PUBLIC-OUTCOME.json]}
+  J07: {status: PASS, candidate_binding: SOURCE_COMMIT, evidence: [EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml, EVIDENCE/M12-R4-SOURCE-VALIDATION.yaml, EVIDENCE/M4-PUBLIC-OUTCOME.json]}
+  J08: {status: PASS, candidate_binding: SOURCE_COMMIT, evidence: [EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml, EVIDENCE/M12-R4-SOURCE-VALIDATION.yaml, EVIDENCE/M5-PUBLIC-OUTCOME.json]}
   J09: {status: PASS, candidate_binding: EXACT_R4, evidence: [EVIDENCE/M12-J09-R4-SHIPPING-PASS.json, EVIDENCE/M12-J09-R4-SHIPPING-QUALIFIED.json]}
   J10: {status: PASS, candidate_binding: EXACT_R4, evidence: [EVIDENCE/M12-WINDOWS-NOPROVIDER-VM104-R4R1-PASS.json, EVIDENCE/M12-WINDOWS-NOPROVIDER-VM104-R4R1-QUALIFIED-R1.json]}
   J11: {status: PENDING, candidate_binding: PENDING, evidence: []}
-  J12: {status: PENDING, candidate_binding: PENDING, evidence: []}
-  J14: {status: PENDING, candidate_binding: PENDING, evidence: []}
-  J15: {status: PENDING, candidate_binding: PENDING, evidence: []}
+  J12: {status: PASS, candidate_binding: SOURCE_COMMIT, evidence: [EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml, EVIDENCE/M12-R4-SOURCE-VALIDATION.yaml, EVIDENCE/M8A-PUBLIC-OUTCOME.json]}
+  J14: {status: PASS, candidate_binding: SOURCE_COMMIT, evidence: [EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml, EVIDENCE/M12-R4-SOURCE-VALIDATION.yaml, EVIDENCE/M5-PUBLIC-OUTCOME.json]}
+  J15: {status: PASS, candidate_binding: SOURCE_COMMIT, evidence: [EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml, EVIDENCE/M12-R4-SOURCE-VALIDATION.yaml, EVIDENCE/M2-VALIDATION.yaml]}
   J16: {status: PASS, candidate_binding: EXACT_R4, evidence: [EVIDENCE/M12-WINDOWS-CODEX-VM105-R4R1-QUALIFIED-R1.json, EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R6R1-QUALIFIED-R1.json]}
-  J18: {status: PENDING, candidate_binding: PENDING, evidence: []}
-  J19: {status: PENDING, candidate_binding: PENDING, evidence: []}
+  J18: {status: PASS, candidate_binding: SOURCE_COMMIT, evidence: [EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml, EVIDENCE/M12-R4-SOURCE-VALIDATION.yaml, EVIDENCE/M2-VALIDATION.yaml]}
+  J19: {status: PASS, candidate_binding: SOURCE_COMMIT, evidence: [EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml, EVIDENCE/M12-R4-SOURCE-VALIDATION.yaml, EVIDENCE/M4-PUBLIC-OUTCOME.json]}
   J20: {status: PENDING, candidate_binding: PENDING, evidence: []}
 acceptance_classes:
-  DESIGN_CONFORMANCE: {status: PENDING, evidence: []}
-  COMPONENT: {status: PENDING, evidence: []}
-  DOMAIN_INTEGRATION: {status: PENDING, evidence: []}
+  DESIGN_CONFORMANCE: {status: PASS, evidence: [EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml, EVIDENCE/M12-R4-SOURCE-VALIDATION.yaml]}
+  COMPONENT: {status: PASS, evidence: [EVIDENCE/M12-R4-SOURCE-VALIDATION.yaml]}
+  DOMAIN_INTEGRATION: {status: PASS, evidence: [EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml, EVIDENCE/M12-R4-SOURCE-VALIDATION.yaml]}
   PUBLIC_COMPOSITION: {status: PENDING, evidence: []}
   BLACK_BOX_OUTCOME: {status: PENDING, evidence: []}
   SECURITY_AUTHORITY: {status: PENDING, evidence: []}
-  DOCUMENTATION: {status: PENDING, evidence: []}
-  DASHBOARD: {status: PENDING, evidence: []}
+  DOCUMENTATION: {status: PASS, evidence: [EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml, EVIDENCE/M12-R4-SOURCE-VALIDATION.yaml, EVIDENCE/M5-PUBLIC-OUTCOME.json]}
+  DASHBOARD: {status: PASS, evidence: [EVIDENCE/M12-R4-JOURNEY-RECONCILIATION.yaml, EVIDENCE/M5-PUBLIC-OUTCOME.json, dashboard/index.html]}
   MIGRATION: {status: PASS, evidence: [EVIDENCE/M12-J09-R4-SHIPPING-PASS.json, EVIDENCE/M12-J09-R4-SHIPPING-QUALIFIED.json]}
-  PROVIDER_CERTIFICATION: {status: PENDING, evidence: []}
+  PROVIDER_CERTIFICATION: {status: PASS, evidence: [EVIDENCE/M12-WINDOWS-CODEX-VM105-R4R1-QUALIFIED-R1.json, EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R6R1-QUALIFIED-R1.json, EVIDENCE/M12-WINDOWS-NOPROVIDER-VM104-R4R1-QUALIFIED-R1.json]}
 release_manifest_truthful: false
