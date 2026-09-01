@@ -18,6 +18,10 @@ MEDIA_ROOT = Path(r"C:\ARTIFEX-M12-Media")
 FORBIDDEN_PATHS = (
     Path(r"C:\Program Files\ARTIFEX"),
     Path(r"C:\Users\crugger\AppData\Local\ARTIFEX"),
+    Path(r"C:\Users\crugger\AppData\Local\ARTIFEX-M12-Project-VM106"),
+    Path(r"C:\Users\crugger\AppData\Local\ARTIFEX-M12-Project-VM106-catalog.sqlite3"),
+    Path(r"C:\Users\crugger\AppData\Local\ARTIFEX-M12-Evidence"),
+    Path(r"C:\ARTIFEX-M12-M7-Staging-VM106"),
     Path(r"C:\ARTIFEX-M7-Qualification"),
     Path(r"C:\ARTIFEX-M12-Qualification"),
     Path(r"C:\ARTIFEX-M12-J09-Qualification"),
@@ -25,6 +29,11 @@ FORBIDDEN_PATHS = (
     Path(r"C:\ARTIFEX-M9-Qualification"),
     Path(r"C:\aidev\artifex"),
 )
+
+
+def _present_forbidden_paths(paths: tuple[Path, ...]) -> list[str]:
+    """Return every residual product path, including standalone catalog files."""
+    return [str(path) for path in paths if path.exists()]
 
 
 def _sha256(path: Path) -> str:
@@ -74,7 +83,7 @@ def main() -> None:
     expected_present = (
         [] if arguments.expected_provider == "none" else [arguments.expected_provider]
     )
-    present_forbidden_paths = [str(path) for path in FORBIDDEN_PATHS if path.exists()]
+    present_forbidden_paths = _present_forbidden_paths(FORBIDDEN_PATHS)
     artifact_sha256 = _sha256(artifact) if artifact.is_file() else None
     status = (
         "PASS"

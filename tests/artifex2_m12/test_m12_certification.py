@@ -5,6 +5,10 @@ from pathlib import Path
 import pytest
 
 from artifex import __version__
+from tools.artifex2.m12_cell_preflight import (
+    FORBIDDEN_PATHS,
+    _present_forbidden_paths,
+)
 from tools.artifex2.validate_m12 import (
     ACCEPTANCE_CLASSES,
     COMPOSITION,
@@ -22,6 +26,30 @@ from tools.artifex2.validate_m12 import (
 
 DIGEST = "a" * 64
 COMMIT = "b" * 40
+
+
+def test_m12_preflight_forbids_vm106_project_and_sibling_catalog_residue(
+    tmp_path: Path,
+) -> None:
+    required = {
+        Path(r"C:\Users\crugger\AppData\Local\ARTIFEX-M12-Project-VM106"),
+        Path(
+            r"C:\Users\crugger\AppData\Local\ARTIFEX-M12-Project-VM106-catalog.sqlite3"
+        ),
+        Path(r"C:\Users\crugger\AppData\Local\ARTIFEX-M12-Evidence"),
+        Path(r"C:\ARTIFEX-M12-M7-Staging-VM106"),
+    }
+    assert required <= set(FORBIDDEN_PATHS)
+
+    project_root = tmp_path / "project"
+    project_root.mkdir()
+    catalog = tmp_path / "project-catalog.sqlite3"
+    catalog.write_bytes(b"residual catalog")
+
+    assert _present_forbidden_paths((project_root, catalog)) == [
+        str(project_root),
+        str(catalog),
+    ]
 
 
 def _j20() -> dict[str, object]:

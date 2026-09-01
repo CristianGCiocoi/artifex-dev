@@ -1,0 +1,6 @@
+{
+  "diagnostic": "project.create failed: OPERATION_FAILED/CatalogConflictError: Project id, alias, or location already belongs to a catalog entry",
+  "error": "JourneyFailure",
+  "schema_version": "1.0",
+  "status": "FAIL"
+}
