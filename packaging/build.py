@@ -13,6 +13,7 @@ import time
 import uuid
 from pathlib import Path
 
+from artifex import __version__
 from artifex.distribution.artifact import create_artifact_manifest
 
 
@@ -162,6 +163,18 @@ def main() -> int:
     if args.smoke:
         for arguments in (("system", "version"), ("mode", "BEGINNER")):
             _run_frozen_json(executable, arguments)
+        subprocess.run(
+            [
+                sys.executable,
+                str(root / "scripts" / "smoke_public_composition.py"),
+                "--launcher",
+                str(executable),
+                "--expected-version",
+                __version__,
+            ],
+            cwd=root,
+            check=True,
+        )
         lifecycle_root = work / f"frozen-lifecycle-smoke-{uuid.uuid4().hex}"
         install_arguments = (
             "install",

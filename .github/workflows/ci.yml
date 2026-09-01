@@ -113,3 +113,26 @@ jobs:
             dist/*.whl
             dist/*.tar.gz
           if-no-files-found: error
+
+  windows-installer:
+    name: windows-installer (Nuitka + NSIS)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - run: uv sync --locked --all-groups
+      - run: uv run python packaging/build_windows_installer.py --clean --smoke
+      - run: uv run python scripts/validate_current_artifacts.py validate-windows-installer --candidate "${{ github.sha }}" --input dist/windows
+      - uses: actions/upload-artifact@v4
+        with:
+          name: artifex-windows-installer
+          path: |
+            dist/windows/ARTIFEX-Setup.exe
+            dist/windows/ARTIFEX-Setup.provenance.json
+            dist/windows/artifex/
+          if-no-files-found: error

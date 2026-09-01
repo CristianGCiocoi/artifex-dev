@@ -12,6 +12,9 @@ CRCCheck force
 !ifndef ARTIFEX_OUTPUT
   !error "ARTIFEX_OUTPUT is required"
 !endif
+!ifndef ARTIFEX_VERSION
+  !define ARTIFEX_VERSION "2.0.1"
+!endif
 
 Name "ARTIFEX"
 Caption "ARTIFEX Setup"
@@ -22,12 +25,12 @@ BrandingText "ARTIFEX"
 ShowInstDetails show
 ShowUninstDetails show
 
-VIProductVersion "2.0.0.0"
+VIProductVersion "${ARTIFEX_VERSION}.0"
 VIAddVersionKey /LANG=1033 "ProductName" "ARTIFEX"
 VIAddVersionKey /LANG=1033 "FileDescription" "ARTIFEX Setup"
 VIAddVersionKey /LANG=1033 "CompanyName" "ARTIFEX Contributors"
-VIAddVersionKey /LANG=1033 "FileVersion" "2.0.0"
-VIAddVersionKey /LANG=1033 "ProductVersion" "2.0.0"
+VIAddVersionKey /LANG=1033 "FileVersion" "${ARTIFEX_VERSION}"
+VIAddVersionKey /LANG=1033 "ProductVersion" "${ARTIFEX_VERSION}"
 VIAddVersionKey /LANG=1033 "LegalCopyright" "Apache-2.0"
 
 !define MUI_ABORTWARNING
@@ -60,7 +63,7 @@ Section "ARTIFEX" section_core
   WriteUninstaller "$INSTDIR\Uninstall.exe"
   WriteRegStr HKLM "Software\ARTIFEX" "InstallDir" "$INSTDIR"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ARTIFEX" "DisplayName" "ARTIFEX"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ARTIFEX" "DisplayVersion" "2.0.0"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ARTIFEX" "DisplayVersion" "${ARTIFEX_VERSION}"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ARTIFEX" "Publisher" "ARTIFEX Contributors"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ARTIFEX" "InstallLocation" "$INSTDIR"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ARTIFEX" "UninstallString" '"$INSTDIR\Uninstall.exe"'

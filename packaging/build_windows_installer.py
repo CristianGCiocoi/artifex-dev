@@ -15,6 +15,7 @@ import zipfile
 from datetime import UTC, datetime
 from pathlib import Path
 
+from artifex import __version__
 from artifex.distribution.artifact import create_artifact_manifest
 
 NSIS_VERSION = "3.12"
@@ -133,8 +134,8 @@ def main() -> int:
         "--product-name=ARTIFEX",
         "--company-name=ARTIFEX Contributors",
         "--file-description=ARTIFEX",
-        "--product-version=2.0.0.0",
-        "--file-version=2.0.0.0",
+        f"--product-version={__version__}.0",
+        f"--file-version={__version__}.0",
         "--copyright=Apache-2.0",
         str(root / "src" / "artifex" / "cli.py"),
     )
@@ -172,6 +173,18 @@ def main() -> int:
     if args.smoke:
         _run_json(executable, ("system", "version"))
         _run_json(executable, ("mode", "BEGINNER"))
+        subprocess.run(
+            (
+                sys.executable,
+                str(root / "scripts" / "smoke_public_composition.py"),
+                "--launcher",
+                str(executable),
+                "--expected-version",
+                __version__,
+            ),
+            cwd=root,
+            check=True,
+        )
     nsis = _nsis(root)
     installer = output / "ARTIFEX-Setup.exe"
     script = root / "packaging" / "windows" / "ARTIFEX-Setup.nsi"
@@ -181,6 +194,7 @@ def main() -> int:
             "/V2",
             f"/DARTIFEX_BUNDLE={bundle}",
             f"/DARTIFEX_OUTPUT={installer}",
+            f"/DARTIFEX_VERSION={__version__}",
             str(script),
         ),
         cwd=root,
@@ -189,7 +203,7 @@ def main() -> int:
     provenance = {
         "schema_version": "artifex.windows-installer-provenance/v1",
         "product": "ARTIFEX",
-        "product_version": "2.0.0",
+        "product_version": __version__,
         "source_commit": source_commit,
         "build_timestamp_utc": datetime.now(UTC).isoformat(),
         "packaging": {

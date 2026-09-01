@@ -198,6 +198,28 @@ def smoke_source(root: Path, output: Path, candidate: str) -> None:
                 raise CurrentArtifactError(
                     f"isolated current source smoke failed: {artifact.name}"
                 )
+            public_composition = subprocess.run(
+                (
+                    *base,
+                    "python",
+                    str(root / "scripts" / "smoke_public_composition.py"),
+                    "--module",
+                    "artifex.cli",
+                    "--expected-version",
+                    version,
+                ),
+                cwd=directory,
+                check=False,
+                capture_output=True,
+                env=environment,
+            )
+            if public_composition.returncode != 0:
+                raise CurrentArtifactError(
+                    "isolated public-composition smoke failed: "
+                    f"{artifact.name}: "
+                    f"{public_composition.stdout.decode(errors='replace')} "
+                    f"{public_composition.stderr.decode(errors='replace')}"
+                )
 
 
 def validate_native(root: Path, source: Path, candidate: str, kind: str) -> dict[str, object]:
@@ -229,10 +251,75 @@ def validate_native(root: Path, source: Path, candidate: str, kind: str) -> dict
     }
 
 
+def validate_windows_installer(
+    root: Path, source: Path, candidate: str
+) -> dict[str, object]:
+    output = source.resolve()
+    installer = output / "ARTIFEX-Setup.exe"
+    provenance_path = output / "ARTIFEX-Setup.provenance.json"
+    bundle = output / "artifex"
+    if not installer.is_file() or not provenance_path.is_file() or not bundle.is_dir():
+        raise CurrentArtifactError("Windows installer outputs are incomplete")
+    try:
+        provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise CurrentArtifactError("Windows installer provenance is invalid") from exc
+    if not isinstance(provenance, Mapping):
+        raise CurrentArtifactError("Windows installer provenance is not an object")
+    version = candidate_version(root, candidate)
+    if (
+        provenance.get("schema_version")
+        != "artifex.windows-installer-provenance/v1"
+        or provenance.get("product") != "ARTIFEX"
+        or provenance.get("product_version") != version
+        or provenance.get("source_commit") != candidate
+    ):
+        raise CurrentArtifactError("Windows installer identity differs from exact candidate")
+    packaging = provenance.get("packaging")
+    installer_identity = provenance.get("installer")
+    if (
+        not isinstance(packaging, Mapping)
+        or packaging.get("format") != "nuitka-standalone+nsis"
+        or not isinstance(installer_identity, Mapping)
+        or installer_identity.get("name") != installer.name
+    ):
+        raise CurrentArtifactError("Windows installer packaging identity is invalid")
+    installer_sha256 = hashlib.sha256(installer.read_bytes()).hexdigest()
+    if (
+        installer_identity.get("sha256") != installer_sha256
+        or installer_identity.get("bytes") != installer.stat().st_size
+    ):
+        raise CurrentArtifactError("Windows installer content differs from provenance")
+    verified = verify_artifact(bundle / "artifex.exe")
+    if verified.manifest != provenance.get("bundle_manifest"):
+        raise CurrentArtifactError("Windows installer bundle differs from provenance")
+    if (
+        verified.manifest.get("product_version") != version
+        or verified.manifest.get("source_commit") != candidate
+        or verified.manifest.get("platform") != "windows"
+        or verified.manifest.get("architecture") != "x86_64"
+    ):
+        raise CurrentArtifactError("Windows bundle identity differs from exact candidate")
+    return {
+        "version": version,
+        "source_commit": candidate,
+        "installer_sha256": installer_sha256,
+        "provenance_sha256": hashlib.sha256(provenance_path.read_bytes()).hexdigest(),
+        "bundle_sha256": verified.manifest["sha256"],
+        "bundle_file_count": len(verified.files),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "command", choices=("validate-source", "smoke-source", "validate-native")
+        "command",
+        choices=(
+            "validate-source",
+            "smoke-source",
+            "validate-native",
+            "validate-windows-installer",
+        ),
     )
     parser.add_argument("--candidate", required=True)
     parser.add_argument("--output", type=Path)
@@ -249,10 +336,14 @@ def main() -> int:
                 parser.error("smoke-source requires --output")
             smoke_source(ROOT, arguments.output, arguments.candidate)
             result = {"smoke": "PASS"}
-        else:
+        elif arguments.command == "validate-native":
             if arguments.input is None or arguments.kind is None:
                 parser.error("validate-native requires --input and --kind")
             result = validate_native(ROOT, arguments.input, arguments.candidate, arguments.kind)
+        else:
+            if arguments.input is None:
+                parser.error("validate-windows-installer requires --input")
+            result = validate_windows_installer(ROOT, arguments.input, arguments.candidate)
     except (OSError, CurrentArtifactError, ValueError, zipfile.BadZipFile, tarfile.TarError) as exc:
         print(json.dumps({"ok": False, "error": str(exc)}, sort_keys=True))
         return 1

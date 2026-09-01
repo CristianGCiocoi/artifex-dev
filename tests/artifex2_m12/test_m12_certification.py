@@ -276,10 +276,13 @@ def test_m12_release_matrix_rejects_optional_unaccepted_provider_claim(
 
 def test_artifex_2_release_metadata_is_consistent() -> None:
     root = Path(__file__).resolve().parents[2]
-    assert __version__ == TARGET_RELEASE
-    assert 'version = "2.0.0"' in (root / "pyproject.toml").read_text(encoding="utf-8")
+    assert TARGET_RELEASE == "2.0.0"
+    assert f'version = "{__version__}"' in (root / "pyproject.toml").read_text(
+        encoding="utf-8"
+    )
     installer = (root / "packaging" / "windows" / "ARTIFEX-Setup.nsi").read_text(
         encoding="utf-8"
     )
-    assert 'VIProductVersion "2.0.0.0"' in installer
-    assert '"DisplayVersion" "2.0.0"' in installer
+    assert f'!define ARTIFEX_VERSION "{__version__}"' in installer
+    assert 'VIProductVersion "${ARTIFEX_VERSION}.0"' in installer
+    assert '"DisplayVersion" "${ARTIFEX_VERSION}"' in installer
