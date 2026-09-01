@@ -1,0 +1,39 @@
+schema_version: '1.0'
+evidence_id: EVD-M12-R4-SOURCE-VALIDATION
+milestone: M12
+status: PASS
+recorded_date: '2026-09-01'
+candidate_source_commit: 498cd012830748ea5c492c466146e4129cdbe455
+repair:
+  claude_interaction_prompt_envelope:
+    status: PASS
+    behavior: Claude INTERACTION now composes the caller request with the required structured response envelope so exact response semantics remain inside the response field.
+    j02_bounded_marker_validator_changed: false
+focused_validation:
+  interaction_service_contracts:
+    passed: 14
+    failed: 0
+  m12_qualification_harness:
+    passed: 8
+    failed: 0
+domain_integration:
+  command: .venv/Scripts/python.exe -m pytest -q -x --ignore=tests/test_release.py
+  result: PASS
+  passed: 569
+  skipped: 7
+  failed: 0
+  duration_seconds: 639.32
+  platform_skips: WINDOWS_SYMLINK_CREATION_UNAVAILABLE
+static_validation:
+  ruff_all: PASS
+  mypy_strict: PASS
+  mypy_source_files: 95
+packaging_validation:
+  command: uv run --python 3.12 python packaging/build_windows_installer.py --clean --smoke
+  result: PASS
+v1_release_harness_regression:
+  classification: V1-R01-DASHBOARD-FIXTURE-SCHEMA-DRIFT
+  disposition: REPRODUCED_AND_PRESERVED
+  canonical_test: tests/test_release.py::test_candidate_passes_without_optional_m10_gate
+  source_repaired_by_m12: false
+unexpected_failures: []
