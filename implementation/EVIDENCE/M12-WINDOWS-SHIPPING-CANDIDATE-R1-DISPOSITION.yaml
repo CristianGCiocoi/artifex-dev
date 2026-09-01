@@ -1,0 +1,22 @@
+schema_version: '1.0'
+evidence_id: EVD-M12-WINDOWS-SHIPPING-CANDIDATE-R1-DISPOSITION
+milestone: M12
+status: REJECTED_QUALIFICATION
+recorded_date: '2026-09-01'
+candidate:
+  source_commit: 5b5750fcee0eddc74a223334be07224c6ff4b930
+  installer_sha256: 0a094ab12420f0fe18092dd834801f4b2463ba39837e4ae0b2d0e2881ae81778
+  provenance_sha256: 388db76f28139bea61a739bdf0051bd148c7529fc3dfc38869937ac3197610a4
+disposition:
+  reason: The exact Claude standalone cell reproduced first-interaction response variance and then proved that the public managed-service frontend timed out before the authorized Claude interaction window elapsed.
+  candidate_remains_immutable: true
+  accepted_evidence_carried_forward: false
+  requires_new_exact_candidate: true
+evidence:
+  - EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R2-INTERACTION-FAIL.json
+  - EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R3-FRONTEND-TIMEOUT-FAIL.json
+  - EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R3-FRONTEND-TIMEOUT-DIAGNOSTIC.json
+boundaries:
+  provider_output_retained: false
+  credential_material_read: false
+  v1_known_regression_preserved: true

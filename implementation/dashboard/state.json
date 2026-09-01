@@ -833,6 +833,11 @@
       "sha256": "718a4150bcb8d05c949f63ccba57f1679e5546294107b5780ce30f84f3089179"
     },
     {
+      "bytes": 1713,
+      "path": "implementation/EVIDENCE/M12-R2-SOURCE-VALIDATION.yaml",
+      "sha256": "69de700a4d721fc7aac50975a087e3bc80fd9b7972bda7cdfad8b46055a29fbd"
+    },
+    {
       "bytes": 1341,
       "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-PROVIDER-READY-ATTESTATION-VM106-R1.json",
       "sha256": "85f99c0e4d1f3978552e6ba7f0b913017a2d874009514c608a99956b5f882284"
@@ -971,6 +976,16 @@
       "bytes": 6231,
       "path": "implementation/EVIDENCE/M12-WINDOWS-NOPROVIDER-VM104-QUALIFIED.json",
       "sha256": "f1790f09a48d90f8029be45cb8999f45d8d72d803eedc334c7f49a4683cc1cd9"
+    },
+    {
+      "bytes": 1075,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-SHIPPING-CANDIDATE-R1-DISPOSITION.yaml",
+      "sha256": "034e2441e62a959c684bca3e9fe32b917f870cdc36e4bca250b8edb6546d3fa7"
+    },
+    {
+      "bytes": 1721,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-SHIPPING-CANDIDATE-R2.yaml",
+      "sha256": "21e7bb9974e8aeeb979a26800c450d10ac01f9d348cb560340c207411a024ce8"
     },
     {
       "bytes": 1778,
@@ -3872,7 +3887,7 @@
     "adr_count": 24,
     "current_milestone": "M12",
     "current_milestone_progress_percent": 0,
-    "evidence_items": 238,
+    "evidence_items": 241,
     "invariant_count": 34,
     "journey_states": {
       "ACTIVE": 1,

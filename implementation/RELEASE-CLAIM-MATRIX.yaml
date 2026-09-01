@@ -1,12 +1,12 @@
 schema_version: artifex.m12-release-claim-matrix/v1
 target_release: 2.0.0
 contract_digest: 54529f748cac59ce8b57e2f9a8376fe51c515e0ffca6b0b7da51ae2cbc5a2c6a
-status: ACTIVE_PENDING_EXACT_CANDIDATE
+status: ACTIVE_R2_REQUALIFICATION
 candidate:
-  source_commit: null
-  artifact_sha256: null
+  source_commit: e7fe88336f04e3f9e7c8b45299f7af90d3a4a1fe
+  artifact_sha256: ff00500fface43eb4a15d0c0ec7b93ccef46af9ffd17d516870b51b3838c2bf8
   product_version: 2.0.0
-  provenance_sha256: null
+  provenance_sha256: 4491bed9560ce67a8fcce10f16273373b202c263dab2a8f518ebdcc105597b34
   signing:
     status: UNSIGNED
     release_claim: NOT_CLAIMED
@@ -17,25 +17,25 @@ qualification_cells:
   environment: CLEAN_VM
   provider_state: {codex: INSTALLED_CONFIGURED_AUTHENTICATED, claude: ABSENT}
   journeys: [J01, J16]
-  status: PENDING_EXACT_CANDIDATE
+  status: PENDING_R2_REQUALIFICATION
 - id: M12-WIN-CLAUDE
   os: Windows 11 25H2 x64
   environment: CLEAN_VM
   provider_state: {codex: ABSENT, claude: INSTALLED_CONFIGURED_AUTHENTICATED}
   journeys: [J02, J16]
-  status: PENDING_EXACT_CANDIDATE
+  status: PENDING_R2_REQUALIFICATION
 - id: M12-WIN-NOPROVIDER
   os: Windows 11 25H2 x64
   environment: CLEAN_VM
   provider_state: {codex: ABSENT, claude: ABSENT}
   journeys: [J10]
-  status: PENDING_EXACT_CANDIDATE
+  status: PENDING_R2_REQUALIFICATION
 - id: M12-WIN-COMBINED
   os: Windows 11 25H2 x64
   environment: RELEASE_ENVIRONMENT
   provider_state: {codex: INSTALLED_CONFIGURED_AUTHENTICATED, claude: INSTALLED_CONFIGURED_AUTHENTICATED}
   journeys: [J11, J20]
-  status: PENDING_EXACT_CANDIDATE
+  status: PENDING_R2_REQUALIFICATION
 core_mandatory_claims:
   project_continuity: {status: PENDING, journeys: [J03, J04], evidence: []}
   persistent_supervised_autonomy: {status: PENDING, journeys: [J05, J06, J07, J18], evidence: []}

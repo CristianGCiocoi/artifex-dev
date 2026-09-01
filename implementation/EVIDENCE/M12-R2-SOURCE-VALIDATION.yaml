@@ -1,0 +1,46 @@
+schema_version: '1.0'
+evidence_id: EVD-M12-R2-SOURCE-VALIDATION
+milestone: M12
+status: PASS
+recorded_date: '2026-09-01'
+candidate_source_commit: e7fe88336f04e3f9e7c8b45299f7af90d3a4a1fe
+repair:
+  managed_service_frontend_timeout:
+    status: PASS
+    behavior: Public service calls accept an explicit bounded response timeout up to 3600 seconds; the shipping qualifier binds provider calls to 900 seconds.
+  core_2x_integration_compatibility:
+    status: PASS
+    behavior: Built-in integration metadata truthfully accepts Core 2.x and rejects Core 3.0.0.
+focused_validation:
+  ruff: PASS
+  managed_service_and_shipping_runner:
+    passed: 35
+    failed: 0
+  claude_cli_and_integration_regressions:
+    passed: 58
+    failed: 0
+domain_integration:
+  command: .venv/Scripts/python.exe -m pytest -q -x --ignore=tests/test_release.py
+  result: PASS
+  passed: 569
+  skipped: 7
+  failed: 0
+  duration_seconds: 603.06
+  platform_skips: WINDOWS_SYMLINK_CREATION_UNAVAILABLE
+  transient_observation:
+    classification: NONREPRODUCED_WINDOWS_ATOMIC_REPLACE_CONTENTION
+    affected_test: tests/artifex2_m7/test_managed_service.py::test_public_status_and_controlled_shutdown_operations
+    isolated_result: PASS
+    complete_rerun_result: 569_PASS_0_FAIL_7_SKIP
+    source_change_made_for_observation: false
+static_validation:
+  ruff_all: PASS
+  mypy_strict: PASS
+  mypy_source_files: 95
+v1_release_harness_regression:
+  classification: V1-R01-DASHBOARD-FIXTURE-SCHEMA-DRIFT
+  disposition: REPRODUCED_AND_PRESERVED
+  canonical_test: tests/test_release.py::test_candidate_passes_without_optional_m10_gate
+  current_expected_failure: "'release' is a required property"
+  source_repaired_by_m12: false
+unexpected_failures: []
