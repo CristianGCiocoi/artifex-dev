@@ -102,6 +102,12 @@ def _wheel_source_name(source: str) -> str:
     return source.removeprefix("src/")
 
 
+def _same_text_source(left: bytes, right: bytes) -> bool:
+    """Compare tracked text independently of the checkout newline policy."""
+
+    return left.replace(b"\r\n", b"\n") == right.replace(b"\r\n", b"\n")
+
+
 def validate_source(root: Path, output: Path, candidate: str) -> dict[str, str]:
     version = candidate_version(root, candidate)
     wheel = output / f"artifex_dev-{version}-py3-none-any.whl"
@@ -118,7 +124,10 @@ def validate_source(root: Path, output: Path, candidate: str) -> dict[str, str]:
             for source in sources
             if _wheel_source_name(source) in names
         }
-        if packaged != sources:
+        if set(packaged) != set(sources) or any(
+            not _same_text_source(packaged[source], expected)
+            for source, expected in sources.items()
+        ):
             raise CurrentArtifactError("wheel source inventory differs from candidate")
         metadata_names = [name for name in names if name.endswith(".dist-info/METADATA")]
         entry_names = [name for name in names if name.endswith(".dist-info/entry_points.txt")]
@@ -146,7 +155,7 @@ def validate_source(root: Path, output: Path, candidate: str) -> dict[str, str]:
         for source, expected_bytes in sources.items():
             member = by_name.get(prefix + source)
             stream = archive.extractfile(member) if member is not None else None
-            if stream is None or stream.read() != expected_bytes:
+            if stream is None or not _same_text_source(stream.read(), expected_bytes):
                 raise CurrentArtifactError("sdist source inventory differs from candidate")
     _validate_schema(sources[SOURCE_SCHEMA])
     return {
