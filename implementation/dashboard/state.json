@@ -813,6 +813,171 @@
       "sha256": "bc235728bfeff21948d9a1bafd06cd846eb110e82a941b44c68069b19ff17dc0"
     },
     {
+      "bytes": 4991,
+      "path": "implementation/EVIDENCE/M12-J09-SHIPPING-PASS.json",
+      "sha256": "212ba6e83207af2951360fd14a012503b3d17ecb380329d72d9dcd70f0f05339"
+    },
+    {
+      "bytes": 1085,
+      "path": "implementation/EVIDENCE/M12-J09-SHIPPING-QUALIFIED.json",
+      "sha256": "d959cd37e144afe067a9228d05024eb85918f18cddf7d7c7f401d4106f14b2cf"
+    },
+    {
+      "bytes": 16548,
+      "path": "implementation/EVIDENCE/M12-J11-J20-SHIPPING-PASS.json",
+      "sha256": "2545514e10f811bbf230e6542e24b2b0d8b418402391b404384ef477a3d1fd84"
+    },
+    {
+      "bytes": 724,
+      "path": "implementation/EVIDENCE/M12-J11-J20-SHIPPING-QUALIFIED.json",
+      "sha256": "718a4150bcb8d05c949f63ccba57f1679e5546294107b5780ce30f84f3089179"
+    },
+    {
+      "bytes": 1341,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-PROVIDER-READY-ATTESTATION-VM106-R1.json",
+      "sha256": "85f99c0e4d1f3978552e6ba7f0b913017a2d874009514c608a99956b5f882284"
+    },
+    {
+      "bytes": 1344,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-PROVIDER-READY-ATTESTATION-VM106-R2.json",
+      "sha256": "98c95049e0b400da22c9cf49f3f5fa95671b16f0337fc78f24129f748f93e75e"
+    },
+    {
+      "bytes": 1344,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-PROVIDER-READY-ATTESTATION-VM106-R3.json",
+      "sha256": "ec36d4f6ccae91a91fe3b06962f57d110b73f9e953866216f2f1e0d9c2b0f743"
+    },
+    {
+      "bytes": 1335,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-PROVIDER-READY-ATTESTATION-VM106.json",
+      "sha256": "c964040389f3e166c7e883c79e571b62667d08abcbcc3cc58211aa25a55f045b"
+    },
+    {
+      "bytes": 864,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-VM106-AUTH-EXPIRED.json",
+      "sha256": "580b42cf81ba6863b614801eb0375c1415cb49b509ea24565f3d1c717933dd10"
+    },
+    {
+      "bytes": 431,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-VM106-AUTH-PROBE.json",
+      "sha256": "5b872dc488ee19ebb7ca09f6583d99ab5f5a477534d79f303fc3f7f07cf89389"
+    },
+    {
+      "bytes": 835,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-VM106-AUTH-RESTORED.json",
+      "sha256": "21608d2fae939b27681483b1a372018c13bdc04a06a5148c5f10323f120352dd"
+    },
+    {
+      "bytes": 148,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-VM106-FIRST-ATTEMPT-FAIL.json",
+      "sha256": "c3358797fc9687a172b6db20a504a824b507fe36667bcc1c1503cec7662dba5a"
+    },
+    {
+      "bytes": 561,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-VM106-INTERACT-DIAGNOSTIC-PASS.json",
+      "sha256": "8aa1360e62f0320bb1bcdcbf6784b0799d0e08a70ebf4d65e9060b502303dfaa"
+    },
+    {
+      "bytes": 696,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-VM106-INTERACT-SHAPE-DIAGNOSTIC-PASS.json",
+      "sha256": "55f2005a4af3408e1acbf91c1c87e7ebb66733970db278867339ff82db6bc61d"
+    },
+    {
+      "bytes": 160,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-VM106-POST-REAUTH-CANONICAL-FAIL.json",
+      "sha256": "1e6516e182532c75aec829e3461ea3e657244384eabf197fe5e87f150348dd5f"
+    },
+    {
+      "bytes": 1079,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-VM106-PREFLIGHT-PASS.json",
+      "sha256": "29d266bb1bf00f8f3c63d0f80b42d02b316aff5a7807006dbbc63d4bef61c634"
+    },
+    {
+      "bytes": 1079,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-VM106-PROVIDER-READY-R1-PREFLIGHT.json",
+      "sha256": "29d266bb1bf00f8f3c63d0f80b42d02b316aff5a7807006dbbc63d4bef61c634"
+    },
+    {
+      "bytes": 226,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R1-CATALOG-CONFLICT-FAIL.json",
+      "sha256": "19c05e978c30e24199e0d66220a4c38d595c6c53fe6781f8a81db3c4f11698ca"
+    },
+    {
+      "bytes": 160,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R2-INTERACTION-FAIL.json",
+      "sha256": "1e6516e182532c75aec829e3461ea3e657244384eabf197fe5e87f150348dd5f"
+    },
+    {
+      "bytes": 1079,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R2-PREFLIGHT.json",
+      "sha256": "29d266bb1bf00f8f3c63d0f80b42d02b316aff5a7807006dbbc63d4bef61c634"
+    },
+    {
+      "bytes": 1287,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R3-FRONTEND-TIMEOUT-DIAGNOSTIC.json",
+      "sha256": "68ffdbdcd6eff9386646f8b28bafe0972b18bf838696d6e589856d8a1b33c934"
+    },
+    {
+      "bytes": 148,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R3-FRONTEND-TIMEOUT-FAIL.json",
+      "sha256": "c3358797fc9687a172b6db20a504a824b507fe36667bcc1c1503cec7662dba5a"
+    },
+    {
+      "bytes": 1079,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R3-PREFLIGHT.json",
+      "sha256": "29d266bb1bf00f8f3c63d0f80b42d02b316aff5a7807006dbbc63d4bef61c634"
+    },
+    {
+      "bytes": 148,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-VM106-SECOND-CANONICAL-ATTEMPT-FAIL.json",
+      "sha256": "c3358797fc9687a172b6db20a504a824b507fe36667bcc1c1503cec7662dba5a"
+    },
+    {
+      "bytes": 437,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CLEAN-BASE-ATTESTATION-VM104.json",
+      "sha256": "71918ae1d653215d66cea650ad1604d3b7cd87061cb5f523cbd039420bc629a2"
+    },
+    {
+      "bytes": 1326,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CODEX-PROVIDER-READY-ATTESTATION-VM105.json",
+      "sha256": "118f1b50b413ed6261338c6aa6a1359012103e44d4d92917f7477547a0ebfa66"
+    },
+    {
+      "bytes": 185,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CODEX-VM105-FIRST-ATTEMPT-FAIL.json",
+      "sha256": "6917f834915e460405e3536c1f8a6bb7a3567b6a1dbca392051f40ceaa8bd68c"
+    },
+    {
+      "bytes": 11188,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CODEX-VM105-PASS.json",
+      "sha256": "aec56ffc788509232a30e53c3eb5ea38fb7cefcfb719ac796e8d7022af792281"
+    },
+    {
+      "bytes": 11811,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CODEX-VM105-QUALIFIED.json",
+      "sha256": "46cfd81e56e954be1e87f015e2bcb5db276252a2db46fbeb6961f54f69d9a5ab"
+    },
+    {
+      "bytes": 175,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CODEX-VM105-UNAUTHORIZED-RESUME-FAIL.json",
+      "sha256": "74aa5c30550c751cae4017f4e31d53d5c21d9bbfdb44c377661037b17931f669"
+    },
+    {
+      "bytes": 5693,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-NOPROVIDER-VM104-PASS.json",
+      "sha256": "3dd5647d66b8812f44cff2bd30c47da1f5dda588cabfbba3ef1abdd68996b22b"
+    },
+    {
+      "bytes": 6231,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-NOPROVIDER-VM104-QUALIFIED.json",
+      "sha256": "f1790f09a48d90f8029be45cb8999f45d8d72d803eedc334c7f49a4683cc1cd9"
+    },
+    {
+      "bytes": 1778,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-SHIPPING-CANDIDATE.yaml",
+      "sha256": "6bc4e0215b1d4967b39b967cd3dc061535bf559b8f819cd79fada57bf9bf7009"
+    },
+    {
       "bytes": 3620,
       "path": "implementation/EVIDENCE/M2-VALIDATION.yaml",
       "sha256": "892f6c74fba60c6634ca45669146dc52e1efbc5c624fbea7503cd864e5c2f2b2"
@@ -3707,7 +3872,7 @@
     "adr_count": 24,
     "current_milestone": "M12",
     "current_milestone_progress_percent": 0,
-    "evidence_items": 205,
+    "evidence_items": 238,
     "invariant_count": 34,
     "journey_states": {
       "ACTIVE": 1,
