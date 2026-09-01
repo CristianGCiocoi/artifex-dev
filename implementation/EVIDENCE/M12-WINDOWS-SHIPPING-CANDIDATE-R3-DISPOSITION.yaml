@@ -1,0 +1,27 @@
+schema_version: '1.0'
+evidence_id: EVD-M12-WINDOWS-SHIPPING-CANDIDATE-R3-DISPOSITION
+milestone: M12
+status: REJECTED_QUALIFICATION
+recorded_date: '2026-09-01'
+candidate:
+  source_commit: 717b9781c2f1d2b11b95725826db21746c252c09
+  installer_sha256: 9f57889b2e0e685ba72e27853a1eda1eb9ea7fd8770f4a2338041bb4421141a9
+  provenance_sha256: 7487e406d29d252840b0f90ff182029483db77ea442673235785400ed96beb67
+disposition:
+  reason: The exact Claude standalone cell reached the live INTERACTION operation, but the Claude result completed without the required structured_output response field because the bounded exact-text request and the JSON transport envelope were not composed into one unambiguous provider instruction.
+  candidate_remains_immutable: true
+  accepted_evidence_carried_forward: false
+  requires_new_exact_candidate: true
+diagnosis:
+  provider_process_reached_result_parsing: true
+  structured_response_present: false
+  bounded_marker_validator_reached: false
+  repair_owner: CLAUDE_INTERACTION_PROMPT_ENVELOPE
+evidence:
+  - EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R5-INTERACTION-FAIL.json
+boundaries:
+  blind_retry_performed: false
+  provider_output_retained: false
+  credential_material_read: false
+  j02_validator_weakened: false
+  v1_known_regression_preserved: true
