@@ -14,6 +14,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # ARTIFEX 2.x control-plane tests verify accepted milestone ancestry
+          # and the immutable V1 tag. Those tests require the actual history.
+          fetch-depth: 0
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: ${{ matrix.python-version }}
@@ -22,7 +26,37 @@ jobs:
       - run: uv run ruff check .
       - run: uv run mypy src
       - run: uv run coverage erase
-      - run: uv run pytest --cov=artifex --cov-report=term-missing
+      - run: uv run pytest --ignore=tests/test_release.py --cov=artifex --cov-report=term-missing
+
+  preserved-v1-regression:
+    name: preserved-v1-regression (V1-R01)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - name: Reproduce the frozen V1 dashboard fixture/schema-drift regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          legacy_root="$RUNNER_TEMP/artifex-v1-regression"
+          git worktree add --detach "$legacy_root" 5cc5dcfeb420a6df171a44426c04a0f08fa1e877
+          cd "$legacy_root"
+          uv sync --locked --all-groups
+          set +e
+          uv run --frozen pytest -vv -x \
+            tests/test_release.py::test_candidate_passes_without_optional_m10_gate \
+            --disable-warnings 2>&1 | tee "$RUNNER_TEMP/v1-r01.log"
+          status=${PIPESTATUS[0]}
+          set -e
+          test "$status" -eq 1
+          grep -F "dashboard fixture is missing required release property" \
+            "$RUNNER_TEMP/v1-r01.log"
+          echo "V1-R01-DASHBOARD-FIXTURE-SCHEMA-DRIFT: REPRODUCED_AND_PRESERVED"
 
   native-package:
     strategy:
@@ -44,16 +78,17 @@ jobs:
           enable-cache: true
       - run: uv sync --locked --all-groups
       - run: uv run python packaging/build.py --clean --smoke
-      - run: uv run python scripts/validate_release.py finalize-native --candidate "${{ github.sha }}" --input dist/native/artifex --output dist/release --kind "${{ matrix.kind }}"
+      - run: uv run python scripts/validate_current_artifacts.py validate-native --candidate "${{ github.sha }}" --input dist/native/artifex --kind "${{ matrix.kind }}"
       - run: uv build --no-build-isolation --wheel --sdist
-      - run: uv run python scripts/validate_release.py finalize-source --candidate "${{ github.sha }}" --output dist
-      - run: uv run python scripts/validate_release.py smoke-source --output dist
+      - run: uv run python scripts/validate_current_artifacts.py validate-source --candidate "${{ github.sha }}" --output dist
+      - run: uv run python scripts/validate_current_artifacts.py smoke-source --candidate "${{ github.sha }}" --output dist
       - uses: actions/upload-artifact@v4
         with:
           name: artifex-onedir-${{ runner.os }}-${{ runner.arch }}
           path: |
             dist/native/artifex/
-            dist/release/*
+            dist/*.whl
+            dist/*.tar.gz
           if-no-files-found: error
 
   source-package:
@@ -67,20 +102,8 @@ jobs:
       - run: uv sync --locked --all-groups
       - run: uv lock --check
       - run: uv build --no-build-isolation --wheel --sdist
-      - run: uv run python scripts/validate_release.py finalize-source --candidate "${{ github.sha }}" --output dist
-      - run: uv run python scripts/validate_release.py smoke-source --output dist
-      - name: Isolated wheel identity smoke
-        shell: bash
-        run: |
-          set -euo pipefail
-          wheel=$(find dist -maxdepth 1 -name 'artifex_dev-1.0.0-*.whl' -print -quit)
-          sdist=$(find dist -maxdepth 1 -name 'artifex_dev-1.0.0.tar.gz' -print -quit)
-          test -n "$wheel"
-          test -n "$sdist"
-          uv run --isolated --no-project --with "$wheel" python -c "import artifex; assert artifex.__version__ == '1.0.0'"
-          uv run --isolated --no-project --with "$wheel" python -c "import importlib.resources, json; p=json.loads(importlib.resources.files('artifex').joinpath('schemas/acceptance-evidence.schema.json').read_text()); assert p['properties']['schema_version']['const'] == '2.0'; assert 'independent_of_executor' in p['required']"
-          uv run --isolated --no-project --with "$wheel" artifex system version | python -c "import json,sys; p=json.load(sys.stdin); assert p['ok'] is True and p['value']['version'] == '1.0.0'"
-          uv run --isolated --no-project --with "$sdist" python -c "import artifex; assert artifex.__version__ == '1.0.0'"
+      - run: uv run python scripts/validate_current_artifacts.py validate-source --candidate "${{ github.sha }}" --output dist
+      - run: uv run python scripts/validate_current_artifacts.py smoke-source --candidate "${{ github.sha }}" --output dist
       - uses: actions/upload-artifact@v4
         with:
           name: artifex-source-distributions

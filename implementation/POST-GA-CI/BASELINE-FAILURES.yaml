@@ -1,0 +1,61 @@
+schema_version: '1.0'
+workstream: POST_GA_CI_NORMALIZATION
+baseline:
+  repository: CristianGCiocoi/artifex-dev
+  commit: e6bb13ba165fcb3d9b21cb4598d2f7539cf1bb0a
+  workflow_run_id: 33537178832
+  workflow_url: https://github.com/CristianGCiocoi/artifex-dev/actions/runs/33537178832
+  conclusion: FAILURE
+  jobs_failed: 10
+classifications:
+- id: PGCI-F01
+  class: WORKFLOW / CI INFRASTRUCTURE
+  jobs: [test]
+  signature: historical tags and accepted milestone commits are unavailable in the default shallow checkout
+  examples:
+  - git rev-parse v1.0.0^{commit} exited 128
+  - git merge-base --is-ancestor of accepted milestone commits exited 128
+- id: PGCI-F02
+  class: HISTORICAL V1 VALIDATOR
+  jobs: [native-package, source-package]
+  signature: scripts/validate_release.py declares and enforces the V1 candidate contract
+  evidence:
+  - VERSION = 1.0.0
+  - .artifex/releases/v1.0.0.yaml
+- id: PGCI-F03
+  class: RELEASE VERSION DISCOVERY
+  jobs: [native-package, source-package]
+  signature: source build outputs are missing
+  cause: CI built 2.0.0 artifacts while the invoked V1 finalizer searched for 1.0.0 identities
+- id: PGCI-F04
+  class: CROSS-PLATFORM SOURCE / TYPECHECK
+  jobs: [test/ubuntu, test/macos]
+  signature: 'src/artifex/managed_service.py:832: Module has no attribute windll [attr-defined]'
+- id: PGCI-F05
+  class: CROSS-PLATFORM SOURCE / TYPECHECK
+  jobs: [test/windows]
+  signature: Windows ACL contains an unexpected principal
+  affected_tests: 8
+  disposition: PRODUCT_MAINTENANCE_REQUIRED
+- id: PGCI-F06
+  class: COVERAGE
+  jobs: [test/windows]
+  baseline_result: 80.15
+  normalized_local_2x_result: 81.65
+  threshold: 85.0
+  disposition: ADD_LEGITIMATE_CURRENT_TESTS
+- id: PGCI-F07
+  class: KNOWN V1 REGRESSION
+  canonical_id: V1-R01-DASHBOARD-FIXTURE-SCHEMA-DRIFT
+  canonical_test: tests/test_release.py::test_candidate_passes_without_optional_m10_gate
+  disposition: REPRODUCE_SEPARATELY_NOT_REPAIR_NOT_XFAIL
+- id: PGCI-F08
+  class: HISTORICAL V1 VALIDATOR
+  jobs: [test/windows]
+  signature: current 2.0 source was evaluated by tests/test_release.py V1 candidate assumptions
+  disposition: REMOVE_FROM_2X_GATE_PRESERVE_V1_CONTRACT
+new_product_defects:
+- Windows private ACL normalization is environment-sensitive on GitHub-hosted runners.
+- Windows rooted-without-drive lifecycle paths can escape the installation root
+  when Path.is_absolute alone is used as the cross-platform guard.
+optional_milestones_started: []
