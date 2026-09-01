@@ -993,6 +993,16 @@
       "sha256": "2f3f73df3d63044cb7146b5c3a45fb971ada5cd918eaac4745c24d8342844945"
     },
     {
+      "bytes": 10811,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R6R1-PASS.json",
+      "sha256": "5992b6ffee7c26ef45fb7194258d70e78ca15a5f2bf5d02f97805452eda46465"
+    },
+    {
+      "bytes": 11434,
+      "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R6R1-QUALIFIED-R1.json",
+      "sha256": "c838592286a46ca8c21bb38c7c61833496633b931c86c80820bbf35c1a6d6738"
+    },
+    {
       "bytes": 148,
       "path": "implementation/EVIDENCE/M12-WINDOWS-CLAUDE-VM106-SECOND-CANONICAL-ATTEMPT-FAIL.json",
       "sha256": "c3358797fc9687a172b6db20a504a824b507fe36667bcc1c1503cec7662dba5a"
@@ -3967,7 +3977,7 @@
     "adr_count": 24,
     "current_milestone": "M12",
     "current_milestone_progress_percent": 0,
-    "evidence_items": 257,
+    "evidence_items": 259,
     "invariant_count": 34,
     "journey_states": {
       "ACTIVE": 1,

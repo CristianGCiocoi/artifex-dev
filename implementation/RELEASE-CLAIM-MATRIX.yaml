@@ -23,7 +23,10 @@ qualification_cells:
   environment: CLEAN_VM
   provider_state: {codex: ABSENT, claude: INSTALLED_CONFIGURED_AUTHENTICATED}
   journeys: [J02, J16]
-  status: PENDING_R4_REQUALIFICATION
+  status: PASS
+  evidence:
+  - EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R6R1-PASS.json
+  - EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R6R1-QUALIFIED-R1.json
 - id: M12-WIN-NOPROVIDER
   os: Windows 11 25H2 x64
   environment: CLEAN_VM
@@ -40,9 +43,9 @@ core_mandatory_claims:
   project_continuity: {status: PENDING, journeys: [J03, J04], evidence: []}
   persistent_supervised_autonomy: {status: PENDING, journeys: [J05, J06, J07, J18], evidence: []}
   semantic_safety: {status: PENDING, journeys: [J14, J15], evidence: []}
-  provider_setup_persistence: {status: PENDING, journeys: [J16], evidence: []}
+  provider_setup_persistence: {status: PARTIAL_CLAUDE_PASS, journeys: [J16], evidence: [EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R6R1-QUALIFIED-R1.json]}
   codex_support: {status: PENDING, journeys: [J01, J11], evidence: []}
-  claude_support: {status: PENDING, journeys: [J02, J11], evidence: []}
+  claude_support: {status: PARTIAL_J02_PASS, journeys: [J02, J11], evidence: [EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R6R1-QUALIFIED-R1.json]}
   collaborative_lifecycle: {status: PENDING, journeys: [J19], evidence: []}
   full_product: {status: PENDING, journeys: [J20], evidence: []}
   documentation_dashboard: {status: PENDING, journeys: [J08], evidence: []}
@@ -58,7 +61,7 @@ optional_claims:
   macos_ga_certification: {shipped: false, status: EXCLUDED, requires_milestone: null, reason: macOS remains supported target scope but is not an exact Core GA certification cell.}
 mandatory_journeys:
   J01: {status: PENDING, candidate_binding: PENDING, evidence: []}
-  J02: {status: PENDING, candidate_binding: PENDING, evidence: []}
+  J02: {status: PASS, candidate_binding: EXACT_R4, evidence: [EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R6R1-PASS.json, EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R6R1-QUALIFIED-R1.json]}
   J03: {status: PENDING, candidate_binding: PENDING, evidence: []}
   J04: {status: PENDING, candidate_binding: PENDING, evidence: []}
   J05: {status: PENDING, candidate_binding: PENDING, evidence: []}
@@ -71,7 +74,7 @@ mandatory_journeys:
   J12: {status: PENDING, candidate_binding: PENDING, evidence: []}
   J14: {status: PENDING, candidate_binding: PENDING, evidence: []}
   J15: {status: PENDING, candidate_binding: PENDING, evidence: []}
-  J16: {status: PENDING, candidate_binding: PENDING, evidence: []}
+  J16: {status: PARTIAL_CLAUDE_PASS, candidate_binding: EXACT_R4_CLAUDE, evidence: [EVIDENCE/M12-WINDOWS-CLAUDE-VM106-R6R1-QUALIFIED-R1.json]}
   J18: {status: PENDING, candidate_binding: PENDING, evidence: []}
   J19: {status: PENDING, candidate_binding: PENDING, evidence: []}
   J20: {status: PENDING, candidate_binding: PENDING, evidence: []}
