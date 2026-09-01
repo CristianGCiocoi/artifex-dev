@@ -390,6 +390,9 @@ def test_public_claude_interaction_preserves_project_identity_and_baseline(
             )
             return _completed(arguments, stdout="\n".join(map(json.dumps, events)) + "\n")
         assert arguments[arguments.index("--permission-mode") + 1] == "plan"
+        interaction_schema = json.loads(arguments[arguments.index("--json-schema") + 1])
+        assert interaction_schema["required"] == ["response"]
+        assert interaction_schema["additionalProperties"] is False
         assert "Read the durable project identity and revision." not in arguments
         assert stdin_prompt == "Read the durable project identity and revision."
         return _completed(
@@ -399,7 +402,7 @@ def test_public_claude_interaction_preserves_project_identity_and_baseline(
                     "type": "result",
                     "subtype": "success",
                     "is_error": False,
-                    "result": "m6a-project revision 1",
+                    "structured_output": {"response": "m6a-project revision 1"},
                 }
             ),
         )
@@ -478,7 +481,7 @@ def test_hosted_claude_interaction_renews_coordinator_during_long_provider_call(
                     "type": "result",
                     "subtype": "success",
                     "is_error": False,
-                    "result": "bounded response",
+                    "structured_output": {"response": "bounded response"},
                 }
             ),
         )

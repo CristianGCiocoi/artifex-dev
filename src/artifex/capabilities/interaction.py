@@ -168,6 +168,8 @@ def _interaction_command(provider: ProviderInstance, root: Path, prompt: str) ->
         return (
             *prefix,
             "--print",
+            "--json-schema",
+            _claude_interaction_schema(),
             "--output-format",
             "json",
             "--permission-mode",
@@ -349,10 +351,33 @@ def _final_claude_response(output: str) -> str:
         raise ValueError("Claude interaction JSON was malformed or ambiguous") from None
     if not isinstance(value, Mapping) or value.get("is_error") is True:
         raise ValueError("Claude interaction did not produce a successful result")
-    response = value.get("result")
+    structured = value.get("structured_output")
+    if not isinstance(structured, Mapping) or set(structured) != {"response"}:
+        raise ValueError("Claude interaction did not return the bound response schema")
+    response = structured.get("response")
     if not isinstance(response, str) or not response.strip():
         raise ValueError("Claude final response was empty")
     return response
+
+
+def _claude_interaction_schema() -> str:
+    """Bind Claude interaction output to one provider-neutral response field."""
+    return json.dumps(
+        {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["response"],
+            "properties": {
+                "response": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": _MAX_RESPONSE_BYTES,
+                }
+            },
+        },
+        sort_keys=True,
+        separators=(",", ":"),
+    )
 
 
 def _sanitize_response(value: str) -> tuple[str, bool]:
