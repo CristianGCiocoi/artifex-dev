@@ -91,7 +91,13 @@ jobs:
             dist/native/artifex/
             dist/*.whl
             dist/*.tar.gz
+          include-hidden-files: true
           if-no-files-found: error
+      - uses: actions/download-artifact@v4
+        with:
+          name: artifex-onedir-${{ runner.os }}-${{ runner.arch }}
+          path: roundtrip
+      - run: uv run python scripts/validate_current_artifacts.py validate-native --candidate "${{ github.sha }}" --input roundtrip/native/artifex --kind "${{ matrix.kind }}"
 
   source-package:
     runs-on: ubuntu-latest
@@ -113,6 +119,12 @@ jobs:
             dist/*.whl
             dist/*.tar.gz
           if-no-files-found: error
+      - uses: actions/download-artifact@v4
+        with:
+          name: artifex-source-distributions
+          path: roundtrip
+      - run: uv run python scripts/validate_current_artifacts.py validate-source --candidate "${{ github.sha }}" --output roundtrip
+      - run: uv run python scripts/validate_current_artifacts.py smoke-source --candidate "${{ github.sha }}" --output roundtrip
 
   windows-installer:
     name: windows-installer (Nuitka + NSIS)
@@ -135,4 +147,10 @@ jobs:
             dist/windows/ARTIFEX-Setup.exe
             dist/windows/ARTIFEX-Setup.provenance.json
             dist/windows/artifex/
+          include-hidden-files: true
           if-no-files-found: error
+      - uses: actions/download-artifact@v4
+        with:
+          name: artifex-windows-installer
+          path: roundtrip
+      - run: uv run python scripts/validate_current_artifacts.py validate-windows-installer --candidate "${{ github.sha }}" --input roundtrip
