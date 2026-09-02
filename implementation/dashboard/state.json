@@ -821,6 +821,11 @@
   ],
   "evidence": [
     {
+      "bytes": 3726,
+      "path": "implementation/EVIDENCE/ARTIFEX-2.0.1-RELEASE-ACCEPTANCE.yaml",
+      "sha256": "42564d7bdfc6cb6510ba03a269b2b46ab71858edccdb1609b59aee7c4d2e7fb3"
+    },
+    {
       "bytes": 9924,
       "path": "implementation/EVIDENCE/HANDOFF-INTEGRITY.yaml",
       "sha256": "86985f39a161878bf28984183fd73793b9fcf208d4ec227d2d2b3b05526c2033"
@@ -4105,7 +4110,7 @@
     "adr_count": 24,
     "current_milestone": "M12",
     "current_milestone_progress_percent": 100,
-    "evidence_items": 276,
+    "evidence_items": 277,
     "invariant_count": 34,
     "journey_states": {
       "BLOCKED_EXTERNAL_PREREQUISITE": 1,
