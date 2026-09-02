@@ -1762,7 +1762,10 @@ class Application:
         report = run_installation_doctor(
             record_path=_optional_string(request.arguments, "record_path")
         )
-        return OperationResult(ok=report["status"] == "PASS", value=report)
+        # The doctor operation itself succeeded even when it discovered a failed
+        # installation check.  Keep transport success separate from diagnostic
+        # status so every public operation preserves the typed result contract.
+        return OperationResult(ok=True, value=report)
 
     @staticmethod
     def _distribution_install_plan(request: OperationRequest) -> OperationResult:
