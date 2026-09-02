@@ -29,7 +29,7 @@ from contextlib import suppress
 from dataclasses import dataclass
 from pathlib import Path
 from time import sleep, time
-from typing import Any, cast
+from typing import Any
 
 from artifex.application import Application, OperationContext, OperationRequest
 from artifex.runtime import ManagedRuntimeService
@@ -91,9 +91,7 @@ class ServicePaths:
             )
         if not self.workspace_root.is_dir():
             raise ManagedServiceError("managed service workspace root must be a directory")
-        if os.name == "nt":
-            _enforce_windows_inherited_acl(self.workspace_root)
-        else:
+        if os.name != "nt":
             _restrict_directory(self.workspace_root)
 
 
@@ -698,32 +696,11 @@ def _enforce_windows_private_acl(path: Path, *, directory: bool) -> None:
             str(path),
             "/remove:g",
             "*S-1-5-32-544",
-            "*S-1-5-32-545",
-            "*S-1-5-11",
-            "*S-1-3-0",
             "*S-1-3-4",
         )
     )
     _run_windows_command(("icacls.exe", str(path), "/verify"))
     _verify_windows_private_acl(path, current_sid=current_sid, directory=directory)
-
-
-def _enforce_windows_inherited_acl(path: Path) -> None:
-    """Enable and verify the normal inherited DACL for provider workspaces."""
-
-    if os.name != "nt":
-        raise ManagedServiceError("Windows ACL enforcement is unavailable on this platform")
-    _run_windows_command(("icacls.exe", str(path), "/inheritance:e"))
-    _run_windows_command(("icacls.exe", str(path), "/verify"))
-    acl_file = path.parent / f".artifex-acl-{uuid.uuid4().hex}.txt"
-    try:
-        _run_windows_command(("icacls.exe", str(path), "/save", str(acl_file)))
-        raw = acl_file.read_bytes()
-    except OSError as exc:
-        raise ManagedServiceError("Windows ACL verification data is unavailable") from exc
-    finally:
-        acl_file.unlink(missing_ok=True)
-    _validate_windows_inherited_sddl(_decode_icacls_acl(raw))
 
 
 def _windows_current_user_sid() -> str:
@@ -803,10 +780,7 @@ def _validate_windows_private_sddl(
     required_sids = {current_sid.upper(), "S-1-5-18"}
     if len(entries) != len(required_sids):
         raise ManagedServiceError("Windows ACL contains an unexpected principal")
-    normalized_current_sid = current_sid.upper()
-    expected_sids = {normalized_current_sid, "S-1-5-18", "SY"}
-    if normalized_current_sid.rsplit("-", 1)[-1] == "500":
-        expected_sids.add("LA")
+    expected_sids = {current_sid.upper(), "S-1-5-18", "SY"}
     observed: set[str] = set()
     for entry in entries:
         fields = entry.split(";")
@@ -822,31 +796,9 @@ def _validate_windows_private_sddl(
             raise ManagedServiceError("Windows directory ACL does not protect child objects")
         if not directory and flags:
             raise ManagedServiceError("Windows token ACL has unexpected inheritance flags")
-        if normalized_sid == "SY":
-            observed.add("S-1-5-18")
-        elif normalized_sid == "LA":
-            observed.add(normalized_current_sid)
-        else:
-            observed.add(normalized_sid)
+        observed.add("S-1-5-18" if normalized_sid == "SY" else normalized_sid)
     if observed != required_sids:
         raise ManagedServiceError("Windows ACL principals are incomplete")
-
-
-def _validate_windows_inherited_sddl(value: str) -> None:
-    match = re.search(r"D:([^\r\n]+)", value)
-    if match is None:
-        raise ManagedServiceError("Windows ACL verification did not return a DACL")
-    dacl = match.group(0)
-    prefix = dacl.split("(", 1)[0]
-    if "P" in prefix[2:]:
-        raise ManagedServiceError("Windows workspace ACL inheritance remains disabled")
-    entries = re.findall(r"\(([^()]*)\)", dacl)
-    if not entries or not any(
-        "ID" in entry.split(";")[1]
-        for entry in entries
-        if len(entry.split(";")) == 6
-    ):
-        raise ManagedServiceError("Windows workspace ACL has no inherited principal")
 
 
 def _write_json_atomic(path: Path, value: Mapping[str, object]) -> None:
@@ -877,10 +829,7 @@ def _process_exists(process_id: int) -> bool:
     if os.name == "nt":
         process_query_limited_information = 0x1000
         still_active = 259
-        # ``windll`` exists only on Windows. The runtime branch is already
-        # guarded by ``os.name``; the cast keeps POSIX type checking honest
-        # without weakening the Windows process-ownership check.
-        kernel32 = cast(Any, ctypes).windll.kernel32
+        kernel32 = ctypes.windll.kernel32
         handle = kernel32.OpenProcess(process_query_limited_information, False, process_id)
         if not handle:
             # Access denied is treated as a live owner; only invalid PIDs recover.
