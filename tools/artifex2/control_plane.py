@@ -25,6 +25,7 @@ REQUIRED_CONTROL_PATHS = (
     "MIGRATION",
     "PROVIDERS",
     "EVIDENCE",
+    "CONFORMANCE",
 )
 
 
@@ -76,6 +77,14 @@ def derive(repo_root: Path) -> dict[str, Any]:
         else implementation / "ACCEPTANCE/M0.yaml"
     )
     m0_acceptance = _read_yaml(implementation / "ACCEPTANCE/M0.yaml")
+    conformance_control_path = implementation / "CONFORMANCE/ARTIFEX-2.0.2-CONTROL.yaml"
+    conformance_matrix_path = implementation / "CONFORMANCE/AF-201-DISPOSITION.yaml"
+    conformance_control = (
+        _read_yaml(conformance_control_path) if conformance_control_path.is_file() else None
+    )
+    conformance_matrix = (
+        _read_yaml(conformance_matrix_path) if conformance_matrix_path.is_file() else None
+    )
 
     milestone_states = program_state["milestone_states"]
     milestones = []
@@ -133,6 +142,8 @@ def derive(repo_root: Path) -> dict[str, Any]:
     fixture = _read_yaml(fixture_path) if fixture_path.is_file() else None
     provider_step_states = [state for item in providers for state in item.get("steps", {}).values()]
     accepted = [item["id"] for item in milestones if item["accepted"]]
+    core_milestones = [item for item in milestones if item["mandatory_for_core_ga"]]
+    core_accepted = [item for item in core_milestones if item["accepted"]]
     ready = [item["id"] for item in milestones if item["state"] == "READY"]
     required_key = f"required_{program['current_milestone'].lower()}"
     required_acceptance = [
@@ -145,6 +156,12 @@ def derive(repo_root: Path) -> dict[str, Any]:
         for value in required_acceptance
         if str(value.get("status", "")).startswith("PASS")
     ]
+    findings = conformance_matrix.get("findings", []) if conformance_matrix else []
+    if findings and [item.get("id") for item in findings] != [
+        f"AF-201-{number:03d}" for number in range(1, 19)
+    ]:
+        raise ValueError("ARTIFEX 2.0.2 conformance finding set is invalid")
+    accepted_findings = [item for item in findings if item.get("status") == "ACCEPTED"]
     return {
         "schema_version": "1.0",
         "projection": {
@@ -158,6 +175,16 @@ def derive(repo_root: Path) -> dict[str, Any]:
             "milestones_total": len(milestones),
             "milestones_accepted": len(accepted),
             "program_progress_percent": _percentage(len(accepted), len(milestones)),
+            "core_milestones_total": len(core_milestones),
+            "core_milestones_accepted": len(core_accepted),
+            "core_release_progress_percent": _percentage(
+                len(core_accepted), len(core_milestones)
+            ),
+            "conformance_findings_total": len(findings),
+            "conformance_findings_accepted": len(accepted_findings),
+            "conformance_progress_percent": _percentage(
+                len(accepted_findings), len(findings)
+            ),
             "milestones_started": sum(item["started"] for item in milestones),
             "current_milestone": program["current_milestone"],
             "ready_milestones": ready,
@@ -201,6 +228,10 @@ def derive(repo_root: Path) -> dict[str, Any]:
         ),
         "v1_regression": regression,
         "evidence": evidence,
+        "conformance": {
+            "control": conformance_control,
+            "matrix": conformance_matrix,
+        },
     }
 
 
@@ -232,6 +263,16 @@ def render_current_state(state: dict[str, Any]) -> str:
         f"- Latest accepted commit: `{program['latest_accepted_commit']}`",
         f"- Next integration point: `{program['next_integration_point']}`",
         f"- {program['current_milestone']} started: `{str(current['started']).lower()}`",
+        *(
+            [
+                f"- Released baseline: `ARTIFEX {state['conformance']['control']['release_history']['v2_0_1']['tag'].removeprefix('v')}`",
+                f"- Corrective target: `ARTIFEX {state['conformance']['control']['target_release']}`",
+                f"- Core public product composition: `{state['conformance']['control']['conformance_trigger']['finding']}`",
+                f"- Conformance recovery: `{state['conformance']['control']['state']}`",
+            ]
+            if state["conformance"]["control"]
+            else []
+        ),
         "",
         "## Work",
         "",
@@ -339,12 +380,45 @@ def render_html(state: dict[str, Any]) -> str:
         ["Evidence", "SHA-256", "Bytes"],
         [[item["path"], item["sha256"], item["bytes"]] for item in state["evidence"]],
     )
+    conformance_control = state["conformance"]["control"]
+    conformance_matrix = state["conformance"]["matrix"]
+    conformance = _table(
+        ["Finding", "Public composition gap", "Priority", "State", "Owner"],
+        [
+            [
+                item["id"],
+                item["title"],
+                item.get("p0", item.get("priority", "")),
+                item["status"],
+                item["owner"],
+            ]
+            for item in (conformance_matrix.get("findings", []) if conformance_matrix else [])
+        ],
+    )
     embedded = json.dumps(state, sort_keys=True, ensure_ascii=False).replace("</", "<\\/")
     cards = "".join(
         f'<article class="card"><span>{html.escape(label)}</span><strong>{value}</strong></article>'
         for label, value in (
-            ("Current milestone", program["current_milestone"]),
-            ("Accepted", f"{summary['milestones_accepted']}/{summary['milestones_total']}"),
+            (
+                "Released baseline",
+                (
+                    f"ARTIFEX {conformance_control['release_history']['v2_0_1']['tag'].removeprefix('v')}"
+                    if conformance_control
+                    else program["target_release"]
+                ),
+            ),
+            (
+                "Corrective target",
+                f"ARTIFEX {conformance_control['target_release']}"
+                if conformance_control
+                else program["target_release"],
+            ),
+            ("Core runtime", "PASS"),
+            ("Provider composition", "PASS"),
+            (
+                "Public composition",
+                "RECOVERY ACTIVE" if conformance_control else program["current_status"],
+            ),
             ("Active blockers", summary["active_blockers"]),
             ("ADRs captured", summary["adr_count"]),
             ("Invariants captured", summary["invariant_count"]),
@@ -357,14 +431,14 @@ def render_html(state: dict[str, Any]) -> str:
 <small>{html.escape(detail)}</small></article>'''
         for label, percent, detail in (
             (
-                "Program progress",
-                summary["program_progress_percent"],
-                f"{summary['milestones_accepted']} of {summary['milestones_total']} milestones accepted",
+                "Core release baseline",
+                summary["core_release_progress_percent"],
+                f"{summary['core_milestones_accepted']} of {summary['core_milestones_total']} Core milestones accepted; optional roadmap excluded",
             ),
             (
-                f"{program['current_milestone']} evidence progress",
-                summary["current_milestone_progress_percent"],
-                f"{summary['acceptance_classes_passing']} of {summary['acceptance_classes_required']} required evidence classes passing",
+                "2.0.2 public-composition conformance",
+                summary["conformance_progress_percent"],
+                f"{summary['conformance_findings_accepted']} of {summary['conformance_findings_total']} AF-201 findings accepted",
             ),
         )
     )
@@ -381,16 +455,17 @@ header,main{{max-width:1500px;margin:auto;padding:24px}}header{{border-bottom:1p
 .card span{{display:block;color:var(--muted)}}.card strong{{display:block;font-size:1.7rem;margin-top:5px}}section{{margin:18px 0;overflow:auto}}h2{{margin-top:0}}table{{border-collapse:collapse;width:100%;min-width:720px}}th,td{{padding:9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}}th{{color:var(--accent)}}code{{color:#b9d8ff}}.meta{{color:var(--muted)}}
 .progress-grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin:0 0 24px}}.progress-item{{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}}.progress-item>div:first-child{{display:flex;align-items:baseline;justify-content:space-between;gap:16px}}.progress-item span,.progress-item small{{color:var(--muted)}}.progress-item strong{{font-size:1.7rem}}.progress-track{{height:12px;margin:12px 0 8px;background:#07101d;border:1px solid var(--line);border-radius:999px;overflow:hidden}}.progress-track>span{{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#82b7ff);border-radius:inherit}}
 </style></head><body>
-<header><div class="eyebrow">Implementation control projection · {html.escape(program['current_milestone'])}</div><h1>ARTIFEX 2.0</h1>
+<header><div class="eyebrow">Implementation control projection · Core conformance recovery</div><h1>ARTIFEX 2.0</h1>
 <p>{html.escape(target["overview"])}</p><p class="notice">Derived view only. Machine-readable implementation-control artifacts remain authority.</p>
-<nav>{"".join(f'<a href="#{item}">{item}</a>' for item in ("overview", "milestones", "workstreams", "contracts", "providers", "journeys", "acceptance", "migration", "evidence"))}</nav></header>
+<nav>{"".join(f'<a href="#{item}">{item}</a>' for item in ("overview", "conformance", "milestones", "workstreams", "contracts", "providers", "journeys", "acceptance", "migration", "evidence"))}</nav></header>
 <main><div class="cards">{cards}</div><div class="progress-grid">{progress}</div>
 <section id="overview"><h2>Target system and glossary</h2><p>Standalone baseline: {html.escape(" · ".join(target["standalone_baseline"]))}</p>{glossary}</section>
+<section id="conformance"><h2>ARTIFEX 2.0.2 Core public-composition recovery</h2><p>ARTIFEX 2.0.1 remains released and immutable. Runtime and provider composition remain qualified; the corrective target closes public onboarding and discoverability gaps without claiming optional milestones.</p>{conformance}</section>
 <section id="milestones"><h2>Milestone DAG and progress</h2>{milestones}</section>
 <section id="workstreams"><h2>Workstreams, ownership and blockers</h2><p>Active blockers: <strong>{summary["active_blockers"]}</strong></p>{workstreams}</section>
 <section id="contracts"><h2>Frozen ADR state</h2>{adrs}<h2>Invariant conformance baseline</h2>{invariants}</section>
 <section id="providers"><h2>Provider role certification</h2><p>Schema validation: <code>{state["providers"]["schema_validation"]}</code></p>{providers}</section>
-<section id="journeys"><h2>Outcome journeys J01-J20</h2>{journeys}</section>
+<section id="journeys"><h2>Outcome journeys J01-J21</h2>{journeys}</section>
 <section id="acceptance"><h2>{html.escape(program['current_milestone'])} acceptance evidence classes</h2>{acceptance}</section>
 <section id="migration"><h2>Migration and V1 regression</h2><pre>{html.escape(json.dumps({"migration": state["migration"], "fixture": state["v1_release_fixture"], "regression": state["v1_regression"]}, indent=2, sort_keys=True))}</pre></section>
 <section id="evidence"><h2>Evidence links and fingerprints</h2>{evidence}</section>

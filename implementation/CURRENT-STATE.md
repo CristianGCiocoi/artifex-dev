@@ -16,6 +16,10 @@
 - Latest accepted commit: `a9aa4c916d076bef9a95506084a0d212536af749`
 - Next integration point: `ARTIFEX 2.0.0 GA published; optional provider and ATLAS runtime work remains independently claim-gated`
 - M12 started: `true`
+- Released baseline: `ARTIFEX 2.0.1`
+- Corrective target: `ARTIFEX 2.0.2`
+- Core public product composition: `CORE_PUBLIC_PRODUCT_COMPOSITION_INCOMPLETE`
+- Conformance recovery: `ACTIVE`
 
 ## Work
 

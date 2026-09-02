@@ -308,3 +308,12 @@ journeys:
   - EVIDENCE/M12-J11-J20-R4-SHIPPING-QUALIFIED.json
   last_run: '2026-09-01'
   blocker: null
+- id: J21
+  title: J21 — FRESH WINDOWS NON-CLI PRODUCT JOURNEY
+  status: NOT_RUN
+  environment: WINDOWS_11_24H2_X64_CLEAN_VM_REQUIRED
+  public_shipping_composition: INSTALLER_START_MENU_PLATFORM_DASHBOARD_REAL_CODEX_AND_CLAUDE
+  evidence:
+  - JOURNEYS/J21.yaml
+  last_run: null
+  blocker: ARTIFEX_2_0_2_EXACT_CANDIDATE_NOT_YET_QUALIFIED

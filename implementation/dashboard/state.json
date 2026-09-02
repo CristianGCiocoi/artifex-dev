@@ -819,6 +819,215 @@
       "unrelated_work_may_continue": true
     }
   ],
+  "conformance": {
+    "control": {
+      "authority": {
+        "disposition": "ARTIFEX_ORCHESTRATOR_AUTHORIZE_2_0_2_CORE_PUBLIC_COMPOSITION_CONFORMANCE_RECOVERY",
+        "sha256": "2f2e586991434d34e7803082ade4909bdf282dfe917737a4d9af1986c2bc22fd",
+        "source": "external Architect disposition"
+      },
+      "conformance_trigger": {
+        "disposition": "REFERENCED_BY_ARCHITECT_AUTHORITY",
+        "finding": "CORE_PUBLIC_PRODUCT_COMPOSITION_INCOMPLETE",
+        "historical_m12_rewrite": false,
+        "identity": "ARTIFEX-2.0.1-END-TO-END-VM101-AUDIT"
+      },
+      "control_id": "ARTIFEX-2.0.2-CORE-PUBLIC-COMPOSITION-RECOVERY",
+      "release_gate": {
+        "affected_journeys": "NOT_RUN",
+        "ci": "NOT_RUN",
+        "coverage": "NOT_RUN",
+        "defender_on_windows": "NOT_RUN",
+        "j21": "NOT_RUN",
+        "p0_passing": 0,
+        "p0_required": 10,
+        "publication": "PROHIBITED_UNTIL_ALL_PASS"
+      },
+      "release_history": {
+        "v2_0_0": {
+          "commit": "e6bb13ba165fcb3d9b21cb4598d2f7539cf1bb0a",
+          "state": "RELEASED_IMMUTABLE",
+          "tag": "v2.0.0"
+        },
+        "v2_0_1": {
+          "commit": "7077470541d2b02e7ab77ce2a1e8bd0bda8dc254",
+          "state": "RELEASED_IMMUTABLE",
+          "tag": "v2.0.1"
+        }
+      },
+      "schema_version": "1.0",
+      "scope": {
+        "feature_expansion": false,
+        "frozen_adrs": "UNCHANGED",
+        "optional_milestones": "NOT_CLAIMED_NOT_STARTED",
+        "prohibited": [
+          "M6B",
+          "M8B",
+          "M8C",
+          "M10",
+          "M11",
+          "ATLAS"
+        ],
+        "purpose": "CORE_PRODUCT_COMPOSITION_AND_ONBOARDING_CONFORMANCE_RECOVERY"
+      },
+      "state": "ACTIVE",
+      "target_release": "2.0.2",
+      "workstreams": {
+        "canonical_state_service_installer": "ACTIVE",
+        "j21_and_release_qualification": "ACTIVE",
+        "mcp_codex_claude_onboarding": "ACTIVE",
+        "platform_dashboard_launcher": "ACTIVE"
+      }
+    },
+    "matrix": {
+      "findings": [
+        {
+          "id": "AF-201-001",
+          "owner": "platform_dashboard_launcher",
+          "p0": "P0-B",
+          "status": "OPEN",
+          "title": "Public Windows product entrypoint and PATH-independent launch"
+        },
+        {
+          "id": "AF-201-002",
+          "owner": "platform_dashboard_launcher",
+          "p0": "P0-A",
+          "status": "OPEN",
+          "title": "Real user-accessible Platform Dashboard"
+        },
+        {
+          "id": "AF-201-003",
+          "owner": "canonical_state_service_installer",
+          "p0": "P0-C",
+          "status": "OPEN",
+          "title": "Canonical installed state-root discovery and compatibility"
+        },
+        {
+          "id": "AF-201-004",
+          "owner": "canonical_state_service_installer",
+          "p0": "P0-D",
+          "status": "OPEN",
+          "title": "Health-gated managed-service installation and persistence"
+        },
+        {
+          "id": "AF-201-005",
+          "owner": "platform_dashboard_launcher",
+          "p0": "P0-E",
+          "status": "OPEN",
+          "title": "Project Dashboard discoverability"
+        },
+        {
+          "id": "AF-201-006",
+          "owner": "mcp_codex_claude_onboarding",
+          "p0": "P0-F",
+          "status": "OPEN",
+          "title": "Installed standalone MCP bridge"
+        },
+        {
+          "id": "AF-201-007",
+          "owner": "mcp_codex_claude_onboarding",
+          "p0": "P0-G",
+          "status": "OPEN",
+          "title": "Current public Codex integration layout"
+        },
+        {
+          "id": "AF-201-008",
+          "owner": "mcp_codex_claude_onboarding",
+          "p0": "P0-H",
+          "status": "OPEN",
+          "title": "Public Claude MCP integration"
+        },
+        {
+          "id": "AF-201-009",
+          "owner": "mcp_codex_claude_onboarding",
+          "p0": "P0-I",
+          "status": "OPEN",
+          "title": "Approval-gated reversible provider enablement"
+        },
+        {
+          "id": "AF-201-010",
+          "owner": "j21_and_release_qualification",
+          "p0": "P0-J",
+          "status": "OPEN",
+          "title": "Fresh Windows non-CLI product journey J21"
+        },
+        {
+          "id": "AF-201-011",
+          "owner": "canonical_state_service_installer",
+          "priority": "P1",
+          "status": "OPEN",
+          "title": "Installation doctor"
+        },
+        {
+          "id": "AF-201-012",
+          "owner": "mcp_codex_claude_onboarding",
+          "priority": "P1",
+          "status": "OPEN",
+          "title": "Codex integration doctor"
+        },
+        {
+          "id": "AF-201-013",
+          "owner": "mcp_codex_claude_onboarding",
+          "priority": "P1",
+          "status": "OPEN",
+          "title": "Claude integration doctor"
+        },
+        {
+          "id": "AF-201-014",
+          "owner": "mcp_codex_claude_onboarding",
+          "priority": "P1",
+          "status": "OPEN",
+          "title": "Explicit Codex Desktop versus CLI capability detection"
+        },
+        {
+          "id": "AF-201-015",
+          "owner": "mcp_codex_claude_onboarding",
+          "priority": "P1",
+          "status": "OPEN",
+          "title": "Integration registry and Capability Graph reconciliation"
+        },
+        {
+          "id": "AF-201-016",
+          "owner": "mcp_codex_claude_onboarding",
+          "priority": "P1",
+          "status": "OPEN",
+          "title": "Hermes optional-not-configured presentation"
+        },
+        {
+          "id": "AF-201-017",
+          "owner": "platform_dashboard_launcher",
+          "priority": "P1",
+          "status": "OPEN",
+          "title": "Friendly public error taxonomy and diagnostic export"
+        },
+        {
+          "id": "AF-201-018",
+          "owner": "j21_and_release_qualification",
+          "priority": "P2",
+          "status": "OPEN",
+          "title": "Non-CLI documentation and truthful implementation-dashboard release labels"
+        }
+      ],
+      "matrix_id": "ARTIFEX-2.0.2-AF-201-DISPOSITION",
+      "release_acceptance": {
+        "accepted": 0,
+        "required": 18,
+        "status": "OPEN"
+      },
+      "schema_version": "1.0",
+      "status_legend": [
+        "OPEN",
+        "IMPLEMENTED",
+        "INTEGRATED",
+        "INSTALLED",
+        "DISCOVERABLE",
+        "BLACK_BOX_VERIFIED",
+        "ACCEPTED"
+      ],
+      "target_release": "2.0.2",
+      "trigger": "ARTIFEX-2.0.1-END-TO-END-VM101-AUDIT"
+    }
+  },
   "evidence": [
     {
       "bytes": 1630,
@@ -3327,6 +3536,18 @@
       "public_shipping_composition": "INSTALLED_NATIVE_PUBLIC_CLI_REAL_PROVIDER_MANAGED_SERVICE_MULTI_PROCESS",
       "status": "PASS",
       "title": "J20 — FULL ARTIFEX PROJECT LIFECYCLE"
+    },
+    {
+      "blocker": "ARTIFEX_2_0_2_EXACT_CANDIDATE_NOT_YET_QUALIFIED",
+      "environment": "WINDOWS_11_24H2_X64_CLEAN_VM_REQUIRED",
+      "evidence": [
+        "JOURNEYS/J21.yaml"
+      ],
+      "id": "J21",
+      "last_run": null,
+      "public_shipping_composition": "INSTALLER_START_MENU_PLATFORM_DASHBOARD_REAL_CODEX_AND_CLAUDE",
+      "status": "NOT_RUN",
+      "title": "J21 — FRESH WINDOWS NON-CLI PRODUCT JOURNEY"
     }
   ],
   "m0_acceptance": {
@@ -4113,12 +4334,19 @@
     "acceptance_classes_required": 10,
     "active_blockers": 3,
     "adr_count": 24,
+    "conformance_findings_accepted": 0,
+    "conformance_findings_total": 18,
+    "conformance_progress_percent": 0,
+    "core_milestones_accepted": 11,
+    "core_milestones_total": 11,
+    "core_release_progress_percent": 100,
     "current_milestone": "M12",
     "current_milestone_progress_percent": 100,
     "evidence_items": 278,
     "invariant_count": 34,
     "journey_states": {
       "BLOCKED_EXTERNAL_PREREQUISITE": 1,
+      "NOT_RUN": 1,
       "NOT_STARTED": 1,
       "PASS": 18
     },

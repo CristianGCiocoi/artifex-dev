@@ -53,7 +53,7 @@ def test_control_plane_covers_frozen_contracts_and_preserves_m0_gate() -> None:
     )
     assert state["summary"]["adr_count"] == 24
     assert state["summary"]["invariant_count"] == 34
-    assert len(state["journeys"]) == 20
+    assert len(state["journeys"]) == 21
     assert state["milestones"][0]["state"] == "ACCEPTED"
     m1 = next(item for item in state["milestones"] if item["id"] == "M1")
     assert m1["state"] in {"READY", "ACTIVE", "ACCEPTED"}
@@ -80,7 +80,8 @@ def test_dashboard_and_current_state_are_deterministic_projections() -> None:
     assert before == after
     assert state["projection"]["authoritative"] is False
     assert b"Derived view only" in after
-    assert b"Program progress" in after
+    assert b"Core release baseline" in after
+    assert b"optional roadmap excluded" in after
     assert b'role="progressbar"' in after
 
 

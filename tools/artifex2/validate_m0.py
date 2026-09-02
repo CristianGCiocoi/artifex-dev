@@ -113,9 +113,9 @@ def validate(repo_root: Path, handoff_root: Path | None) -> dict[str, Any]:
 
     journeys = _read_yaml(implementation / "JOURNEYS/STATE.yaml")
     if [item["id"] for item in journeys["journeys"]] != [
-        f"J{number:02d}" for number in range(1, 21)
+        f"J{number:02d}" for number in range(1, 22)
     ]:
-        raise ValueError("journey state must contain J01 through J20 in order")
+        raise ValueError("journey state must contain J01 through J21 in order")
     if journeys["m0_mandatory"]:
         raise ValueError("M0 must not invent mandatory journeys")
 
