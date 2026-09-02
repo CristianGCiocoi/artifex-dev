@@ -234,6 +234,15 @@ def mcp_test() -> None:
         raise typer.Exit(1)
 
 
+@system_app.command("installation-doctor")
+def installation_doctor(
+    record_path: str | None = typer.Option(None, "--record-path"),
+) -> None:
+    """Verify the installed launcher, canonical state and managed-service readiness."""
+
+    _emit("distribution.installation.doctor", {"record_path": record_path})
+
+
 @app.command("doctor")
 def doctor(
     project_root: str | None = typer.Option(None, "--project-root"),

@@ -5,14 +5,207 @@ from __future__ import annotations
 import json
 import sqlite3
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import Any
 
 from artifex.distribution.discovery import discover_environment
+from artifex.distribution.installed_state import (
+    installation_record_path,
+    read_installed_state_record,
+)
+from artifex.distribution.lifecycle import MANIFEST_NAME
 from artifex.distribution.models import DistributionDoctorReport, DoctorFinding
+from artifex.distribution.service_registration import (
+    SERVICE_READINESS_RECORD_NAME,
+    SERVICE_REGISTRATION_MANIFEST_NAME,
+    read_service_registration_manifest,
+)
 
 _SAFE_REMEDIATIONS = frozenset({"create-artifex-state-directory"})
+
+
+def run_installation_doctor(
+    *,
+    record_path: str | Path | None = None,
+    service_probe: Callable[[Path], Mapping[str, object]] | None = None,
+) -> dict[str, object]:
+    """Verify the installed Windows composition without mutating it."""
+
+    location = (
+        Path(record_path).resolve() if record_path is not None else installation_record_path()
+    )
+    checks: list[dict[str, object]] = []
+    try:
+        record = read_installed_state_record(location)
+    except ValueError as exc:
+        checks.append(_installation_check("location-record", "FAIL", str(exc)))
+        return _installation_report(location, checks)
+    if record is None:
+        checks.append(
+            _installation_check(
+                "location-record",
+                "FAIL",
+                f"No canonical installation record exists at {location}.",
+                "repair or reinstall ARTIFEX",
+            )
+        )
+        return _installation_report(location, checks)
+    checks.append(
+        _installation_check(
+            "location-record",
+            "PASS",
+            f"Canonical state root is {record.state_root}.",
+            details={
+                "install_root": str(record.install_root),
+                "state_root": str(record.state_root),
+                "version": record.product_version,
+            },
+        )
+    )
+    manifest_path = record.install_root / MANIFEST_NAME
+    checks.append(
+        _installation_check(
+            "install-manifest",
+            "PASS" if manifest_path.is_file() else "FAIL",
+            (
+                "Authenticated install manifest is present."
+                if manifest_path.is_file()
+                else f"Install manifest is missing at {manifest_path}."
+            ),
+            None if manifest_path.is_file() else "repair or reinstall ARTIFEX",
+        )
+    )
+    windows_launcher = record.install_root / "artifex.exe"
+    launcher = windows_launcher if windows_launcher.is_file() else record.install_root / "artifex"
+    checks.append(
+        _installation_check(
+            "launcher",
+            "PASS" if launcher.is_file() else "FAIL",
+            (
+                f"Installed launcher is present at {launcher}."
+                if launcher.is_file()
+                else f"Installed launcher is missing at {launcher}."
+            ),
+            None if launcher.is_file() else "repair or reinstall ARTIFEX",
+        )
+    )
+    service_manifest_path = record.install_root / SERVICE_REGISTRATION_MANIFEST_NAME
+    try:
+        service_manifest = read_service_registration_manifest(service_manifest_path)
+    except ValueError as exc:
+        service_manifest = None
+        checks.append(_installation_check("service-registration", "FAIL", str(exc)))
+    else:
+        registration_ok = (
+            service_manifest is not None
+            and Path(service_manifest.state_root).resolve() == record.state_root.resolve()
+            and service_manifest.service_version == record.product_version
+        )
+        checks.append(
+            _installation_check(
+                "service-registration",
+                "PASS" if registration_ok else "FAIL",
+                (
+                    "Managed-service registration uses the canonical state root."
+                    if registration_ok
+                    else "Managed-service registration is absent or disagrees with installed state."
+                ),
+                None if registration_ok else "repair managed-service registration",
+            )
+        )
+    readiness_path = record.state_root / SERVICE_READINESS_RECORD_NAME
+    readiness_ok = False
+    if readiness_path.is_file() and service_manifest is not None:
+        try:
+            readiness = json.loads(readiness_path.read_text(encoding="utf-8"))
+            readiness_ok = bool(
+                isinstance(readiness, dict)
+                and readiness.get("status") == "READY"
+                and readiness.get("service_manifest_sha256") == service_manifest.manifest_sha256
+                and readiness.get("persistence_checked") is True
+                and readiness.get("semantic_health_checked") is True
+            )
+        except (OSError, json.JSONDecodeError):
+            readiness_ok = False
+    checks.append(
+        _installation_check(
+            "installer-readiness",
+            "PASS" if readiness_ok else "FAIL",
+            (
+                "Installer health and persistence receipt is valid."
+                if readiness_ok
+                else "Installer readiness receipt is missing or stale."
+            ),
+            None if readiness_ok else "restart or repair the managed service",
+        )
+    )
+    probe = service_probe or _live_installation_service_probe
+    try:
+        observed = probe(record.state_root)
+        live_ok = observed.get("status") == "PASS" and observed.get("lifecycle_state") == "RUNNING"
+        detail = (
+            "Managed service is running and semantic health is PASS."
+            if live_ok
+            else "Managed service did not report RUNNING/PASS."
+        )
+    except Exception as exc:
+        live_ok = False
+        detail = f"Managed-service health probe failed ({type(exc).__name__})."
+    checks.append(
+        _installation_check(
+            "managed-service-health",
+            "PASS" if live_ok else "FAIL",
+            detail,
+            None if live_ok else "inspect installation diagnostics and restart ARTIFEX",
+        )
+    )
+    return _installation_report(location, checks)
+
+
+def _live_installation_service_probe(state_root: Path) -> Mapping[str, object]:
+    from artifex.managed_service import LocalServiceClient
+
+    client = LocalServiceClient(state_root, timeout_seconds=2.0)
+    status = client.status()
+    health = client.call("system.health")
+    status_value = status.get("value")
+    health_value = health.get("value")
+    return {
+        "lifecycle_state": (
+            status_value.get("lifecycle_state") if isinstance(status_value, Mapping) else None
+        ),
+        "status": health_value.get("status") if isinstance(health_value, Mapping) else None,
+    }
+
+
+def _installation_check(
+    check_id: str,
+    status: str,
+    detail: str,
+    repair: str | None = None,
+    *,
+    details: Mapping[str, object] | None = None,
+) -> dict[str, object]:
+    return {
+        "id": check_id,
+        "status": status,
+        "detail": detail,
+        "repair": repair,
+        "details": dict(details or {}),
+    }
+
+
+def _installation_report(path: Path, checks: list[dict[str, object]]) -> dict[str, object]:
+    statuses = {str(check["status"]) for check in checks}
+    overall = "FAIL" if "FAIL" in statuses else "DEGRADED" if "DEGRADED" in statuses else "PASS"
+    return {
+        "schema": "artifex.installation-doctor/v1",
+        "status": overall,
+        "record_path": str(path),
+        "checks": checks,
+        "mutated": False,
+    }
 
 
 def run_distribution_doctor(

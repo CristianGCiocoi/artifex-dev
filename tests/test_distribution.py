@@ -1406,6 +1406,9 @@ def test_public_distribution_lifecycle_owns_managed_service_transaction(
     assert adapter.current is not None
     assert adapter.current.arguments[:2] == ("service", "serve")
     assert installed.service_registration is not None
+    state_root.mkdir(parents=True)
+    (state_root / "runstore.sqlite3").write_bytes(b"durable-runtime")
+    canonical_state_root = state_root.with_name("canonical-state")
 
     _write_test_artifact(source.parent, b"v2")
     upgrade_decision = upgrade_plan(
@@ -1414,7 +1417,11 @@ def test_public_distribution_lifecycle_owns_managed_service_transaction(
         approval_store=approvals,
         security_root=security,
         identity_probe=_test_identity_probe,
+        managed_service=True,
+        service_state_root=canonical_state_root,
+        service_id=service_id,
         service_readiness_timeout_seconds=0.5,
+        allow_service_state_root_transition=True,
     )
     upgraded = upgrade(
         source,
@@ -1424,13 +1431,22 @@ def test_public_distribution_lifecycle_owns_managed_service_transaction(
         security_root=security,
         identity_probe=_test_identity_probe,
         force_deferred=False,
+        managed_service=True,
+        service_state_root=canonical_state_root,
+        service_id=service_id,
         service_adapter=adapter,
         service_readiness_timeout_seconds=0.5,
+        allow_service_state_root_transition=True,
     )
     assert Path(upgraded.executable).read_bytes() == b"v2"
     assert adapter.running is True
     assert adapter.current is not None
     assert adapter.current.executable_sha256 == hashlib.sha256(b"v2").hexdigest()
+    assert Path(adapter.current.state_root) == canonical_state_root.resolve()
+    assert (canonical_state_root / "runstore.sqlite3").read_bytes() == b"durable-runtime"
+    assert (state_root / "runstore.sqlite3").is_file()
+    assert upgraded.state_migration is not None
+    assert upgraded.state_migration["legacy_retained"] is True
 
     uninstall_decision = uninstall_plan(
         root,

@@ -30,15 +30,16 @@ from typing import Any, Never, Protocol
 SERVICE_REGISTRATION_SCHEMA = "artifex.service-registration/v1"
 SERVICE_REGISTRATION_AUTHORITY = "ARTIFEX_INSTALLER_REGISTRATION"
 SERVICE_REGISTRATION_MANIFEST_NAME = "service-registration.json"
-WINDOWS_11_CORE_PLATFORM_ID = (
-    "windows-11-24h2-or-25h2-x64-per-user-task-scheduler-v1"
-)
+WINDOWS_11_CORE_PLATFORM_ID = "windows-11-24h2-or-25h2-x64-per-user-task-scheduler-v1"
 
 _TASK_NAMESPACE = "http://schemas.microsoft.com/windows/2004/02/mit/task"
 _TASK_DESCRIPTION_PREFIX = "ARTIFEX-SERVICE-REGISTRATION-V1:"
 _WINDOWS_11_25H2_PREFERRED_BUILD = 26200
 _WINDOWS_11_24H2_BUILD = 26100
 _DEFAULT_SERVICE_READINESS_SECONDS = 30.0
+_SERVICE_START_ATTEMPTS = 3
+SERVICE_READINESS_RECORD_NAME = "installation-readiness.json"
+SERVICE_DIAGNOSTIC_RECORD_NAME = "installation-diagnostics.json"
 
 _DIGEST_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 _SERVICE_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$")
@@ -222,9 +223,7 @@ class ServiceRegistrationObservation:
 
     def __post_init__(self) -> None:
         if self.registered:
-            if self.manifest_sha256 is None or not _DIGEST_PATTERN.fullmatch(
-                self.manifest_sha256
-            ):
+            if self.manifest_sha256 is None or not _DIGEST_PATTERN.fullmatch(self.manifest_sha256):
                 raise ValueError("registered service observation requires a manifest digest")
         elif self.manifest_sha256 is not None:
             raise ValueError("absent service observation cannot carry a manifest digest")
@@ -347,12 +346,8 @@ class WindowsTaskSchedulerRegistrationAdapter:
     ) -> None:
         self._runner = runner or _run_task_command
         system_root = Path(os.environ.get("SYSTEMROOT", r"C:\Windows"))
-        self._schtasks = str(
-            Path(schtasks_executable or system_root / "System32" / "schtasks.exe")
-        )
-        self._whoami = str(
-            Path(whoami_executable or system_root / "System32" / "whoami.exe")
-        )
+        self._schtasks = str(Path(schtasks_executable or system_root / "System32" / "schtasks.exe"))
+        self._whoami = str(Path(whoami_executable or system_root / "System32" / "whoami.exe"))
         if user_sid is None or user_name is None:
             discovered_name, discovered_sid = self._discover_user_identity()
         else:
@@ -471,18 +466,49 @@ class WindowsTaskSchedulerRegistrationAdapter:
     ) -> None:
         self._require_observation(manifest)
         _validate_timeout(timeout_seconds)
-        self._checked(
-            (self._schtasks, "/Run", "/TN", self._task_name(manifest.service_id))
-        )
         deadline = time.monotonic() + timeout_seconds
         state_root = Path(manifest.state_root)
-        while time.monotonic() < deadline:
-            if self._readiness_probe(state_root):
-                return
-            time.sleep(0.1)
+        attempts = 0
+        last_detail = "managed service did not report semantic health"
+        while attempts < _SERVICE_START_ATTEMPTS and time.monotonic() < deadline:
+            attempts += 1
+            started = self._runner(
+                (self._schtasks, "/Run", "/TN", self._task_name(manifest.service_id)),
+                15.0,
+            )
+            if started.returncode != 0:
+                last_detail = _bounded_detail(started)
+                continue
+            attempt_deadline = min(
+                deadline,
+                time.monotonic()
+                + max(
+                    0.5, (deadline - time.monotonic()) / (_SERVICE_START_ATTEMPTS - attempts + 1)
+                ),
+            )
+            while time.monotonic() < attempt_deadline:
+                if self._readiness_probe(state_root):
+                    self._require_observation(manifest)
+                    _write_lifecycle_record(
+                        state_root / SERVICE_READINESS_RECORD_NAME,
+                        manifest,
+                        status="READY",
+                        attempts=attempts,
+                        detail="registration, semantic health and persistence checks passed",
+                    )
+                    return
+                time.sleep(0.1)
+            last_detail = "semantic health handshake did not pass"
         ended = self._runner(
             (self._schtasks, "/End", "/TN", self._task_name(manifest.service_id)),
             10.0,
+        )
+        _write_lifecycle_record(
+            state_root / SERVICE_DIAGNOSTIC_RECORD_NAME,
+            manifest,
+            status="FAILED",
+            attempts=attempts,
+            detail=last_detail,
         )
         if ended.returncode != 0:
             raise ServiceRegistrationRollbackError(
@@ -527,9 +553,8 @@ class WindowsTaskSchedulerRegistrationAdapter:
         deadline = time.monotonic() + timeout_seconds
         state_root = Path(manifest.state_root)
         while time.monotonic() < deadline:
-            if (
-                not self._task_is_running(manifest.service_id)
-                and not self._readiness_probe(state_root)
+            if not self._task_is_running(manifest.service_id) and not self._readiness_probe(
+                state_root
             ):
                 return
             time.sleep(0.1)
@@ -562,9 +587,7 @@ class WindowsTaskSchedulerRegistrationAdapter:
         result = self._checked((self._whoami, "/user", "/fo", "csv", "/nh"))
         rows = tuple(csv.reader(io.StringIO(_command_text(result.stdout))))
         if len(rows) != 1 or len(rows[0]) < 2:
-            raise UnsupportedServicePlatformError(
-                "cannot determine current Windows user identity"
-            )
+            raise UnsupportedServicePlatformError("cannot determine current Windows user identity")
         return rows[0][0].strip(), rows[0][1].strip()
 
     def _task_name(self, service_id: str) -> str:
@@ -572,9 +595,7 @@ class WindowsTaskSchedulerRegistrationAdapter:
         return rf"\ARTIFEX-{sid_hash}-{service_id}"
 
     def _query_task_xml(self, task_name: str) -> bytes | None:
-        result = self._runner(
-            (self._schtasks, "/Query", "/TN", task_name, "/XML"), 15.0
-        )
+        result = self._runner((self._schtasks, "/Query", "/TN", task_name, "/XML"), 15.0)
         if result.returncode == 0:
             rendered = _command_text(result.stdout, xml=True).lstrip("\ufeff")
             rendered = re.sub(
@@ -585,9 +606,7 @@ class WindowsTaskSchedulerRegistrationAdapter:
                 flags=re.IGNORECASE,
             )
             return rendered.encode("utf-8")
-        listing = self._runner(
-            (self._schtasks, "/Query", "/FO", "CSV", "/NH"), 15.0
-        )
+        listing = self._runner((self._schtasks, "/Query", "/FO", "CSV", "/NH"), 15.0)
         if listing.returncode != 0:
             raise ServiceRegistrationError(
                 f"cannot inspect Windows scheduled tasks: {_bounded_detail(listing)}"
@@ -603,18 +622,14 @@ class WindowsTaskSchedulerRegistrationAdapter:
             )
         return None
 
-    def _create_task(
-        self, manifest: ServiceRegistrationManifest, *, replace: bool
-    ) -> None:
+    def _create_task(self, manifest: ServiceRegistrationManifest, *, replace: bool) -> None:
         self._create_task_xml(
             manifest.service_id,
             self._task_xml(manifest),
             replace=replace,
         )
 
-    def _create_task_xml(
-        self, service_id: str, task_xml: bytes, *, replace: bool
-    ) -> None:
+    def _create_task_xml(self, service_id: str, task_xml: bytes, *, replace: bool) -> None:
         descriptor, name = tempfile.mkstemp(prefix="artifex-task-", suffix=".xml")
         task_file = Path(name)
         try:
@@ -640,12 +655,8 @@ class WindowsTaskSchedulerRegistrationAdapter:
         ET.register_namespace("", _TASK_NAMESPACE)
         task = ET.Element(_task_tag("Task"), {"version": "1.4"})
         registration = ET.SubElement(task, _task_tag("RegistrationInfo"))
-        ET.SubElement(registration, _task_tag("Description")).text = _task_description(
-            manifest
-        )
-        ET.SubElement(registration, _task_tag("URI")).text = self._task_name(
-            manifest.service_id
-        )
+        ET.SubElement(registration, _task_tag("Description")).text = _task_description(manifest)
+        ET.SubElement(registration, _task_tag("URI")).text = self._task_name(manifest.service_id)
         triggers = ET.SubElement(task, _task_tag("Triggers"))
         trigger = ET.SubElement(triggers, _task_tag("LogonTrigger"), {"id": "UserLogon"})
         ET.SubElement(trigger, _task_tag("UserId")).text = self._user_name
@@ -678,27 +689,19 @@ class WindowsTaskSchedulerRegistrationAdapter:
         ET.SubElement(action, _task_tag("WorkingDirectory")).text = manifest.working_directory
         return bytes(ET.tostring(task, encoding="utf-16", xml_declaration=True))
 
-    def _manifest_from_task(
-        self, task_xml: bytes, service_id: str
-    ) -> ServiceRegistrationManifest:
+    def _manifest_from_task(self, task_xml: bytes, service_id: str) -> ServiceRegistrationManifest:
         try:
             root = ET.fromstring(task_xml)
         except ET.ParseError as exc:
-            raise ServiceRegistrationDriftError(
-                "Windows scheduled task XML is invalid"
-            ) from exc
+            raise ServiceRegistrationDriftError("Windows scheduled task XML is invalid") from exc
         if _local_name(root.tag) != "Task":
             raise ServiceRegistrationDriftError("Windows scheduled task root is invalid")
         self._validate_exact_task_shape(root)
         manifest = _manifest_from_task_description(_required_task_text(root, "Description"))
         if manifest.service_id != service_id:
             raise ServiceRegistrationDriftError("Windows scheduled task service identity drifted")
-        if _required_task_text(root, "URI").casefold() != self._task_name(
-            service_id
-        ).casefold():
-            raise ServiceRegistrationDriftError(
-                "Windows scheduled task registration URI drifted"
-            )
+        if _required_task_text(root, "URI").casefold() != self._task_name(service_id).casefold():
+            raise ServiceRegistrationDriftError("Windows scheduled task registration URI drifted")
         self._assert_managed_service_manifest(manifest)
         trigger = _required_task_element(root, "LogonTrigger")
         principal = _required_task_element(root, "Principal")
@@ -738,12 +741,11 @@ class WindowsTaskSchedulerRegistrationAdapter:
             raise ServiceRegistrationDriftError(
                 "Windows scheduled task principal or trigger user drifted"
             )
-        if _required_task_text(root, "Count") != "3" or _required_task_text(
-            root, "Interval"
-        ) != "PT1M":
-            raise ServiceRegistrationDriftError(
-                "Windows scheduled task restart policy drifted"
-            )
+        if (
+            _required_task_text(root, "Count") != "3"
+            or _required_task_text(root, "Interval") != "PT1M"
+        ):
+            raise ServiceRegistrationDriftError("Windows scheduled task restart policy drifted")
         return manifest
 
     def _validate_exact_task_shape(self, root: ET.Element) -> None:
@@ -754,9 +756,11 @@ class WindowsTaskSchedulerRegistrationAdapter:
             "Settings",
             "Actions",
         }
-        if root.attrib != {"version": "1.4"} or {
-            _local_name(child.tag) for child in root
-        } != expected_children or len(root) != len(expected_children):
+        if (
+            root.attrib != {"version": "1.4"}
+            or {_local_name(child.tag) for child in root} != expected_children
+            or len(root) != len(expected_children)
+        ):
             raise ServiceRegistrationDriftError(
                 "Windows scheduled task contains an unexpected top-level definition"
             )
@@ -797,16 +801,16 @@ class WindowsTaskSchedulerRegistrationAdapter:
                     f"Windows scheduled task requires exactly one {name}"
                 )
             element = elements[0]
-            if element.attrib != attributes or {
-                _local_name(child.tag) for child in element
-            } != children or len(element) != len(children):
+            if (
+                element.attrib != attributes
+                or {_local_name(child.tag) for child in element} != children
+                or len(element) != len(children)
+            ):
                 raise ServiceRegistrationDriftError(
                     f"Windows scheduled task {name} definition drifted"
                 )
 
-    def _assert_managed_service_manifest(
-        self, manifest: ServiceRegistrationManifest
-    ) -> None:
+    def _assert_managed_service_manifest(self, manifest: ServiceRegistrationManifest) -> None:
         if manifest.activation_policy != "PLATFORM_MANAGED":
             raise ValueError("Windows scheduled service requires PLATFORM_MANAGED activation")
         arguments = manifest.arguments
@@ -859,11 +863,7 @@ class ServiceRegistrationPlan:
 
     @property
     def desired_manifest_sha256(self) -> str | None:
-        return (
-            self.desired_manifest.manifest_sha256
-            if self.desired_manifest is not None
-            else None
-        )
+        return self.desired_manifest.manifest_sha256 if self.desired_manifest is not None else None
 
     @property
     def plan_sha256(self) -> str:
@@ -883,9 +883,7 @@ class ServiceRegistrationPlan:
         value = self._payload()
         value["plan_sha256"] = self.plan_sha256
         value["desired_manifest"] = (
-            self.desired_manifest.to_dict()
-            if self.desired_manifest is not None
-            else None
+            self.desired_manifest.to_dict() if self.desired_manifest is not None else None
         )
         return value
 
@@ -967,9 +965,8 @@ class ServiceRegistrationManager:
         current = self._current(plan.service_id)
         if current is not None:
             if current.manifest_sha256 == desired.manifest_sha256:
-                self.adapter.start_and_wait(
-                    current, timeout_seconds=self.readiness_timeout_seconds
-                )
+                self.adapter.start_and_wait(current, timeout_seconds=self.readiness_timeout_seconds)
+                self._require_persisted_registration(current)
                 return self._result(plan, current, current, "NOOP")
             raise ServiceRegistrationDriftError("install plan no longer matches current state")
         if plan.current_manifest_sha256 is not None:
@@ -977,9 +974,8 @@ class ServiceRegistrationManager:
         try:
             self.adapter.register(desired)
             _write_manifest(self.manifest_path, desired)
-            self.adapter.start_and_wait(
-                desired, timeout_seconds=self.readiness_timeout_seconds
-            )
+            self.adapter.start_and_wait(desired, timeout_seconds=self.readiness_timeout_seconds)
+            self._require_persisted_registration(desired)
         except Exception as exc:
             try:
                 self.adapter.unregister(desired)
@@ -1008,9 +1004,8 @@ class ServiceRegistrationManager:
         if current is None:
             raise ServiceRegistrationDriftError("upgrade plan no longer has a current state")
         if current.manifest_sha256 == desired.manifest_sha256:
-            self.adapter.start_and_wait(
-                current, timeout_seconds=self.readiness_timeout_seconds
-            )
+            self.adapter.start_and_wait(current, timeout_seconds=self.readiness_timeout_seconds)
+            self._require_persisted_registration(current)
             return self._result(plan, current, current, "NOOP")
         if current.manifest_sha256 != plan.current_manifest_sha256:
             raise ServiceRegistrationDriftError("upgrade plan is stale")
@@ -1019,16 +1014,13 @@ class ServiceRegistrationManager:
         replaced = False
         try:
             if not service_already_stopped:
-                self.adapter.stop_and_wait(
-                    current, timeout_seconds=self.readiness_timeout_seconds
-                )
+                self.adapter.stop_and_wait(current, timeout_seconds=self.readiness_timeout_seconds)
                 stopped = True
             self.adapter.replace(current, desired)
             replaced = True
             _write_manifest(self.manifest_path, desired)
-            self.adapter.start_and_wait(
-                desired, timeout_seconds=self.readiness_timeout_seconds
-            )
+            self.adapter.start_and_wait(desired, timeout_seconds=self.readiness_timeout_seconds)
+            self._require_persisted_registration(desired)
         except Exception as exc:
             try:
                 if replaced:
@@ -1057,9 +1049,7 @@ class ServiceRegistrationManager:
         previous_record = self.manifest_path.read_bytes()
         stopped = False
         try:
-            self.adapter.stop_and_wait(
-                current, timeout_seconds=self.readiness_timeout_seconds
-            )
+            self.adapter.stop_and_wait(current, timeout_seconds=self.readiness_timeout_seconds)
             stopped = True
             self.adapter.unregister(current)
             self.manifest_path.unlink()
@@ -1103,6 +1093,18 @@ class ServiceRegistrationManager:
             _verify_executable(current)
         return current
 
+    def _require_persisted_registration(self, manifest: ServiceRegistrationManifest) -> None:
+        observed = self.adapter.inspect(manifest.service_id)
+        if not observed.registered or observed.manifest_sha256 != manifest.manifest_sha256:
+            raise ServiceRegistrationDriftError(
+                "managed service became healthy but OS registration did not persist"
+            )
+        persisted = _read_manifest(self.manifest_path)
+        if persisted is None or persisted.manifest_sha256 != manifest.manifest_sha256:
+            raise ServiceRegistrationDriftError(
+                "managed service became healthy but installer record did not persist"
+            )
+
     def _plan(
         self,
         operation: str,
@@ -1119,9 +1121,7 @@ class ServiceRegistrationManager:
             current_manifest_sha256=current_digest,
             desired_manifest=desired,
             no_op=(
-                current_digest == desired_digest
-                if desired is not None
-                else current_digest is None
+                current_digest == desired_digest if desired is not None else current_digest is None
             ),
         )
 
@@ -1149,9 +1149,7 @@ class ServiceRegistrationManager:
             status=status,
             service_id=plan.service_id,
             platform_id=self.adapter.platform_id,
-            previous_manifest_sha256=(
-                previous.manifest_sha256 if previous is not None else None
-            ),
+            previous_manifest_sha256=(previous.manifest_sha256 if previous is not None else None),
             manifest_sha256=current.manifest_sha256 if current is not None else None,
             manifest_path=str(self.manifest_path),
         )
@@ -1180,9 +1178,7 @@ def _write_manifest(path: Path, manifest: ServiceRegistrationManifest) -> None:
 
 def _write_bytes_atomic(path: Path, value: bytes) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    descriptor, name = tempfile.mkstemp(
-        dir=path.parent, prefix=f".{path.name}.", suffix=".tmp"
-    )
+    descriptor, name = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
     temporary = Path(name)
     try:
         with os.fdopen(descriptor, "wb") as stream:
@@ -1267,15 +1263,50 @@ def _default_readiness_probe(state_root: Path) -> bool:
     try:
         from artifex.managed_service import LocalServiceClient
 
-        status = LocalServiceClient(state_root, timeout_seconds=1.0).status()
+        client = LocalServiceClient(state_root, timeout_seconds=1.0)
+        status = client.status()
+        health = client.call("system.health")
     except Exception:
         return False
     value = status.get("value")
+    health_value = health.get("value")
     return bool(
         status.get("ok") is True
         and isinstance(value, Mapping)
         and value.get("lifecycle_state") == "RUNNING"
+        and health.get("ok") is True
+        and isinstance(health_value, Mapping)
+        and health_value.get("status") == "PASS"
     )
+
+
+def _write_lifecycle_record(
+    path: Path,
+    manifest: ServiceRegistrationManifest,
+    *,
+    status: str,
+    attempts: int,
+    detail: str,
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    value = {
+        "schema": "artifex.installation-readiness/v1",
+        "status": status,
+        "service_id": manifest.service_id,
+        "service_version": manifest.service_version,
+        "service_manifest_sha256": manifest.manifest_sha256,
+        "state_root": manifest.state_root,
+        "attempts": attempts,
+        "bounded": True,
+        "persistence_checked": status == "READY",
+        "semantic_health_checked": status == "READY",
+        "detail": detail[:500],
+    }
+    temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    temporary.write_text(
+        json.dumps(value, sort_keys=True, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    os.replace(temporary, path)
 
 
 def _default_shutdown_probe(state_root: Path) -> bool:
@@ -1298,9 +1329,7 @@ def _local_name(tag: str) -> str:
 
 def _task_texts(root: ET.Element, name: str) -> tuple[str, ...]:
     return tuple(
-        (element.text or "").strip()
-        for element in root.iter()
-        if _local_name(element.tag) == name
+        (element.text or "").strip() for element in root.iter() if _local_name(element.tag) == name
     )
 
 
@@ -1324,9 +1353,7 @@ def _required_task_element(root: ET.Element, name: str) -> ET.Element:
 
 def _required_child_text(element: ET.Element, name: str) -> str:
     values = tuple(
-        (child.text or "").strip()
-        for child in element
-        if _local_name(child.tag) == name
+        (child.text or "").strip() for child in element if _local_name(child.tag) == name
     )
     if len(values) != 1 or not values[0]:
         raise ServiceRegistrationDriftError(
@@ -1357,9 +1384,7 @@ def _manifest_from_task_description(value: str) -> ServiceRegistrationManifest:
             "Windows scheduled task ownership description is invalid"
         ) from exc
     if not isinstance(raw, dict):
-        raise ServiceRegistrationDriftError(
-            "Windows scheduled task ownership manifest is invalid"
-        )
+        raise ServiceRegistrationDriftError("Windows scheduled task ownership manifest is invalid")
     try:
         return ServiceRegistrationManifest.from_dict(raw)
     except ValueError as exc:
@@ -1397,9 +1422,9 @@ def _bounded_detail(result: subprocess.CompletedProcess[Any]) -> str:
 
 
 def _canonical(value: object) -> bytes:
-    return json.dumps(
-        value, sort_keys=True, separators=(",", ":"), ensure_ascii=True
-    ).encode("utf-8")
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode(
+        "utf-8"
+    )
 
 
 __all__ = [

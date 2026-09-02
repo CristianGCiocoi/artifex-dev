@@ -48,6 +48,7 @@ from artifex.distribution import (
     plan_integration_setup,
     presentation_policy,
     run_distribution_doctor,
+    run_installation_doctor,
     start_beginner_journey,
     uninstall,
     uninstall_plan,
@@ -283,6 +284,7 @@ class Application:
         self.register("clients.rollback.plan", self._client_rollback_plan)
         self.register("clients.rollback.apply", self._client_rollback_apply)
         self.register("distribution.doctor", self._distribution_doctor)
+        self.register("distribution.installation.doctor", self._installation_doctor)
         self.register("distribution.bootstrap", self._distribution_bootstrap)
         self.register("distribution.install.plan", self._distribution_install_plan)
         self.register("distribution.install", self._distribution_install)
@@ -1754,6 +1756,13 @@ class Application:
             setup_present=(Path(root) / SETUP_STATE_PATH).is_file(),
         )
         return OperationResult(ok=True, value=report.to_dict())
+
+    @staticmethod
+    def _installation_doctor(request: OperationRequest) -> OperationResult:
+        report = run_installation_doctor(
+            record_path=_optional_string(request.arguments, "record_path")
+        )
+        return OperationResult(ok=report["status"] == "PASS", value=report)
 
     @staticmethod
     def _distribution_install_plan(request: OperationRequest) -> OperationResult:

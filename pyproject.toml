@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "artifex-dev"
-version = "2.0.1"
+version = "2.0.2"
 description = "Agent-neutral development control, continuity, and understanding layer"
 readme = "README.md"
 requires-python = ">=3.12"

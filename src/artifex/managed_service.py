@@ -21,7 +21,6 @@ import socket
 import socketserver
 import stat
 import subprocess
-import sys
 import threading
 import uuid
 from collections.abc import Callable, Mapping, Sequence
@@ -624,19 +623,11 @@ def main(argv: Sequence[str] | None = None) -> None:
 
 
 def _default_state_root() -> Path:
-    configured = os.environ.get("ARTIFEX_STATE_ROOT")
-    if configured:
-        return Path(configured).expanduser()
-    if os.name == "nt":
-        local = os.environ.get("LOCALAPPDATA")
-        if local:
-            return Path(local) / "ARTIFEX" / "state"
-    if sys.platform == "darwin":
-        return Path.home() / "Library" / "Application Support" / "ARTIFEX" / "state"
-    xdg_state = os.environ.get("XDG_STATE_HOME")
-    if xdg_state:
-        return Path(xdg_state).expanduser() / "artifex"
-    return Path.home() / ".local" / "state" / "artifex"
+    # The installer location record is the cross-frontend source of truth.  The
+    # resolver still provides the same portable defaults for unpackaged use.
+    from artifex.distribution.installed_state import discover_canonical_state_root
+
+    return discover_canonical_state_root()
 
 
 def _restrict_directory(path: Path) -> None:

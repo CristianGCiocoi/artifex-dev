@@ -61,6 +61,7 @@ class InstallResult:
     status: str = "COMPLETE"
     deferred_request: str | None = None
     service_registration: Mapping[str, Any] | None = None
+    state_migration: Mapping[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -75,6 +76,9 @@ class InstallResult:
                 dict(self.service_registration)
                 if self.service_registration is not None
                 else None
+            ),
+            "state_migration": (
+                dict(self.state_migration) if self.state_migration is not None else None
             ),
         }
 
@@ -262,6 +266,7 @@ def upgrade_plan(
     service_state_root: str | Path | None = None,
     service_id: str = "artifex-managed-service",
     service_readiness_timeout_seconds: float = 30.0,
+    allow_service_state_root_transition: bool = False,
 ) -> Any:
     verified = verify_artifact(source_executable, identity_probe=identity_probe)
     root, _, manifest, _ = _load_manifest(install_root, security_root=security_root)
@@ -270,6 +275,7 @@ def upgrade_plan(
         managed_service=managed_service,
         service_state_root=service_state_root,
         service_id=service_id,
+        allow_state_root_transition=allow_service_state_root_transition,
     )
     destination = _managed_executable(root, manifest)
     return _upgrade_decision(
@@ -346,6 +352,7 @@ def upgrade(
     service_id: str = "artifex-managed-service",
     service_adapter: ServiceRegistrationAdapter | None = None,
     service_readiness_timeout_seconds: float = 30.0,
+    allow_service_state_root_transition: bool = False,
 ) -> InstallResult:
     verified = verify_artifact(source_executable, identity_probe=identity_probe)
     root, manifest_path, manifest, key = _load_manifest(
@@ -356,6 +363,7 @@ def upgrade(
         managed_service=managed_service,
         service_state_root=service_state_root,
         service_id=service_id,
+        allow_state_root_transition=allow_service_state_root_transition,
     )
     _verify_managed_checksums(root, manifest)
     destination = _managed_executable(root, manifest)
@@ -401,6 +409,7 @@ def upgrade(
         )
     registration: ServiceRegistrationManager | None = None
     prior_service: ServiceRegistrationManifest | None = None
+    state_migration: Mapping[str, Any] | None = None
     if managed_service:
         registration = _service_manager(
             root,
@@ -415,6 +424,20 @@ def upgrade(
         registration.adapter.stop_and_wait(
             prior_service, timeout_seconds=service_readiness_timeout_seconds
         )
+        desired_state = _service_state_root(service_state_root)
+        prior_state = Path(prior_service.state_root).resolve()
+        if desired_state != prior_state:
+            try:
+                from artifex.distribution.installed_state import migrate_legacy_state
+
+                state_migration = migrate_legacy_state(
+                    source=prior_state, target=desired_state
+                ).to_dict()
+            except Exception as exc:
+                registration.adapter.start_and_wait(
+                    prior_service, timeout_seconds=service_readiness_timeout_seconds
+                )
+                raise exc
     old_manifest_bytes = manifest_path.read_bytes()
     try:
         desired_registration = (
@@ -492,6 +515,7 @@ def upgrade(
         str(manifest_path),
         str(backup),
         service_registration=service_result,
+        state_migration=state_migration,
     )
 
 
@@ -1194,13 +1218,9 @@ def _managed_executable(root: Path, manifest: Mapping[str, Any]) -> Path:
 
 
 def _service_state_root(value: str | Path | None) -> Path:
-    if value is not None:
-        selected = Path(value).expanduser()
-    elif os.name == "nt" and os.environ.get("LOCALAPPDATA"):
-        selected = Path(os.environ["LOCALAPPDATA"]) / "ARTIFEX" / "state"
-    else:
-        selected = user_state_root() / "managed-service"
-    resolved = selected.resolve()
+    from artifex.distribution.installed_state import discover_canonical_state_root
+
+    resolved = discover_canonical_state_root(value)
     if resolved.parent == resolved:
         raise ValueError("managed service state root cannot be a filesystem root")
     return resolved
@@ -1226,6 +1246,7 @@ def _resolve_managed_service_request(
     managed_service: bool,
     service_state_root: str | Path | None,
     service_id: str,
+    allow_state_root_transition: bool = False,
 ) -> tuple[bool, str | Path | None, str]:
     installed = _installed_service_registration(manifest)
     if installed is None:
@@ -1234,11 +1255,18 @@ def _resolve_managed_service_request(
         return False, service_state_root, service_id
     if managed_service and service_id != installed.service_id:
         raise ValueError("managed service request does not match installed ownership")
-    if service_state_root is not None and _service_state_root(service_state_root) != Path(
-        installed.state_root
-    ).resolve():
+    if (
+        service_state_root is not None
+        and not allow_state_root_transition
+        and _service_state_root(service_state_root) != Path(installed.state_root).resolve()
+    ):
         raise ValueError("managed service state root does not match installed ownership")
-    return True, installed.state_root, installed.service_id
+    selected_root: str | Path = (
+        _service_state_root(service_state_root)
+        if service_state_root is not None
+        else installed.state_root
+    )
+    return True, selected_root, installed.service_id
 
 
 def _validate_service_readiness_timeout(value: float) -> None:

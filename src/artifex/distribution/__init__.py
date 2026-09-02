@@ -20,7 +20,20 @@ from artifex.distribution.client_setup import (
     verify_client_integration,
 )
 from artifex.distribution.discovery import SUPPORTED_TOOLS, detect_resources, discover_environment
-from artifex.distribution.doctor import run_distribution_doctor
+from artifex.distribution.doctor import run_distribution_doctor, run_installation_doctor
+from artifex.distribution.installed_state import (
+    INSTALLATION_RECORD_NAME,
+    INSTALLATION_RECORD_SCHEMA,
+    InstalledStateRecord,
+    StateMigrationResult,
+    canonical_state_root,
+    discover_canonical_state_root,
+    installation_record_path,
+    migrate_legacy_state,
+    read_installed_state_record,
+    remove_installed_state_record,
+    write_installed_state_record,
+)
 from artifex.distribution.lifecycle import (
     InstallResult,
     complete_deferred_uninstall,
@@ -71,6 +84,8 @@ from artifex.distribution.setup import apply_integration_setup, plan_integration
 
 __all__ = [
     "ARTIFACT_MANIFEST_NAME",
+    "INSTALLATION_RECORD_NAME",
+    "INSTALLATION_RECORD_SCHEMA",
     "SERVICE_REGISTRATION_MANIFEST_NAME",
     "SUPPORTED_TOOLS",
     "WINDOWS_11_CORE_PLATFORM_ID",
@@ -85,6 +100,7 @@ __all__ = [
     "EnvironmentDiscovery",
     "ExperienceMode",
     "InstallResult",
+    "InstalledStateRecord",
     "ResourceEnvelope",
     "RiskLevel",
     "ServiceRegistrationAdapter",
@@ -99,6 +115,7 @@ __all__ = [
     "ServiceRegistrationSpec",
     "SetupAction",
     "SetupPlan",
+    "StateMigrationResult",
     "ToolDiscovery",
     "UnsupportedServicePlatformError",
     "UnsupportedServiceRegistrationAdapter",
@@ -107,21 +124,28 @@ __all__ = [
     "apply_integration_setup",
     "apply_client_enable",
     "apply_client_rollback",
+    "canonical_state_root",
     "complete_deferred_uninstall",
     "create_artifact_manifest",
     "detect_resources",
+    "discover_canonical_state_root",
     "discover_environment",
     "discover_bridge_command",
     "explain_decision",
     "install",
     "install_plan",
+    "installation_record_path",
+    "migrate_legacy_state",
     "plan_integration_setup",
     "plan_client_enable",
     "plan_client_rollback",
     "presentation_policy",
+    "read_installed_state_record",
     "read_service_registration_manifest",
+    "remove_installed_state_record",
     "require_approval",
     "run_distribution_doctor",
+    "run_installation_doctor",
     "select_service_registration_adapter",
     "start_beginner_journey",
     "uninstall",
@@ -130,4 +154,5 @@ __all__ = [
     "upgrade_plan",
     "verify_artifact",
     "verify_client_integration",
+    "write_installed_state_record",
 ]

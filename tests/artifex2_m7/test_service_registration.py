@@ -22,7 +22,11 @@ from artifex.distribution import (
     select_service_registration_adapter,
     service_registration,
 )
-from artifex.distribution.service_registration import _command_text
+from artifex.distribution.service_registration import (
+    SERVICE_DIAGNOSTIC_RECORD_NAME,
+    SERVICE_READINESS_RECORD_NAME,
+    _command_text,
+)
 
 
 class FakeTaskScheduler:
@@ -106,9 +110,7 @@ def _windows_adapter(
         schtasks_executable=r"C:\Windows\System32\schtasks.exe",
         whoami_executable=r"C:\Windows\System32\whoami.exe",
         readiness_probe=(
-            readiness_probe
-            if callable(readiness_probe)
-            else lambda _: scheduler.running
+            readiness_probe if callable(readiness_probe) else lambda _: scheduler.running
         ),
         shutdown_probe=scheduler.shutdown,
     )
@@ -149,6 +151,64 @@ def test_windows_task_xml_still_accepts_bomless_utf16_stream() -> None:
     rendered = '<?xml version="1.0" encoding="UTF-16"?><Task></Task>'
 
     assert _command_text(rendered.encode("utf-16-le"), xml=True) == rendered
+
+
+@pytest.mark.integration
+def test_windows_start_retries_are_bounded_and_persist_readiness(tmp_path: Path) -> None:
+    scheduler = FakeTaskScheduler()
+    starts = 0
+
+    def transient_start(
+        command: tuple[str, ...], timeout_seconds: float
+    ) -> subprocess.CompletedProcess[str]:
+        nonlocal starts
+        if command[1:2] == ("/Run",):
+            starts += 1
+            if starts == 1:
+                return subprocess.CompletedProcess(command, 1, "", "transient start")
+        return scheduler.run(command, timeout_seconds)
+
+    adapter = WindowsTaskSchedulerRegistrationAdapter(
+        runner=transient_start,
+        user_sid="S-1-5-21-42",
+        user_name=r"ARTIFEX\operator",
+        schtasks_executable=r"C:\Windows\System32\schtasks.exe",
+        whoami_executable=r"C:\Windows\System32\whoami.exe",
+        readiness_probe=lambda _: scheduler.running,
+        shutdown_probe=scheduler.shutdown,
+    )
+    manifest = _spec(tmp_path, "2.0.2", b"service-v2").manifest()
+    Path(manifest.state_root).mkdir(parents=True)
+    adapter.register(manifest)
+    adapter.start_and_wait(manifest, timeout_seconds=2.0)
+
+    assert starts == 2
+    receipt = json.loads(
+        (Path(manifest.state_root) / SERVICE_READINESS_RECORD_NAME).read_text(encoding="utf-8")
+    )
+    assert receipt["status"] == "READY"
+    assert receipt["attempts"] == 2
+    assert receipt["persistence_checked"] is True
+    assert receipt["semantic_health_checked"] is True
+
+
+@pytest.mark.adversarial
+def test_windows_start_failure_preserves_bounded_diagnostics(tmp_path: Path) -> None:
+    scheduler = FakeTaskScheduler()
+    adapter = _windows_adapter(scheduler, readiness_probe=lambda _: False)
+    manifest = _spec(tmp_path, "2.0.2", b"service-v2").manifest()
+    Path(manifest.state_root).mkdir(parents=True)
+    adapter.register(manifest)
+
+    with pytest.raises(TimeoutError, match="did not become ready"):
+        adapter.start_and_wait(manifest, timeout_seconds=0.3)
+    diagnostic = json.loads(
+        (Path(manifest.state_root) / SERVICE_DIAGNOSTIC_RECORD_NAME).read_text(encoding="utf-8")
+    )
+    assert diagnostic["status"] == "FAILED"
+    assert diagnostic["bounded"] is True
+    assert 1 <= diagnostic["attempts"] <= 3
+    assert scheduler.running is False
 
 
 class RecordingAdapter:
@@ -270,9 +330,10 @@ def test_install_upgrade_uninstall_are_deterministic_and_idempotent(tmp_path: Pa
     assert install_plan.plan_sha256 == manager.plan_install(initial_spec).plan_sha256
     installed = manager.install(install_plan)
     assert installed.status == "APPLIED"
-    assert json.loads(manifest_path.read_text(encoding="utf-8"))[
-        "manifest_sha256"
-    ] == installed.manifest_sha256
+    assert (
+        json.loads(manifest_path.read_text(encoding="utf-8"))["manifest_sha256"]
+        == installed.manifest_sha256
+    )
 
     repeat_install = manager.install(manager.plan_install(initial_spec))
     assert repeat_install.status == "NOOP"
@@ -312,6 +373,39 @@ def test_install_manifest_failure_rolls_back_registration(
     monkeypatch.setattr(service_registration, "_write_manifest", fail_write)
     with pytest.raises(OSError, match="injected manifest"):
         manager.install(plan)
+    assert adapter.current is None
+    assert not manifest_path.exists()
+    assert [action for action, _ in adapter.actions] == ["register", "unregister"]
+
+
+@pytest.mark.adversarial
+def test_healthy_service_without_persistent_registration_is_rolled_back(
+    tmp_path: Path,
+) -> None:
+    class VanishingRegistrationAdapter(RecordingAdapter):
+        def __init__(self) -> None:
+            super().__init__()
+            self.vanish_once = False
+
+        def start_and_wait(
+            self, manifest: ServiceRegistrationManifest, *, timeout_seconds: float
+        ) -> None:
+            del manifest, timeout_seconds
+            self.vanish_once = True
+
+        def inspect(self, service_id: str) -> ServiceRegistrationObservation:
+            if self.vanish_once:
+                self.vanish_once = False
+                return ServiceRegistrationObservation(False)
+            return super().inspect(service_id)
+
+    adapter = VanishingRegistrationAdapter()
+    manifest_path = tmp_path / "state" / "service-registration.json"
+    manager = ServiceRegistrationManager(manifest_path, adapter=adapter)
+    spec = _spec(tmp_path, "2.0.2", b"service-v2")
+
+    with pytest.raises(ServiceRegistrationDriftError, match="did not persist"):
+        manager.install(manager.plan_install(spec))
     assert adapter.current is None
     assert not manifest_path.exists()
     assert [action for action, _ in adapter.actions] == ["register", "unregister"]
@@ -440,9 +534,7 @@ def test_windows_task_scheduler_registration_is_owned_and_deterministic(
     assert "RestartOnFailure" in task_xml
     assert "service serve" in task_xml
     assert str((tmp_path / "state").resolve()) in task_xml
-    assert adapter.inspect("artifex-runtime").manifest_sha256 == (
-        spec.manifest().manifest_sha256
-    )
+    assert adapter.inspect("artifex-runtime").manifest_sha256 == (spec.manifest().manifest_sha256)
     create_commands = [command for command in scheduler.commands if "/Create" in command]
     assert len(create_commands) == 1
     assert "/F" not in create_commands[0]
@@ -469,9 +561,7 @@ def test_windows_task_scheduler_upgrade_and_uninstall_are_bounded_and_idempotent
     result = manager.upgrade(manager.plan_upgrade(upgraded))
     assert result.status == "APPLIED"
     replace_commands = [
-        command
-        for command in scheduler.commands
-        if "/Create" in command and "/F" in command
+        command for command in scheduler.commands if "/Create" in command and "/F" in command
     ]
     assert len(replace_commands) == 1
     assert scheduler.running is True

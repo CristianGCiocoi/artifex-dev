@@ -140,7 +140,12 @@ def test_installer_bridge_uninstall_consumes_fresh_bound_token(
         },
     )
     value = windows_installer.remove_installer(tmp_path / "installed")
-    assert value == {"operation": "uninstall", "confirmation_token": "remove-token"}
+    assert value == {
+        "operation": "uninstall",
+        "confirmation_token": "remove-token",
+        "retained_state_root": None,
+        "retained_data_removed": False,
+    }
 
 
 @pytest.mark.adversarial

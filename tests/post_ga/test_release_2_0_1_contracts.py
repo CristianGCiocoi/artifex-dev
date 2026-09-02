@@ -1,4 +1,4 @@
-"""ARTIFEX 2.0.1 maintenance release identity and smoke contracts."""
+"""Current ARTIFEX patch-release identity and smoke contracts."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ def _smoke_module():  # type: ignore[no-untyped-def]
 
 
 def test_release_version_sources_and_windows_installer_are_consistent() -> None:
-    assert __version__ == "2.0.1"
+    assert __version__ == "2.0.2"
     project = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
     installer = (ROOT / "packaging" / "windows" / "ARTIFEX-Setup.nsi").read_text(
         encoding="utf-8"

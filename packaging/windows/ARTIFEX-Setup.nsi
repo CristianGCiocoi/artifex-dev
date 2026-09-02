@@ -13,8 +13,10 @@ CRCCheck force
   !error "ARTIFEX_OUTPUT is required"
 !endif
 !ifndef ARTIFEX_VERSION
-  !define ARTIFEX_VERSION "2.0.1"
+  !define ARTIFEX_VERSION "2.0.2"
 !endif
+
+!define ARTIFEX_START_MENU "$SMPROGRAMS\ARTIFEX"
 
 Name "ARTIFEX"
 Caption "ARTIFEX Setup"
@@ -35,6 +37,9 @@ VIAddVersionKey /LANG=1033 "LegalCopyright" "Apache-2.0"
 
 !define MUI_ABORTWARNING
 !define MUI_FINISHPAGE_NOAUTOCLOSE
+!define MUI_FINISHPAGE_RUN "$INSTDIR\artifex.exe"
+!define MUI_FINISHPAGE_RUN_PARAMETERS "dashboard"
+!define MUI_FINISHPAGE_RUN_TEXT "Launch ARTIFEX"
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
@@ -49,19 +54,23 @@ Section "ARTIFEX" section_core
   File /r "${ARTIFEX_BUNDLE}\*"
 
   DetailPrint "Installing ARTIFEX and starting its managed service..."
-  nsExec::ExecToStack '"$PLUGINSDIR\artifex\artifex.exe" _installer-lifecycle install --install-root "$INSTDIR" --source-executable "$PLUGINSDIR\artifex\artifex.exe" --service-state-root "$LOCALAPPDATA\ARTIFEX\runtime" --consent'
+  nsExec::ExecToStack '"$PLUGINSDIR\artifex\artifex.exe" _installer-lifecycle install --install-root "$INSTDIR" --source-executable "$PLUGINSDIR\artifex\artifex.exe" --service-state-root "$LOCALAPPDATA\ARTIFEX\state" --consent'
   Pop $0
   Pop $1
   ${If} $0 != 0
     DetailPrint "$1"
-    MessageBox MB_ICONSTOP|MB_OK "ARTIFEX could not be installed. No incomplete installation will be retained." /SD IDOK
+    MessageBox MB_ICONSTOP|MB_OK "ARTIFEX could not become ready. Installer-owned incomplete files were rolled back and diagnostics were preserved under the ARTIFEX state folder." /SD IDOK
     SetErrorLevel $0
     Abort
   ${EndIf}
 
   SetOutPath "$INSTDIR"
   WriteUninstaller "$INSTDIR\Uninstall.exe"
+  CreateDirectory "${ARTIFEX_START_MENU}"
+  CreateShortcut "${ARTIFEX_START_MENU}\ARTIFEX.lnk" "$INSTDIR\artifex.exe" "dashboard" "$INSTDIR\artifex.exe" 0 SW_SHOWNORMAL
+  CreateShortcut "${ARTIFEX_START_MENU}\Uninstall ARTIFEX.lnk" "$INSTDIR\Uninstall.exe"
   WriteRegStr HKLM "Software\ARTIFEX" "InstallDir" "$INSTDIR"
+  WriteRegStr HKLM "Software\ARTIFEX" "StateRoot" "$LOCALAPPDATA\ARTIFEX\state"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ARTIFEX" "DisplayName" "ARTIFEX"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ARTIFEX" "DisplayVersion" "${ARTIFEX_VERSION}"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ARTIFEX" "Publisher" "ARTIFEX Contributors"
@@ -94,8 +103,12 @@ Section "Uninstall"
     SetErrorLevel 1
     Abort
   lifecycle_complete:
+  DetailPrint "ARTIFEX runtime and project data were retained under $LOCALAPPDATA\ARTIFEX\state."
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ARTIFEX"
   DeleteRegKey HKLM "Software\ARTIFEX"
+  Delete "${ARTIFEX_START_MENU}\ARTIFEX.lnk"
+  Delete "${ARTIFEX_START_MENU}\Uninstall ARTIFEX.lnk"
+  RMDir "${ARTIFEX_START_MENU}"
   Delete /REBOOTOK "$INSTDIR\Uninstall.exe"
   RMDir /REBOOTOK "$INSTDIR"
 SectionEnd
