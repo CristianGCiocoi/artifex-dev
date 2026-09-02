@@ -15,6 +15,7 @@ from artifex.distribution.installed_state import (
     installation_record_path,
     migrate_legacy_state,
     read_installed_state_record,
+    remove_installed_state_record,
     write_installed_state_record,
 )
 from artifex.distribution.lifecycle import MANIFEST_NAME
@@ -146,3 +147,57 @@ def test_nsis_uses_canonical_state_and_discoverable_health_gated_entrypoints() -
     health_gate = script.index("_installer-lifecycle install")
     shortcut = script.index('CreateShortcut "${ARTIFEX_START_MENU}\\ARTIFEX.lnk"')
     assert health_gate < shortcut
+
+
+@pytest.mark.adversarial
+def test_installed_state_record_validation_and_owned_removal(tmp_path: Path) -> None:
+    install = (tmp_path / "install").resolve()
+    state = (tmp_path / "state").resolve()
+    path = tmp_path / "installation.json"
+    record = InstalledStateRecord(install, state, "2.0.2")
+    valid = record.to_dict()
+
+    invalid_values = (
+        {**valid, "extra": "field"},
+        {**valid, "schema": "unsupported"},
+        {**valid, "authority": "unknown"},
+        {**valid, "install_root": 7},
+    )
+    for value in invalid_values:
+        path.write_text(json.dumps(value), encoding="utf-8")
+        with pytest.raises(ValueError):
+            read_installed_state_record(path)
+    path.write_text("[]", encoding="utf-8")
+    with pytest.raises(ValueError, match="must be an object"):
+        read_installed_state_record(path)
+    path.write_text("{invalid", encoding="utf-8")
+    with pytest.raises(ValueError, match="unreadable"):
+        read_installed_state_record(path)
+
+    write_installed_state_record(record, path)
+    with pytest.raises(ValueError, match="different installation"):
+        remove_installed_state_record(tmp_path / "other", path)
+    assert remove_installed_state_record(install, path) is True
+    assert remove_installed_state_record(install, path) is False
+
+
+@pytest.mark.adversarial
+def test_legacy_migration_rejects_unsafe_or_ambiguous_roots(tmp_path: Path) -> None:
+    old = tmp_path / "runtime"
+    new = tmp_path / "state"
+    result = migrate_legacy_state(source=old, target=new)
+    assert result.status == "NOT_REQUIRED"
+    assert result.to_dict()["legacy_retained"] is False
+
+    with pytest.raises(ValueError, match="siblings"):
+        migrate_legacy_state(source=tmp_path / "one" / "runtime", target=new)
+    old.write_text("not a directory", encoding="utf-8")
+    with pytest.raises(ValueError, match="safe directory"):
+        migrate_legacy_state(source=old, target=new)
+
+    old.unlink()
+    old.mkdir()
+    old_workspace = old.with_name("runtime-workspaces")
+    old_workspace.write_text("not a directory", encoding="utf-8")
+    with pytest.raises(ValueError, match="workspace root"):
+        migrate_legacy_state(source=old, target=new)

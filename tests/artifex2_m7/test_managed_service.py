@@ -92,6 +92,29 @@ def test_service_state_is_secret_free_and_paths_are_deterministic(tmp_path: Path
         host.stop()
 
 
+@pytest.mark.unit
+def test_atomic_service_state_write_retries_transient_destination_lock(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    destination = tmp_path / "service-state.json"
+    real_replace = managed_service.os.replace
+    attempts = 0
+
+    def transient_replace(source: object, target: object) -> None:
+        nonlocal attempts
+        attempts += 1
+        if attempts < 3:
+            raise PermissionError("transient destination lock")
+        real_replace(source, target)
+
+    monkeypatch.setattr(managed_service.os, "replace", transient_replace)
+    managed_service._write_json_atomic(destination, {"status": "READY"})
+
+    assert attempts == 3
+    assert json.loads(destination.read_text(encoding="utf-8")) == {"status": "READY"}
+    assert not list(tmp_path.glob(".service-state.json.*.tmp"))
+
+
 @pytest.mark.architecture
 def test_windows_workspace_root_is_deterministic_and_outside_private_state_tree(
     tmp_path: Path,

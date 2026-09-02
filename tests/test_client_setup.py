@@ -10,8 +10,10 @@ from artifex.distribution.approvals import ApprovalStore
 from artifex.distribution.client_setup import (
     ClientConfigurationError,
     ClientSetupPlan,
+    _run_process,
     apply_client_enable,
     apply_client_rollback,
+    discover_bridge_command,
     plan_client_enable,
     plan_client_rollback,
     verify_client_integration,
@@ -162,3 +164,98 @@ def test_client_doctor_reports_friendly_non_model_checks(
     assert report["status"] == "NEEDS_ATTENTION"
     assert report["live_model_invocation"] is False
     assert "PowerShell ExecutionPolicy" in report["diagnostics"][0]
+
+
+@pytest.mark.adversarial
+def test_client_plan_schema_and_bridge_discovery_fail_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    project = tmp_path / "project"
+    project.mkdir()
+    bridge = tmp_path / "artifex.exe"
+    bridge.write_bytes(b"fixture")
+    plan = plan_client_enable(
+        "codex", project, bridge_command=(str(bridge),), config_root=tmp_path / "codex"
+    ).to_dict()
+    invalid = []
+    for key, value in (
+        ("mutations", "invalid"),
+        ("bridge_command", "invalid"),
+        ("decision", "invalid"),
+        ("mutations", [1]),
+    ):
+        candidate = dict(plan)
+        candidate[key] = value
+        invalid.append(candidate)
+    wrong_risk = dict(plan)
+    wrong_risk["decision"] = {**plan["decision"], "risk": "DESTRUCTIVE"}
+    invalid.append(wrong_risk)
+    for candidate in invalid:
+        with pytest.raises(ClientConfigurationError):
+            ClientSetupPlan.from_dict(candidate)
+
+    monkeypatch.setattr("artifex.distribution.client_setup.shutil.which", lambda _: None)
+    with pytest.raises(ClientConfigurationError, match="launcher was not found"):
+        discover_bridge_command()
+    with pytest.raises(ClientConfigurationError, match="does not exist"):
+        discover_bridge_command(tmp_path / "missing.exe")
+    with pytest.raises(ClientConfigurationError, match="project root"):
+        plan_client_enable("codex", tmp_path / "missing", bridge_command=(str(bridge),))
+    with pytest.raises(ClientConfigurationError, match="absolute"):
+        plan_client_enable("codex", project, bridge_command=("artifex.exe",))
+    with pytest.raises(ClientConfigurationError, match="codex or claude"):
+        plan_client_enable("hermes", project, bridge_command=(str(bridge),))
+
+
+@pytest.mark.adversarial
+def test_claude_configuration_collisions_are_friendly(tmp_path: Path) -> None:
+    project = tmp_path / "project"
+    project.mkdir()
+    bridge = tmp_path / "artifex.exe"
+    bridge.write_bytes(b"fixture")
+    config = project / ".mcp.json"
+    cases = (
+        ("{invalid", "invalid"),
+        ("[]", "must contain an object"),
+        ('{"mcpServers": []}', "mcpServers must be an object"),
+        (
+            '{"mcpServers":{"artifex":{"command":"unmanaged"}}}',
+            "unmanaged artifex MCP entry",
+        ),
+    )
+    for content, message in cases:
+        config.write_text(content, encoding="utf-8")
+        with pytest.raises(ClientConfigurationError, match=message):
+            plan_client_enable("claude", project, bridge_command=(str(bridge),))
+
+
+@pytest.mark.unit
+def test_client_verifier_and_process_errors_report_actual_state(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    project = tmp_path / "project"
+    project.mkdir()
+    bridge = tmp_path / "artifex.exe"
+    bridge.write_bytes(b"fixture")
+    monkeypatch.setattr(
+        "artifex.distribution.client_setup.shutil.which", lambda _: "claude"
+    )
+
+    def failing_runner(arguments: object) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(tuple(arguments), 7, "", "not registered")  # type: ignore[arg-type]
+
+    report = verify_client_integration(
+        "claude", project, bridge_command=(str(bridge),), runner=failing_runner
+    )
+    assert report["status"] == "NEEDS_ATTENTION"
+    assert report["bridge_status"] == "FAIL"
+    assert report["client_registration"] == "FAIL"
+    assert len(report["diagnostics"]) == 2
+
+    monkeypatch.setattr(
+        "artifex.distribution.client_setup.subprocess.run",
+        lambda *args, **kwargs: (_ for _ in ()).throw(OSError("unavailable")),
+    )
+    failed = _run_process((str(bridge), "mcp", "test"))
+    assert failed.returncode == 127
+    assert "OSError" in failed.stderr

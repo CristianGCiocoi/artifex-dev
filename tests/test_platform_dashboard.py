@@ -15,6 +15,7 @@ from artifex.platform_dashboard import (
     DashboardActionError,
     DashboardConfig,
     PlatformDashboard,
+    _decode_plan,
     _encode_plan,
     create_dashboard_server,
 )
@@ -121,6 +122,72 @@ def test_dashboard_requires_bootstrap_token_and_authenticated_cookie(dashboard_s
     assert headers["content-type"].startswith("application/json")
     assert '"installation"' in diagnostic_body
     assert dashboard_server.authorization_token not in diagnostic_body
+
+    status, _, diagnostic_html = _request(
+        dashboard_server, "GET", "/diagnostics", cookie=cookie
+    )
+    assert status == 200
+    assert "Installation doctor" in diagnostic_html
+    status, _, _ = _request(dashboard_server, "GET", "/missing", cookie=cookie)
+    assert status == 404
+
+
+@pytest.mark.integration
+def test_dashboard_http_actions_fail_closed_and_friendly(dashboard_server) -> None:
+    _, headers, _ = _request(
+        dashboard_server,
+        "GET",
+        f"/?token={dashboard_server.authorization_token}",
+    )
+    cookie = headers["set-cookie"].split(";", 1)[0]
+
+    status, _, _ = _request(
+        dashboard_server,
+        "POST",
+        "/actions/projects/create",
+        body=urlencode({"name": "No session"}),
+    )
+    assert status == 401
+    status, _, body = _request(
+        dashboard_server,
+        "POST",
+        "/actions/projects/create",
+        cookie=cookie,
+        body=urlencode({"name": "Missing CSRF"}),
+    )
+    assert status == 403
+    status, _, _ = _request(
+        dashboard_server,
+        "POST",
+        "/actions/missing",
+        cookie=cookie,
+        body=urlencode({"csrf_token": dashboard_server.csrf_token}),
+    )
+    assert status == 404
+    status, _, body = _request(
+        dashboard_server,
+        "POST",
+        "/actions/projects/create",
+        cookie=cookie,
+        body=urlencode(
+            {
+                "csrf_token": dashboard_server.csrf_token,
+                "name": "Relative",
+                "project_root": "relative-project",
+            }
+        ),
+    )
+    assert status == 400
+    assert "Project location must be absolute" in body
+    status, _, body = _request(
+        dashboard_server,
+        "GET",
+        "/projects/Unknown/dashboard",
+        cookie=cookie,
+    )
+    assert status == 400
+    assert "ARTIFEX could not complete the action" in body
+    assert "Traceback" not in body
 
 
 @pytest.mark.integration
@@ -302,3 +369,18 @@ def test_project_dashboard_errors_are_friendly_and_do_not_leak_tracebacks(tmp_pa
         raise AssertionError("missing Project must fail")
     assert "Suggested repair" in rendered
     assert "Traceback" not in rendered
+
+
+@pytest.mark.unit
+def test_dashboard_provider_input_and_encoded_plan_validation(tmp_path: Path) -> None:
+    dashboard = PlatformDashboard(
+        DashboardConfig.resolve(
+            catalog_path=tmp_path / "catalog.sqlite3", state_root=tmp_path / "state"
+        ),
+        bridge_executable=tmp_path / "missing-artifex.exe",
+    )
+    with pytest.raises(DashboardActionError, match="not a Core provider"):
+        dashboard.plan_provider({"provider": "hermes", "project_root": str(tmp_path)})
+    for encoded in ("not-base64", _encode_plan(["not", "an", "object"])):
+        with pytest.raises(DashboardActionError, match="plan"):
+            _decode_plan(encoded)

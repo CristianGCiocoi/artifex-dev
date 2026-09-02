@@ -852,7 +852,20 @@ def _validate_windows_inherited_sddl(value: str) -> None:
 def _write_json_atomic(path: Path, value: Mapping[str, object]) -> None:
     temporary = path.with_name(f".{path.name}.{uuid.uuid4().hex}.tmp")
     _write_private_text(temporary, _encode_json(value))
-    os.replace(temporary, path)
+    try:
+        for attempt in range(10):
+            try:
+                os.replace(temporary, path)
+                return
+            except PermissionError:
+                # Windows Defender and concurrent readers can hold the destination
+                # for a very short interval.  Retry only the atomic replacement;
+                # never rewrite or expose the private temporary payload.
+                if attempt == 9:
+                    raise
+                sleep(0.01 * (attempt + 1))
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 def _read_lock_owner(path: Path) -> tuple[str, int] | None:

@@ -4,8 +4,10 @@ import io
 import json
 
 import pytest
+from typer.testing import CliRunner
 
 from artifex.application import Application, OperationRequest
+from artifex.cli import app
 from artifex.mcp import LocalMCPServer, bridge_identity, bridge_self_test, serve_stdio
 
 
@@ -78,3 +80,31 @@ def test_installed_bridge_identity_and_bounded_self_test() -> None:
     assert report["status"] == "PASS"
     assert report["checks"] == {"initialize": True, "ping": True, "tools": True}
     assert report["tool_count"] > 0
+
+
+@pytest.mark.unit
+def test_installed_mcp_cli_commands_and_failure_exit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    runner = CliRunner()
+    served: list[bool] = []
+    monkeypatch.setattr("artifex.mcp.serve_stdio", lambda: served.append(True))
+
+    assert runner.invoke(app, ["mcp", "serve"]).exit_code == 0
+    assert served == [True]
+    version = runner.invoke(app, ["mcp", "version"])
+    assert version.exit_code == 0
+    assert json.loads(version.stdout)["transport"] == "stdio"
+    for command in ("health", "test"):
+        result = runner.invoke(app, ["mcp", command])
+        assert result.exit_code == 0
+        assert json.loads(result.stdout)["status"] == "PASS"
+
+    monkeypatch.setattr(
+        "artifex.mcp.bridge_self_test",
+        lambda: {"status": "FAIL", "checks": {}, "tool_count": 0},
+    )
+    for command in ("health", "test"):
+        result = runner.invoke(app, ["mcp", command])
+        assert result.exit_code == 1
+        assert json.loads(result.stdout)["status"] == "FAIL"
