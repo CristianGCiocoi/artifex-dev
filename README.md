@@ -109,6 +109,7 @@ are not claimed.
 
 ## Documentation
 
+- [Windows non-CLI Quick Start](docs/guides/QUICK_START_WINDOWS.md) and [provider onboarding and troubleshooting](docs/guides/PROVIDER_ONBOARDING.md)
 - [Accepted V1 handoff](docs/handoff/)
 - [Product definition](docs/product/PRODUCT_DEFINITION.md) and [roadmap](docs/product/ROADMAP.md)
 - [Architecture](docs/architecture/ARCHITECTURE.md), [integration contract](docs/architecture/INTEGRATION_CONTRACT.md), and [security guidance](docs/guides/SECURITY_GUIDE.md)

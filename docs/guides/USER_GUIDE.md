@@ -1,5 +1,12 @@
 # ARTIFEX User Guide
 
+For the installed Windows experience, begin with the
+[non-CLI Quick Start](QUICK_START_WINDOWS.md). Provider configuration is
+approval-gated; the [provider onboarding guide](PROVIDER_ONBOARDING.md)
+explains Codex and Claude client detection, verification, rollback and friendly
+troubleshooting. The installed Platform Dashboard manages the public user flow;
+it is distinct from the generated implementation-control dashboard.
+
 ## Collaborative Projects
 
 Multiple clients may attach to the same Project using Interaction Sessions. Each

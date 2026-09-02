@@ -1,9 +1,15 @@
 # Fresh-Machine Bootstrap Foundation
 
-Install a shipping ARTIFEX artifact, configure providers through the public
-setup flow, then start the managed service. A new service process consumes the
+Install a shipping ARTIFEX artifact. The installer starts the managed service
+and does not report readiness until the health gate passes. Launch ARTIFEX from
+the Start menu, then add/import a Project and configure providers through the
+approval-gated Platform Dashboard. A new service process consumes the
 persisted project-owned setup and builds the Capability Graph used by public
 runtime operations.
+
+The normal Windows journey is non-CLI; see
+[Windows Quick Start](QUICK_START_WINDOWS.md). The commands below are optional
+administrator diagnostics, not required user remediation:
 
 Use these public checks after the service starts:
 
