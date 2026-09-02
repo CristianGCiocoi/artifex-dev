@@ -181,6 +181,7 @@ def test_workspace_acl_enforcement_fast_paths_an_inherited_dacl(
         calls.append(arguments)
         return f"{tmp_path} BUILTIN\\Users:(I)(OI)(CI)(RX)"
 
+    monkeypatch.setattr(managed_service.os, "name", "nt")
     monkeypatch.setattr(managed_service, "_run_windows_command", run)
 
     managed_service._enforce_windows_inherited_acl(tmp_path)
