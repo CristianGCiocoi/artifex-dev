@@ -821,6 +821,11 @@
   ],
   "evidence": [
     {
+      "bytes": 1630,
+      "path": "implementation/EVIDENCE/ARTIFEX-2.0.1-POST-PROMOTION.yaml",
+      "sha256": "bee167f054305fe12a856311e701563904d35c824442214e3950b6374746555c"
+    },
+    {
       "bytes": 3726,
       "path": "implementation/EVIDENCE/ARTIFEX-2.0.1-RELEASE-ACCEPTANCE.yaml",
       "sha256": "42564d7bdfc6cb6510ba03a269b2b46ab71858edccdb1609b59aee7c4d2e7fb3"
@@ -4110,7 +4115,7 @@
     "adr_count": 24,
     "current_milestone": "M12",
     "current_milestone_progress_percent": 100,
-    "evidence_items": 277,
+    "evidence_items": 278,
     "invariant_count": 34,
     "journey_states": {
       "BLOCKED_EXTERNAL_PREREQUISITE": 1,

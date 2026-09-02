@@ -1,0 +1,52 @@
+schema_version: '1.0'
+evidence_id: ARTIFEX-2.0.1-POST-PROMOTION
+release: 2.0.1
+status: PASS
+qualified_source:
+  commit: 366d72139ba4dcaaa2495836ab5863c7d14ce5fb
+  tree: a316ea58b601fa7cbaaf7148df6ab069b1d4ddf8
+promotion:
+  acceptance_metadata_commit: 5af11c671029e50a89d76a41b0b03b41b41f0d82
+  dashboard_projection_commit: 5992dd19a49bd2349cd8d57f91294833d9838db8
+  policy: FAST_FORWARD_EXACT_QUALIFIED_SOURCE_PLUS_RELEASE_METADATA
+  product_source_after_qualification: UNCHANGED
+  architecture_adr_invariants_after_qualification: UNCHANGED
+post_integration:
+  ruff: PASS
+  mypy:
+    status: PASS
+    files: 95
+  pytest:
+    status: PASS
+    initial_passed: 796
+    skipped: 7
+    deterministic_projection_tests_rechecked: 6
+    deterministic_projection_tests_status: PASS
+  coverage:
+    status: PASS
+    reported_percent: 85
+    required_percent: 85
+  control_plane:
+    status: PASS
+    milestones: 16
+    adrs: 24
+    invariants: 34
+  exact_artifact_revalidation:
+    wheel_and_sdist: PASS
+    source_install_import_startup_smoke: PASS
+    native_windows_x64: PASS
+    native_linux_x64: PASS_ON_EXACT_GITHUB_NATIVE_RUNNER
+    native_macos_arm64: PASS_ON_EXACT_GITHUB_NATIVE_RUNNER
+    windows_installer_and_provenance: PASS
+github_actions_qualification:
+  run_id: 33601704078
+  head_sha: 366d72139ba4dcaaa2495836ab5863c7d14ce5fb
+  result: 11_OF_11_PASS
+integrity:
+  artifacts_match_qualified_source: true
+  unqualified_product_changes_promoted: false
+  v2_0_0_commit_unchanged: e6bb13ba165fcb3d9b21cb4598d2f7539cf1bb0a
+  v2_0_0_tag_unchanged: true
+  v1_r01_preserved: true
+  optional_milestones_started: []
+release_gate: PASS

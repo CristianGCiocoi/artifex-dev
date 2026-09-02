@@ -1,0 +1,44 @@
+schema_version: '1.0'
+release_id: ARTIFEX-2.0.1-GA
+product: ARTIFEX
+version: 2.0.1
+channel: GA
+status: GA
+tag: v2.0.1
+qualified_source:
+  commit: 366d72139ba4dcaaa2495836ab5863c7d14ce5fb
+  tree: a316ea58b601fa7cbaaf7148df6ab069b1d4ddf8
+canonical_promotion:
+  method: FAST_FORWARD
+  allowed_post_qualification_delta:
+  - implementation acceptance evidence
+  - release records and checksums
+  - deterministic implementation dashboard projections
+artifacts:
+  checksums: ARTIFEX-2.0.1-SHA256SUMS.txt
+  provenance_sha256: 2ea75d9cd1f86f95f9bdeb4f893f5bf5d6c920c0192f54a929d583d3131b8191
+  qualification_evidence_sha256: bf8930c09c818139b688606856667c6cbc4e2b76bb56caf25387c8ac5e4134fa
+provider_certification:
+  codex_standalone: PASS
+  claude_standalone: PASS
+  no_provider: PASS
+  codex_claude_combined: PASS
+journeys:
+  rerun: [J01, J02, J10, J11, J16, J20]
+  result: PASS
+compatibility:
+  windows_11_25h2_x64: QUALIFIED
+  linux_x64: PACKAGE_AND_RUNTIME_PATH_QUALIFIED
+  macos_arm64: PACKAGE_AND_RUNTIME_PATH_QUALIFIED
+  migration_compatibility: PRESERVED_FROM_2.0.0
+known_regression:
+  id: V1-R01-DASHBOARD-FIXTURE-SCHEMA-DRIFT
+  status: REPRODUCED_AND_PRESERVED
+  fixed: false
+  xfailed: false
+previous_release:
+  tag: v2.0.0
+  commit: e6bb13ba165fcb3d9b21cb4598d2f7539cf1bb0a
+  immutable: true
+scope_exclusions: [M6B, M8B, M8C, M10, M11, VM101, ATLAS]
+release_gate: PASS
