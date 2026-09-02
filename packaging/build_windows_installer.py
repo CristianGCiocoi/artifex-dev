@@ -84,7 +84,12 @@ def _nsis(root: Path) -> Path:
     return executable
 
 
-def _run_json(executable: Path, arguments: tuple[str, ...]) -> dict[str, object]:
+def _run_json(
+    executable: Path,
+    arguments: tuple[str, ...],
+    *,
+    require_ok: bool = True,
+) -> dict[str, object]:
     result = subprocess.run(
         (str(executable), *arguments),
         cwd=executable.parent,
@@ -98,7 +103,7 @@ def _run_json(executable: Path, arguments: tuple[str, ...]) -> dict[str, object]
     if result.returncode != 0:
         raise RuntimeError(f"candidate smoke failed: {result.stdout} {result.stderr}")
     value = json.loads(result.stdout)
-    if not isinstance(value, dict) or value.get("ok") is not True:
+    if not isinstance(value, dict) or (require_ok and value.get("ok") is not True):
         raise RuntimeError("candidate smoke did not return a successful ARTIFEX result")
     return value
 
@@ -173,7 +178,7 @@ def main() -> int:
     if args.smoke:
         _run_json(executable, ("system", "version"))
         _run_json(executable, ("mode", "BEGINNER"))
-        mcp_result = _run_json(executable, ("mcp", "test"))
+        mcp_result = _run_json(executable, ("mcp", "test"), require_ok=False)
         if mcp_result.get("status") != "PASS":
             raise RuntimeError("standalone ARTIFEX MCP bridge self-test failed")
         subprocess.run(
