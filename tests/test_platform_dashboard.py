@@ -229,6 +229,27 @@ def test_non_cli_create_and_open_project_dashboard_flow(dashboard_server, tmp_pa
 
 
 @pytest.mark.integration
+def test_non_cli_import_existing_artifex_project(tmp_path: Path) -> None:
+    root = tmp_path / "existing-project"
+    application = Application()
+    created = application.dispatch(
+        OperationRequest(
+            "project.create",
+            {"name": "Existing Project", "catalog_path": str(tmp_path / "source.sqlite3")},
+            OperationContext(project_root=str(root), actor="test"),
+        )
+    )
+    assert created.ok
+    dashboard = PlatformDashboard(
+        DashboardConfig.resolve(
+            catalog_path=tmp_path / "import.sqlite3", state_root=tmp_path / "state"
+        ),
+        application=application,
+    )
+    assert dashboard.import_project({"project_root": str(root)}) == "Existing Project"
+
+
+@pytest.mark.integration
 def test_provider_configuration_is_planned_and_approval_gated(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -271,6 +292,10 @@ def test_provider_configuration_is_planned_and_approval_gated(
         mutation["path"].endswith("config.toml")
         for mutation in planned["client_plan"]["mutations"]
     )
+    rendered_plan = dashboard.render_provider_plan(planned)
+    assert "Approve, apply and verify" in rendered_plan
+    assert "config.toml" in rendered_plan
+    assert planned["client_plan"]["decision"]["confirmation_token"] in rendered_plan
     assert not (root / ".artifex" / "integrations.json").exists()
 
     distribution_token = planned["distribution_plan"]["decision"]["confirmation_token"]
@@ -384,3 +409,4 @@ def test_dashboard_provider_input_and_encoded_plan_validation(tmp_path: Path) ->
     for encoded in ("not-base64", _encode_plan(["not", "an", "object"])):
         with pytest.raises(DashboardActionError, match="plan"):
             _decode_plan(encoded)
+    assert _decode_plan(_encode_plan({"client": "codex"})) == {"client": "codex"}
