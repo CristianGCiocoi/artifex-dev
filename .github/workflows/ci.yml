@@ -137,7 +137,10 @@ jobs:
           fetch-depth: 0
       - uses: astral-sh/setup-uv@v6
         with:
-          python-version: "3.12"
+          # Match the exact Python patch level of the unsigned v2.0.0
+          # Defender-known-good Windows shipping artifact. This is a
+          # controlled differential input, not a signing workaround.
+          python-version: "3.12.13"
           enable-cache: true
       - run: uv sync --locked --all-groups
       - run: uv run python packaging/build_windows_installer.py --clean --smoke
