@@ -19,6 +19,7 @@ dependencies = [
 [project.scripts]
 artifex = "artifex.cli:app"
 artifex-mcp = "artifex.mcp:main"
+artifex-dashboard = "artifex.platform_dashboard:main"
 
 [dependency-groups]
 dev = [

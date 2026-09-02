@@ -22,7 +22,10 @@ project_app = typer.Typer(help="Read semantic project state.")
 research_app = typer.Typer(help="Validate provider-neutral research contracts.")
 pandora_app = typer.Typer(help="Use the optional Pandora RESEARCH provider boundary.")
 documentation_app = typer.Typer(help="Inspect and selectively regenerate Project documentation.")
-dashboard_app = typer.Typer(help="Inspect Project and Platform operational views.")
+dashboard_app = typer.Typer(
+    help="Open the ARTIFEX Platform Dashboard or inspect its operational views.",
+    invoke_without_command=True,
+)
 reality_app = typer.Typer(help="Inspect sourced Observed Reality and divergences.")
 service_app = typer.Typer(help="Use the frontend-independent ARTIFEX managed service.")
 migration_app = typer.Typer(help="Inspect and migrate a real ARTIFEX V1 Project.")
@@ -37,6 +40,28 @@ app.add_typer(dashboard_app, name="dashboard")
 app.add_typer(reality_app, name="reality")
 app.add_typer(service_app, name="service")
 app.add_typer(migration_app, name="migration")
+
+
+@dashboard_app.callback()
+def dashboard_entrypoint(
+    ctx: typer.Context,
+    catalog_path: str | None = typer.Option(None, "--catalog"),
+    state_root: str | None = typer.Option(None, "--state-root"),
+    port: int = typer.Option(0, "--port", min=0, max=65535),
+    open_browser: bool = typer.Option(True, "--open-browser/--no-browser"),
+) -> None:
+    """Launch the dashboard when no read-only projection subcommand is selected."""
+
+    if ctx.invoked_subcommand is not None:
+        return
+    from artifex.platform_dashboard import launch_dashboard
+
+    launch_dashboard(
+        catalog_path=catalog_path,
+        state_root=state_root,
+        port=port,
+        open_browser=open_browser,
+    )
 
 
 def _emit(
@@ -727,6 +752,25 @@ def dashboard_platform(
 
     arguments = {} if catalog_path is None else {"catalog_path": catalog_path}
     _emit("dashboard.platform", arguments)
+
+
+@dashboard_app.command("launch")
+def dashboard_launch(
+    catalog_path: str | None = typer.Option(None, "--catalog"),
+    state_root: str | None = typer.Option(None, "--state-root"),
+    port: int = typer.Option(0, "--port", min=0, max=65535),
+    open_browser: bool = typer.Option(True, "--open-browser/--no-browser"),
+) -> None:
+    """Launch the authenticated, loopback-only ARTIFEX Platform Dashboard."""
+
+    from artifex.platform_dashboard import launch_dashboard
+
+    launch_dashboard(
+        catalog_path=catalog_path,
+        state_root=state_root,
+        port=port,
+        open_browser=open_browser,
+    )
 
 
 @manual_app.command("packet-create")
