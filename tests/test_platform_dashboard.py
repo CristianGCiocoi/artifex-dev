@@ -114,6 +114,14 @@ def test_dashboard_requires_bootstrap_token_and_authenticated_cookie(dashboard_s
     assert "installed standalone ARTIFEX bridge" in help_body
     assert "implementation dashboard" in help_body
 
+    status, headers, diagnostic_body = _request(
+        dashboard_server, "GET", "/diagnostics.json", cookie=cookie
+    )
+    assert status == 200
+    assert headers["content-type"].startswith("application/json")
+    assert '"installation"' in diagnostic_body
+    assert dashboard_server.authorization_token not in diagnostic_body
+
 
 @pytest.mark.integration
 def test_non_cli_create_and_open_project_dashboard_flow(dashboard_server, tmp_path: Path) -> None:
@@ -172,14 +180,17 @@ def test_provider_configuration_is_planned_and_approval_gated(
     bridge.parent.mkdir()
     bridge.write_bytes(b"shipping-artifact-fixture")
     monkeypatch.setenv("CODEX_HOME", str(tmp_path / "codex-home"))
-    monkeypatch.setattr(
-        "artifex.distribution.client_setup.verify_client_integration",
-        lambda *args, **kwargs: {
+    def verification(*args: object, **kwargs: object) -> dict[str, object]:
+        return {
             "status": "READY",
             "client_version": "codex fixture",
             "diagnostics": [],
-        },
+        }
+    monkeypatch.setattr(
+        "artifex.distribution.client_setup.verify_client_integration",
+        verification,
     )
+    monkeypatch.setattr("artifex.application.api.verify_client_integration", verification)
     dashboard = PlatformDashboard(
         DashboardConfig.resolve(catalog_path=catalog, state_root=tmp_path / "state"),
         application=application,
@@ -209,6 +220,36 @@ def test_provider_configuration_is_planned_and_approval_gated(
     assert (root / ".artifex" / "integrations.json").is_file()
     assert (tmp_path / "codex-home" / "config.toml").is_file()
     assert list((root / ".artifex" / "integration-receipts").glob("client-codex-*.json"))
+    provider = next(
+        item for item in dashboard.snapshot()["providers"] if item["id"] == "codex"
+    )
+    assert provider["state"] == "NEEDS ATTENTION"
+    assert provider["verification"]["status"] == "READY"
+
+
+@pytest.mark.unit
+def test_dashboard_requires_real_service_status_value(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    class ServiceClient:
+        def __init__(self, *args: object, **kwargs: object) -> None:
+            pass
+
+        def status(self) -> dict[str, object]:
+            return {
+                "ok": True,
+                "value": {"lifecycle_state": "FAILED", "ready": False},
+            }
+
+    monkeypatch.setattr("artifex.platform_dashboard.LocalServiceClient", ServiceClient)
+    dashboard = PlatformDashboard(
+        DashboardConfig.resolve(
+            catalog_path=tmp_path / "catalog.sqlite3", state_root=tmp_path / "state"
+        )
+    )
+    status = dashboard.snapshot()["service"]
+    assert status["status"] == "ACTION NEEDED"
+    assert "FAILED" in status["detail"]
 
 
 @pytest.mark.unit

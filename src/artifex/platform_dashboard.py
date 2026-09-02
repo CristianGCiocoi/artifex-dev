@@ -96,6 +96,7 @@ class PlatformDashboard:
         providers = self._provider_status(projects)
         runs = self._runtime_activity()
         issues = self._issues(service, providers, projects)
+        installation = self._installation_status()
         return {
             "version": version,
             "service": service,
@@ -105,6 +106,7 @@ class PlatformDashboard:
             "providers": providers,
             "activity": runs,
             "issues": issues,
+            "installation": installation,
         }
 
     def create_project(self, form: Mapping[str, str]) -> str:
@@ -329,9 +331,22 @@ class PlatformDashboard:
 
     def render_diagnostics(self) -> str:
         snapshot = self.snapshot()
+        installation = snapshot["installation"]
+        installation_checks = "".join(
+            f'<li class="issue {"good" if item.get("status") == "PASS" else "warn"}"><strong>{_h(item.get("id", "installation"))}: {_h(item.get("status", "UNKNOWN"))}</strong><span>{_h(item.get("detail", ""))}</span></li>'
+            for item in installation.get("checks", [])
+            if isinstance(item, Mapping)
+        ) or '<li class="issue warn"><strong>Installation record unavailable</strong><span>No installation checks were returned.</span></li>'
+        client_checks = "".join(
+            f'<li class="issue {"good" if item.get("state") == "READY" else "warn"}"><strong>{_h(str(item.get("id", "client")).title())}: {_h(item.get("state", "UNKNOWN"))}</strong><span>{_h(item.get("detail", ""))}</span></li>'
+            for item in snapshot["providers"]
+        )
         body = f"""<main class="narrow"><a class="back" href="/">← Platform Dashboard</a><p class="eyebrow">INSTALLATION READINESS</p><h1>Diagnostics</h1>
 <div class="review"><h2>Discovered state</h2><dl><dt>Version</dt><dd>{_h(_version_label(snapshot['version']))}</dd><dt>State root</dt><dd>{_h(snapshot['state_root'])}</dd><dt>Project Catalog</dt><dd>{_h(snapshot['catalog_path'])}</dd><dt>Managed service</dt><dd>{_h(snapshot['service']['status'])} — {_h(snapshot['service']['detail'])}</dd><dt>Dashboard</dt><dd>READY — authenticated loopback surface</dd></dl></div>
-<h2>Recommended actions</h2><ul class="issues">{''.join(f'<li class="issue"><strong>{_h(i["title"])}</strong><span>{_h(i["detail"])}</span></li>' for i in snapshot['issues'])}</ul></main>"""
+<h2>Installation doctor — {_h(installation.get('status', 'UNKNOWN'))}</h2><ul class="issues">{installation_checks}</ul>
+<h2>Client doctors</h2><ul class="issues">{client_checks}</ul>
+<h2>Recommended actions</h2><ul class="issues">{''.join(f'<li class="issue"><strong>{_h(i["title"])}</strong><span>{_h(i["detail"])}</span></li>' for i in snapshot['issues'])}</ul>
+<p><a class="button secondary" href="/diagnostics.json">Export diagnostic report</a></p></main>"""
         return _page("ARTIFEX diagnostics", body)
 
     def render_help(self) -> str:
@@ -367,7 +382,10 @@ class PlatformDashboard:
 
     def _service_status(self) -> dict[str, str]:
         try:
-            value = LocalServiceClient(self.config.state_root, timeout_seconds=1.0).status()
+            result = LocalServiceClient(self.config.state_root, timeout_seconds=1.0).status()
+            value = result.get("value")
+            if result.get("ok") is not True or not isinstance(value, Mapping):
+                raise ValueError("service status operation did not return a value")
             lifecycle = str(value.get("lifecycle_state", value.get("status", "RUNNING")))
             ready = value.get("ready", True) is not False and lifecycle in {"RUNNING", "PASS"}
             return {
@@ -378,6 +396,22 @@ class PlatformDashboard:
             return {
                 "status": "NOT READY",
                 "detail": f"Managed service is unavailable ({type(exc).__name__}).",
+            }
+
+    def _installation_status(self) -> dict[str, Any]:
+        try:
+            return self._dispatch("distribution.installation.doctor")
+        except DashboardActionError as exc:
+            return {
+                "status": "FAIL",
+                "checks": [
+                    {
+                        "id": "installation-doctor",
+                        "status": "FAIL",
+                        "detail": exc.discovered,
+                        "repair": exc.repair,
+                    }
+                ],
             }
 
     def _provider_status(self, projects: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
@@ -404,11 +438,37 @@ class PlatformDashboard:
                 if identifier not in statuses:
                     continue
                 readiness = provider.get("readiness", {})
+                graph_state = str(readiness.get("state", "CONFIGURED"))
+                try:
+                    verification = self._dispatch(
+                        "clients.verify",
+                        {
+                            "client": identifier,
+                            "bridge_command": list(self._bridge_command()),
+                        },
+                        project_root=root,
+                    )
+                except DashboardActionError as exc:
+                    verification = {
+                        "status": "NEEDS_ATTENTION",
+                        "diagnostics": [exc.discovered],
+                    }
+                verification_state = str(verification.get("status", "NEEDS_ATTENTION"))
+                diagnostics = verification.get("diagnostics", [])
+                diagnostic_text = "; ".join(str(item) for item in diagnostics)
+                state = "READY" if graph_state == "AVAILABLE" and verification_state == "READY" else "NEEDS ATTENTION"
                 statuses[identifier] = {
                     "id": identifier,
-                    "state": str(readiness.get("state", "CONFIGURED")),
-                    "detail": f"Configured for {project.get('primary_name', 'Project')}.",
+                    "state": state,
+                    "detail": (
+                        f"Ready for {project.get('primary_name', 'Project')}."
+                        if state == "READY"
+                        else diagnostic_text
+                        or f"Provider state is {graph_state}; client verification is {verification_state}."
+                    ),
                     "project_root": root,
+                    "graph_state": graph_state,
+                    "verification": verification,
                 }
         return list(statuses.values())
 
@@ -484,7 +544,7 @@ class PlatformDashboard:
         for provider in providers:
             issues.append(
                 {
-                    "level": "READY" if provider["state"] == "AVAILABLE" else "INFO",
+                    "level": "READY" if provider["state"] == "READY" else "INFO",
                     "title": str(provider["id"]).title(),
                     "detail": str(provider["detail"]),
                 }
@@ -632,6 +692,8 @@ class _DashboardHandler(BaseHTTPRequestHandler):
                 )
             elif parsed.path == "/diagnostics":
                 self._send_html(HTTPStatus.OK, self.server.dashboard.render_diagnostics())
+            elif parsed.path == "/diagnostics.json":
+                self._send_json(HTTPStatus.OK, self.server.dashboard.snapshot())
             elif parsed.path == "/help":
                 self._send_html(HTTPStatus.OK, self.server.dashboard.render_help())
             elif parsed.path.startswith("/projects/") and parsed.path.endswith("/dashboard"):
@@ -732,6 +794,16 @@ class _DashboardHandler(BaseHTTPRequestHandler):
         self.send_response(status)
         self._security_headers()
         self.send_header("Content-Type", "text/plain; charset=utf-8")
+        self.send_header("Content-Length", str(len(encoded)))
+        self.end_headers()
+        self.wfile.write(encoded)
+
+    def _send_json(self, status: HTTPStatus, content: Mapping[str, Any]) -> None:
+        encoded = (json.dumps(content, indent=2, sort_keys=True) + "\n").encode("utf-8")
+        self.send_response(status)
+        self._security_headers()
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Disposition", 'attachment; filename="artifex-diagnostics.json"')
         self.send_header("Content-Length", str(len(encoded)))
         self.end_headers()
         self.wfile.write(encoded)
