@@ -273,7 +273,7 @@ class PlatformDashboard:
         notice_html = f'<div class="notice">{_h(notice)}</div>' if notice else ""
         body = f"""
 <header><div><p class="eyebrow">ARTIFEX PLATFORM</p><h1>Your work, in one place.</h1>
-<p class="lede">Projects, providers, Runs and readiness — projected from ARTIFEX authorities.</p></div>
+<p class="lede">Projects, providers, Runs and readiness — projected from ARTIFEX authorities.</p><p><a class="text-link" href="/help">Quick Start and provider help</a></p></div>
 <div class="version">ARTIFEX <strong>{_h(_version_label(snapshot['version']))}</strong></div></header>
 {notice_html}
 <section class="status-grid">
@@ -333,6 +333,15 @@ class PlatformDashboard:
 <div class="review"><h2>Discovered state</h2><dl><dt>Version</dt><dd>{_h(_version_label(snapshot['version']))}</dd><dt>State root</dt><dd>{_h(snapshot['state_root'])}</dd><dt>Project Catalog</dt><dd>{_h(snapshot['catalog_path'])}</dd><dt>Managed service</dt><dd>{_h(snapshot['service']['status'])} — {_h(snapshot['service']['detail'])}</dd><dt>Dashboard</dt><dd>READY — authenticated loopback surface</dd></dl></div>
 <h2>Recommended actions</h2><ul class="issues">{''.join(f'<li class="issue"><strong>{_h(i["title"])}</strong><span>{_h(i["detail"])}</span></li>' for i in snapshot['issues'])}</ul></main>"""
         return _page("ARTIFEX diagnostics", body)
+
+    def render_help(self) -> str:
+        body = """<main class="narrow"><a class="back" href="/">← Platform Dashboard</a><p class="eyebrow">QUICK START</p><h1>Get ready without a terminal</h1>
+<div class="review"><ol><li>Confirm the managed service is READY.</li><li>Add a new Project or import an existing repository.</li><li>Open its Project Dashboard from the Project card.</li><li>Choose Codex or Claude, review every planned change and rollback action, then approve.</li><li>Open Diagnostics and verify the client, installed MCP bridge and persistent receipt.</li></ol></div>
+<h2 id="codex">Codex</h2><p>Codex Desktop and Codex CLI are separate client forms. Follow the detected-client guidance; never repair detection by weakening PowerShell policy or manually editing PATH.</p>
+<h2 id="claude">Claude</h2><p>Claude uses its public MCP configuration and the installed standalone ARTIFEX bridge. Authenticate in Claude itself; ARTIFEX does not collect provider credentials.</p>
+<h2>Troubleshooting</h2><p>Availability, configuration, authentication, live verification and role certification are separate states. Open Diagnostics for the discovered state and proposed repair. Cancel a setup plan to leave vendor configuration unchanged.</p>
+<p class="muted">The Platform Dashboard is the installed product UI. The implementation dashboard is release-engineering evidence, not a Project control surface.</p></main>"""
+        return _page("ARTIFEX Quick Start", body)
 
     def render_error(self, error: DashboardActionError) -> str:
         body = f"""<main class="narrow"><a class="back" href="/">← Platform Dashboard</a><p class="eyebrow">ACTION COULD NOT COMPLETE</p><h1>{_h(error.title)}</h1><div class="review error"><h2>What ARTIFEX found</h2><p>{_h(error.discovered)}</p><h2>Suggested repair</h2><p>{_h(error.repair)}</p></div><a class="button" href="/diagnostics">Open diagnostics</a></main>"""
@@ -506,7 +515,7 @@ class PlatformDashboard:
             if choices
             else '<p class="muted">Add a Project before configuring providers.</p>'
         )
-        return f"""<article class="provider-card"><span class="pill neutral">{_h(provider['state'])}</span><h3>{_h(identifier.title())}</h3><p>{_h(provider['detail'])}</p>{form}</article>"""
+        return f"""<article class="provider-card"><span class="pill neutral">{_h(provider['state'])}</span><h3>{_h(identifier.title())}</h3><p>{_h(provider['detail'])}</p><p><a class="text-link" href="/help#{_h(identifier)}">Setup and troubleshooting</a></p>{form}</article>"""
 
 
 class DashboardActionError(RuntimeError):
@@ -623,6 +632,8 @@ class _DashboardHandler(BaseHTTPRequestHandler):
                 )
             elif parsed.path == "/diagnostics":
                 self._send_html(HTTPStatus.OK, self.server.dashboard.render_diagnostics())
+            elif parsed.path == "/help":
+                self._send_html(HTTPStatus.OK, self.server.dashboard.render_help())
             elif parsed.path.startswith("/projects/") and parsed.path.endswith("/dashboard"):
                 encoded = parsed.path[len("/projects/") : -len("/dashboard")].strip("/")
                 self._send_html(

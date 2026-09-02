@@ -107,6 +107,13 @@ def test_dashboard_requires_bootstrap_token_and_authenticated_cookie(dashboard_s
     assert "Content-Security-Policy".lower() in headers
     assert dashboard_server.csrf_token in body
 
+    status, _, help_body = _request(dashboard_server, "GET", "/help", cookie=cookie)
+    assert status == 200
+    assert "Get ready without a terminal" in help_body
+    assert "Codex Desktop and Codex CLI are separate" in help_body
+    assert "installed standalone ARTIFEX bridge" in help_body
+    assert "implementation dashboard" in help_body
+
 
 @pytest.mark.integration
 def test_non_cli_create_and_open_project_dashboard_flow(dashboard_server, tmp_path: Path) -> None:
