@@ -713,6 +713,9 @@ def _enforce_windows_inherited_acl(path: Path) -> None:
 
     if os.name != "nt":
         raise ManagedServiceError("Windows ACL enforcement is unavailable on this platform")
+    current = _run_windows_command(("icacls.exe", str(path)))
+    if _windows_acl_has_inherited_ace(current):
+        return
     _run_windows_command(("icacls.exe", str(path), "/inheritance:e"))
     _run_windows_command(("icacls.exe", str(path), "/verify"))
     acl_file = path.parent / f".artifex-acl-{uuid.uuid4().hex}.txt"
@@ -724,6 +727,12 @@ def _enforce_windows_inherited_acl(path: Path) -> None:
     finally:
         acl_file.unlink(missing_ok=True)
     _validate_windows_inherited_sddl(_decode_icacls_acl(raw))
+
+
+def _windows_acl_has_inherited_ace(value: str) -> bool:
+    """Recognize the stable icacls inherited-ACE marker without locale text."""
+
+    return "(I)" in value.upper()
 
 
 def _windows_current_user_sid() -> str:

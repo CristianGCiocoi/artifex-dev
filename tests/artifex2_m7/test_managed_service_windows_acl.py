@@ -172,6 +172,22 @@ def test_workspace_sddl_verification_requires_enabled_inheritance_and_inherited_
         )
 
 
+def test_workspace_acl_enforcement_fast_paths_an_inherited_dacl(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls: list[tuple[str, ...]] = []
+
+    def run(arguments: tuple[str, ...]) -> str:
+        calls.append(arguments)
+        return f"{tmp_path} BUILTIN\\Users:(I)(OI)(CI)(RX)"
+
+    monkeypatch.setattr(managed_service, "_run_windows_command", run)
+
+    managed_service._enforce_windows_inherited_acl(tmp_path)
+
+    assert calls == [("icacls.exe", str(tmp_path))]
+
+
 @pytest.mark.skipif(os.name != "nt", reason="requires native icacls")
 def test_native_windows_state_root_and_token_acl_round_trip(tmp_path: Path) -> None:
     paths = ServicePaths.resolve(tmp_path / "state")
