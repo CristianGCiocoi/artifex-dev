@@ -84,20 +84,22 @@ jobs:
       - run: uv build --no-build-isolation --wheel --sdist
       - run: uv run python scripts/validate_current_artifacts.py validate-source --candidate "${{ github.sha }}" --output dist
       - run: uv run python scripts/validate_current_artifacts.py smoke-source --candidate "${{ github.sha }}" --output dist
+      - run: tar -czf "dist/artifex-2.0.1-${{ matrix.kind }}.tar.gz" -C dist/native artifex
       - uses: actions/upload-artifact@v4
         with:
           name: artifex-onedir-${{ runner.os }}-${{ runner.arch }}
           path: |
-            dist/native/artifex/
+            dist/artifex-2.0.1-${{ matrix.kind }}.tar.gz
             dist/*.whl
-            dist/*.tar.gz
-          include-hidden-files: true
+            dist/artifex_dev-2.0.1.tar.gz
           if-no-files-found: error
       - uses: actions/download-artifact@v4
         with:
           name: artifex-onedir-${{ runner.os }}-${{ runner.arch }}
           path: roundtrip
-      - run: uv run python scripts/validate_current_artifacts.py validate-native --candidate "${{ github.sha }}" --input roundtrip/native/artifex --kind "${{ matrix.kind }}"
+      - run: mkdir roundtrip-native
+      - run: tar -xzf "roundtrip/artifex-2.0.1-${{ matrix.kind }}.tar.gz" -C roundtrip-native
+      - run: uv run python scripts/validate_current_artifacts.py validate-native --candidate "${{ github.sha }}" --input roundtrip-native/artifex --kind "${{ matrix.kind }}"
 
   source-package:
     runs-on: ubuntu-latest
