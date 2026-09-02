@@ -92,7 +92,9 @@ class ServicePaths:
         if not self.workspace_root.is_dir():
             raise ManagedServiceError("managed service workspace root must be a directory")
         if os.name == "nt":
-            _enforce_windows_inherited_acl(self.workspace_root)
+            # Defender ablation only: isolate the clean-install workspace ACL
+            # subprocess sequence without changing any other 2.0.1 input.
+            pass
         else:
             _restrict_directory(self.workspace_root)
 
