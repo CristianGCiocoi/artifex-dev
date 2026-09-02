@@ -8,92 +8,92 @@ findings:
   title: Public Windows product entrypoint and PATH-independent launch
   owner: platform_dashboard_launcher
   p0: P0-B
-  status: OPEN
+  status: INTEGRATED
 - id: AF-201-002
   title: Real user-accessible Platform Dashboard
   owner: platform_dashboard_launcher
   p0: P0-A
-  status: OPEN
+  status: INTEGRATED
 - id: AF-201-003
   title: Canonical installed state-root discovery and compatibility
   owner: canonical_state_service_installer
   p0: P0-C
-  status: OPEN
+  status: INTEGRATED
 - id: AF-201-004
   title: Health-gated managed-service installation and persistence
   owner: canonical_state_service_installer
   p0: P0-D
-  status: OPEN
+  status: INTEGRATED
 - id: AF-201-005
   title: Project Dashboard discoverability
   owner: platform_dashboard_launcher
   p0: P0-E
-  status: OPEN
+  status: INTEGRATED
 - id: AF-201-006
   title: Installed standalone MCP bridge
   owner: mcp_codex_claude_onboarding
   p0: P0-F
-  status: OPEN
+  status: INTEGRATED
 - id: AF-201-007
   title: Current public Codex integration layout
   owner: mcp_codex_claude_onboarding
   p0: P0-G
-  status: OPEN
+  status: INTEGRATED
 - id: AF-201-008
   title: Public Claude MCP integration
   owner: mcp_codex_claude_onboarding
   p0: P0-H
-  status: OPEN
+  status: INTEGRATED
 - id: AF-201-009
   title: Approval-gated reversible provider enablement
   owner: mcp_codex_claude_onboarding
   p0: P0-I
-  status: OPEN
+  status: INTEGRATED
 - id: AF-201-010
   title: Fresh Windows non-CLI product journey J21
   owner: j21_and_release_qualification
   p0: P0-J
-  status: OPEN
+  status: INTEGRATED
 - id: AF-201-011
   title: Installation doctor
   owner: canonical_state_service_installer
   priority: P1
-  status: OPEN
+  status: INTEGRATED
 - id: AF-201-012
   title: Codex integration doctor
   owner: mcp_codex_claude_onboarding
   priority: P1
-  status: OPEN
+  status: INTEGRATED
 - id: AF-201-013
   title: Claude integration doctor
   owner: mcp_codex_claude_onboarding
   priority: P1
-  status: OPEN
+  status: INTEGRATED
 - id: AF-201-014
   title: Explicit Codex Desktop versus CLI capability detection
   owner: mcp_codex_claude_onboarding
   priority: P1
-  status: OPEN
+  status: INTEGRATED
 - id: AF-201-015
   title: Integration registry and Capability Graph reconciliation
   owner: mcp_codex_claude_onboarding
   priority: P1
-  status: OPEN
+  status: INTEGRATED
 - id: AF-201-016
   title: Hermes optional-not-configured presentation
   owner: mcp_codex_claude_onboarding
   priority: P1
-  status: OPEN
+  status: INTEGRATED
 - id: AF-201-017
   title: Friendly public error taxonomy and diagnostic export
   owner: platform_dashboard_launcher
   priority: P1
-  status: OPEN
+  status: INTEGRATED
 - id: AF-201-018
   title: Non-CLI documentation and truthful implementation-dashboard release labels
   owner: j21_and_release_qualification
   priority: P2
-  status: OPEN
+  status: INTEGRATED
 release_acceptance:
   accepted: 0
   required: 18

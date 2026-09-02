@@ -27,10 +27,10 @@ scope:
   optional_milestones: NOT_CLAIMED_NOT_STARTED
   prohibited: [M6B, M8B, M8C, M10, M11, ATLAS]
 workstreams:
-  platform_dashboard_launcher: ACTIVE
-  canonical_state_service_installer: ACTIVE
-  mcp_codex_claude_onboarding: ACTIVE
-  j21_and_release_qualification: ACTIVE
+  platform_dashboard_launcher: INTEGRATED_PENDING_ARTIFACT_QUALIFICATION
+  canonical_state_service_installer: INTEGRATED_PENDING_ARTIFACT_QUALIFICATION
+  mcp_codex_claude_onboarding: INTEGRATED_PENDING_ARTIFACT_QUALIFICATION
+  j21_and_release_qualification: HARNESS_INTEGRATED_JOURNEY_NOT_RUN
 release_gate:
   p0_required: 10
   p0_passing: 0

@@ -873,10 +873,10 @@
       "state": "ACTIVE",
       "target_release": "2.0.2",
       "workstreams": {
-        "canonical_state_service_installer": "ACTIVE",
-        "j21_and_release_qualification": "ACTIVE",
-        "mcp_codex_claude_onboarding": "ACTIVE",
-        "platform_dashboard_launcher": "ACTIVE"
+        "canonical_state_service_installer": "INTEGRATED_PENDING_ARTIFACT_QUALIFICATION",
+        "j21_and_release_qualification": "HARNESS_INTEGRATED_JOURNEY_NOT_RUN",
+        "mcp_codex_claude_onboarding": "INTEGRATED_PENDING_ARTIFACT_QUALIFICATION",
+        "platform_dashboard_launcher": "INTEGRATED_PENDING_ARTIFACT_QUALIFICATION"
       }
     },
     "matrix": {
@@ -885,126 +885,126 @@
           "id": "AF-201-001",
           "owner": "platform_dashboard_launcher",
           "p0": "P0-B",
-          "status": "OPEN",
+          "status": "INTEGRATED",
           "title": "Public Windows product entrypoint and PATH-independent launch"
         },
         {
           "id": "AF-201-002",
           "owner": "platform_dashboard_launcher",
           "p0": "P0-A",
-          "status": "OPEN",
+          "status": "INTEGRATED",
           "title": "Real user-accessible Platform Dashboard"
         },
         {
           "id": "AF-201-003",
           "owner": "canonical_state_service_installer",
           "p0": "P0-C",
-          "status": "OPEN",
+          "status": "INTEGRATED",
           "title": "Canonical installed state-root discovery and compatibility"
         },
         {
           "id": "AF-201-004",
           "owner": "canonical_state_service_installer",
           "p0": "P0-D",
-          "status": "OPEN",
+          "status": "INTEGRATED",
           "title": "Health-gated managed-service installation and persistence"
         },
         {
           "id": "AF-201-005",
           "owner": "platform_dashboard_launcher",
           "p0": "P0-E",
-          "status": "OPEN",
+          "status": "INTEGRATED",
           "title": "Project Dashboard discoverability"
         },
         {
           "id": "AF-201-006",
           "owner": "mcp_codex_claude_onboarding",
           "p0": "P0-F",
-          "status": "OPEN",
+          "status": "INTEGRATED",
           "title": "Installed standalone MCP bridge"
         },
         {
           "id": "AF-201-007",
           "owner": "mcp_codex_claude_onboarding",
           "p0": "P0-G",
-          "status": "OPEN",
+          "status": "INTEGRATED",
           "title": "Current public Codex integration layout"
         },
         {
           "id": "AF-201-008",
           "owner": "mcp_codex_claude_onboarding",
           "p0": "P0-H",
-          "status": "OPEN",
+          "status": "INTEGRATED",
           "title": "Public Claude MCP integration"
         },
         {
           "id": "AF-201-009",
           "owner": "mcp_codex_claude_onboarding",
           "p0": "P0-I",
-          "status": "OPEN",
+          "status": "INTEGRATED",
           "title": "Approval-gated reversible provider enablement"
         },
         {
           "id": "AF-201-010",
           "owner": "j21_and_release_qualification",
           "p0": "P0-J",
-          "status": "OPEN",
+          "status": "INTEGRATED",
           "title": "Fresh Windows non-CLI product journey J21"
         },
         {
           "id": "AF-201-011",
           "owner": "canonical_state_service_installer",
           "priority": "P1",
-          "status": "OPEN",
+          "status": "INTEGRATED",
           "title": "Installation doctor"
         },
         {
           "id": "AF-201-012",
           "owner": "mcp_codex_claude_onboarding",
           "priority": "P1",
-          "status": "OPEN",
+          "status": "INTEGRATED",
           "title": "Codex integration doctor"
         },
         {
           "id": "AF-201-013",
           "owner": "mcp_codex_claude_onboarding",
           "priority": "P1",
-          "status": "OPEN",
+          "status": "INTEGRATED",
           "title": "Claude integration doctor"
         },
         {
           "id": "AF-201-014",
           "owner": "mcp_codex_claude_onboarding",
           "priority": "P1",
-          "status": "OPEN",
+          "status": "INTEGRATED",
           "title": "Explicit Codex Desktop versus CLI capability detection"
         },
         {
           "id": "AF-201-015",
           "owner": "mcp_codex_claude_onboarding",
           "priority": "P1",
-          "status": "OPEN",
+          "status": "INTEGRATED",
           "title": "Integration registry and Capability Graph reconciliation"
         },
         {
           "id": "AF-201-016",
           "owner": "mcp_codex_claude_onboarding",
           "priority": "P1",
-          "status": "OPEN",
+          "status": "INTEGRATED",
           "title": "Hermes optional-not-configured presentation"
         },
         {
           "id": "AF-201-017",
           "owner": "platform_dashboard_launcher",
           "priority": "P1",
-          "status": "OPEN",
+          "status": "INTEGRATED",
           "title": "Friendly public error taxonomy and diagnostic export"
         },
         {
           "id": "AF-201-018",
           "owner": "j21_and_release_qualification",
           "priority": "P2",
-          "status": "OPEN",
+          "status": "INTEGRATED",
           "title": "Non-CLI documentation and truthful implementation-dashboard release labels"
         }
       ],
