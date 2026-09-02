@@ -38,9 +38,9 @@ from tools.artifex2.run_m7_shipping_journey import (
 
 COMPOSITION = "INSTALLED_NATIVE_PUBLIC_CLI_REAL_PROVIDER_MANAGED_SERVICE_MULTI_PROCESS"
 SCHEMA = "artifex.m12-j20-qualification/v1"
-PRODUCT_VERSION = "2.0.0"
 _COMMIT = re.compile(r"^[0-9a-f]{40}$")
 _DIGEST = re.compile(r"^[0-9a-f]{64}$")
+_VERSION = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+$")
 _SENSITIVE = re.compile(
     r"(?:authorization\s*[:=]|access[_ -]?token\s*[:=]|refresh[_ -]?token\s*[:=]|"
     r"api[_ -]?key\s*[:=]|password\s*[:=])",
@@ -341,6 +341,7 @@ def run_j20(
     artifact: Path,
     expected_artifact_sha256: str,
     source_commit: str,
+    expected_product_version: str,
     install_root: Path,
     state_root: Path,
     project_root: Path,
@@ -355,6 +356,8 @@ def run_j20(
         raise JourneyFailure("candidate SHA-256 is invalid")
     if not _COMMIT.fullmatch(source_commit):
         raise JourneyFailure("candidate source commit is invalid")
+    if not _VERSION.fullmatch(expected_product_version):
+        raise JourneyFailure("candidate product version is invalid")
     if _file_sha256(artifact) != expected_artifact_sha256:
         raise JourneyFailure("candidate artifact hash does not match")
     if set(provider_commands) != {"claude", "codex"} or execution_provider not in provider_commands:
@@ -375,7 +378,7 @@ def run_j20(
         raise JourneyFailure("installed artifact manifest is unavailable")
     if (
         artifact_manifest.get("source_commit") != source_commit
-        or artifact_manifest.get("product_version") != PRODUCT_VERSION
+        or artifact_manifest.get("product_version") != expected_product_version
         or artifact_manifest.get("sha256") != _file_sha256(executable)
     ):
         raise JourneyFailure("installed native identity does not match the release candidate")
@@ -986,7 +989,7 @@ def run_j20(
             "artifact_sha256": expected_artifact_sha256,
             "artifact_bytes": artifact.stat().st_size,
             "source_commit": source_commit,
-            "product_version": PRODUCT_VERSION,
+            "product_version": expected_product_version,
             "installed_executable_sha256": _file_sha256(executable),
             "installed_manifest_sha256": _file_sha256(manifest_path),
             "service_registration_sha256": _file_sha256(registration_path),
@@ -1052,6 +1055,7 @@ def main() -> None:
     parser.add_argument("--artifact", type=Path, required=True)
     parser.add_argument("--expected-artifact-sha256", required=True)
     parser.add_argument("--source-commit", required=True)
+    parser.add_argument("--expected-product-version", required=True)
     parser.add_argument("--install-root", type=Path, required=True)
     parser.add_argument("--state-root", type=Path, required=True)
     parser.add_argument("--project-root", type=Path, required=True)
@@ -1065,6 +1069,7 @@ def main() -> None:
             artifact=arguments.artifact,
             expected_artifact_sha256=arguments.expected_artifact_sha256,
             source_commit=arguments.source_commit,
+            expected_product_version=arguments.expected_product_version,
             install_root=arguments.install_root,
             state_root=arguments.state_root,
             project_root=arguments.project_root,

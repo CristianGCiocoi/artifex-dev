@@ -56,3 +56,12 @@ def test_public_composition_smoke_supports_native_and_module_launchers() -> None
     )
     assert "arguments.launcher.absolute()" in source
     assert "arguments.launcher.resolve()" not in source
+
+
+def test_combined_provider_journey_requires_explicit_patch_version() -> None:
+    source = (ROOT / "tools" / "artifex2" / "run_m12_shipping_journey.py").read_text(
+        encoding="utf-8"
+    )
+    assert 'parser.add_argument("--expected-product-version", required=True)' in source
+    assert 'artifact_manifest.get("product_version") != expected_product_version' in source
+    assert 'PRODUCT_VERSION = "2.0.0"' not in source
