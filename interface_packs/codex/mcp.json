@@ -1,8 +1,8 @@
 {
   "mcpServers": {
     "artifex": {
-      "command": "artifex-mcp",
-      "args": [],
+      "command": "artifex",
+      "args": ["mcp", "serve"],
       "transport": "stdio"
     }
   }

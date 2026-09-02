@@ -35,11 +35,16 @@ from artifex.capabilities import (
     shipping_artifact_sha256,
 )
 from artifex.distribution import (
+    ClientSetupPlan,
     ExperienceMode,
+    apply_client_enable,
+    apply_client_rollback,
     apply_integration_setup,
     discover_environment,
     install,
     install_plan,
+    plan_client_enable,
+    plan_client_rollback,
     plan_integration_setup,
     presentation_policy,
     run_distribution_doctor,
@@ -48,6 +53,7 @@ from artifex.distribution import (
     uninstall_plan,
     upgrade,
     upgrade_plan,
+    verify_client_integration,
 )
 from artifex.distribution.artifact import runtime_release_identity
 from artifex.distribution.bootstrap import build_distribution_bootstrap_report
@@ -271,6 +277,11 @@ class Application:
         self.register("distribution.presentation", self._distribution_presentation)
         self.register("distribution.setup.plan", self._distribution_setup_plan)
         self.register("distribution.setup.apply", self._distribution_setup_apply)
+        self.register("clients.enable.plan", self._client_enable_plan)
+        self.register("clients.enable.apply", self._client_enable_apply)
+        self.register("clients.verify", self._client_verify)
+        self.register("clients.rollback.plan", self._client_rollback_plan)
+        self.register("clients.rollback.apply", self._client_rollback_apply)
         self.register("distribution.doctor", self._distribution_doctor)
         self.register("distribution.bootstrap", self._distribution_bootstrap)
         self.register("distribution.install.plan", self._distribution_install_plan)
@@ -330,12 +341,81 @@ class Application:
             value=run_doctor(self.registry, project_root=root).to_dict(),
         )
 
-    def _integrations_list(self, _: OperationRequest) -> OperationResult:
-        return OperationResult(ok=True, value={"integrations": self.registry.report()})
+    def _integrations_list(self, request: OperationRequest) -> OperationResult:
+        integrations = self.registry.report()
+        known = {str(item["id"]) for item in integrations}
+        for adapter in (CodexIntegration(), ClaudeIntegration()):
+            if adapter.metadata.integration_id not in known:
+                item = {
+                    **adapter.metadata.to_dict(core_version=__version__),
+                    "health": adapter.health().to_dict(),
+                    "registry_source": "public-client-adapter",
+                }
+                integrations.append(item)
+        integrations.append(
+            {
+                "id": "hermes",
+                "name": "Hermes",
+                "onboarding_status": "OPTIONAL_NOT_CONFIGURED",
+                "health": {
+                    "status": "OPTIONAL_NOT_CONFIGURED",
+                    "summary": "Optional provider is not claimed or configured",
+                    "components": {"core_requirement": "PASS"},
+                },
+                "registry_source": "optional-status-projection",
+                "roles": [],
+                "capabilities": [],
+            }
+        )
+        provider_projection: Mapping[str, Any] | None = None
+        root = request.context.project_root
+        if root is not None and (Path(root) / SETUP_STATE_PATH).is_file():
+            try:
+                provider_projection = self._provider_loader.load(root).to_dict()
+            except ProviderSetupError:
+                provider_projection = {
+                    "status": "NEEDS_ATTENTION",
+                    "diagnosis": "Configured provider state could not be reconciled",
+                    "actual_state": "ARTIFEX provider configuration is invalid or stale",
+                    "proposed_repair": "Review the provider setup plan before applying changes",
+                }
+        return OperationResult(
+            ok=True,
+            value={
+                "integrations": integrations,
+                "capability_graph": provider_projection,
+                "reconciliation": {
+                    "adapter_registry": "available client adapters and manual fallback",
+                    "capability_graph": "configured provider readiness and role authority",
+                    "manual_only_means": (
+                        "no provider is configured, not that clients are unsupported"
+                    ),
+                },
+            },
+        )
 
     def _integration_health(self, request: OperationRequest) -> OperationResult:
         identifier = _required_string(request.arguments, "integration_id")
-        integration = self.registry.get(identifier)
+        if identifier == "hermes":
+            return OperationResult(
+                ok=True,
+                value={
+                    "integration_id": "hermes",
+                    "health": {
+                        "status": "OPTIONAL_NOT_CONFIGURED",
+                        "summary": "Hermes is optional and has not been claimed or configured",
+                        "components": {"core_requirement": "PASS"},
+                    },
+                    "compatibility": True,
+                },
+            )
+        integration: Any
+        if identifier == "codex":
+            integration = CodexIntegration()
+        elif identifier == "claude":
+            integration = ClaudeIntegration()
+        else:
+            integration = self.registry.get(identifier)
         return OperationResult(
             ok=True,
             value={
@@ -1597,6 +1677,52 @@ class Application:
             ok=True,
             value=apply_integration_setup(plan, confirmation_token=token).to_dict(),
         )
+
+    @staticmethod
+    def _client_enable_plan(request: OperationRequest) -> OperationResult:
+        plan = plan_client_enable(
+            _required_string(request.arguments, "client"),
+            _project_root(request),
+            bridge_command=_string_sequence(request.arguments, "bridge_command"),
+            config_root=_optional_string(request.arguments, "config_root"),
+        )
+        return OperationResult(ok=True, value=plan.to_dict())
+
+    @staticmethod
+    def _client_enable_apply(request: OperationRequest) -> OperationResult:
+        plan_value = _required_mapping(request.arguments, "plan")
+        plan = ClientSetupPlan.from_dict(plan_value)
+        token = _optional_string(request.arguments, "confirmation_token")
+        receipt = apply_client_enable(
+            plan,
+            confirmation_token=token,
+            receipt_root=_optional_string(request.arguments, "receipt_root"),
+        )
+        return OperationResult(ok=True, value=receipt)
+
+    @staticmethod
+    def _client_verify(request: OperationRequest) -> OperationResult:
+        value = verify_client_integration(
+            _required_string(request.arguments, "client"),
+            _project_root(request),
+            bridge_command=_string_sequence(request.arguments, "bridge_command"),
+            config_root=_optional_string(request.arguments, "config_root"),
+        )
+        return OperationResult(ok=True, value=value)
+
+    @staticmethod
+    def _client_rollback_plan(request: OperationRequest) -> OperationResult:
+        value = plan_client_rollback(_required_string(request.arguments, "receipt_path"))
+        return OperationResult(ok=True, value=value)
+
+    @staticmethod
+    def _client_rollback_apply(request: OperationRequest) -> OperationResult:
+        plan = _required_mapping(request.arguments, "plan")
+        value = apply_client_rollback(
+            plan,
+            confirmation_token=_optional_string(request.arguments, "confirmation_token"),
+        )
+        return OperationResult(ok=True, value=value)
 
     def _distribution_doctor(self, request: OperationRequest) -> OperationResult:
         root = request.arguments.get("project_root", request.context.project_root)

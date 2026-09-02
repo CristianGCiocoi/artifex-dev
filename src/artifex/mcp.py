@@ -14,6 +14,58 @@ JSONRPC_VERSION = "2.0"
 MCP_PROTOCOL_VERSION = "2025-06-18"
 
 
+def bridge_identity() -> dict[str, Any]:
+    """Return the installed bridge identity without starting a listener."""
+
+    return {
+        "name": "artifex",
+        "version": __version__,
+        "protocol_version": MCP_PROTOCOL_VERSION,
+        "transport": "stdio",
+        "network_listener": False,
+        "authority": "ARTIFEX_APPLICATION_API",
+    }
+
+
+def bridge_self_test(application: Application | None = None) -> dict[str, Any]:
+    """Exercise initialization, ping, and tool discovery in-process."""
+
+    server = LocalMCPServer(application)
+    initialize = server.handle_message(
+        {
+            "jsonrpc": JSONRPC_VERSION,
+            "id": "initialize",
+            "method": "initialize",
+            "params": {"protocolVersion": MCP_PROTOCOL_VERSION},
+        }
+    )
+    ping = server.handle_message(
+        {"jsonrpc": JSONRPC_VERSION, "id": "ping", "method": "ping", "params": {}}
+    )
+    tools = server.handle_message(
+        {"jsonrpc": JSONRPC_VERSION, "id": "tools", "method": "tools/list", "params": {}}
+    )
+    tool_values = tools.get("result", {}).get("tools", ()) if tools is not None else ()
+    passed = (
+        initialize is not None
+        and initialize.get("result", {}).get("serverInfo", {}).get("version") == __version__
+        and ping is not None
+        and ping.get("result") == {}
+        and isinstance(tool_values, list)
+        and any(item.get("name") == "system.health" for item in tool_values)
+    )
+    return {
+        **bridge_identity(),
+        "status": "PASS" if passed else "FAIL",
+        "checks": {
+            "initialize": initialize is not None and "result" in initialize,
+            "ping": ping is not None and ping.get("result") == {},
+            "tools": isinstance(tool_values, list) and bool(tool_values),
+        },
+        "tool_count": len(tool_values) if isinstance(tool_values, list) else 0,
+    }
+
+
 class LocalMCPServer:
     """Minimal MCP server with one tool per semantic Application operation."""
 

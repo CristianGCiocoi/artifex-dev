@@ -19,10 +19,16 @@ designated output namespaces. A governing `CHG-*` remains forbidden wherever
 it is stored. Executor validation is a claim until ARTIFEX Core records evidence
 and passes the applicable gate.
 
-The `skills/` entries are Codex-facing shims for the canonical agent-neutral
-skills under the repository's top-level `skills/` directory. `AGENTS.md` defines
-the broad interface boundary; generated project and nested `AGENTS.md` files may
-add narrower instructions without replacing canonical semantic state.
+The setup flow installs the `skills/` entries under the current Codex repository
+layout, `.agents/skills/artifex-*/SKILL.md`. It adds a bounded managed section to
+the repository `AGENTS.md`; existing instructions remain untouched.
 
-`mcp.json` uses the packaged `artifex-mcp` local stdio transport. The same semantic operations are
-available through the M04 Application API and its generic CLI call surface.
+Current Codex MCP registration is in `~/.codex/config.toml`. ARTIFEX previews the
+exact block, requires an explicit single-use approval, and writes a secret-free
+receipt before reporting readiness. The command is the absolute installed
+`artifex.exe` path with `mcp serve`; it does not depend on PATH or a Python module.
+`config.toml.example` documents the generated shape. `mcp.json` is retained only
+as a portable legacy descriptor and is not the public Codex configuration source.
+
+Use `artifex client doctor codex ...` for bounded version, registration, bridge,
+and file checks. It never invokes a model or changes PowerShell ExecutionPolicy.

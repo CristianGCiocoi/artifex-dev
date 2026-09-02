@@ -173,6 +173,9 @@ def main() -> int:
     if args.smoke:
         _run_json(executable, ("system", "version"))
         _run_json(executable, ("mode", "BEGINNER"))
+        mcp_result = _run_json(executable, ("mcp", "test"))
+        if mcp_result.get("status") != "PASS":
+            raise RuntimeError("standalone ARTIFEX MCP bridge self-test failed")
         subprocess.run(
             (
                 sys.executable,

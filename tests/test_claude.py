@@ -576,4 +576,6 @@ def test_claude_interface_pack_has_shim_rules_skill_and_optional_mcp_entry() -> 
     assert "project_model_fingerprint" in skill
     assert "newly created or content-changed" in rules
     assert "governing ChangeSet" in skill
-    assert mcp["mcpServers"]["artifex"]["transport"] == "stdio"
+    assert mcp["mcpServers"]["artifex"]["type"] == "stdio"
+    assert mcp["mcpServers"]["artifex"]["args"] == ["mcp", "serve"]
+    assert mcp["mcpServers"]["artifex"]["command"].endswith("artifex.exe")

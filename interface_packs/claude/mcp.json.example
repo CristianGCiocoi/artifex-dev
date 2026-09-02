@@ -2,11 +2,11 @@
   "mcpServers": {
     "artifex": {
       "args": [
-        "-m",
-        "artifex.mcp"
+        "mcp",
+        "serve"
       ],
-      "command": "python",
-      "transport": "stdio"
+      "command": "C:\\Program Files\\ARTIFEX\\artifex.exe",
+      "type": "stdio"
     }
   }
 }

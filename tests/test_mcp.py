@@ -6,7 +6,7 @@ import json
 import pytest
 
 from artifex.application import Application, OperationRequest
-from artifex.mcp import LocalMCPServer, serve_stdio
+from artifex.mcp import LocalMCPServer, bridge_identity, bridge_self_test, serve_stdio
 
 
 @pytest.mark.unit
@@ -67,3 +67,14 @@ def test_json_lines_stdio_is_local_deterministic_and_normalizes_errors() -> None
     assert len(responses) == 2
     assert responses[0]["error"]["code"] == -32700
     assert responses[1] == {"jsonrpc": "2.0", "id": 1, "result": {}}
+
+
+@pytest.mark.unit
+def test_installed_bridge_identity_and_bounded_self_test() -> None:
+    identity = bridge_identity()
+    assert identity["transport"] == "stdio"
+    assert identity["network_listener"] is False
+    report = bridge_self_test()
+    assert report["status"] == "PASS"
+    assert report["checks"] == {"initialize": True, "ping": True, "tools": True}
+    assert report["tool_count"] > 0

@@ -8,6 +8,17 @@ from artifex.distribution.artifact import (
     verify_artifact,
 )
 from artifex.distribution.beginner import BeginnerJourneyResult, start_beginner_journey
+from artifex.distribution.client_setup import (
+    ClientConfigurationError,
+    ClientMutation,
+    ClientSetupPlan,
+    apply_client_enable,
+    apply_client_rollback,
+    discover_bridge_command,
+    plan_client_enable,
+    plan_client_rollback,
+    verify_client_integration,
+)
 from artifex.distribution.discovery import SUPPORTED_TOOLS, detect_resources, discover_environment
 from artifex.distribution.doctor import run_distribution_doctor
 from artifex.distribution.lifecycle import (
@@ -65,6 +76,9 @@ __all__ = [
     "WINDOWS_11_CORE_PLATFORM_ID",
     "ApprovalStore",
     "BeginnerJourneyResult",
+    "ClientConfigurationError",
+    "ClientMutation",
+    "ClientSetupPlan",
     "DecisionExplanation",
     "DistributionDoctorReport",
     "DoctorFinding",
@@ -91,14 +105,19 @@ __all__ = [
     "VerifiedArtifact",
     "WindowsTaskSchedulerRegistrationAdapter",
     "apply_integration_setup",
+    "apply_client_enable",
+    "apply_client_rollback",
     "complete_deferred_uninstall",
     "create_artifact_manifest",
     "detect_resources",
     "discover_environment",
+    "discover_bridge_command",
     "explain_decision",
     "install",
     "install_plan",
     "plan_integration_setup",
+    "plan_client_enable",
+    "plan_client_rollback",
     "presentation_policy",
     "read_service_registration_manifest",
     "require_approval",
@@ -110,4 +129,5 @@ __all__ = [
     "upgrade",
     "upgrade_plan",
     "verify_artifact",
+    "verify_client_integration",
 ]

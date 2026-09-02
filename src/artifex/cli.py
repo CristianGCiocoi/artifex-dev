@@ -17,6 +17,8 @@ from artifex.policy import scrub_secrets
 app = typer.Typer(help="ARTIFEX development continuity and validation control plane.")
 system_app = typer.Typer(help="Inspect the ARTIFEX installation.")
 integration_app = typer.Typer(help="Inspect and select replaceable integrations.")
+client_app = typer.Typer(help="Configure public Codex and Claude clients with approval.")
+mcp_app = typer.Typer(help="Run and inspect the installed ARTIFEX MCP bridge.")
 manual_app = typer.Typer(help="Exchange portable manual execution packets and results.")
 project_app = typer.Typer(help="Read semantic project state.")
 research_app = typer.Typer(help="Validate provider-neutral research contracts.")
@@ -31,6 +33,8 @@ service_app = typer.Typer(help="Use the frontend-independent ARTIFEX managed ser
 migration_app = typer.Typer(help="Inspect and migrate a real ARTIFEX V1 Project.")
 app.add_typer(system_app, name="system")
 app.add_typer(integration_app, name="integration")
+app.add_typer(client_app, name="client")
+app.add_typer(mcp_app, name="mcp")
 app.add_typer(manual_app, name="manual")
 app.add_typer(project_app, name="project")
 app.add_typer(research_app, name="research")
@@ -186,6 +190,48 @@ def system_operations() -> None:
     """List semantic operations shared by CLI, API, and MCP."""
 
     _emit("system.operations")
+
+
+@mcp_app.command("serve")
+def mcp_serve() -> None:
+    """Serve the local MCP protocol over stdio without opening a network port."""
+
+    from artifex.mcp import serve_stdio
+
+    serve_stdio()
+
+
+@mcp_app.command("health")
+def mcp_health() -> None:
+    """Report the installed MCP bridge identity and self-test result."""
+
+    from artifex.mcp import bridge_self_test
+
+    result = bridge_self_test()
+    typer.echo(json.dumps(result, sort_keys=True, ensure_ascii=False))
+    if result["status"] != "PASS":
+        raise typer.Exit(1)
+
+
+@mcp_app.command("version")
+def mcp_version() -> None:
+    """Report bridge and protocol versions."""
+
+    from artifex.mcp import bridge_identity
+
+    typer.echo(json.dumps(bridge_identity(), sort_keys=True, ensure_ascii=False))
+
+
+@mcp_app.command("test")
+def mcp_test() -> None:
+    """Run a bounded local bridge test suitable for installers and doctors."""
+
+    from artifex.mcp import bridge_self_test
+
+    result = bridge_self_test()
+    typer.echo(json.dumps(result, sort_keys=True, ensure_ascii=False))
+    if result["status"] != "PASS":
+        raise typer.Exit(1)
 
 
 @app.command("doctor")
@@ -574,6 +620,79 @@ def integration_conformance(integration_id: str = typer.Argument("manual")) -> N
     """Run the integration conformance harness."""
 
     _emit("integrations.conformance", {"integration_id": integration_id})
+
+
+@client_app.command("plan")
+def client_plan(
+    client: str,
+    project_root: str = typer.Option(..., "--project-root"),
+    bridge_executable: str = typer.Option(..., "--bridge-executable"),
+    config_root: str | None = typer.Option(None, "--config-root"),
+) -> None:
+    """Show exact Codex or Claude changes and issue a bounded approval token."""
+
+    arguments: dict[str, Any] = {
+        "client": client,
+        "bridge_command": [bridge_executable],
+    }
+    if config_root is not None:
+        arguments["config_root"] = config_root
+    _emit("clients.enable.plan", arguments, project_root=project_root)
+
+
+@client_app.command("apply")
+def client_apply(
+    plan_path: Annotated[Path, typer.Option("--plan")],
+    confirm: str = typer.Option(..., "--confirm"),
+    receipt_root: str | None = typer.Option(None, "--receipt-root"),
+) -> None:
+    """Apply an unchanged approved plan and persist a rollback receipt."""
+
+    arguments: dict[str, Any] = {
+        "plan": _load_object(plan_path),
+        "confirmation_token": confirm,
+    }
+    if receipt_root is not None:
+        arguments["receipt_root"] = receipt_root
+    _emit("clients.enable.apply", arguments)
+
+
+@client_app.command("doctor")
+def client_doctor(
+    client: str,
+    project_root: str = typer.Option(..., "--project-root"),
+    bridge_executable: str = typer.Option(..., "--bridge-executable"),
+    config_root: str | None = typer.Option(None, "--config-root"),
+) -> None:
+    """Check client detection, MCP registration, bridge health, and configured files."""
+
+    arguments: dict[str, Any] = {
+        "client": client,
+        "bridge_command": [bridge_executable],
+    }
+    if config_root is not None:
+        arguments["config_root"] = config_root
+    _emit("clients.verify", arguments, project_root=project_root)
+
+
+@client_app.command("rollback-plan")
+def client_rollback_plan(receipt: str = typer.Option(..., "--receipt")) -> None:
+    """Show rollback changes and issue a separate bounded approval token."""
+
+    _emit("clients.rollback.plan", {"receipt_path": receipt})
+
+
+@client_app.command("rollback")
+def client_rollback(
+    plan_path: Annotated[Path, typer.Option("--plan")],
+    confirm: str = typer.Option(..., "--confirm"),
+) -> None:
+    """Remove only unchanged ARTIFEX-managed client configuration."""
+
+    _emit(
+        "clients.rollback.apply",
+        {"plan": _load_object(plan_path), "confirmation_token": confirm},
+    )
 
 
 @project_app.command("status")

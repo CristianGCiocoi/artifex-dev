@@ -19,8 +19,9 @@ capabilities:
   - background_jobs
 entrypoints:
   instructions: AGENTS.md
-  mcp: mcp.json
-  skills: skills
+  mcp: config.toml.example
+  skills_source: skills
+  skills_target: .agents/skills/artifex-*
 authority:
   canonical: repository ARTIFEX Project Model, contracts, evidence, and gates
   native_memory: auxiliary_only

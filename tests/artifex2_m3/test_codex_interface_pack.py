@@ -14,10 +14,16 @@ def test_codex_interface_pack_uses_packaged_mcp_and_role_specific_claims() -> No
     pack = yaml.safe_load((root / "interface_packs/codex/pack.yaml").read_text(encoding="utf-8"))
 
     assert mcp["mcpServers"]["artifex"] == {
-        "command": "artifex-mcp",
-        "args": [],
+        "command": "artifex",
+        "args": ["mcp", "serve"],
         "transport": "stdio",
     }
+    codex_config = (root / "interface_packs/codex/config.toml.example").read_text(
+        encoding="utf-8"
+    )
+    assert "[mcp_servers.artifex]" in codex_config
+    assert 'args = ["mcp", "serve"]' in codex_config
+    assert pack["entrypoints"]["skills_target"] == ".agents/skills/artifex-*"
     assert pack["roles"] == ["INTERACTION", "EXECUTION_IMPLEMENTER"]
     assert "HARNESS" not in pack["roles"]
 

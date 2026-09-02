@@ -1,0 +1,6 @@
+# Generated shape only. ARTIFEX substitutes the discovered absolute installed path.
+# Apply through the approval-gated client setup flow; do not copy this placeholder.
+[mcp_servers.artifex]
+command = "C:\\Program Files\\ARTIFEX\\artifex.exe"
+args = ["mcp", "serve"]
+enabled = true
