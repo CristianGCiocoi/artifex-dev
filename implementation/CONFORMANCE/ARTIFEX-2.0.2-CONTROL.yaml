@@ -1,0 +1,42 @@
+schema_version: '1.0'
+control_id: ARTIFEX-2.0.2-CORE-PUBLIC-COMPOSITION-RECOVERY
+target_release: 2.0.2
+state: ACTIVE
+authority:
+  disposition: ARTIFEX_ORCHESTRATOR_AUTHORIZE_2_0_2_CORE_PUBLIC_COMPOSITION_CONFORMANCE_RECOVERY
+  sha256: 2f2e586991434d34e7803082ade4909bdf282dfe917737a4d9af1986c2bc22fd
+  source: external Architect disposition
+release_history:
+  v2_0_0:
+    tag: v2.0.0
+    commit: e6bb13ba165fcb3d9b21cb4598d2f7539cf1bb0a
+    state: RELEASED_IMMUTABLE
+  v2_0_1:
+    tag: v2.0.1
+    commit: 7077470541d2b02e7ab77ce2a1e8bd0bda8dc254
+    state: RELEASED_IMMUTABLE
+conformance_trigger:
+  identity: ARTIFEX-2.0.1-END-TO-END-VM101-AUDIT
+  disposition: REFERENCED_BY_ARCHITECT_AUTHORITY
+  finding: CORE_PUBLIC_PRODUCT_COMPOSITION_INCOMPLETE
+  historical_m12_rewrite: false
+scope:
+  purpose: CORE_PRODUCT_COMPOSITION_AND_ONBOARDING_CONFORMANCE_RECOVERY
+  feature_expansion: false
+  frozen_adrs: UNCHANGED
+  optional_milestones: NOT_CLAIMED_NOT_STARTED
+  prohibited: [M6B, M8B, M8C, M10, M11, ATLAS]
+workstreams:
+  platform_dashboard_launcher: ACTIVE
+  canonical_state_service_installer: ACTIVE
+  mcp_codex_claude_onboarding: ACTIVE
+  j21_and_release_qualification: ACTIVE
+release_gate:
+  p0_required: 10
+  p0_passing: 0
+  j21: NOT_RUN
+  affected_journeys: NOT_RUN
+  ci: NOT_RUN
+  coverage: NOT_RUN
+  defender_on_windows: NOT_RUN
+  publication: PROHIBITED_UNTIL_ALL_PASS
