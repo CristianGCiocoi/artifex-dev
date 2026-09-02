@@ -29,7 +29,10 @@ def _json_call(launcher: Path, module: str | None, *arguments: str) -> dict[str,
         timeout=30,
     )
     if completed.returncode != 0 or not completed.stdout.strip():
-        raise RuntimeError(f"public command failed: {' '.join(arguments)}")
+        raise RuntimeError(
+            f"public command failed: {' '.join(arguments)}: "
+            f"stdout={completed.stdout!r} stderr={completed.stderr!r}"
+        )
     try:
         value = json.loads(completed.stdout)
     except json.JSONDecodeError as exc:
@@ -111,7 +114,9 @@ def main() -> int:
     parser.add_argument("--module")
     parser.add_argument("--expected-version", required=True)
     arguments = parser.parse_args()
-    smoke(arguments.launcher.resolve(), arguments.module, arguments.expected_version)
+    # Preserve a virtual-environment interpreter symlink. Resolving it would
+    # bypass the isolated environment on Unix and lose the installed package.
+    smoke(arguments.launcher.absolute(), arguments.module, arguments.expected_version)
     print(
         json.dumps(
             {

@@ -51,3 +51,8 @@ def test_public_composition_smoke_supports_native_and_module_launchers() -> None
         "system",
         "version",
     ]
+    source = (ROOT / "scripts" / "smoke_public_composition.py").read_text(
+        encoding="utf-8"
+    )
+    assert "arguments.launcher.absolute()" in source
+    assert "arguments.launcher.resolve()" not in source
