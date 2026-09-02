@@ -9,23 +9,49 @@ baseline:
   tag: v2.0.0
 candidate:
   accepted_maintenance_commit: a9df60d5d20308a4f9d7289d5d9ce4c9b0a25bdb
-  tree: 47f46fcb6f14957f52d72db747df355a5c3eee81
+  qualified_source_commit: 366d72139ba4dcaaa2495836ab5863c7d14ce5fb
+  tree: a316ea58b601fa7cbaaf7148df6ab069b1d4ddf8
   sealed_receipt_head: 0068050325494809cbf8955f0927b719c50a3e21
-  stable_patch_id: b46ef22beead4ad2dd8e62bc700dd59cce0951b0
-  architect_disposition: ACCEPTED_PREPARE_ARTIFEX_2_0_1
+  stable_patch_id: c2e7f27cd73324b76ed987ba9002059d9ee42c7a
+  architect_disposition: DEFENDER_DIFFERENTIAL_QUALIFICATION_AUTHORIZED
 totals:
-  files_changed: 15
-  lines_added: 2110
-  lines_deleted: 26
+  files_changed: 28
+  lines_added: 2802
+  lines_deleted: 46
 files:
 - path: .github/workflows/ci.yml
   change: MODIFIED
   classification: CI / workflow infrastructure
   summary: Full history only where required, current 2.x validation, explicit V1-R01 lane, and reliable coverage execution.
+- path: packaging/build.py
+  change: MODIFIED
+  classification: release validation/tooling
+  summary: Run public-composition smoke against each native standalone package.
+- path: packaging/build_windows_installer.py
+  change: MODIFIED
+  classification: release validation/tooling
+  summary: Bind Windows executable, installer metadata and provenance to version 2.0.1 and run public-composition smoke.
+- path: packaging/windows/ARTIFEX-Setup.nsi
+  change: MODIFIED
+  classification: release validation/tooling
+  summary: Parameterize native installer and uninstall metadata with the release version.
+- path: pyproject.toml
+  change: MODIFIED
+  classification: product runtime/source
+  product_source: true
+  summary: Advance the public distribution version to 2.0.1 without changing dependency policy.
+- path: uv.lock
+  change: MODIFIED
+  classification: release validation/tooling
+  summary: Bind the locked root package metadata to version 2.0.1.
 - path: scripts/validate_current_artifacts.py
   change: ADDED
   classification: release validation/tooling
   summary: Exact-candidate wheel, sdist and native identity, inventory, hash and isolated import validation for ARTIFEX 2.x.
+- path: scripts/smoke_public_composition.py
+  change: ADDED
+  classification: release validation/tooling
+  summary: Exercise version, mode, bootstrap, doctor and no-provider fallback through the packaged public launcher.
 - path: tools/artifex2/capture_v1_baseline.py
   change: MODIFIED
   classification: release validation/tooling
@@ -40,6 +66,15 @@ files:
   classification: product runtime/source
   product_source: true
   summary: Preserve Windows process probing while making POSIX import/typecheck safe; enforce exact private state ACLs and inherited provider-workspace ACLs.
+- path: src/artifex/_version.py
+  change: MODIFIED
+  classification: product runtime/source
+  product_source: true
+  summary: Publish the ARTIFEX public runtime version as 2.0.1.
+- path: tests/artifex2_m12/test_m12_certification.py
+  change: MODIFIED
+  classification: tests
+  summary: Bind J11/J20 qualification to an explicit expected release version.
 - path: tests/artifex2_m7/test_managed_service_windows_acl.py
   change: MODIFIED
   classification: tests
@@ -72,6 +107,14 @@ files:
   change: ADDED
   classification: tests
   summary: Path, ACL, artifact and trust-boundary adversarial coverage.
+- path: tests/post_ga/test_release_2_0_1_contracts.py
+  change: ADDED
+  classification: tests
+  summary: Verify version, Windows metadata and patch-release journey contracts.
+- path: tests/test_distribution.py
+  change: MODIFIED
+  classification: tests
+  summary: Cover cross-host rejection of Windows drive-qualified distribution paths.
 - path: implementation/POST-GA-CI/BASELINE-FAILURES.yaml
   change: ADDED
   classification: documentation
@@ -80,7 +123,25 @@ files:
   change: ADDED
   classification: documentation
   summary: Accepted maintenance scope and explicit exclusions.
+- path: implementation/POST-GA-CI/RECEIPT.yaml
+  change: ADDED
+  classification: documentation
+  summary: Seal the accepted post-GA CI normalization checkpoint and immutable 2.0.0 state.
+- path: implementation/RELEASES/ARTIFEX-2.0.1-DELTA.yaml
+  change: ADDED
+  classification: documentation
+  summary: Classify the complete maintenance delta and its impact-based qualification surface.
+- path: tools/artifex2/run_m12_shipping_journey.py
+  change: MODIFIED
+  classification: release validation/tooling
+  summary: Parameterize the qualified J11/J20 shipping harness with the expected patch version.
 product_impacts:
+- source: src/artifex/_version.py
+  affected_public_behavior:
+  - Public version, package metadata and release identity report ARTIFEX 2.0.1.
+  provider_roles: [provider-neutral]
+  platforms: {windows: VERSION_ADVANCED, linux: VERSION_ADVANCED, macos: VERSION_ADVANCED}
+  affected_journeys: [J01, J02, J10, J11, J16, J20]
 - source: src/artifex/managed_service.py
   affected_public_behavior:
   - Managed-service state and transport credentials remain accessible only to the exact current user and LocalSystem on Windows.

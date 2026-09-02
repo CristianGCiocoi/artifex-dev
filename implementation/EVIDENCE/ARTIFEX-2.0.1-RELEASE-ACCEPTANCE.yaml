@@ -1,0 +1,93 @@
+schema_version: '1.0'
+evidence_id: ARTIFEX-2.0.1-RELEASE-ACCEPTANCE
+release: 2.0.1
+status: PASS
+qualified_source:
+  commit: 366d72139ba4dcaaa2495836ab5863c7d14ce5fb
+  tree: a316ea58b601fa7cbaaf7148df6ab069b1d4ddf8
+  branch: codex/artifex-2.0.1-defender-acl-fastpath
+  base_release_commit: e6bb13ba165fcb3d9b21cb4598d2f7539cf1bb0a
+  base_release_tag: v2.0.0
+github_actions:
+  run_id: 33601704078
+  url: https://github.com/CristianGCiocoi/artifex-dev/actions/runs/33601704078
+  head_sha: 366d72139ba4dcaaa2495836ab5863c7d14ce5fb
+  jobs_passing: 11
+  jobs_required: 11
+  conclusion: PASS
+  jobs:
+  - preserved-v1-regression (V1-R01)
+  - test (windows-latest, 3.12)
+  - test (windows-latest, 3.13)
+  - test (ubuntu-latest, 3.12)
+  - test (ubuntu-latest, 3.13)
+  - test (macos-latest, 3.12)
+  - test (macos-latest, 3.13)
+  - native-package (windows-latest, native-windows-x64)
+  - native-package (ubuntu-latest, native-linux-x64)
+  - native-package (macos-latest, native-macos-arm64)
+  - source-package
+coverage:
+  required_percent: 85
+  reported_percent: 85
+  threshold_preserved: true
+  status: PASS
+packages:
+  source_distribution: PASS
+  wheel: PASS
+  native_windows_x64: PASS
+  native_linux_x64: PASS
+  native_macos_arm64: PASS
+  windows_nuitka_nsis_installer: PASS
+  roundtrip_download_validation: PASS
+  checksums: RELEASES/ARTIFEX-2.0.1-SHA256SUMS.txt
+defender_differential:
+  status: PASS
+  exact_candidate_installer_sha256: 8e1099458afb13029c458c57909d656296eb103e3c949c5c29fffd904a9b5992
+  final_report_sha256: fbb1ad69b3ef1c690a060077a2f1191dc1d7d2de5ba406b7677d2621004eefe2
+  phase_probe_sha256: d7bc9c05208146d8f2b9ab667ee0d52b52597acad00e2e564e8eda7a20454862
+  phase_probes_passing: 7
+  phase_probes_required: 7
+  defender_signature: 1.457.447.0
+  exclusions: 0
+  detections: 0
+affected_journeys:
+  J01: {status: PASS, provider: codex, evidence_sha256: b828b1ee35ecfed406cca026939db34bdce36662720f3eadf9198ef76920298e}
+  J02: {status: PASS, provider: claude, evidence_sha256: e7f1ec4686b51fcc017eb7c98441c5940ff1d3603504a8b69d60d3371bee25cf}
+  J10: {status: PASS, provider: none, evidence_sha256: ee28d6b63877641427f7a9ab00a9fad627f02f0d25e50ca985c92ec9e4ecbb35}
+  J11: {status: PASS, providers: [codex, claude], evidence_sha256: 77f14342d63780e37fe2ab95a1472f6959ff707476374594c43ba29cbbeff867}
+  J16:
+    status: PASS
+    providers: [codex, claude]
+    evidence_sha256:
+    - b828b1ee35ecfed406cca026939db34bdce36662720f3eadf9198ef76920298e
+    - e7f1ec4686b51fcc017eb7c98441c5940ff1d3603504a8b69d60d3371bee25cf
+  J20: {status: PASS, execution_provider: claude, evidence_sha256: 77f14342d63780e37fe2ab95a1472f6959ff707476374594c43ba29cbbeff867}
+public_composition:
+  standalone_codex_calls: 24
+  standalone_claude_calls: 24
+  combined_codex_claude_calls: 50
+  raw_provider_output_persisted: false
+  credential_material_read: false
+preserved_failures:
+  defender_candidate_95c548a: PRESERVED_FAIL
+  j02_attempt1_attestation_schema: PRESERVED_FAIL_BEFORE_INSTALL
+  j02_attempt2_attestation_identity: PRESERVED_FAIL_BEFORE_INSTALL
+  j02_attempt3_qualifier_environment: CORRECTED_BY_PROCESS_LOCAL_PATH_AND_RECHECKED
+  j11_j20_codex_attempt1: PRESERVED_UNKNOWN_WAITING_RECONCILIATION
+  evidence_bundle_sha256: bf8930c09c818139b688606856667c6cbc4e2b76bb56caf25387c8ac5e4134fa
+known_regression:
+  id: V1-R01-DASHBOARD-FIXTURE-SCHEMA-DRIFT
+  status: REPRODUCED_AND_PRESERVED
+  repaired: false
+  xfailed: false
+immutability:
+  v2_0_0_commit: e6bb13ba165fcb3d9b21cb4598d2f7539cf1bb0a
+  v2_0_0_tag_unchanged: true
+  v2_0_0_release_assets_unchanged: true
+scope:
+  vm101_modified: false
+  atlas_modified: false
+  optional_milestones_started: []
+  prohibited_milestones_not_started: [M6B, M8B, M8C, M10, M11]
+release_gate: PASS
