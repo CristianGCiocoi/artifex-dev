@@ -337,7 +337,14 @@ def verify_client_integration(
                 "ARTIFEX did not change PATH or PowerShell ExecutionPolicy."
             )
     configured = all(item["status"] == "PASS" for item in file_checks)
-    ready = configured and (not run_processes or bridge_status == "PASS")
+    ready = configured and (
+        not run_processes
+        or (
+            bridge_status == "PASS"
+            and client_executable is not None
+            and client_registration == "PASS"
+        )
+    )
     return {
         "client": normalized,
         "status": "READY" if ready else "NEEDS_ATTENTION",

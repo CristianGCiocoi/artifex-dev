@@ -12,9 +12,12 @@ authority.
 from __future__ import annotations
 
 import argparse
+import base64
 import html
+import json
 import secrets
 import sqlite3
+import sys
 import webbrowser
 from collections.abc import Mapping, Sequence
 from contextlib import closing
@@ -27,6 +30,10 @@ from typing import Any
 from urllib.parse import parse_qs, quote, unquote, urlsplit
 
 from artifex.application import Application, OperationContext, OperationRequest, OperationResult
+from artifex.distribution.client_setup import (
+    ClientConfigurationError,
+    discover_bridge_command,
+)
 from artifex.managed_service import LocalServiceClient, ServicePaths
 from artifex.project import default_catalog_path
 
@@ -68,9 +75,16 @@ class DashboardConfig:
 class PlatformDashboard:
     """Friendly rendering and action composition over existing authorities."""
 
-    def __init__(self, config: DashboardConfig, *, application: Application | None = None) -> None:
+    def __init__(
+        self,
+        config: DashboardConfig,
+        *,
+        application: Application | None = None,
+        bridge_executable: str | Path | None = None,
+    ) -> None:
         self.config = config
         self.application = application or Application()
+        self.bridge_executable = bridge_executable
 
     def snapshot(self) -> dict[str, Any]:
         version = self._dispatch("system.version")
@@ -163,18 +177,71 @@ class PlatformDashboard:
             {"integration_ids": [provider]},
             project_root=project_root,
         )
-        return {"provider": provider, "project_root": project_root, "plan": value}
+        client_plan = self._dispatch(
+            "clients.enable.plan",
+            {
+                "client": provider,
+                "bridge_command": list(self._bridge_command()),
+            },
+            project_root=project_root,
+        )
+        return {
+            "provider": provider,
+            "project_root": project_root,
+            "distribution_plan": value,
+            "client_plan": client_plan,
+        }
 
     def apply_provider(self, form: Mapping[str, str]) -> str:
         provider = _required_form(form, "provider")
         project_root = _required_form(form, "project_root")
-        token = _required_form(form, "confirmation_token")
+        distribution_token = _required_form(form, "distribution_token")
+        client_token = _required_form(form, "client_token")
+        client_plan = _decode_plan(_required_form(form, "client_plan"))
+        if client_plan.get("client") != provider or client_plan.get("project_root") != project_root:
+            raise DashboardActionError(
+                "Provider approval no longer matches",
+                "The submitted configuration plan does not match this Project and provider.",
+                "Return to the Platform Dashboard and review a new plan.",
+            )
         self._dispatch(
             "distribution.setup.apply",
-            {"integration_ids": [provider], "confirmation_token": token},
+            {
+                "integration_ids": [provider],
+                "confirmation_token": distribution_token,
+            },
             project_root=project_root,
         )
+        receipt = self._dispatch(
+            "clients.enable.apply",
+            {"plan": client_plan, "confirmation_token": client_token},
+            project_root=project_root,
+        )
+        verification = receipt.get("verification", {})
+        if not isinstance(verification, Mapping) or verification.get("status") != "READY":
+            detail = "; ".join(str(item) for item in verification.get("diagnostics", []))
+            raise DashboardActionError(
+                f"{provider.title()} needs attention",
+                detail or "ARTIFEX applied the approved files but the live client verification did not pass.",
+                "Open diagnostics, correct the discovered client state, then review and apply a fresh plan.",
+            )
         return provider
+
+    def _bridge_command(self) -> tuple[str, ...]:
+        candidate = self.bridge_executable
+        if candidate is None and Path(sys.executable).name.casefold() in {
+            "artifex",
+            "artifex.exe",
+        }:
+            candidate = sys.executable
+        try:
+            return discover_bridge_command(candidate)
+        except ClientConfigurationError as exc:
+            raise DashboardActionError(
+                "Installed ARTIFEX bridge was not found",
+                str(exc),
+                "Repair the ARTIFEX installation, then reopen the Platform Dashboard.",
+            ) from exc
 
     def render_home(self, *, notice: str | None = None) -> str:
         snapshot = self.snapshot()
@@ -230,17 +297,34 @@ class PlatformDashboard:
         return _page("ARTIFEX Platform", body)
 
     def render_provider_plan(self, value: Mapping[str, Any]) -> str:
-        plan = value["plan"]
-        decision = plan.get("decision", {}) if isinstance(plan, Mapping) else {}
-        effects = decision.get("effects", []) if isinstance(decision, Mapping) else []
-        token = str(decision.get("confirmation_token", ""))
-        expiry = str(decision.get("confirmation_expires_at", ""))
-        rows = "".join(f"<li>{_h(item)}</li>" for item in effects)
+        distribution_plan = value["distribution_plan"]
+        client_plan = value["client_plan"]
+        distribution_decision = (
+            distribution_plan.get("decision", {})
+            if isinstance(distribution_plan, Mapping)
+            else {}
+        )
+        client_decision = (
+            client_plan.get("decision", {}) if isinstance(client_plan, Mapping) else {}
+        )
+        distribution_effects = distribution_decision.get("effects", [])
+        mutations = client_plan.get("mutations", []) if isinstance(client_plan, Mapping) else []
+        rows = "".join(f"<li>{_h(item)}</li>" for item in distribution_effects)
+        rows += "".join(
+            f"<li><strong>{_h(item.get('action', 'CHANGE'))}</strong> "
+            f"{_h(item.get('path', ''))} — {_h(item.get('effect', ''))}</li>"
+            for item in mutations
+            if isinstance(item, Mapping)
+        )
+        distribution_token = str(distribution_decision.get("confirmation_token", ""))
+        client_token = str(client_decision.get("confirmation_token", ""))
+        expiry = str(client_decision.get("expires_at", ""))
+        encoded_plan = _encode_plan(client_plan)
         body = f"""
 <main class="narrow"><a class="back" href="/">← Platform Dashboard</a><p class="eyebrow">REVIEW CHANGES</p>
 <h1>Enable {_h(str(value['provider']).title())}</h1><p class="lede">Nothing has been changed yet.</p>
-<div class="review"><h2>ARTIFEX plans to</h2><ul>{rows}</ul><p><strong>Rollback:</strong> {_h(decision.get('rollback', 'Restore the previous configuration.'))}</p><p class="muted">Approval expires {_h(expiry)}.</p></div>
-<form method="post" action="/actions/providers/apply">{_csrf_input()}<input type="hidden" name="provider" value="{_h(value['provider'])}"><input type="hidden" name="project_root" value="{_h(value['project_root'])}"><input type="hidden" name="confirmation_token" value="{_h(token)}"><button type="submit">Approve and apply</button> <a class="button secondary" href="/">Cancel</a></form></main>"""
+<div class="review"><h2>ARTIFEX plans to</h2><ul>{rows}</ul><p><strong>Rollback:</strong> {_h(client_decision.get('rollback', 'Restore the previous configuration.'))}</p><p class="muted">Approval expires {_h(expiry)}.</p></div>
+<form method="post" action="/actions/providers/apply">{_csrf_input()}<input type="hidden" name="provider" value="{_h(value['provider'])}"><input type="hidden" name="project_root" value="{_h(value['project_root'])}"><input type="hidden" name="distribution_token" value="{_h(distribution_token)}"><input type="hidden" name="client_token" value="{_h(client_token)}"><input type="hidden" name="client_plan" value="{_h(encoded_plan)}"><button type="submit">Approve, apply and verify</button> <a class="button secondary" href="/">Cancel</a></form></main>"""
         return _page("Review provider changes", body)
 
     def render_diagnostics(self) -> str:
@@ -660,6 +744,8 @@ def _friendly_operation_error(operation: str, result: OperationResult) -> Dashbo
         "dashboard.project": "Verify that the Project remains reachable from its cataloged location.",
         "distribution.setup.plan": "Verify the Project is reachable, then review provider setup again.",
         "distribution.setup.apply": "Return to Review configuration and approve the newly issued exact plan.",
+        "clients.enable.plan": "Verify the installed ARTIFEX bridge and client configuration locations, then review provider setup again.",
+        "clients.enable.apply": "Return to Review configuration and approve a fresh exact client plan.",
     }
     return DashboardActionError(
         "ARTIFEX could not complete the action",
@@ -693,6 +779,30 @@ def _project_root_form(form: Mapping[str, str]) -> str:
 
 def _version_label(value: Mapping[str, Any]) -> str:
     return str(value.get("version", value.get("release", "unknown")))
+
+
+def _encode_plan(value: object) -> str:
+    payload = json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return base64.urlsafe_b64encode(payload).decode("ascii")
+
+
+def _decode_plan(value: str) -> dict[str, Any]:
+    try:
+        payload = base64.urlsafe_b64decode(value.encode("ascii"))
+        decoded = json.loads(payload)
+    except (ValueError, UnicodeError, json.JSONDecodeError) as exc:
+        raise DashboardActionError(
+            "Provider approval is invalid",
+            "The submitted configuration plan could not be read.",
+            "Return to the Platform Dashboard and review a fresh plan.",
+        ) from exc
+    if not isinstance(decoded, dict):
+        raise DashboardActionError(
+            "Provider approval is invalid",
+            "The submitted configuration plan is not an ARTIFEX plan object.",
+            "Return to the Platform Dashboard and review a fresh plan.",
+        )
+    return decoded
 
 
 def _h(value: object) -> str:

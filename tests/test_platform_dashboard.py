@@ -15,6 +15,7 @@ from artifex.platform_dashboard import (
     DashboardActionError,
     DashboardConfig,
     PlatformDashboard,
+    _encode_plan,
     create_dashboard_server,
 )
 
@@ -146,7 +147,9 @@ def test_non_cli_create_and_open_project_dashboard_flow(dashboard_server, tmp_pa
 
 
 @pytest.mark.integration
-def test_provider_configuration_is_planned_and_approval_gated(tmp_path: Path) -> None:
+def test_provider_configuration_is_planned_and_approval_gated(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     catalog = tmp_path / "catalog.sqlite3"
     root = tmp_path / "project"
     application = Application()
@@ -158,24 +161,47 @@ def test_provider_configuration_is_planned_and_approval_gated(tmp_path: Path) ->
         )
     )
     assert created.ok
+    bridge = tmp_path / "installed" / "artifex.exe"
+    bridge.parent.mkdir()
+    bridge.write_bytes(b"shipping-artifact-fixture")
+    monkeypatch.setenv("CODEX_HOME", str(tmp_path / "codex-home"))
+    monkeypatch.setattr(
+        "artifex.distribution.client_setup.verify_client_integration",
+        lambda *args, **kwargs: {
+            "status": "READY",
+            "client_version": "codex fixture",
+            "diagnostics": [],
+        },
+    )
     dashboard = PlatformDashboard(
         DashboardConfig.resolve(catalog_path=catalog, state_root=tmp_path / "state"),
         application=application,
+        bridge_executable=bridge,
     )
     planned = dashboard.plan_provider({"provider": "codex", "project_root": str(root)})
-    assert planned["plan"]["applied"] is False
-    assert planned["plan"]["decision"]["approval_required"] is True
+    assert planned["distribution_plan"]["applied"] is False
+    assert planned["distribution_plan"]["decision"]["approval_required"] is True
+    assert planned["client_plan"]["decision"]["approval_required"] is True
+    assert any(
+        mutation["path"].endswith("config.toml")
+        for mutation in planned["client_plan"]["mutations"]
+    )
     assert not (root / ".artifex" / "integrations.json").exists()
 
-    token = planned["plan"]["decision"]["confirmation_token"]
+    distribution_token = planned["distribution_plan"]["decision"]["confirmation_token"]
+    client_token = planned["client_plan"]["decision"]["confirmation_token"]
     assert dashboard.apply_provider(
         {
             "provider": "codex",
             "project_root": str(root),
-            "confirmation_token": token,
+            "distribution_token": distribution_token,
+            "client_token": client_token,
+            "client_plan": _encode_plan(planned["client_plan"]),
         }
     ) == "codex"
     assert (root / ".artifex" / "integrations.json").is_file()
+    assert (tmp_path / "codex-home" / "config.toml").is_file()
+    assert list((root / ".artifex" / "integration-receipts").glob("client-codex-*.json"))
 
 
 @pytest.mark.unit
