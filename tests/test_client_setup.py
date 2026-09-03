@@ -6,10 +6,12 @@ from pathlib import Path
 
 import pytest
 
+import artifex.distribution.client_setup as client_setup
 from artifex.distribution.approvals import ApprovalStore
 from artifex.distribution.client_setup import (
     ClientConfigurationError,
     ClientSetupPlan,
+    _interface_pack,
     _run_process,
     apply_client_enable,
     apply_client_rollback,
@@ -18,6 +20,22 @@ from artifex.distribution.client_setup import (
     plan_client_rollback,
     verify_client_integration,
 )
+
+
+@pytest.mark.unit
+def test_interface_pack_resolves_nuitka_standalone_sibling_layout(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    bundle = tmp_path / "bundle"
+    compiled_module = bundle / "artifex" / "distribution" / "client_setup.py"
+    executable = bundle / "artifex.exe"
+    interface_pack = bundle / "interface_packs" / "codex"
+    interface_pack.mkdir(parents=True)
+    executable.write_bytes(b"native-artifact")
+    monkeypatch.setattr(client_setup, "__file__", str(compiled_module))
+    monkeypatch.setattr(client_setup.sys, "executable", str(executable))
+
+    assert _interface_pack("codex") == interface_pack
 
 
 def _runner(arguments: object) -> subprocess.CompletedProcess[str]:

@@ -12,6 +12,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 import uuid
 from collections.abc import Callable, Mapping, Sequence
@@ -760,6 +761,9 @@ def _interface_pack(client: str) -> Path:
     packaged = Path(__file__).resolve().parents[1] / "interface_packs" / client
     if packaged.is_dir():
         return packaged
+    standalone = Path(sys.executable).resolve().parent / "interface_packs" / client
+    if standalone.is_dir():
+        return standalone
     raise ClientConfigurationError(f"bundled {client} interface pack is missing")
 
 
