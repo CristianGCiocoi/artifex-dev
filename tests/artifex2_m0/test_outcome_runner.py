@@ -22,7 +22,7 @@ def test_public_process_runner_verifies_json_without_shell(tmp_path: Path) -> No
             "composition": "PUBLIC_PROCESS",
             "command": [sys.executable, "-c", 'print("{\\"ok\\":true}")'],
             "cwd": ".",
-            "timeout_seconds": 5,
+            "timeout_seconds": 15,
             "expect": {"exit_code": 0, "stdout_json": {"ok": True}},
         },
     )

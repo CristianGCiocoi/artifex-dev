@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import http.client
+import json
 import sqlite3
 import threading
 from pathlib import Path
@@ -17,6 +18,7 @@ from artifex.platform_dashboard import (
     PlatformDashboard,
     _decode_plan,
     _encode_plan,
+    _merged_provider_setup_arguments,
     create_dashboard_server,
 )
 
@@ -317,6 +319,83 @@ def test_provider_configuration_is_planned_and_approval_gated(
     )
     assert provider["state"] == "NEEDS ATTENTION"
     assert provider["verification"]["status"] == "READY"
+
+
+@pytest.mark.unit
+def test_provider_enable_preserves_existing_project_provider_configuration(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "project"
+    state = root / ".artifex" / "integrations.json"
+    state.parent.mkdir(parents=True)
+    codex = {
+        "provider_id": "codex",
+        "enabled": True,
+        "roles": ["INTERACTION", "EXECUTION_IMPLEMENTER"],
+        "governance_mode": "STANDALONE",
+        "command": ["codex", "--profile", "qualified"],
+        "credential_reference": {
+            "broker": "codex-native-session",
+            "reference": "default",
+            "provider_id": "codex",
+            "scopes": ["INTERACTION", "EXECUTION_IMPLEMENTER"],
+            "secret_material_present": False,
+        },
+    }
+    state.write_text(
+        json.dumps(
+            {
+                "schema_version": "2.0",
+                "authority": "ARTIFEX_PROJECT_STATE",
+                "vendor_configuration_mutated": False,
+                "enabled": ["codex"],
+                "providers": [codex],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    arguments = _merged_provider_setup_arguments(str(root), "claude")
+
+    assert arguments == {
+        "integration_ids": ["codex", "claude"],
+        "provider_specs": [codex],
+    }
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    ("value", "message"),
+    [
+        (
+            {
+                "schema_version": "2.0",
+                "authority": "UNTRUSTED_STATE",
+                "enabled": ["codex"],
+                "providers": [],
+            },
+            "invalid authority",
+        ),
+        (
+            {
+                "schema_version": "2.0",
+                "authority": "ARTIFEX_PROJECT_STATE",
+                "enabled": ["codex"],
+                "providers": [],
+            },
+            "missing its configuration details",
+        ),
+    ],
+)
+def test_provider_enable_fails_closed_on_invalid_existing_state(
+    tmp_path: Path, value: object, message: str
+) -> None:
+    state = tmp_path / ".artifex" / "integrations.json"
+    state.parent.mkdir(parents=True)
+    state.write_text(json.dumps(value), encoding="utf-8")
+
+    with pytest.raises(DashboardActionError, match=message):
+        _merged_provider_setup_arguments(str(tmp_path), "claude")
 
 
 @pytest.mark.unit

@@ -34,6 +34,7 @@ from artifex.distribution.client_setup import (
     ClientConfigurationError,
     discover_bridge_command,
 )
+from artifex.distribution.setup import SETUP_STATE_PATH
 from artifex.managed_service import LocalServiceClient, ServicePaths
 from artifex.project import default_catalog_path
 
@@ -174,9 +175,10 @@ class PlatformDashboard:
                 "Choose Codex or Claude.",
             )
         project_root = _required_form(form, "project_root")
+        setup_arguments = _merged_provider_setup_arguments(project_root, provider)
         value = self._dispatch(
             "distribution.setup.plan",
-            {"integration_ids": [provider]},
+            setup_arguments,
             project_root=project_root,
         )
         client_plan = self._dispatch(
@@ -206,12 +208,11 @@ class PlatformDashboard:
                 "The submitted configuration plan does not match this Project and provider.",
                 "Return to the Platform Dashboard and review a new plan.",
             )
+        setup_arguments = _merged_provider_setup_arguments(project_root, provider)
+        setup_arguments["confirmation_token"] = distribution_token
         self._dispatch(
             "distribution.setup.apply",
-            {
-                "integration_ids": [provider],
-                "confirmation_token": distribution_token,
-            },
+            setup_arguments,
             project_root=project_root,
         )
         receipt = self._dispatch(
@@ -835,6 +836,85 @@ def _friendly_operation_error(operation: str, result: OperationResult) -> Dashbo
         f"{error_type}: {message}",
         repairs.get(operation, "Open diagnostics, correct the reported state, and retry."),
     )
+
+
+def _merged_provider_setup_arguments(
+    project_root: str, provider: str
+) -> dict[str, Any]:
+    """Preserve existing Project-owned opt-ins when enabling one Core provider."""
+
+    root = Path(project_root).expanduser().resolve()
+    state_path = root / SETUP_STATE_PATH
+    if not state_path.is_file():
+        return {"integration_ids": [provider]}
+    try:
+        value = json.loads(state_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise DashboardActionError(
+            "Provider configuration needs attention",
+            f"The current Project provider state is unreadable: {type(exc).__name__}.",
+            "Open diagnostics and repair the existing provider state before enabling another provider.",
+        ) from exc
+    if not isinstance(value, Mapping) or value.get("authority") != "ARTIFEX_PROJECT_STATE":
+        raise DashboardActionError(
+            "Provider configuration needs attention",
+            "The current Project provider state has an invalid authority.",
+            "Open diagnostics and repair the existing provider state before enabling another provider.",
+        )
+    enabled = value.get("enabled")
+    if not isinstance(enabled, list) or any(
+        not isinstance(item, str) or not item.strip() for item in enabled
+    ):
+        raise DashboardActionError(
+            "Provider configuration needs attention",
+            "The current Project provider selection is invalid.",
+            "Open diagnostics and repair the existing provider state before enabling another provider.",
+        )
+    selected = list(dict.fromkeys((*enabled, provider)))
+    arguments: dict[str, Any] = {"integration_ids": selected}
+    schema_version = value.get("schema_version")
+    if schema_version == "1.0":
+        return arguments
+    if schema_version != "2.0":
+        raise DashboardActionError(
+            "Provider configuration needs attention",
+            "The current Project provider schema is unsupported.",
+            "Open diagnostics and migrate the existing provider state before enabling another provider.",
+        )
+    providers = value.get("providers")
+    if not isinstance(providers, list):
+        raise DashboardActionError(
+            "Provider configuration needs attention",
+            "The current Project provider details are invalid.",
+            "Open diagnostics and repair the existing provider state before enabling another provider.",
+        )
+    by_identifier: dict[str, Mapping[str, Any]] = {}
+    for item in providers:
+        if not isinstance(item, Mapping):
+            raise DashboardActionError(
+                "Provider configuration needs attention",
+                "The current Project contains a malformed provider entry.",
+                "Open diagnostics and repair the existing provider state before enabling another provider.",
+            )
+        identifier = item.get("provider_id")
+        if not isinstance(identifier, str) or not identifier or identifier in by_identifier:
+            raise DashboardActionError(
+                "Provider configuration needs attention",
+                "The current Project contains an invalid or duplicate provider identity.",
+                "Open diagnostics and repair the existing provider state before enabling another provider.",
+            )
+        by_identifier[identifier] = item
+    missing = [identifier for identifier in enabled if identifier not in by_identifier]
+    if missing:
+        raise DashboardActionError(
+            "Provider configuration needs attention",
+            "The current Project provider selection is missing its configuration details.",
+            "Open diagnostics and repair the existing provider state before enabling another provider.",
+        )
+    existing_specs = [dict(by_identifier[identifier]) for identifier in enabled]
+    if existing_specs:
+        arguments["provider_specs"] = existing_specs
+    return arguments
 
 
 def _required_form(form: Mapping[str, str], name: str) -> str:
