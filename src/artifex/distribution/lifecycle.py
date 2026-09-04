@@ -1681,9 +1681,13 @@ def _stop_running_managed_executables(
     not only the process name, so unrelated ARTIFEX copies are untouched.
     """
 
-    if (platform_name or os.name) != "nt":
+    effective_platform = platform_name or os.name
+    if effective_platform != "nt":
         return []
-    executable = (root / _native_executable_name()).resolve()
+    # This branch models Windows even when a cross-platform test injects the
+    # platform name from a non-Windows host.  Keep the Windows shipping name
+    # explicit so the generated exact-path guard is host-independent.
+    executable = (root / "artifex.exe").resolve()
     target = str(executable).replace("'", "''")
     process_name = executable.name.replace("'", "''")
     script = f"""
