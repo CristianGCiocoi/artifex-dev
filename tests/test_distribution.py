@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import base64
 import hashlib
 import json
 import os
 import runpy
+import subprocess
 import sys
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -953,13 +955,58 @@ def test_deferred_self_uninstall_completes_after_parent_exit(tmp_path: Path) -> 
             request_path, security_root=security, parent_checker=lambda _: False
         )
     request_path.write_text(original_request, encoding="utf-8")
+    stopped_roots: list[Path] = []
     completed = complete_deferred_uninstall(
-        request_path, security_root=security, parent_checker=lambda _: False
+        request_path,
+        security_root=security,
+        parent_checker=lambda _: False,
+        running_process_stopper=lambda target: stopped_roots.append(target) or [321],
     )
     assert completed["status"] == "COMPLETE"
+    assert completed["stopped_processes"] == [321]
+    assert stopped_roots == [root.resolve()]
     assert not Path(installed.executable).exists()
     assert not Path(installed.manifest).exists()
     assert unmanaged.read_text(encoding="utf-8") == "keep"
+
+
+@pytest.mark.unit
+def test_windows_uninstall_stopper_targets_only_exact_installed_executable(
+    tmp_path: Path,
+) -> None:
+    install_root = tmp_path / "Program Files" / "ARTIFEX"
+    completed = subprocess.CompletedProcess(
+        args=[], returncode=0, stdout="812\n913\n", stderr=""
+    )
+    calls: list[dict[str, Any]] = []
+
+    def fake_runner(*args: Any, **kwargs: Any) -> subprocess.CompletedProcess[str]:
+        calls.append({"args": args, "kwargs": kwargs})
+        return completed
+
+    stopped = lifecycle._stop_running_managed_executables(
+        install_root,
+        runner=fake_runner,
+        platform_name="nt",
+    )
+
+    assert stopped == [812, 913]
+    assert len(calls) == 1
+    command = calls[0]["args"][0]
+    encoded = command[command.index("-EncodedCommand") + 1]
+    script = base64.b64decode(encoded).decode("utf-16-le")
+    assert str((install_root / "artifex.exe").resolve()) in script
+    assert "[StringComparison]::OrdinalIgnoreCase" in script
+    assert "Stop-Process" in script
+    assert calls[0]["kwargs"]["timeout"] == 30
+
+
+@pytest.mark.unit
+def test_uninstall_stopper_is_noop_off_windows(tmp_path: Path) -> None:
+    assert lifecycle._stop_running_managed_executables(
+        tmp_path,
+        platform_name="posix",
+    ) == []
 
 
 @pytest.mark.integration

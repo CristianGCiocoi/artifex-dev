@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import hmac
 import json
@@ -49,6 +50,7 @@ _DEFERRED_REQUEST_TTL_SECONDS = 120
 
 DeferredLauncher = Callable[[Path, Path, int], None]
 ParentChecker = Callable[[int], bool]
+RunningProcessStopper = Callable[[Path], list[int]]
 
 
 @dataclass(frozen=True, slots=True)
@@ -799,6 +801,7 @@ def complete_deferred_uninstall(
     wait_timeout_seconds: float = 30.0,
     parent_checker: ParentChecker | None = None,
     service_adapter: ServiceRegistrationAdapter | None = None,
+    running_process_stopper: RunningProcessStopper | None = None,
 ) -> dict[str, Any]:
     request_path = Path(request_file).resolve()
     try:
@@ -852,7 +855,10 @@ def complete_deferred_uninstall(
             registration.uninstall(
                 registration.plan_uninstall(installed_service.service_id)
             )
+        stopped_processes: list[int] = []
         try:
+            stopper = running_process_stopper or _stop_running_managed_executables
+            stopped_processes = stopper(root)
             removed = _perform_uninstall(
                 root, manifest_path, manifest, security_root=security_root
             )
@@ -865,6 +871,7 @@ def complete_deferred_uninstall(
             "install_root": str(root),
             "status": "COMPLETE",
             "removed": removed,
+            "stopped_processes": stopped_processes,
         }
     else:
         staged = Path(str(request.get("staged_artifact", ""))).resolve()
@@ -1657,6 +1664,76 @@ def _pid_exists(pid: int) -> bool:
     except OSError:
         return False
     return True
+
+
+def _stop_running_managed_executables(
+    root: Path,
+    *,
+    runner: Callable[..., subprocess.CompletedProcess[str]] | None = None,
+    platform_name: str | None = None,
+) -> list[int]:
+    """Stop installed ARTIFEX frontends before manifest-owned file removal.
+
+    The deferred lifecycle helper runs from a verified copy outside the install
+    root.  Once the managed service has been stopped and unregistered, any
+    process still executing the exact installed executable is a user frontend
+    that would keep the Windows image locked.  Match the full executable path,
+    not only the process name, so unrelated ARTIFEX copies are untouched.
+    """
+
+    if (platform_name or os.name) != "nt":
+        return []
+    executable = (root / _native_executable_name()).resolve()
+    target = str(executable).replace("'", "''")
+    process_name = executable.name.replace("'", "''")
+    script = f"""
+$ErrorActionPreference = 'Stop'
+$target = [IO.Path]::GetFullPath('{target}')
+$current = {os.getpid()}
+$matches = @(Get-CimInstance Win32_Process -Filter "Name = '{process_name}'" | Where-Object {{
+    $_.ProcessId -ne $current -and
+    $_.ExecutablePath -and
+    [String]::Equals(
+        [IO.Path]::GetFullPath($_.ExecutablePath),
+        $target,
+        [StringComparison]::OrdinalIgnoreCase
+    )
+}})
+foreach ($process in $matches) {{
+    Stop-Process -Id $process.ProcessId -Force -ErrorAction Stop
+    Wait-Process -Id $process.ProcessId -Timeout 10 -ErrorAction SilentlyContinue
+    Write-Output $process.ProcessId
+}}
+""".strip()
+    encoded = base64.b64encode(script.encode("utf-16-le")).decode("ascii")
+    system_root = Path(os.environ.get("SYSTEMROOT", r"C:\Windows"))
+    powershell = system_root / "System32" / "WindowsPowerShell" / "v1.0" / "powershell.exe"
+    invoke = runner or subprocess.run
+    completed = invoke(
+        [
+            str(powershell),
+            "-NoProfile",
+            "-NonInteractive",
+            "-EncodedCommand",
+            encoded,
+        ],
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+    if completed.returncode != 0:
+        detail = (completed.stderr or completed.stdout or "unknown Windows process error").strip()
+        raise RuntimeError(
+            "could not close the installed ARTIFEX frontend before uninstall: "
+            + detail[:500]
+        )
+    stopped: list[int] = []
+    for line in completed.stdout.splitlines():
+        value = line.strip()
+        if value.isdigit():
+            stopped.append(int(value))
+    return stopped
 
 
 def _schedule_helper_cleanup(helper: Path) -> None:
