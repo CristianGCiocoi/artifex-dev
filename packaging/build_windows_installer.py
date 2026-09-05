@@ -24,6 +24,8 @@ NSIS_URL = (
     f"{NSIS_VERSION}/nsis-{NSIS_VERSION}.zip"
 )
 NSIS_SHA256 = "56581f90db321581c5381193d796fffcf2d24b2f8fed2160a6c6a3baa67f2c4f"
+WINDOWS_CONSOLE_MODE = "attach"
+WINDOWS_ICON_PATH = Path("packaging/windows/assets/artifex.ico")
 
 
 def _sha256(path: Path) -> str:
@@ -120,6 +122,9 @@ def main() -> int:
             shutil.rmtree(target, ignore_errors=True)
     output.mkdir(parents=True, exist_ok=True)
     work.mkdir(parents=True, exist_ok=True)
+    icon = root / WINDOWS_ICON_PATH
+    if not icon.is_file():
+        raise FileNotFoundError(f"ARTIFEX Windows icon is unavailable: {icon}")
     report = work / "nuitka-compilation-report.xml"
     command = (
         sys.executable,
@@ -131,6 +136,10 @@ def main() -> int:
         "--output-dir=" + str(work),
         "--output-filename=artifex.exe",
         "--report=" + str(report),
+        # Keep terminal output for CLI/MCP callers, but do not create a console
+        # when Explorer or the per-user managed-service task launches ARTIFEX.
+        f"--windows-console-mode={WINDOWS_CONSOLE_MODE}",
+        "--windows-icon-from-ico=" + str(icon),
         # Migration backups call sqlite3.iterdump(), which imports sqlite3.dump
         # dynamically. Keep the standard-library helper in the native bundle.
         "--include-module=sqlite3.dump",
@@ -203,6 +212,7 @@ def main() -> int:
             f"/DARTIFEX_BUNDLE={bundle}",
             f"/DARTIFEX_OUTPUT={installer}",
             f"/DARTIFEX_VERSION={__version__}",
+            f"/DARTIFEX_ICON={icon}",
             str(script),
         ),
         cwd=root,
@@ -221,6 +231,11 @@ def main() -> int:
             "nsis_version": NSIS_VERSION,
             "nsis_archive_sha256": NSIS_SHA256,
             "python_version": sys.version.split()[0],
+            "windows_console_mode": WINDOWS_CONSOLE_MODE,
+            "icon": {
+                "path": WINDOWS_ICON_PATH.as_posix(),
+                "sha256": _sha256(icon),
+            },
         },
         "bundle_manifest": manifest,
         "installer": {

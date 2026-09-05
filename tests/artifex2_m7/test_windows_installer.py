@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import struct
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -8,6 +9,8 @@ from typer.testing import CliRunner
 
 from artifex.cli import app
 from artifex.distribution import windows_installer
+
+ROOT = Path(__file__).resolve().parents[2]
 
 
 class _Result:
@@ -120,6 +123,43 @@ def test_nsis_silent_mode_is_fast_and_cannot_block_on_error_dialogs() -> None:
     ]
     assert len(message_boxes) == 3
     assert all(line.endswith("/SD IDOK") for line in message_boxes)
+
+
+@pytest.mark.packaging
+def test_windows_shell_is_quiet_without_sacrificing_terminal_cli_output() -> None:
+    builder = (ROOT / "packaging" / "build_windows_installer.py").read_text(
+        encoding="utf-8"
+    )
+
+    assert 'WINDOWS_CONSOLE_MODE = "attach"' in builder
+    assert 'f"--windows-console-mode={WINDOWS_CONSOLE_MODE}"' in builder
+    assert "--windows-console-mode=disable" not in builder
+    assert '"--windows-icon-from-ico=" + str(icon)' in builder
+
+
+@pytest.mark.packaging
+def test_artifex_icon_is_multiresolution_and_wired_through_nsis() -> None:
+    icon = ROOT / "packaging" / "windows" / "assets" / "artifex.ico"
+    payload = icon.read_bytes()
+    reserved, kind, image_count = struct.unpack_from("<HHH", payload)
+    dimensions = {
+        (
+            256 if payload[offset] == 0 else payload[offset],
+            256 if payload[offset + 1] == 0 else payload[offset + 1],
+        )
+        for offset in range(6, 6 + image_count * 16, 16)
+    }
+    script = (ROOT / "packaging" / "windows" / "ARTIFEX-Setup.nsi").read_text(
+        encoding="utf-8"
+    )
+
+    assert (reserved, kind) == (0, 1)
+    assert image_count >= 8
+    assert {(16, 16), (32, 32), (48, 48), (256, 256)} <= dimensions
+    assert 'Icon "${ARTIFEX_ICON}"' in script
+    assert 'UninstallIcon "${ARTIFEX_ICON}"' in script
+    assert '"DisplayIcon"' in script
+    assert '"$INSTDIR\\artifex.exe",0' in script
 
 
 @pytest.mark.unit

@@ -12,6 +12,9 @@ CRCCheck force
 !ifndef ARTIFEX_OUTPUT
   !error "ARTIFEX_OUTPUT is required"
 !endif
+!ifndef ARTIFEX_ICON
+  !error "ARTIFEX_ICON is required"
+!endif
 !ifndef ARTIFEX_VERSION
   !define ARTIFEX_VERSION "2.0.2"
 !endif
@@ -26,6 +29,8 @@ InstallDirRegKey HKLM "Software\ARTIFEX" "InstallDir"
 BrandingText "ARTIFEX"
 ShowInstDetails show
 ShowUninstDetails show
+Icon "${ARTIFEX_ICON}"
+UninstallIcon "${ARTIFEX_ICON}"
 
 VIProductVersion "${ARTIFEX_VERSION}.0"
 VIAddVersionKey /LANG=1033 "ProductName" "ARTIFEX"
@@ -75,6 +80,7 @@ Section "ARTIFEX" section_core
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ARTIFEX" "DisplayVersion" "${ARTIFEX_VERSION}"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ARTIFEX" "Publisher" "ARTIFEX Contributors"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ARTIFEX" "InstallLocation" "$INSTDIR"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ARTIFEX" "DisplayIcon" '"$INSTDIR\artifex.exe",0'
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ARTIFEX" "UninstallString" '"$INSTDIR\Uninstall.exe"'
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ARTIFEX" "NoModify" 1
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ARTIFEX" "NoRepair" 1
