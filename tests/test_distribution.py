@@ -1556,6 +1556,98 @@ def test_deferred_uninstall_refuses_tampered_operation_claim(
     assert Path(installed.manifest).is_file()
 
 
+@pytest.mark.unit
+def test_post_exit_cleanup_launch_is_bounded_and_operation_bound(
+    tmp_path: Path,
+) -> None:
+    approvals = ApprovalStore(tmp_path / "approvals")
+    security = tmp_path / "security"
+    source = _write_test_artifact(tmp_path / "release", b"trusted")
+    root = tmp_path / "installed"
+    install_decision = install_plan(
+        source, root, approval_store=approvals, identity_probe=_test_identity_probe
+    )
+    installed = install(
+        source,
+        root,
+        confirmation_token=install_decision.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+    )
+    remove_decision = uninstall_plan(root, approval_store=approvals, security_root=security)
+    deferred: list[tuple[Path, Path, int]] = []
+    uninstall(
+        root,
+        confirmation_token=remove_decision.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        running_executable=installed.executable,
+        force_deferred=True,
+        deferred_launcher=lambda executable, request, pid: deferred.append(
+            (executable, request, pid)
+        ),
+    )
+    request_path = deferred[0][1]
+    request = json.loads(request_path.read_text(encoding="utf-8"))
+    helper_root = Path(request["helper_bundle_root"])
+    entries = lifecycle._manifest_entries(
+        {"files": request["helper_files"]}, "files", required=True
+    )
+    launches: list[tuple[list[str], dict[str, Any]]] = []
+
+    def capture_launch(arguments: list[str], **kwargs: Any) -> object:
+        launches.append((arguments, kwargs))
+        return object()
+
+    lifecycle._launch_post_exit_helper_cleanup(
+        helper_root,
+        entries,
+        install_root=root,
+        request_path=request_path,
+        parent_pid=1234,
+        launcher=capture_launch,
+        platform_name="nt",
+        powershell_path=tmp_path / "trusted-system-powershell.exe",
+    )
+
+    assert len(launches) == 1
+    arguments, options = launches[0]
+    assert len(subprocess.list2cmdline(arguments)) < 32_767
+    assert arguments[-2] == "-EncodedCommand"
+    bootstrap = base64.b64decode(arguments[-1]).decode("utf-16-le")
+    assert "cleanup_script_sha256" in bootstrap
+    cleanup_script = helper_root.parent / f"{helper_root.name}.cleanup.ps1"
+    script = cleanup_script.read_text(encoding="utf-8")
+    encoded_payload = script.split("FromBase64String('", 1)[1].split("')", 1)[0]
+    payload = json.loads(base64.b64decode(encoded_payload).decode("utf-8"))
+    assert payload["cleanup_operation_id"] == request["cleanup_operation_id"]
+    assert payload["cleanup_claim_sha256"] == request["cleanup_claim_sha256"]
+    assert payload["cleanup_receipt"] == str(Path(request["cleanup_receipt"]).resolve())
+    assert options["stdin"] is subprocess.DEVNULL
+    assert options["stdout"] is subprocess.DEVNULL
+    assert options["stderr"] is subprocess.DEVNULL
+
+
+@pytest.mark.unit
+def test_trusted_windows_powershell_uses_kernel_reported_system_directory(
+    tmp_path: Path,
+) -> None:
+    system_directory = tmp_path / "Windows" / "System32"
+    powershell = system_directory / "WindowsPowerShell" / "v1.0" / "powershell.exe"
+    powershell.parent.mkdir(parents=True)
+    powershell.write_bytes(b"trusted-system-binary")
+
+    def report_system_directory(buffer: Any, size: int) -> int:
+        assert size >= len(str(system_directory)) + 1
+        buffer.value = str(system_directory)
+        return len(buffer.value)
+
+    assert lifecycle._trusted_windows_powershell(
+        system_directory_getter=report_system_directory
+    ) == powershell
+
+
 @pytest.mark.skipif(os.name != "nt", reason="PowerShell post-exit cleanup is Windows-only")
 @pytest.mark.integration
 def test_windows_post_exit_cleanup_removes_only_exact_authenticated_helper(
