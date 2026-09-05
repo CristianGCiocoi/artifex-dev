@@ -939,6 +939,11 @@ def test_deferred_self_uninstall_completes_after_parent_exit(tmp_path: Path) -> 
     assert Path(installed.executable).exists()
     assert len(launched) == 1
     request_path = launched[0][1]
+    request = json.loads(request_path.read_text(encoding="utf-8"))
+    helper_root = Path(request["helper_bundle_root"])
+    assert request["schema_version"] == "2.0"
+    assert Path(request["helper_executable"]) == helper_root / Path(installed.executable).name
+    assert (helper_root / "_internal" / "runtime.bin").read_bytes() == b"runtime:trusted"
     with pytest.raises(TimeoutError, match="parent process"):
         complete_deferred_uninstall(
             request_path,
@@ -958,7 +963,6 @@ def test_deferred_self_uninstall_completes_after_parent_exit(tmp_path: Path) -> 
     stopped_roots: list[Path] = []
     completed = complete_deferred_uninstall(
         request_path,
-        security_root=security,
         parent_checker=lambda _: False,
         running_process_stopper=lambda target: stopped_roots.append(target) or [321],
     )
@@ -967,7 +971,528 @@ def test_deferred_self_uninstall_completes_after_parent_exit(tmp_path: Path) -> 
     assert stopped_roots == [root.resolve()]
     assert not Path(installed.executable).exists()
     assert not Path(installed.manifest).exists()
+    assert not helper_root.exists()
     assert unmanaged.read_text(encoding="utf-8") == "keep"
+
+
+@pytest.mark.packaging
+def test_deferred_nuitka_helper_launches_from_complete_authenticated_bundle(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    approvals = ApprovalStore(tmp_path / "approvals")
+    security = tmp_path / "security"
+    source = _write_test_artifact(tmp_path / "release", b"standalone")
+    root = tmp_path / "installed"
+    install_decision = install_plan(
+        source, root, approval_store=approvals, identity_probe=_test_identity_probe
+    )
+    installed = install(
+        source,
+        root,
+        confirmation_token=install_decision.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+    )
+    remove_decision = uninstall_plan(root, approval_store=approvals, security_root=security)
+    launched: list[tuple[Path, Path, int]] = []
+    uninstall(
+        root,
+        confirmation_token=remove_decision.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        running_executable=installed.executable,
+        force_deferred=True,
+        deferred_launcher=lambda executable, request, pid: launched.append(
+            (executable, request, pid)
+        ),
+    )
+    request_path = launched[0][1]
+    request = json.loads(request_path.read_text(encoding="utf-8"))
+    helper_root = Path(request["helper_bundle_root"])
+    helper = Path(request["helper_executable"])
+    installed_manifest = json.loads(Path(installed.manifest).read_text(encoding="utf-8"))
+
+    expected_files = {item["path"] for item in installed_manifest["files"]}
+    observed_files = {
+        path.relative_to(helper_root).as_posix()
+        for path in helper_root.rglob("*")
+        if path.is_file()
+    }
+    assert helper_root.parent == root.parent
+    assert helper_root.name.startswith(lifecycle._helper_directory_prefix(root))
+    assert request_path == lifecycle._protected_request_path(helper_root)
+    assert request_path.parent == root.parent
+    assert request["security_root"] == str(security.resolve())
+    assert helper != Path(installed.executable)
+    assert observed_files == expected_files
+    assert (helper_root / "_internal" / "runtime.bin").read_bytes() == b"runtime:standalone"
+
+    popen_calls: list[tuple[list[str], dict[str, Any]]] = []
+
+    def fake_popen(arguments: list[str], **kwargs: Any) -> object:
+        popen_calls.append((arguments, kwargs))
+        return object()
+
+    monkeypatch.setattr(lifecycle.subprocess, "Popen", fake_popen)
+    lifecycle._launch_deferred_helper(
+        Path(installed.executable), request_path, launched[0][2]
+    )
+
+    assert len(popen_calls) == 1
+    assert Path(popen_calls[0][0][0]) == helper
+    assert popen_calls[0][0][1:3] == ["_complete-lifecycle", "--request-file"]
+    assert popen_calls[0][1]["close_fds"] is True
+
+
+@pytest.mark.adversarial
+def test_deferred_request_copy_outside_protected_binding_cannot_launch(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    approvals = ApprovalStore(tmp_path / "approvals")
+    security = tmp_path / "security"
+    source = _write_test_artifact(tmp_path / "release", b"trusted")
+    root = tmp_path / "installed"
+    install_decision = install_plan(
+        source, root, approval_store=approvals, identity_probe=_test_identity_probe
+    )
+    installed = install(
+        source,
+        root,
+        confirmation_token=install_decision.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+    )
+    remove_decision = uninstall_plan(root, approval_store=approvals, security_root=security)
+    launched: list[tuple[Path, Path, int]] = []
+    uninstall(
+        root,
+        confirmation_token=remove_decision.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        running_executable=installed.executable,
+        force_deferred=True,
+        deferred_launcher=lambda executable, request, pid: launched.append(
+            (executable, request, pid)
+        ),
+    )
+    protected_request = launched[0][1]
+    copied_request = security / "attacker-controlled.request.json"
+    copied_request.parent.mkdir(parents=True, exist_ok=True)
+    copied_request.write_bytes(protected_request.read_bytes())
+    monkeypatch.setattr(
+        lifecycle.subprocess,
+        "Popen",
+        lambda *_args, **_kwargs: pytest.fail("an unprotected request must not launch"),
+    )
+
+    with pytest.raises(ValueError, match="request path is invalid"):
+        lifecycle._launch_deferred_helper(
+            Path(installed.executable), copied_request, launched[0][2]
+        )
+    assert protected_request.is_file()
+    assert Path(installed.executable).is_file()
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Program Files elevation is Windows-only")
+@pytest.mark.unit
+def test_compiled_elevated_helper_requires_program_files_parent(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    protected = tmp_path / "Program Files"
+    protected.mkdir()
+    monkeypatch.setitem(lifecycle.__dict__, "__compiled__", object())
+    monkeypatch.setattr(lifecycle, "_is_windows_process_elevated", lambda: True)
+    for name in ("ProgramW6432", "ProgramFiles", "ProgramFiles(x86)"):
+        monkeypatch.setenv(name, str(protected))
+
+    lifecycle._validate_elevated_helper_parent(protected / "ARTIFEX")
+    with pytest.raises(PermissionError, match="protected Program Files root"):
+        lifecycle._validate_elevated_helper_parent(tmp_path / "writable" / "ARTIFEX")
+
+
+@pytest.mark.adversarial
+def test_deferred_helper_rejects_unowned_or_modified_companion_files(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    approvals = ApprovalStore(tmp_path / "approvals")
+    security = tmp_path / "security"
+    source = _write_test_artifact(tmp_path / "release", b"trusted")
+    root = tmp_path / "installed"
+    install_decision = install_plan(
+        source, root, approval_store=approvals, identity_probe=_test_identity_probe
+    )
+    installed = install(
+        source,
+        root,
+        confirmation_token=install_decision.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+    )
+    remove_decision = uninstall_plan(root, approval_store=approvals, security_root=security)
+    launched: list[tuple[Path, Path, int]] = []
+    uninstall(
+        root,
+        confirmation_token=remove_decision.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        running_executable=installed.executable,
+        force_deferred=True,
+        deferred_launcher=lambda executable, request, pid: launched.append(
+            (executable, request, pid)
+        ),
+    )
+    request_path = launched[0][1]
+    request = json.loads(request_path.read_text(encoding="utf-8"))
+    helper_root = Path(request["helper_bundle_root"])
+    (helper_root / "unowned.dll").write_bytes(b"not manifest owned")
+    monkeypatch.setattr(
+        lifecycle.subprocess,
+        "Popen",
+        lambda *_args, **_kwargs: pytest.fail("an invalid helper must not launch"),
+    )
+
+    with pytest.raises(ValueError, match="bundle inventory"):
+        lifecycle._launch_deferred_helper(
+            Path(installed.executable), request_path, launched[0][2]
+        )
+    (helper_root / "unowned.dll").unlink()
+    (helper_root / "_internal" / "runtime.bin").write_bytes(b"modified")
+    with pytest.raises(ValueError, match="checksum"):
+        complete_deferred_uninstall(
+            request_path,
+            security_root=security,
+            parent_checker=lambda _: False,
+        )
+    assert Path(installed.executable).is_file()
+    assert Path(installed.manifest).is_file()
+    assert request_path.is_file()
+
+
+@pytest.mark.adversarial
+def test_deferred_helper_rejects_reparse_swap_after_parent_wait(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    approvals = ApprovalStore(tmp_path / "approvals")
+    security = tmp_path / "custom-security"
+    source = _write_test_artifact(tmp_path / "release", b"trusted")
+    root = tmp_path / "installed"
+    install_decision = install_plan(
+        source, root, approval_store=approvals, identity_probe=_test_identity_probe
+    )
+    installed = install(
+        source,
+        root,
+        confirmation_token=install_decision.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+    )
+    remove_decision = uninstall_plan(root, approval_store=approvals, security_root=security)
+    launched: list[tuple[Path, Path, int]] = []
+    uninstall(
+        root,
+        confirmation_token=remove_decision.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        running_executable=installed.executable,
+        force_deferred=True,
+        deferred_launcher=lambda executable, request, pid: launched.append(
+            (executable, request, pid)
+        ),
+    )
+    request_path = launched[0][1]
+    request = json.loads(request_path.read_text(encoding="utf-8"))
+    synthetic_reparse = Path(request["helper_bundle_root"]) / "_internal"
+    compromised = False
+    original_reparse_probe = lifecycle._is_windows_reparse_point
+
+    def reparse_probe(path: Path) -> bool:
+        return (compromised and path == synthetic_reparse) or original_reparse_probe(path)
+
+    def simulate_parent_exit(_: float) -> None:
+        nonlocal compromised
+        compromised = True
+
+    parent_states = iter((True, False))
+    monkeypatch.setattr(lifecycle, "_is_windows_reparse_point", reparse_probe)
+    monkeypatch.setattr(lifecycle.time, "sleep", simulate_parent_exit)
+
+    with pytest.raises(ValueError, match="reparse point"):
+        complete_deferred_uninstall(
+            request_path,
+            parent_checker=lambda _: next(parent_states),
+            wait_timeout_seconds=1,
+        )
+    assert Path(installed.executable).is_file()
+    assert Path(installed.manifest).is_file()
+    assert request_path.is_file()
+
+
+@pytest.mark.adversarial
+def test_deferred_request_expiry_during_parent_wait_prevents_mutation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    approvals = ApprovalStore(tmp_path / "approvals")
+    security = tmp_path / "security"
+    source = _write_test_artifact(tmp_path / "release", b"trusted")
+    root = tmp_path / "installed"
+    install_decision = install_plan(
+        source, root, approval_store=approvals, identity_probe=_test_identity_probe
+    )
+    installed = install(
+        source,
+        root,
+        confirmation_token=install_decision.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+    )
+    remove_decision = uninstall_plan(root, approval_store=approvals, security_root=security)
+    launched: list[tuple[Path, Path, int]] = []
+    uninstall(
+        root,
+        confirmation_token=remove_decision.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        running_executable=installed.executable,
+        force_deferred=True,
+        deferred_launcher=lambda executable, request, pid: launched.append(
+            (executable, request, pid)
+        ),
+    )
+    request_path = launched[0][1]
+    request = json.loads(request_path.read_text(encoding="utf-8"))
+    helper_root = Path(request["helper_bundle_root"])
+    expires_at = datetime.fromisoformat(request["expires_at"]).astimezone(UTC)
+
+    class AdvancingDateTime:
+        current = expires_at - timedelta(microseconds=1)
+
+        @classmethod
+        def fromisoformat(cls, value: str) -> datetime:
+            return datetime.fromisoformat(value)
+
+        @classmethod
+        def now(cls, timezone: object) -> datetime:
+            assert timezone is UTC
+            return cls.current
+
+    def advance_past_expiry(_: float) -> None:
+        AdvancingDateTime.current = expires_at + timedelta(microseconds=1)
+
+    parent_states = iter((True, False))
+    monkeypatch.setattr(lifecycle, "datetime", AdvancingDateTime)
+    monkeypatch.setattr(lifecycle.time, "sleep", advance_past_expiry)
+
+    with pytest.raises(ValueError, match="expired while awaiting parent exit"):
+        complete_deferred_uninstall(
+            request_path,
+            parent_checker=lambda _: next(parent_states),
+            wait_timeout_seconds=1,
+        )
+    assert Path(installed.executable).is_file()
+    assert Path(installed.manifest).is_file()
+    assert helper_root.is_dir()
+    assert request_path.is_file()
+
+
+@pytest.mark.skipif(os.name != "nt", reason="directory junctions are Windows-only")
+@pytest.mark.adversarial
+def test_helper_inventory_rejects_real_windows_directory_junction(
+    tmp_path: Path,
+) -> None:
+    helper_root = tmp_path / "helper"
+    external = tmp_path / "external"
+    helper_root.mkdir()
+    external.mkdir()
+    runtime = external / "runtime.bin"
+    runtime.write_bytes(b"trusted")
+    junction = helper_root / "_internal"
+    completed = subprocess.run(
+        ["cmd.exe", "/d", "/c", "mklink", "/J", str(junction), str(external)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if completed.returncode != 0:
+        pytest.skip("Windows directory junction creation is unavailable")
+    entries = (
+        {
+            "path": "_internal/runtime.bin",
+            "kind": "file",
+            "sha256": hashlib.sha256(b"trusted").hexdigest(),
+        },
+    )
+    try:
+        with pytest.raises(ValueError, match="reparse point"):
+            lifecycle._validate_helper_inventory(helper_root, entries)
+    finally:
+        junction.rmdir()
+    assert runtime.read_bytes() == b"trusted"
+
+
+@pytest.mark.adversarial
+def test_helper_cleanup_never_removes_unowned_content(tmp_path: Path) -> None:
+    approvals = ApprovalStore(tmp_path / "approvals")
+    security = tmp_path / "security"
+    source = _write_test_artifact(tmp_path / "release", b"trusted")
+    root = tmp_path / "installed"
+    install_decision = install_plan(
+        source, root, approval_store=approvals, identity_probe=_test_identity_probe
+    )
+    installed = install(
+        source,
+        root,
+        confirmation_token=install_decision.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+    )
+    remove_decision = uninstall_plan(root, approval_store=approvals, security_root=security)
+    launched: list[tuple[Path, Path, int]] = []
+    uninstall(
+        root,
+        confirmation_token=remove_decision.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        running_executable=installed.executable,
+        force_deferred=True,
+        deferred_launcher=lambda executable, request, pid: launched.append(
+            (executable, request, pid)
+        ),
+    )
+    request = json.loads(launched[0][1].read_text(encoding="utf-8"))
+    helper_root = Path(request["helper_bundle_root"])
+    unowned = helper_root / "do-not-delete.txt"
+    unowned.write_text("preserve", encoding="utf-8")
+    manifest = json.loads(Path(installed.manifest).read_text(encoding="utf-8"))
+
+    with pytest.raises((OSError, ValueError)):
+        lifecycle._schedule_helper_cleanup(
+            helper_root,
+            lifecycle._manifest_entries(manifest, "files", required=True),
+            install_root=root,
+        )
+    assert unowned.read_text(encoding="utf-8") == "preserve"
+    assert helper_root.is_dir()
+    assert Path(installed.executable).is_file()
+
+
+@pytest.mark.adversarial
+def test_request_cleanup_failure_occurs_after_helper_cleanup(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    approvals = ApprovalStore(tmp_path / "approvals")
+    security = tmp_path / "security"
+    source = _write_test_artifact(tmp_path / "release", b"trusted")
+    root = tmp_path / "installed"
+    install_decision = install_plan(
+        source, root, approval_store=approvals, identity_probe=_test_identity_probe
+    )
+    installed = install(
+        source,
+        root,
+        confirmation_token=install_decision.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+    )
+    remove_decision = uninstall_plan(root, approval_store=approvals, security_root=security)
+    launched: list[tuple[Path, Path, int]] = []
+    uninstall(
+        root,
+        confirmation_token=remove_decision.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        running_executable=installed.executable,
+        force_deferred=True,
+        deferred_launcher=lambda executable, request, pid: launched.append(
+            (executable, request, pid)
+        ),
+    )
+    request_path = launched[0][1]
+    request = json.loads(request_path.read_text(encoding="utf-8"))
+    helper_root = Path(request["helper_bundle_root"])
+    original_unlink = Path.unlink
+
+    def fail_request_unlink(path: Path, *args: Any, **kwargs: Any) -> None:
+        if path == request_path:
+            raise OSError("injected request cleanup failure")
+        original_unlink(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "unlink", fail_request_unlink)
+    with pytest.raises(OSError, match="injected request cleanup failure"):
+        complete_deferred_uninstall(
+            request_path,
+            parent_checker=lambda _: False,
+            running_process_stopper=lambda _: [],
+        )
+    assert not helper_root.exists()
+    assert request_path.is_file()
+    assert not Path(installed.manifest).exists()
+
+
+@pytest.mark.skipif(os.name != "nt", reason="MoveFileExW is Windows-only")
+@pytest.mark.unit
+def test_windows_delayed_cleanup_fails_closed_when_movefileex_rejects(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "locked.exe"
+    target.write_bytes(b"locked")
+
+    with pytest.raises(OSError, match="refused delayed deletion"):
+        lifecycle._schedule_path_cleanup_on_reboot(
+            target, mover=lambda _path, _replacement, _flags: 0
+        )
+    assert target.is_file()
+
+
+@pytest.mark.adversarial
+def test_deferred_launcher_failure_discards_only_authenticated_staging(
+    tmp_path: Path,
+) -> None:
+    approvals = ApprovalStore(tmp_path / "approvals")
+    security = tmp_path / "security"
+    source = _write_test_artifact(tmp_path / "release", b"trusted")
+    root = tmp_path / "installed"
+    install_decision = install_plan(
+        source, root, approval_store=approvals, identity_probe=_test_identity_probe
+    )
+    installed = install(
+        source,
+        root,
+        confirmation_token=install_decision.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+    )
+    remove_decision = uninstall_plan(root, approval_store=approvals, security_root=security)
+
+    attempted_requests: list[Path] = []
+
+    def fail_launch(_: Path, request: Path, __: int) -> None:
+        attempted_requests.append(request)
+        raise OSError("injected launch failure")
+
+    with pytest.raises(OSError, match="injected launch failure"):
+        uninstall(
+            root,
+            confirmation_token=remove_decision.confirmation_token,
+            approval_store=approvals,
+            security_root=security,
+            running_executable=installed.executable,
+            force_deferred=True,
+            deferred_launcher=fail_launch,
+        )
+
+    assert Path(installed.executable).is_file()
+    assert Path(installed.manifest).is_file()
+    assert len(attempted_requests) == 1
+    assert not attempted_requests[0].exists()
+    assert not list(root.parent.glob(f"{lifecycle._helper_directory_prefix(root)}*"))
 
 
 @pytest.mark.unit
@@ -1082,6 +1607,9 @@ def test_deferred_self_upgrade_completes_without_running_file_replacement(
     assert deferred.status == "DEFERRED"
     assert Path(installed.executable).read_bytes() == b"v1"
     assert not (root / ".b").exists()
+    request = json.loads(launched[0][1].read_text(encoding="utf-8"))
+    helper_root = Path(request["helper_bundle_root"])
+    assert Path(request["staged_artifact"]).parent == helper_root / ".candidate"
     completed = complete_deferred_uninstall(
         launched[0][1], security_root=security, parent_checker=lambda _: False
     )
@@ -1134,6 +1662,9 @@ def test_deferred_upgrade_failure_leaves_no_orphan_and_restores_manifest(
             (executable, request, pid)
         ),
     )
+    request_path = launched[0][1]
+    request = json.loads(request_path.read_text(encoding="utf-8"))
+    helper_root = Path(request["helper_bundle_root"])
 
     def fail_manifest(*_: object, **__: object) -> None:
         raise OSError("injected deferred manifest failure")
@@ -1146,7 +1677,9 @@ def test_deferred_upgrade_failure_leaves_no_orphan_and_restores_manifest(
     assert Path(installed.executable).read_bytes() == b"v1"
     assert Path(installed.manifest).read_bytes() == original_manifest
     assert not (root / ".b").exists()
-    assert not list((security / "staged-artifacts").glob("*"))
+    assert not (helper_root / ".candidate").exists()
+    assert not helper_root.exists()
+    assert not request_path.exists()
 
 
 @pytest.mark.adversarial

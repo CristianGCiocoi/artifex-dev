@@ -9,6 +9,7 @@ import json
 import os
 import secrets
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -47,6 +48,8 @@ MANIFEST_NAME = "artifex-install-manifest.json"
 MANIFEST_SCHEMA_VERSION = "3.0"
 _AUTH_ALGORITHM = "HMAC-SHA256"
 _DEFERRED_REQUEST_TTL_SECONDS = 120
+_DEFERRED_REQUEST_SCHEMA_VERSION = "2.0"
+_DEFERRED_HELPER_PREFIX = ".artifex-lifecycle-"
 
 DeferredLauncher = Callable[[Path, Path, int], None]
 ParentChecker = Callable[[int], bool]
@@ -404,7 +407,13 @@ def upgrade(
             parent_pid=os.getpid(),
         )
         launcher = deferred_launcher or _launch_deferred_helper
-        launcher(current, request_file, os.getpid())
+        try:
+            launcher(current, request_file, os.getpid())
+        except Exception:
+            _discard_deferred_request_artifacts(
+                request_file, security_root=security_root
+            )
+            raise
         return InstallResult(
             "upgrade",
             str(root),
@@ -770,7 +779,9 @@ def uninstall(
             launcher(current, request_file, os.getpid())
         except Exception as exc:
             if request_file is not None:
-                request_file.unlink(missing_ok=True)
+                _discard_deferred_request_artifacts(
+                    request_file, security_root=security_root
+                )
             raise exc
         assert request_file is not None
         return {
@@ -811,20 +822,27 @@ def complete_deferred_uninstall(
     service_adapter: ServiceRegistrationAdapter | None = None,
     running_process_stopper: RunningProcessStopper | None = None,
 ) -> dict[str, Any]:
-    request_path = Path(request_file).resolve()
-    try:
-        request = json.loads(request_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise ValueError("invalid deferred uninstall request") from exc
-    if not isinstance(request, dict):
-        raise ValueError("invalid deferred uninstall request")
-    root = Path(str(request.get("install_root", ""))).resolve()
+    (
+        request_path,
+        request,
+        root,
+        helper_root,
+        derived_security_root,
+    ) = _read_deferred_request(request_file)
+    if (
+        security_root is not None
+        and _security_root(security_root) != derived_security_root
+    ):
+        raise ValueError("deferred lifecycle request security root does not match its binding")
+    security_root = derived_security_root
     _, manifest_path, manifest, key = _load_manifest(root, security_root=security_root)
     if not _verify_signed_value(request, key):
         raise ValueError("deferred uninstall request authentication failed")
     kind = request.get("kind")
     if kind not in {"ARTIFEX_DEFERRED_UNINSTALL", "ARTIFEX_DEFERRED_UPGRADE"}:
         raise ValueError("unexpected deferred lifecycle request kind")
+    if request.get("schema_version") != _DEFERRED_REQUEST_SCHEMA_VERSION:
+        raise ValueError("unsupported deferred lifecycle request schema")
     if request.get("manifest_fingerprint") != _manifest_fingerprint(manifest):
         raise ValueError("deferred uninstall request is stale")
     try:
@@ -834,12 +852,18 @@ def complete_deferred_uninstall(
         raise ValueError("invalid deferred uninstall request identity") from exc
     if datetime.now(UTC) > expires_at:
         raise ValueError("deferred uninstall request expired")
+    if request.get("request_id") != _helper_identity(helper_root, root):
+        raise ValueError("deferred lifecycle request identity does not match its path")
+    helper_root, _ = _validate_deferred_helper_bundle(request, root, manifest)
     checker = parent_checker or _pid_exists
     deadline = time.monotonic() + wait_timeout_seconds
     while checker(parent_pid):
         if time.monotonic() >= deadline:
             raise TimeoutError("parent process did not exit before lifecycle timeout")
         time.sleep(0.1)
+    if datetime.now(UTC) > expires_at:
+        raise ValueError("deferred uninstall request expired while awaiting parent exit")
+    helper_root, _ = _validate_deferred_helper_bundle(request, root, manifest)
     _verify_managed_checksums(root, manifest)
     if kind == "ARTIFEX_DEFERRED_UNINSTALL":
         installed_service = _installed_service_registration(manifest)
@@ -882,13 +906,15 @@ def complete_deferred_uninstall(
             "stopped_processes": stopped_processes,
         }
     else:
-        staged = Path(str(request.get("staged_artifact", ""))).resolve()
-        staging_root = (_security_root(security_root) / "staged-artifacts").resolve()
+        supplied_staged = Path(str(request.get("staged_artifact", "")))
+        if _path_is_link_or_reparse_point(supplied_staged):
+            raise ValueError("deferred upgrade staged artifact path is unsafe")
+        staged = supplied_staged.resolve()
         artifact_manifest = request.get("artifact_manifest")
         artifact_fingerprint = request.get("artifact_manifest_fingerprint")
+        stage_bundle = _validate_candidate_location(staged.parent, helper_root=helper_root)
         if (
-            staging_root not in staged.parents
-            or staged.is_symlink()
+            staged.parent != stage_bundle
             or not isinstance(artifact_manifest, Mapping)
             or not isinstance(artifact_fingerprint, str)
             or hashlib.sha256(_canonical(artifact_manifest)).hexdigest()
@@ -896,8 +922,8 @@ def complete_deferred_uninstall(
             or artifact_manifest.get("sha256") != _sha256(staged)
         ):
             raise ValueError("deferred upgrade staged artifact identity is invalid")
-        stage_bundle = staged.parent
         file_entries = _request_artifact_files(stage_bundle, artifact_manifest)
+        _validate_helper_inventory(stage_bundle, file_entries)
         verified = VerifiedArtifact(
             staged,
             stage_bundle,
@@ -907,25 +933,44 @@ def complete_deferred_uninstall(
             file_entries,
         )
         try:
-            backup = _perform_upgrade(
-                root,
-                manifest_path,
-                manifest,
-                key,
-                verified,
-                service_registration=_installed_service_registration(manifest),
-            )
-        finally:
-            _remove_staged_bundle(stage_bundle, staging_root)
+            try:
+                backup = _perform_upgrade(
+                    root,
+                    manifest_path,
+                    manifest,
+                    key,
+                    verified,
+                    service_registration=_installed_service_registration(manifest),
+                )
+            finally:
+                _remove_candidate_bundle(
+                    stage_bundle, file_entries, helper_root=helper_root
+                )
+        except Exception as operation_error:
+            try:
+                _schedule_helper_cleanup(
+                    helper_root,
+                    _manifest_entries(manifest, "files", required=True),
+                    install_root=root,
+                )
+                _validate_protected_request_path(request_path, helper_root=helper_root)
+                request_path.unlink(missing_ok=True)
+            except Exception as cleanup_error:
+                raise ExceptionGroup(
+                    "deferred upgrade failed and helper cleanup also failed",
+                    [operation_error, cleanup_error],
+                ) from operation_error
+            raise
         result = {
             "operation": "upgrade",
             "install_root": str(root),
             "status": "COMPLETE",
             "backup": str(backup),
         }
+    helper_entries = _manifest_entries(manifest, "files", required=True)
+    _schedule_helper_cleanup(helper_root, helper_entries, install_root=root)
+    _validate_protected_request_path(request_path, helper_root=helper_root)
     request_path.unlink(missing_ok=True)
-    if getattr(sys, "frozen", False) or "__compiled__" in globals():
-        _schedule_helper_cleanup(_runtime_executable())
     return result
 
 
@@ -977,24 +1022,40 @@ def _prepare_deferred_uninstall(
     parent_pid: int,
     service_readiness_timeout_seconds: float,
 ) -> Path:
-    helper_root = _security_root(security_root) / "uninstall-requests"
-    helper_root.mkdir(parents=True, exist_ok=True)
-    request_path = helper_root / f"{uuid.uuid4().hex}.json"
-    value = _signed_value(
-        {
-            "schema_version": "1.0",
-            "kind": "ARTIFEX_DEFERRED_UNINSTALL",
-            "install_root": str(root),
-            "manifest_fingerprint": _manifest_fingerprint(manifest),
-            "parent_pid": parent_pid,
-            "service_readiness_timeout_seconds": service_readiness_timeout_seconds,
-            "expires_at": (
-                datetime.now(UTC) + timedelta(seconds=_DEFERRED_REQUEST_TTL_SECONDS)
-            ).isoformat(),
-        },
-        key,
+    operation_security_root = _security_root(security_root)
+    helper_root, helper = _stage_deferred_helper_bundle(
+        root,
+        manifest,
     )
-    _write_manifest(request_path, value)
+    request_path = _protected_request_path(helper_root)
+    try:
+        value = _signed_value(
+            {
+                "schema_version": _DEFERRED_REQUEST_SCHEMA_VERSION,
+                "kind": "ARTIFEX_DEFERRED_UNINSTALL",
+                "request_id": _helper_identity(helper_root, root),
+                "install_root": str(root),
+                "security_root": str(operation_security_root),
+                "manifest_fingerprint": _manifest_fingerprint(manifest),
+                "helper_bundle_root": str(helper_root),
+                "helper_executable": str(helper),
+                "parent_pid": parent_pid,
+                "service_readiness_timeout_seconds": service_readiness_timeout_seconds,
+                "expires_at": (
+                    datetime.now(UTC) + timedelta(seconds=_DEFERRED_REQUEST_TTL_SECONDS)
+                ).isoformat(),
+            },
+            key,
+        )
+        _write_manifest(request_path, value)
+    except Exception:
+        _schedule_helper_cleanup(
+            helper_root,
+            _manifest_entries(manifest, "files", required=True),
+            install_root=root,
+        )
+        request_path.unlink(missing_ok=True)
+        raise
     return request_path
 
 
@@ -1007,24 +1068,31 @@ def _prepare_deferred_upgrade(
     security_root: str | Path | None,
     parent_pid: int,
 ) -> Path:
-    operation_root = _security_root(security_root)
-    request_root = operation_root / "uninstall-requests"
-    staging_root = operation_root / "staged-artifacts"
-    request_root.mkdir(parents=True, exist_ok=True)
-    staging_root.mkdir(parents=True, exist_ok=True)
-    staged_bundle = staging_root / uuid.uuid4().hex
-    staged = staged_bundle / str(verified.manifest["artifact"])
-    request_path = request_root / f"{uuid.uuid4().hex}.json"
+    operation_security_root = _security_root(security_root)
+    helper_root: Path | None = None
+    staged_bundle: Path | None = None
+    request_path: Path | None = None
     try:
+        helper_root, helper = _stage_deferred_helper_bundle(
+            root,
+            manifest,
+        )
+        staged_bundle = helper_root / ".candidate"
+        staged = staged_bundle / str(verified.manifest["artifact"])
+        request_path = _protected_request_path(helper_root)
         staged_bundle.mkdir(parents=False, exist_ok=False)
         _copy_verified_bundle(verified, staged_bundle)
-        _write_manifest(staged_bundle / "artifex-artifact.json", verified.manifest)
+        _validate_helper_inventory(staged_bundle, tuple(verified.files))
         value = _signed_value(
             {
-                "schema_version": "1.0",
+                "schema_version": _DEFERRED_REQUEST_SCHEMA_VERSION,
                 "kind": "ARTIFEX_DEFERRED_UPGRADE",
+                "request_id": _helper_identity(helper_root, root),
                 "install_root": str(root),
+                "security_root": str(operation_security_root),
                 "manifest_fingerprint": _manifest_fingerprint(manifest),
+                "helper_bundle_root": str(helper_root),
+                "helper_executable": str(helper),
                 "staged_artifact": str(staged),
                 "artifact_manifest": dict(verified.manifest),
                 "artifact_manifest_fingerprint": verified.manifest_fingerprint,
@@ -1037,27 +1105,381 @@ def _prepare_deferred_upgrade(
         )
         _write_manifest(request_path, value)
     except Exception:
-        if staged_bundle.exists():
-            shutil.rmtree(staged_bundle)
-        request_path.unlink(missing_ok=True)
+        if staged_bundle is not None and staged_bundle.exists():
+            _remove_candidate_bundle(
+                staged_bundle,
+                tuple(verified.files),
+                helper_root=helper_root,
+                require_complete=False,
+            )
+        if helper_root is not None:
+            _schedule_helper_cleanup(
+                helper_root,
+                _manifest_entries(manifest, "files", required=True),
+                install_root=root,
+            )
+        if request_path is not None:
+            request_path.unlink(missing_ok=True)
         raise
+    assert request_path is not None
     return request_path
+
+
+def _stage_deferred_helper_bundle(
+    root: Path,
+    manifest: Mapping[str, Any],
+) -> tuple[Path, Path]:
+    """Copy the authenticated installed bundle to an isolated helper directory.
+
+    A Nuitka standalone executable cannot be relocated without its companion
+    runtime files.  The signed install manifest is the only authority used to
+    select files: unrelated install-root content is neither copied nor later
+    removed by the helper.
+    """
+
+    _verify_managed_checksums(root, manifest)
+    entries = _manifest_entries(manifest, "files", required=True)
+    installed_executable = _managed_executable(root, manifest)
+    # NSIS runs elevated from Program Files.  A sibling of the authenticated
+    # installation inherits the same protected parent rather than crossing the
+    # privilege boundary through per-user LocalAppData staging.
+    helper_parent = root.parent
+    if _path_is_link_or_reparse_point(helper_parent):
+        raise ValueError("deferred lifecycle helper parent is unsafe")
+    _validate_elevated_helper_parent(root)
+    helper_root = helper_parent / f"{_helper_directory_prefix(root)}{uuid.uuid4().hex}"
+    helper_root.mkdir(parents=False, exist_ok=False)
+    try:
+        for item in _copy_order(entries):
+            source = _safe_child(root, item["path"])
+            destination = _safe_child(helper_root, item["path"])
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            _copy_manifest_entry(source, destination, item, source_root=root)
+        _validate_helper_inventory(helper_root, entries)
+        executable_relative = installed_executable.relative_to(root).as_posix()
+        helper = _safe_child(helper_root, executable_relative)
+        if not helper.is_file() or _path_is_link_or_reparse_point(helper):
+            raise ValueError("deferred lifecycle helper executable is invalid")
+    except Exception:
+        _schedule_helper_cleanup(helper_root, entries, install_root=root)
+        raise
+    return helper_root.resolve(), helper.resolve()
+
+
+def _validate_deferred_helper_bundle(
+    request: Mapping[str, Any],
+    root: Path,
+    manifest: Mapping[str, Any],
+) -> tuple[Path, Path]:
+    helper_root_value = request.get("helper_bundle_root")
+    helper_value = request.get("helper_executable")
+    if not isinstance(helper_root_value, str) or not isinstance(helper_value, str):
+        raise ValueError("deferred lifecycle helper identity is missing")
+    supplied_helper_root = Path(helper_root_value)
+    supplied_helper = Path(helper_value)
+    helper_root = _validate_helper_location(supplied_helper_root, install_root=root)
+    if _path_is_link_or_reparse_point(supplied_helper):
+        raise ValueError("deferred lifecycle helper executable path is unsafe")
+    helper = supplied_helper.resolve()
+    installed_executable = _managed_executable(root, manifest)
+    executable_relative = installed_executable.relative_to(root).as_posix()
+    expected_helper = _safe_child(helper_root, executable_relative)
+    if helper != expected_helper.resolve() or _path_is_link_or_reparse_point(helper):
+        raise ValueError("deferred lifecycle helper executable identity is invalid")
+    entries = _manifest_entries(manifest, "files", required=True)
+    excluded = (
+        helper_root / ".candidate"
+        if request.get("kind") == "ARTIFEX_DEFERRED_UPGRADE"
+        else None
+    )
+    _validate_helper_inventory(helper_root, entries, excluded_directory=excluded)
+    return helper_root, helper
+
+
+def _helper_directory_prefix(install_root: Path) -> str:
+    identity = os.path.normcase(str(install_root.resolve())).encode("utf-8")
+    return f"{_DEFERRED_HELPER_PREFIX}{hashlib.sha256(identity).hexdigest()[:16]}-"
+
+
+def _validate_helper_location(helper_root: Path, *, install_root: Path) -> Path:
+    if _path_is_link_or_reparse_point(helper_root):
+        raise ValueError("deferred lifecycle helper root is unsafe")
+    root = install_root.resolve()
+    helper_parent = root.parent
+    if _path_is_link_or_reparse_point(helper_parent):
+        raise ValueError("deferred lifecycle helper parent is unsafe")
+    _validate_elevated_helper_parent(root)
+    resolved = helper_root.resolve()
+    prefix = _helper_directory_prefix(root)
+    suffix = resolved.name.removeprefix(prefix)
+    if (
+        resolved.parent != helper_parent
+        or not resolved.name.startswith(prefix)
+        or len(suffix) != 32
+        or any(character not in "0123456789abcdef" for character in suffix)
+    ):
+        raise ValueError("deferred lifecycle helper root is invalid")
+    return resolved
+
+
+def _validate_elevated_helper_parent(install_root: Path) -> None:
+    if os.name != "nt" or "__compiled__" not in globals():
+        return
+    if not _is_windows_process_elevated():
+        return
+    protected_roots = {
+        Path(value).resolve()
+        for name in ("ProgramW6432", "ProgramFiles", "ProgramFiles(x86)")
+        if (value := os.environ.get(name))
+    }
+    install_parent = install_root.resolve().parent
+    if not protected_roots or not any(
+        install_parent == protected or protected in install_parent.parents
+        for protected in protected_roots
+    ):
+        raise PermissionError(
+            "elevated deferred lifecycle staging requires a protected Program Files root"
+        )
+
+
+def _is_windows_process_elevated() -> bool:
+    import ctypes
+
+    windows_dlls = getattr(ctypes, "windll", None)
+    if windows_dlls is None:
+        raise OSError("Windows elevation state is unavailable")
+    try:
+        return bool(windows_dlls.shell32.IsUserAnAdmin())
+    except (AttributeError, OSError) as exc:
+        raise OSError("could not verify Windows elevation state") from exc
+
+
+def _validate_candidate_location(
+    candidate_root: Path, *, helper_root: Path
+) -> Path:
+    if _path_is_link_or_reparse_point(candidate_root):
+        raise ValueError("deferred upgrade candidate root is unsafe")
+    resolved = candidate_root.resolve()
+    expected = helper_root / ".candidate"
+    if resolved != expected:
+        raise ValueError("deferred upgrade candidate is outside protected staging")
+    return resolved
+
+
+def _remove_candidate_bundle(
+    candidate_root: Path,
+    entries: tuple[Mapping[str, str], ...],
+    *,
+    helper_root: Path | None,
+    require_complete: bool = True,
+) -> None:
+    if helper_root is None:
+        raise ValueError("deferred upgrade helper root is unavailable")
+    resolved = _validate_candidate_location(candidate_root, helper_root=helper_root)
+    if not _path_lexists(resolved):
+        return
+    if require_complete:
+        _validate_helper_inventory(resolved, entries)
+    for item in entries:
+        target = _safe_child(resolved, item["path"])
+        if _path_lexists(target) and (
+            _is_windows_reparse_point(target)
+            or not _entry_matches(resolved, target, item)
+        ):
+            raise ValueError("deferred upgrade candidate changed before cleanup")
+    _remove_manifest_paths(resolved, entries)
+    resolved = _validate_candidate_location(resolved, helper_root=helper_root)
+    resolved.rmdir()
+
+
+def _validate_helper_inventory(
+    helper_root: Path,
+    entries: tuple[Mapping[str, str], ...],
+    *,
+    excluded_directory: Path | None = None,
+) -> None:
+    if not helper_root.is_dir() or _path_is_link_or_reparse_point(helper_root):
+        raise ValueError("deferred lifecycle helper bundle is unavailable")
+    expected_paths = {item["path"] for item in entries}
+    expected_directories: set[str] = set()
+    for relative_text in expected_paths:
+        relative_path = Path(relative_text)
+        expected_directories.update(
+            parent.as_posix() for parent in relative_path.parents if parent != Path(".")
+        )
+    observed_paths: set[str] = set()
+    observed_directories: set[str] = set()
+    for current, directories, names in os.walk(
+        helper_root, followlinks=False, onerror=_raise_helper_walk_error
+    ):
+        current_path = Path(current)
+        if _is_windows_reparse_point(current_path):
+            raise ValueError("deferred lifecycle helper contains a reparse point")
+        for name in tuple(directories):
+            path = current_path / name
+            relative_name = path.relative_to(helper_root).as_posix()
+            if _is_windows_reparse_point(path):
+                directories.remove(name)
+                raise ValueError("deferred lifecycle helper contains a reparse point")
+            if excluded_directory is not None and path == excluded_directory:
+                directories.remove(name)
+                continue
+            if path.is_symlink():
+                directories.remove(name)
+                observed_paths.add(relative_name)
+            else:
+                observed_directories.add(relative_name)
+        for name in names:
+            path = current_path / name
+            if _is_windows_reparse_point(path):
+                raise ValueError("deferred lifecycle helper contains a reparse point")
+            if not path.is_file() and not path.is_symlink():
+                raise ValueError("deferred lifecycle helper contains an unsupported file")
+            observed_paths.add(path.relative_to(helper_root).as_posix())
+    if observed_paths != expected_paths or observed_directories != expected_directories:
+        raise ValueError("deferred lifecycle helper bundle inventory is invalid")
+    if not all(
+        _entry_matches(helper_root, _safe_child(helper_root, item["path"]), item)
+        for item in entries
+    ):
+        raise ValueError("deferred lifecycle helper bundle checksum is invalid")
+
+
+def _raise_helper_walk_error(error: OSError) -> None:
+    raise error
+
+
+def _helper_identity(helper_root: Path, install_root: Path) -> str:
+    prefix = _helper_directory_prefix(install_root)
+    if not helper_root.name.startswith(prefix):
+        raise ValueError("deferred lifecycle helper identity is invalid")
+    return helper_root.name.removeprefix(prefix)
+
+
+def _protected_request_path(helper_root: Path) -> Path:
+    return helper_root.parent / f"{helper_root.name}.request.json"
+
+
+def _validate_protected_request_path(
+    request_path: Path, *, helper_root: Path
+) -> Path:
+    if _path_is_link_or_reparse_point(request_path):
+        raise ValueError("deferred lifecycle request path is unsafe")
+    resolved = request_path.resolve()
+    if resolved != _protected_request_path(helper_root):
+        raise ValueError("deferred lifecycle request path is invalid")
+    return resolved
+
+
+def _read_deferred_request(
+    request_file: str | Path,
+) -> tuple[Path, dict[str, Any], Path, Path, Path]:
+    supplied_request_path = Path(request_file)
+    if _path_is_link_or_reparse_point(supplied_request_path):
+        raise ValueError("deferred lifecycle request path is unsafe")
+    try:
+        request = json.loads(supplied_request_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError("invalid deferred uninstall request") from exc
+    if not isinstance(request, dict):
+        raise ValueError("invalid deferred uninstall request")
+    install_root_value = request.get("install_root")
+    helper_root_value = request.get("helper_bundle_root")
+    security_root_value = request.get("security_root")
+    if not all(
+        isinstance(value, str) and value
+        for value in (install_root_value, helper_root_value, security_root_value)
+    ):
+        raise ValueError("deferred lifecycle request path binding is incomplete")
+    root = Path(str(install_root_value)).resolve()
+    helper_root = _validate_helper_location(
+        Path(str(helper_root_value)), install_root=root
+    )
+    request_path = _validate_protected_request_path(
+        supplied_request_path, helper_root=helper_root
+    )
+    operation_security_root = _security_root(str(security_root_value))
+    if _path_is_link_or_reparse_point(operation_security_root):
+        raise ValueError("deferred lifecycle request security root is unsafe")
+    return request_path, request, root, helper_root, operation_security_root
+
+
+def _discard_deferred_request_artifacts(
+    request_path: Path, *, security_root: str | Path | None
+) -> None:
+    """Remove only authenticated, bounded staging after a launcher failure."""
+
+    try:
+        (
+            protected_request_path,
+            request,
+            root,
+            helper_root,
+            operation_security_root,
+        ) = _read_deferred_request(request_path)
+        if (
+            security_root is not None
+            and _security_root(security_root) != operation_security_root
+        ):
+            return
+        _, _, manifest, key = _load_manifest(
+            root, security_root=operation_security_root
+        )
+        if (
+            request.get("schema_version") != _DEFERRED_REQUEST_SCHEMA_VERSION
+            or request.get("request_id") != _helper_identity(helper_root, root)
+            or not _verify_signed_value(request, key)
+            or request.get("manifest_fingerprint") != _manifest_fingerprint(manifest)
+        ):
+            return
+        if request.get("kind") == "ARTIFEX_DEFERRED_UPGRADE":
+            artifact_manifest = request.get("artifact_manifest")
+            if not isinstance(artifact_manifest, Mapping):
+                return
+            staged = Path(str(request.get("staged_artifact", ""))).resolve()
+            candidate_root = _validate_candidate_location(
+                staged.parent, helper_root=helper_root
+            )
+            candidate_entries = _request_artifact_files(
+                candidate_root, artifact_manifest
+            )
+            _remove_candidate_bundle(
+                candidate_root, candidate_entries, helper_root=helper_root
+            )
+        helper_root, _ = _validate_deferred_helper_bundle(request, root, manifest)
+        _schedule_helper_cleanup(
+            helper_root,
+            _manifest_entries(manifest, "files", required=True),
+            install_root=root,
+        )
+        _validate_protected_request_path(
+            protected_request_path, helper_root=helper_root
+        ).unlink(missing_ok=True)
+    except (OSError, ValueError, json.JSONDecodeError):
+        # Preserve anything whose authenticated ownership cannot be proven.
+        return
 
 
 def _launch_deferred_helper(
     running_executable: Path, request_file: Path, parent_pid: int
 ) -> None:
-    helper_dir = request_file.parent / f"helper-{uuid.uuid4().hex}"
-    helper_dir.mkdir(parents=True, exist_ok=False)
-    helper = helper_dir / _native_executable_name()
-    _copy_atomic(running_executable, helper)
-    runtime_root_value = getattr(sys, "_MEIPASS", None)
-    if isinstance(runtime_root_value, str):
-        runtime_root = Path(runtime_root_value).resolve()
-        running_root = running_executable.parent.resolve()
-        if running_root in runtime_root.parents:
-            relative_runtime = runtime_root.relative_to(running_root)
-            shutil.copytree(runtime_root, helper_dir / relative_runtime, symlinks=True)
+    request_path, request, root, helper_root, operation_security_root = (
+        _read_deferred_request(request_file)
+    )
+    _, _, manifest, key = _load_manifest(
+        root, security_root=operation_security_root
+    )
+    if (
+        request.get("schema_version") != _DEFERRED_REQUEST_SCHEMA_VERSION
+        or request.get("request_id") != _helper_identity(helper_root, root)
+        or not _verify_signed_value(request, key)
+        or request.get("manifest_fingerprint") != _manifest_fingerprint(manifest)
+        or request.get("parent_pid") != parent_pid
+    ):
+        raise ValueError("deferred lifecycle helper request authentication failed")
+    if not _same_file(Path(running_executable).resolve(), _managed_executable(root, manifest)):
+        raise ValueError("deferred lifecycle helper source is not the installed executable")
+    _, helper = _validate_deferred_helper_bundle(request, root, manifest)
     creationflags = 0
     if os.name == "nt":
         creationflags = (
@@ -1070,7 +1492,7 @@ def _launch_deferred_helper(
             str(helper),
             "_complete-lifecycle",
             "--request-file",
-            str(request_file),
+            str(request_path),
             "--parent-pid",
             str(parent_pid),
         ],
@@ -1371,13 +1793,15 @@ def _safe_child(root: Path, relative_text: str) -> Path:
         or relative_text != relative.as_posix()
     ):
         raise ValueError("unsafe install manifest path")
+    if _path_is_link_or_reparse_point(root):
+        raise ValueError("manifest root is a symlink or reparse point")
     canonical_root = root.resolve()
     target = canonical_root.joinpath(*relative.parts)
     cursor = canonical_root
     for part in relative.parts[:-1]:
         cursor /= part
-        if _path_lexists(cursor) and cursor.is_symlink():
-            raise ValueError("manifest path traverses a symlink")
+        if _path_lexists(cursor) and _path_is_link_or_reparse_point(cursor):
+            raise ValueError("manifest path traverses a symlink or reparse point")
     return target
 
 
@@ -1421,7 +1845,7 @@ def _entry_matches(root: Path, path: Path, item: Mapping[str, str]) -> bool:
     if kind == "file":
         return (
             path.is_file()
-            and not path.is_symlink()
+            and not _path_is_link_or_reparse_point(path)
             and hmac.compare_digest(_sha256(path), digest)
         )
     if kind == "symlink":
@@ -1447,6 +1871,8 @@ def _copy_manifest_entry(
     if not _entry_matches(source_root, source, item):
         raise ValueError("manifest-owned source changed before copying")
     if _path_lexists(destination):
+        if _is_windows_reparse_point(destination):
+            raise ValueError("manifest destination is a reparse point")
         if destination.is_dir() and not destination.is_symlink():
             raise ValueError("manifest destination collides with a directory")
         destination.unlink()
@@ -1459,6 +1885,30 @@ def _copy_manifest_entry(
 
 def _path_lexists(path: Path) -> bool:
     return os.path.lexists(path)
+
+
+def _is_windows_reparse_point(path: Path) -> bool:
+    if os.name != "nt":
+        return False
+    try:
+        metadata = path.lstat()
+    except FileNotFoundError:
+        return False
+    except OSError as exc:
+        raise ValueError("could not inspect path for a Windows reparse point") from exc
+    reparse_attribute = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x00000400)
+    attributes = int(getattr(metadata, "st_file_attributes", 0))
+    return bool(attributes & reparse_attribute)
+
+
+def _path_is_link_or_reparse_point(path: Path) -> bool:
+    try:
+        metadata = path.lstat()
+    except FileNotFoundError:
+        return False
+    except OSError as exc:
+        raise ValueError("could not inspect lifecycle path") from exc
+    return stat.S_ISLNK(metadata.st_mode) or _is_windows_reparse_point(path)
 
 
 def _remove_manifest_paths(
@@ -1514,19 +1964,6 @@ def _request_artifact_files(
             raise ValueError("deferred upgrade staged bundle changed")
         entries.append(normalized)
     return tuple(entries)
-
-
-def _remove_staged_bundle(bundle: Path, staging_root: Path) -> None:
-    resolved = bundle.resolve()
-    if (
-        resolved.parent != staging_root.resolve()
-        or len(resolved.name) != 32
-        or any(character not in "0123456789abcdef" for character in resolved.name)
-        or resolved.is_symlink()
-    ):
-        raise ValueError("refusing unsafe staged bundle cleanup")
-    if resolved.exists():
-        shutil.rmtree(resolved)
 
 
 def _signed_manifest(value: Mapping[str, Any], key: bytes) -> dict[str, Any]:
@@ -1762,15 +2199,117 @@ foreach ($process in $matches) {{
     return stopped
 
 
-def _schedule_helper_cleanup(helper: Path) -> None:
-    if os.name != "nt":
-        helper.unlink(missing_ok=True)
+def _schedule_helper_cleanup(
+    helper_root: Path,
+    entries: tuple[Mapping[str, str], ...],
+    *,
+    install_root: Path,
+) -> None:
+    """Remove only authenticated helper paths, deferring Windows-locked paths.
+
+    Cleanup deliberately does not recurse.  Every file comes from the signed
+    install inventory, and every directory is merely a parent of such a file.
+    Unexpected content is preserved and turns cleanup into an explicit failure.
+    """
+
+    resolved_root = _validate_helper_location(helper_root, install_root=install_root)
+    if not _path_lexists(resolved_root):
+        return
+    targets: list[tuple[Path, Mapping[str, str]]] = []
+    directories: set[Path] = set()
+    for item in entries:
+        target = _safe_child(resolved_root, item["path"])
+        targets.append((target, item))
+        cursor = target.parent
+        while cursor != resolved_root:
+            directories.add(cursor)
+            cursor = cursor.parent
+
+    scheduled: set[Path] = set()
+    for expected_target, item in targets:
+        target = _safe_child(resolved_root, item["path"])
+        if target != expected_target:
+            raise ValueError("deferred lifecycle cleanup target changed")
+        if not _path_lexists(target):
+            continue
+        if _is_windows_reparse_point(target) or not _entry_matches(
+            resolved_root, target, item
+        ):
+            raise ValueError("deferred lifecycle helper changed before cleanup")
+        try:
+            target.unlink(missing_ok=True)
+        except OSError:
+            if os.name != "nt":
+                raise
+            _schedule_path_cleanup_on_reboot(target)
+            scheduled.add(target)
+
+    for expected_directory in sorted(
+        directories, key=lambda item: len(item.parts), reverse=True
+    ):
+        relative = expected_directory.relative_to(resolved_root).as_posix()
+        directory = _safe_child(resolved_root, relative)
+        if directory != expected_directory:
+            raise ValueError("deferred lifecycle cleanup directory changed")
+        if not _path_lexists(directory):
+            continue
+        if _path_is_link_or_reparse_point(directory):
+            raise ValueError("deferred lifecycle cleanup directory is unsafe")
+        try:
+            directory.rmdir()
+        except OSError:
+            if os.name != "nt":
+                raise
+            _require_only_scheduled_children(directory, scheduled)
+            _schedule_path_cleanup_on_reboot(directory)
+            scheduled.add(directory)
+
+    resolved_root = _validate_helper_location(
+        resolved_root, install_root=install_root
+    )
+    if not _path_lexists(resolved_root):
         return
     try:
-        import ctypes
+        resolved_root.rmdir()
+    except OSError:
+        if os.name != "nt":
+            raise
+        _require_only_scheduled_children(resolved_root, scheduled)
+        _schedule_path_cleanup_on_reboot(resolved_root)
 
+
+def _require_only_scheduled_children(directory: Path, scheduled: set[Path]) -> None:
+    try:
+        children = tuple(directory.iterdir())
+    except OSError as exc:
+        raise ValueError("could not inspect deferred lifecycle cleanup directory") from exc
+    for child in children:
+        if _path_is_link_or_reparse_point(child) or child not in scheduled:
+            raise ValueError("deferred lifecycle helper contains unowned cleanup content")
+
+
+def _schedule_path_cleanup_on_reboot(
+    path: Path,
+    *,
+    mover: Callable[[str, str | None, int], int] | None = None,
+) -> None:
+    if os.name != "nt":
+        raise OSError("delayed lifecycle cleanup is only available on Windows")
+    import ctypes
+
+    move_file = mover
+    if move_file is None:
         windows_dlls = getattr(ctypes, "windll", None)
-        if windows_dlls is not None:
-            windows_dlls.kernel32.MoveFileExW(str(helper), None, 0x00000004)
-    except (AttributeError, OSError):
-        pass
+        if windows_dlls is None:
+            raise OSError("Windows delayed-delete API is unavailable")
+        move_file = windows_dlls.kernel32.MoveFileExW
+    try:
+        scheduled = move_file(str(path), None, 0x00000004)
+    except (AttributeError, OSError) as exc:
+        raise OSError("Windows delayed-delete request failed") from exc
+    if not scheduled:
+        error_code = ctypes.get_last_error()
+        raise OSError(
+            error_code,
+            f"Windows refused delayed deletion for lifecycle path: {path}",
+        )
