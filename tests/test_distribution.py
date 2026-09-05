@@ -7,6 +7,7 @@ import os
 import runpy
 import subprocess
 import sys
+import time
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -941,8 +942,11 @@ def test_deferred_self_uninstall_completes_after_parent_exit(tmp_path: Path) -> 
     request_path = launched[0][1]
     request = json.loads(request_path.read_text(encoding="utf-8"))
     helper_root = Path(request["helper_bundle_root"])
+    cleanup_claim = Path(request["cleanup_claim"])
+    installed_manifest = json.loads(Path(installed.manifest).read_text(encoding="utf-8"))
     assert request["schema_version"] == "2.0"
     assert Path(request["helper_executable"]) == helper_root / Path(installed.executable).name
+    assert request["helper_files"] == installed_manifest["files"]
     assert (helper_root / "_internal" / "runtime.bin").read_bytes() == b"runtime:trusted"
     with pytest.raises(TimeoutError, match="parent process"):
         complete_deferred_uninstall(
@@ -972,6 +976,7 @@ def test_deferred_self_uninstall_completes_after_parent_exit(tmp_path: Path) -> 
     assert not Path(installed.executable).exists()
     assert not Path(installed.manifest).exists()
     assert not helper_root.exists()
+    assert not cleanup_claim.exists()
     assert unmanaged.read_text(encoding="utf-8") == "keep"
 
 
@@ -1382,6 +1387,266 @@ def test_helper_cleanup_never_removes_unowned_content(tmp_path: Path) -> None:
 
 
 @pytest.mark.adversarial
+def test_post_exit_cleanup_refuses_unowned_content_before_launch(
+    tmp_path: Path,
+) -> None:
+    approvals = ApprovalStore(tmp_path / "approvals")
+    security = tmp_path / "security"
+    source = _write_test_artifact(tmp_path / "release", b"trusted")
+    root = tmp_path / "installed"
+    install_decision = install_plan(
+        source, root, approval_store=approvals, identity_probe=_test_identity_probe
+    )
+    installed = install(
+        source,
+        root,
+        confirmation_token=install_decision.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+    )
+    remove_decision = uninstall_plan(root, approval_store=approvals, security_root=security)
+    launched: list[tuple[Path, Path, int]] = []
+    uninstall(
+        root,
+        confirmation_token=remove_decision.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        running_executable=installed.executable,
+        force_deferred=True,
+        deferred_launcher=lambda executable, request, pid: launched.append(
+            (executable, request, pid)
+        ),
+    )
+    request_path = launched[0][1]
+    request = json.loads(request_path.read_text(encoding="utf-8"))
+    helper_root = Path(request["helper_bundle_root"])
+    (helper_root / "unowned.txt").write_text("preserve", encoding="utf-8")
+    entries = lifecycle._manifest_entries(
+        {"files": request["helper_files"]}, "files", required=True
+    )
+    with pytest.raises(ValueError, match="inventory"):
+        lifecycle._launch_post_exit_helper_cleanup(
+            helper_root,
+            entries,
+            install_root=root,
+            request_path=request_path,
+            parent_pid=os.getpid(),
+            launcher=lambda *_args, **_kwargs: pytest.fail(
+                "an unowned helper must not launch a cleanup worker"
+            ),
+            platform_name="nt",
+        )
+    assert (helper_root / "unowned.txt").read_text(encoding="utf-8") == "preserve"
+    assert request_path.is_file()
+
+
+@pytest.mark.adversarial
+def test_deferred_uninstall_claim_blocks_concurrent_operation(
+    tmp_path: Path,
+) -> None:
+    approvals = ApprovalStore(tmp_path / "approvals")
+    security = tmp_path / "security"
+    source = _write_test_artifact(tmp_path / "release", b"trusted")
+    root = tmp_path / "installed"
+    install_decision = install_plan(
+        source, root, approval_store=approvals, identity_probe=_test_identity_probe
+    )
+    installed = install(
+        source,
+        root,
+        confirmation_token=install_decision.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+    )
+    first_plan = uninstall_plan(root, approval_store=approvals, security_root=security)
+    launched: list[tuple[Path, Path, int]] = []
+    uninstall(
+        root,
+        confirmation_token=first_plan.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        running_executable=installed.executable,
+        force_deferred=True,
+        deferred_launcher=lambda executable, request, pid: launched.append(
+            (executable, request, pid)
+        ),
+    )
+    request = json.loads(launched[0][1].read_text(encoding="utf-8"))
+    operation_id = request["cleanup_operation_id"]
+    claim = Path(request["cleanup_claim"])
+    assert claim.read_text(encoding="ascii") == operation_id
+    assert request["cleanup_claim_sha256"] == lifecycle._sha256(claim)
+    assert Path(request["cleanup_receipt"]).name == (
+        f".artifex-uninstall-cleanup-{operation_id}.complete.json"
+    )
+    assert Path(request["cleanup_failure"]).name == (
+        f".artifex-uninstall-cleanup-{operation_id}.failure.json"
+    )
+
+    second_plan = uninstall_plan(root, approval_store=approvals, security_root=security)
+    with pytest.raises(FileExistsError, match="another uninstall"):
+        uninstall(
+            root,
+            confirmation_token=second_plan.confirmation_token,
+            approval_store=approvals,
+            security_root=security,
+            running_executable=installed.executable,
+            force_deferred=True,
+            deferred_launcher=lambda *_args: pytest.fail(
+                "a concurrent uninstall must not launch"
+            ),
+        )
+    helper_directories = [
+        path
+        for path in root.parent.glob(f"{lifecycle._helper_directory_prefix(root)}*")
+        if path.is_dir()
+    ]
+    assert helper_directories == [Path(request["helper_bundle_root"])]
+    assert claim.read_text(encoding="ascii") == operation_id
+
+
+@pytest.mark.adversarial
+def test_deferred_uninstall_refuses_tampered_operation_claim(
+    tmp_path: Path,
+) -> None:
+    approvals = ApprovalStore(tmp_path / "approvals")
+    security = tmp_path / "security"
+    source = _write_test_artifact(tmp_path / "release", b"trusted")
+    root = tmp_path / "installed"
+    install_decision = install_plan(
+        source, root, approval_store=approvals, identity_probe=_test_identity_probe
+    )
+    installed = install(
+        source,
+        root,
+        confirmation_token=install_decision.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+    )
+    remove_decision = uninstall_plan(root, approval_store=approvals, security_root=security)
+    launched: list[tuple[Path, Path, int]] = []
+    uninstall(
+        root,
+        confirmation_token=remove_decision.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        running_executable=installed.executable,
+        force_deferred=True,
+        deferred_launcher=lambda executable, request, pid: launched.append(
+            (executable, request, pid)
+        ),
+    )
+    request_path = launched[0][1]
+    request = json.loads(request_path.read_text(encoding="utf-8"))
+    Path(request["cleanup_claim"]).write_text("0" * 32, encoding="ascii")
+
+    with pytest.raises(ValueError, match="claim binding"):
+        complete_deferred_uninstall(
+            request_path,
+            security_root=security,
+            parent_checker=lambda _: False,
+            running_process_stopper=lambda _: pytest.fail(
+                "a tampered cleanup claim must fail before process mutation"
+            ),
+        )
+    assert Path(installed.executable).is_file()
+    assert Path(installed.manifest).is_file()
+
+
+@pytest.mark.skipif(os.name != "nt", reason="PowerShell post-exit cleanup is Windows-only")
+@pytest.mark.integration
+def test_windows_post_exit_cleanup_removes_only_exact_authenticated_helper(
+    tmp_path: Path,
+) -> None:
+    approvals = ApprovalStore(tmp_path / "approvals")
+    security = tmp_path / "security"
+    source = _write_test_artifact(tmp_path / "release", b"trusted")
+    root = tmp_path / "installed"
+    install_decision = install_plan(
+        source, root, approval_store=approvals, identity_probe=_test_identity_probe
+    )
+    installed = install(
+        source,
+        root,
+        confirmation_token=install_decision.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        identity_probe=_test_identity_probe,
+    )
+    remove_decision = uninstall_plan(root, approval_store=approvals, security_root=security)
+    launched: list[tuple[Path, Path, int]] = []
+    uninstall(
+        root,
+        confirmation_token=remove_decision.confirmation_token,
+        approval_store=approvals,
+        security_root=security,
+        running_executable=installed.executable,
+        force_deferred=True,
+        deferred_launcher=lambda executable, request, pid: launched.append(
+            (executable, request, pid)
+        ),
+    )
+    request_path = launched[0][1]
+    request = json.loads(request_path.read_text(encoding="utf-8"))
+    helper_root = Path(request["helper_bundle_root"])
+    concurrent_helper = root.parent / (
+        lifecycle._helper_directory_prefix(root) + "concurrent"
+    )
+    concurrent_helper.mkdir()
+    concurrent_evidence = concurrent_helper / "preserve.txt"
+    concurrent_evidence.write_text("unrelated", encoding="utf-8")
+    entries = lifecycle._manifest_entries(
+        {"files": request["helper_files"]}, "files", required=True
+    )
+
+    def run_worker(
+        arguments: list[str], **_kwargs: Any
+    ) -> subprocess.CompletedProcess[str]:
+        completed = subprocess.run(
+            arguments,
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000),
+        )
+        assert completed.returncode == 0, completed.stderr or completed.stdout
+        return completed
+
+    lifecycle._launch_post_exit_helper_cleanup(
+        helper_root,
+        entries,
+        install_root=root,
+        request_path=request_path,
+        parent_pid=2_147_483_647,
+        launcher=run_worker,
+    )
+
+    cleanup_script = helper_root.parent / f"{helper_root.name}.cleanup.ps1"
+    cleanup_receipt = Path(request["cleanup_receipt"])
+    cleanup_claim = Path(request["cleanup_claim"])
+    deadline = time.monotonic() + 15
+    while (
+        helper_root.exists()
+        or request_path.exists()
+        or cleanup_script.exists()
+        or not cleanup_receipt.exists()
+    ) and time.monotonic() < deadline:
+        time.sleep(0.05)
+    assert not helper_root.exists()
+    assert not request_path.exists()
+    assert not cleanup_script.exists()
+    receipt = json.loads(cleanup_receipt.read_text(encoding="utf-8-sig"))
+    assert receipt["status"] == "COMPLETE"
+    assert receipt["cleanup_operation_id"] == request["cleanup_operation_id"]
+    assert cleanup_claim.read_text(encoding="ascii") == request["cleanup_operation_id"]
+    assert concurrent_evidence.read_text(encoding="utf-8") == "unrelated"
+
+
+@pytest.mark.adversarial
 def test_request_cleanup_failure_occurs_after_helper_cleanup(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -1493,6 +1758,7 @@ def test_deferred_launcher_failure_discards_only_authenticated_staging(
     assert len(attempted_requests) == 1
     assert not attempted_requests[0].exists()
     assert not list(root.parent.glob(f"{lifecycle._helper_directory_prefix(root)}*"))
+    assert not (root / lifecycle._UNINSTALL_CLEANUP_CLAIM_NAME).exists()
 
 
 @pytest.mark.unit

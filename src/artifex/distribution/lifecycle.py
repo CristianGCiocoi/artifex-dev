@@ -50,6 +50,10 @@ _AUTH_ALGORITHM = "HMAC-SHA256"
 _DEFERRED_REQUEST_TTL_SECONDS = 120
 _DEFERRED_REQUEST_SCHEMA_VERSION = "2.0"
 _DEFERRED_HELPER_PREFIX = ".artifex-lifecycle-"
+_UNINSTALL_CLEANUP_CLAIM_NAME = ".artifex-uninstall-cleanup.active"
+_UNINSTALL_CLEANUP_RECEIPT_PREFIX = ".artifex-uninstall-cleanup-"
+_UNINSTALL_CLEANUP_RECEIPT_SUFFIX = ".complete.json"
+_UNINSTALL_CLEANUP_FAILURE_SUFFIX = ".failure.json"
 
 DeferredLauncher = Callable[[Path, Path, int], None]
 ParentChecker = Callable[[int], bool]
@@ -845,6 +849,7 @@ def complete_deferred_uninstall(
         raise ValueError("unsupported deferred lifecycle request schema")
     if request.get("manifest_fingerprint") != _manifest_fingerprint(manifest):
         raise ValueError("deferred uninstall request is stale")
+    helper_entries = _deferred_helper_cleanup_entries(request, manifest)
     try:
         expires_at = datetime.fromisoformat(str(request["expires_at"])).astimezone(UTC)
         parent_pid = int(request["parent_pid"])
@@ -854,7 +859,11 @@ def complete_deferred_uninstall(
         raise ValueError("deferred uninstall request expired")
     if request.get("request_id") != _helper_identity(helper_root, root):
         raise ValueError("deferred lifecycle request identity does not match its path")
-    helper_root, _ = _validate_deferred_helper_bundle(request, root, manifest)
+    helper_root, helper = _validate_deferred_helper_bundle(request, root, manifest)
+    if kind == "ARTIFEX_DEFERRED_UNINSTALL":
+        _validate_uninstall_cleanup_binding(
+            request, install_root=root, helper_root=helper_root
+        )
     checker = parent_checker or _pid_exists
     deadline = time.monotonic() + wait_timeout_seconds
     while checker(parent_pid):
@@ -863,7 +872,11 @@ def complete_deferred_uninstall(
         time.sleep(0.1)
     if datetime.now(UTC) > expires_at:
         raise ValueError("deferred uninstall request expired while awaiting parent exit")
-    helper_root, _ = _validate_deferred_helper_bundle(request, root, manifest)
+    helper_root, helper = _validate_deferred_helper_bundle(request, root, manifest)
+    if kind == "ARTIFEX_DEFERRED_UNINSTALL":
+        _validate_uninstall_cleanup_binding(
+            request, install_root=root, helper_root=helper_root
+        )
     _verify_managed_checksums(root, manifest)
     if kind == "ARTIFEX_DEFERRED_UNINSTALL":
         installed_service = _installed_service_registration(manifest)
@@ -967,10 +980,45 @@ def complete_deferred_uninstall(
             "status": "COMPLETE",
             "backup": str(backup),
         }
-    helper_entries = _manifest_entries(manifest, "files", required=True)
-    _schedule_helper_cleanup(helper_root, helper_entries, install_root=root)
-    _validate_protected_request_path(request_path, helper_root=helper_root)
-    request_path.unlink(missing_ok=True)
+    if (
+        kind == "ARTIFEX_DEFERRED_UNINSTALL"
+        and os.name == "nt"
+        and _same_file(_runtime_executable(), helper)
+    ):
+        try:
+            _launch_post_exit_helper_cleanup(
+                helper_root,
+                helper_entries,
+                install_root=root,
+                request_path=request_path,
+                parent_pid=os.getpid(),
+            )
+        except Exception as cleanup_error:
+            _write_uninstall_cleanup_failure(
+                request,
+                install_root=root,
+                helper_root=helper_root,
+                detail=str(cleanup_error),
+            )
+            raise
+    else:
+        cleanup_claim: Path | None = None
+        cleanup_operation_id: str | None = None
+        if kind == "ARTIFEX_DEFERRED_UNINSTALL":
+            (
+                cleanup_operation_id,
+                cleanup_claim,
+                _,
+                _,
+                _,
+            ) = _validate_uninstall_cleanup_binding(
+                request, install_root=root, helper_root=helper_root
+            )
+        _schedule_helper_cleanup(helper_root, helper_entries, install_root=root)
+        _validate_protected_request_path(request_path, helper_root=helper_root)
+        request_path.unlink(missing_ok=True)
+        if cleanup_claim is not None:
+            _remove_uninstall_cleanup_claim(cleanup_claim, cleanup_operation_id)
     return result
 
 
@@ -1023,22 +1071,42 @@ def _prepare_deferred_uninstall(
     service_readiness_timeout_seconds: float,
 ) -> Path:
     operation_security_root = _security_root(security_root)
-    helper_root, helper = _stage_deferred_helper_bundle(
-        root,
-        manifest,
-    )
-    request_path = _protected_request_path(helper_root)
+    helper_root: Path | None = None
+    request_path: Path | None = None
+    cleanup_claim: Path | None = None
+    operation_id: str | None = None
     try:
+        helper_root, helper = _stage_deferred_helper_bundle(root, manifest)
+        operation_id = _helper_identity(helper_root, root)
+        cleanup_claim = root / _UNINSTALL_CLEANUP_CLAIM_NAME
+        cleanup_receipt, cleanup_failure = _uninstall_cleanup_status_paths(
+            root, operation_id
+        )
+        if _path_lexists(cleanup_receipt) or _path_lexists(cleanup_failure):
+            raise FileExistsError("uninstall cleanup status already exists")
+        cleanup_claim_sha256 = _create_uninstall_cleanup_claim(
+            cleanup_claim, operation_id
+        )
+        request_path = _protected_request_path(helper_root)
         value = _signed_value(
             {
                 "schema_version": _DEFERRED_REQUEST_SCHEMA_VERSION,
                 "kind": "ARTIFEX_DEFERRED_UNINSTALL",
-                "request_id": _helper_identity(helper_root, root),
+                "request_id": operation_id,
                 "install_root": str(root),
                 "security_root": str(operation_security_root),
                 "manifest_fingerprint": _manifest_fingerprint(manifest),
                 "helper_bundle_root": str(helper_root),
                 "helper_executable": str(helper),
+                "helper_files": [
+                    dict(item)
+                    for item in _manifest_entries(manifest, "files", required=True)
+                ],
+                "cleanup_operation_id": operation_id,
+                "cleanup_claim": str(cleanup_claim),
+                "cleanup_claim_sha256": cleanup_claim_sha256,
+                "cleanup_receipt": str(cleanup_receipt),
+                "cleanup_failure": str(cleanup_failure),
                 "parent_pid": parent_pid,
                 "service_readiness_timeout_seconds": service_readiness_timeout_seconds,
                 "expires_at": (
@@ -1049,13 +1117,18 @@ def _prepare_deferred_uninstall(
         )
         _write_manifest(request_path, value)
     except Exception:
-        _schedule_helper_cleanup(
-            helper_root,
-            _manifest_entries(manifest, "files", required=True),
-            install_root=root,
-        )
-        request_path.unlink(missing_ok=True)
+        if helper_root is not None:
+            _schedule_helper_cleanup(
+                helper_root,
+                _manifest_entries(manifest, "files", required=True),
+                install_root=root,
+            )
+        if request_path is not None:
+            request_path.unlink(missing_ok=True)
+        if cleanup_claim is not None:
+            _remove_uninstall_cleanup_claim(cleanup_claim, operation_id)
         raise
+    assert request_path is not None
     return request_path
 
 
@@ -1093,6 +1166,10 @@ def _prepare_deferred_upgrade(
                 "manifest_fingerprint": _manifest_fingerprint(manifest),
                 "helper_bundle_root": str(helper_root),
                 "helper_executable": str(helper),
+                "helper_files": [
+                    dict(item)
+                    for item in _manifest_entries(manifest, "files", required=True)
+                ],
                 "staged_artifact": str(staged),
                 "artifact_manifest": dict(verified.manifest),
                 "artifact_manifest_fingerprint": verified.manifest_fingerprint,
@@ -1194,6 +1271,26 @@ def _validate_deferred_helper_bundle(
     )
     _validate_helper_inventory(helper_root, entries, excluded_directory=excluded)
     return helper_root, helper
+
+
+def _deferred_helper_cleanup_entries(
+    request: Mapping[str, Any], manifest: Mapping[str, Any]
+) -> tuple[dict[str, str], ...]:
+    """Return the request-bound inventory for post-exit helper cleanup.
+
+    The request is authenticated before this function is called.  Requiring its
+    cleanup inventory to equal the signed install inventory gives the detached
+    system cleaner a bounded, self-contained authority after uninstall removes
+    the installation key and manifest.
+    """
+
+    request_entries = _manifest_entries(
+        {"files": request.get("helper_files")}, "files", required=True
+    )
+    manifest_entries = _manifest_entries(manifest, "files", required=True)
+    if request_entries != manifest_entries:
+        raise ValueError("deferred lifecycle cleanup inventory is inconsistent")
+    return request_entries
 
 
 def _helper_directory_prefix(install_root: Path) -> str:
@@ -1356,6 +1453,124 @@ def _helper_identity(helper_root: Path, install_root: Path) -> str:
     return helper_root.name.removeprefix(prefix)
 
 
+def _validate_cleanup_operation_id(value: Any) -> str:
+    if (
+        not isinstance(value, str)
+        or len(value) != 32
+        or any(character not in "0123456789abcdef" for character in value)
+    ):
+        raise ValueError("uninstall cleanup operation identity is invalid")
+    return value
+
+
+def _uninstall_cleanup_status_paths(
+    install_root: Path, operation_id: str
+) -> tuple[Path, Path]:
+    identity = _validate_cleanup_operation_id(operation_id)
+    stem = f"{_UNINSTALL_CLEANUP_RECEIPT_PREFIX}{identity}"
+    root = install_root.resolve()
+    return (
+        root / f"{stem}{_UNINSTALL_CLEANUP_RECEIPT_SUFFIX}",
+        root / f"{stem}{_UNINSTALL_CLEANUP_FAILURE_SUFFIX}",
+    )
+
+
+def _create_uninstall_cleanup_claim(path: Path, operation_id: str) -> str:
+    identity = _validate_cleanup_operation_id(operation_id)
+    expected = path.parent.resolve() / _UNINSTALL_CLEANUP_CLAIM_NAME
+    if path.resolve() != expected or _path_lexists(path):
+        raise FileExistsError("another uninstall cleanup operation is active")
+    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    try:
+        with os.fdopen(descriptor, "wb") as stream:
+            stream.write(identity.encode("ascii"))
+            stream.flush()
+            os.fsync(stream.fileno())
+    except Exception:
+        path.unlink(missing_ok=True)
+        raise
+    if _path_is_link_or_reparse_point(path) or path.read_bytes() != identity.encode(
+        "ascii"
+    ):
+        path.unlink(missing_ok=True)
+        raise ValueError("uninstall cleanup claim changed during creation")
+    return _sha256(path)
+
+
+def _remove_uninstall_cleanup_claim(
+    path: Path, operation_id: str | None
+) -> None:
+    if operation_id is None or not _path_lexists(path):
+        return
+    identity = _validate_cleanup_operation_id(operation_id)
+    expected = path.parent.resolve() / _UNINSTALL_CLEANUP_CLAIM_NAME
+    if (
+        path.resolve() != expected
+        or _path_is_link_or_reparse_point(path)
+        or not path.is_file()
+        or path.read_bytes() != identity.encode("ascii")
+    ):
+        return
+    path.unlink()
+
+
+def _validate_uninstall_cleanup_binding(
+    request: Mapping[str, Any], *, install_root: Path, helper_root: Path
+) -> tuple[str, Path, str, Path, Path]:
+    operation_id = _validate_cleanup_operation_id(
+        request.get("cleanup_operation_id")
+    )
+    if (
+        operation_id != request.get("request_id")
+        or operation_id != _helper_identity(helper_root, install_root)
+    ):
+        raise ValueError("uninstall cleanup operation identity is inconsistent")
+    claim = Path(str(request.get("cleanup_claim", ""))).resolve()
+    expected_claim = install_root.resolve() / _UNINSTALL_CLEANUP_CLAIM_NAME
+    if claim != expected_claim or _path_is_link_or_reparse_point(claim):
+        raise ValueError("uninstall cleanup claim path is invalid")
+    claim_digest = request.get("cleanup_claim_sha256")
+    if (
+        not isinstance(claim_digest, str)
+        or len(claim_digest) != 64
+        or not claim.is_file()
+        or claim.read_bytes() != operation_id.encode("ascii")
+        or not hmac.compare_digest(_sha256(claim), claim_digest)
+    ):
+        raise ValueError("uninstall cleanup claim binding is invalid")
+    receipt, failure = _uninstall_cleanup_status_paths(install_root, operation_id)
+    supplied_receipt = Path(str(request.get("cleanup_receipt", ""))).resolve()
+    supplied_failure = Path(str(request.get("cleanup_failure", ""))).resolve()
+    if supplied_receipt != receipt or supplied_failure != failure:
+        raise ValueError("uninstall cleanup status binding is invalid")
+    if _path_lexists(receipt) or _path_lexists(failure):
+        raise FileExistsError("uninstall cleanup status already exists")
+    return operation_id, claim, claim_digest, receipt, failure
+
+
+def _write_uninstall_cleanup_failure(
+    request: Mapping[str, Any],
+    *,
+    install_root: Path,
+    helper_root: Path,
+    detail: str,
+) -> Path:
+    operation_id, _, _, _, failure = _validate_uninstall_cleanup_binding(
+        request, install_root=install_root, helper_root=helper_root
+    )
+    _write_manifest(
+        failure,
+        {
+            "schema_version": "artifex.uninstall-cleanup/v1",
+            "status": "FAIL",
+            "reason": "POST_EXIT_CLEANUP_LAUNCH_FAILED",
+            "cleanup_operation_id": operation_id,
+            "detail": detail[:500],
+        },
+    )
+    return failure
+
+
 def _protected_request_path(helper_root: Path) -> Path:
     return helper_root.parent / f"{helper_root.name}.request.json"
 
@@ -1432,6 +1647,18 @@ def _discard_deferred_request_artifacts(
             or request.get("manifest_fingerprint") != _manifest_fingerprint(manifest)
         ):
             return
+        cleanup_claim: Path | None = None
+        cleanup_operation_id: str | None = None
+        if request.get("kind") == "ARTIFEX_DEFERRED_UNINSTALL":
+            (
+                cleanup_operation_id,
+                cleanup_claim,
+                _,
+                _,
+                _,
+            ) = _validate_uninstall_cleanup_binding(
+                request, install_root=root, helper_root=helper_root
+            )
         if request.get("kind") == "ARTIFEX_DEFERRED_UPGRADE":
             artifact_manifest = request.get("artifact_manifest")
             if not isinstance(artifact_manifest, Mapping):
@@ -1455,6 +1682,12 @@ def _discard_deferred_request_artifacts(
         _validate_protected_request_path(
             protected_request_path, helper_root=helper_root
         ).unlink(missing_ok=True)
+        if (
+            cleanup_claim is not None
+            and not _path_lexists(helper_root)
+            and not _path_lexists(protected_request_path)
+        ):
+            _remove_uninstall_cleanup_claim(cleanup_claim, cleanup_operation_id)
     except (OSError, ValueError, json.JSONDecodeError):
         # Preserve anything whose authenticated ownership cannot be proven.
         return
@@ -2286,6 +2519,622 @@ def _require_only_scheduled_children(directory: Path, scheduled: set[Path]) -> N
     for child in children:
         if _path_is_link_or_reparse_point(child) or child not in scheduled:
             raise ValueError("deferred lifecycle helper contains unowned cleanup content")
+
+
+def _launch_post_exit_helper_cleanup(
+    helper_root: Path,
+    entries: tuple[Mapping[str, str], ...],
+    *,
+    install_root: Path,
+    request_path: Path,
+    parent_pid: int,
+    launcher: Callable[..., Any] | None = None,
+    platform_name: str | None = None,
+    powershell_path: Path | None = None,
+) -> None:
+    """Launch a bounded Windows system cleaner for the active helper bundle.
+
+    Windows cannot delete a loaded executable or DLL.  The authenticated helper
+    therefore delegates only its own exact signed inventory to the system
+    PowerShell already present on supported Windows releases.  The fixed,
+    encoded script obtains a handle to this process, waits for it to exit, then
+    revalidates the protected request digest, path boundary, reparse state,
+    complete inventory, and every file digest before deleting individual files
+    and empty directories.  It never performs a recursive delete or scans for
+    other ARTIFEX helper directories.
+
+    If validation or deletion fails, the worker exits without broadening the
+    delete set.  The request remains beside the helper as diagnostic evidence.
+    """
+
+    effective_platform = platform_name or os.name
+    if effective_platform != "nt":
+        raise OSError("post-exit lifecycle cleanup is only available on Windows")
+    resolved_root = _validate_helper_location(helper_root, install_root=install_root)
+    _validate_helper_inventory(resolved_root, entries)
+    protected_request = _validate_protected_request_path(
+        request_path, helper_root=resolved_root
+    )
+    if not protected_request.is_file() or _path_is_link_or_reparse_point(
+        protected_request
+    ):
+        raise ValueError("deferred lifecycle cleanup request is unsafe")
+    try:
+        request_value = json.loads(protected_request.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError("deferred lifecycle cleanup request is invalid") from exc
+    (
+        cleanup_operation_id,
+        cleanup_claim,
+        cleanup_claim_sha256,
+        cleanup_receipt,
+        cleanup_failure,
+    ) = _validate_uninstall_cleanup_binding(
+        request_value,
+        install_root=Path(install_root).resolve(),
+        helper_root=resolved_root,
+    )
+    if parent_pid <= 0:
+        raise ValueError("deferred lifecycle cleanup parent identity is invalid")
+
+    payload = base64.b64encode(
+        json.dumps(
+            {
+                "helper_root": str(resolved_root),
+                "install_root": str(Path(install_root).resolve()),
+                "helper_prefix": _helper_directory_prefix(Path(install_root).resolve()),
+                "request_path": str(protected_request),
+                "request_sha256": _sha256(protected_request),
+                "cleanup_operation_id": cleanup_operation_id,
+                "cleanup_claim": str(cleanup_claim),
+                "cleanup_claim_sha256": cleanup_claim_sha256,
+                "cleanup_receipt": str(cleanup_receipt),
+                "cleanup_failure": str(cleanup_failure),
+                "parent_pid": parent_pid,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).decode("ascii")
+    script = r"""
+param(
+    [Parameter(Mandatory = $true)][string]$cleanupScriptPath,
+    [Parameter(Mandatory = $true)][string]$cleanupScriptSha256
+)
+$ErrorActionPreference = 'Stop'
+$payloadBytes = [Convert]::FromBase64String('__PAYLOAD__')
+$payload = ConvertFrom-Json ([Text.Encoding]::UTF8.GetString($payloadBytes))
+
+function Test-SamePath([string]$Left, [string]$Right) {
+    return [String]::Equals(
+        [IO.Path]::GetFullPath($Left),
+        [IO.Path]::GetFullPath($Right),
+        [StringComparison]::OrdinalIgnoreCase
+    )
+}
+
+function Test-ReparsePoint([string]$Path) {
+    $attributes = [IO.File]::GetAttributes($Path)
+    return (($attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0)
+}
+
+function Get-Sha256([string]$Path) {
+    $stream = [IO.File]::Open(
+        $Path,
+        [IO.FileMode]::Open,
+        [IO.FileAccess]::Read,
+        [IO.FileShare]::Read
+    )
+    $hasher = [Security.Cryptography.SHA256]::Create()
+    try {
+        return [BitConverter]::ToString(
+            $hasher.ComputeHash($stream)
+        ).Replace('-', '').ToLowerInvariant()
+    }
+    finally {
+        $hasher.Dispose()
+        $stream.Dispose()
+    }
+}
+
+$helperRoot = [IO.Path]::GetFullPath([string]$payload.helper_root)
+$installRoot = [IO.Path]::GetFullPath([string]$payload.install_root)
+$requestPath = [IO.Path]::GetFullPath([string]$payload.request_path)
+$requestSha256 = [string]$payload.request_sha256
+$operationId = [string]$payload.cleanup_operation_id
+$claimPath = [IO.Path]::GetFullPath([string]$payload.cleanup_claim)
+$claimSha256 = [string]$payload.cleanup_claim_sha256
+$receiptPath = [IO.Path]::GetFullPath([string]$payload.cleanup_receipt)
+$failurePath = [IO.Path]::GetFullPath([string]$payload.cleanup_failure)
+$helperPrefix = [string]$payload.helper_prefix
+$parentPid = [int]$payload.parent_pid
+$helperParent = [IO.Directory]::GetParent($helperRoot).FullName
+$installParent = [IO.Directory]::GetParent($installRoot).FullName
+$helperLeaf = [IO.Path]::GetFileName($helperRoot)
+$cleanupScriptPath = [IO.Path]::GetFullPath($cleanupScriptPath)
+
+trap {
+    try {
+        $expectedFailure = [IO.Path]::Combine(
+            $installRoot,
+            '.artifex-uninstall-cleanup-' + $operationId + '.failure.json'
+        )
+        if (
+            $operationId -match '^[0-9a-f]{32}$' -and
+            [IO.Directory]::Exists($installRoot) -and
+            -not (Test-ReparsePoint $installRoot) -and
+            (Test-SamePath $failurePath $expectedFailure) -and
+            -not [IO.File]::Exists($failurePath)
+        ) {
+            $failureTemporary = $failurePath + '.tmp-' + [Guid]::NewGuid().ToString('N')
+            $failureDetail = [string]$_
+            if ($failureDetail.Length -gt 500) {
+                $failureDetail = $failureDetail.Substring(0, 500)
+            }
+            $failureContent = @{
+                schema_version = 'artifex.uninstall-cleanup/v1'
+                status = 'FAIL'
+                reason = 'POST_EXIT_CLEANUP_FAILED'
+                cleanup_operation_id = $operationId
+                detail = $failureDetail
+            } | ConvertTo-Json -Compress
+            [IO.File]::WriteAllText($failureTemporary, $failureContent, [Text.Encoding]::UTF8)
+            [IO.File]::Move($failureTemporary, $failurePath)
+        }
+    }
+    catch {
+    }
+    exit 1
+}
+
+if (-not (Test-SamePath $helperParent $installParent)) {
+    throw 'Helper parent does not match the installation boundary.'
+}
+if (-not $helperLeaf.StartsWith($helperPrefix, [StringComparison]::Ordinal)) {
+    throw 'Helper identity does not match the installation boundary.'
+}
+$expectedRequest = [IO.Path]::Combine($helperParent, $helperLeaf + '.request.json')
+$expectedCleanupScript = [IO.Path]::Combine(
+    $helperParent,
+    $helperLeaf + '.cleanup.ps1'
+)
+$expectedReceipt = [IO.Path]::Combine(
+    $installRoot,
+    '.artifex-uninstall-cleanup-' + $operationId + '.complete.json'
+)
+$expectedFailure = [IO.Path]::Combine(
+    $installRoot,
+    '.artifex-uninstall-cleanup-' + $operationId + '.failure.json'
+)
+$expectedClaim = [IO.Path]::Combine(
+    $installRoot,
+    '.artifex-uninstall-cleanup.active'
+)
+if (-not (Test-SamePath $requestPath $expectedRequest)) {
+    throw 'Cleanup request is outside its helper binding.'
+}
+if (
+    -not (Test-SamePath $cleanupScriptPath $expectedCleanupScript) -or
+    (Test-ReparsePoint $cleanupScriptPath) -or
+    -not [String]::Equals(
+        (Get-Sha256 $cleanupScriptPath),
+        $cleanupScriptSha256,
+        [StringComparison]::Ordinal
+    )
+) {
+    throw 'Cleanup script binding is invalid.'
+}
+if (
+    $operationId -notmatch '^[0-9a-f]{32}$' -or
+    -not (Test-SamePath $claimPath $expectedClaim) -or
+    -not (Test-SamePath $receiptPath $expectedReceipt) -or
+    -not (Test-SamePath $failurePath $expectedFailure) -or
+    [IO.File]::Exists($receiptPath) -or
+    [IO.File]::Exists($failurePath)
+) {
+    throw 'Cleanup status path is invalid or stale.'
+}
+if (
+    (Test-ReparsePoint $helperParent) -or
+    (Test-ReparsePoint $helperRoot) -or
+    (Test-ReparsePoint $requestPath) -or
+    (Test-ReparsePoint $claimPath)
+) {
+    throw 'Cleanup path contains a reparse point.'
+}
+if (-not [IO.File]::Exists($requestPath)) {
+    throw 'Cleanup request is unavailable.'
+}
+if (-not [String]::Equals((Get-Sha256 $requestPath), $requestSha256, [StringComparison]::Ordinal)) {
+    throw 'Cleanup request digest changed.'
+}
+if (
+    -not [IO.File]::Exists($claimPath) -or
+    -not [String]::Equals(
+        [IO.File]::ReadAllText($claimPath, [Text.Encoding]::ASCII),
+        $operationId,
+        [StringComparison]::Ordinal
+    ) -or
+    -not [String]::Equals(
+        (Get-Sha256 $claimPath),
+        $claimSha256,
+        [StringComparison]::Ordinal
+    )
+) {
+    throw 'Cleanup operation claim changed.'
+}
+
+$request = ConvertFrom-Json ([IO.File]::ReadAllText($requestPath, [Text.Encoding]::UTF8))
+if (
+    [string]$request.schema_version -ne '2.0' -or
+    [string]$request.kind -ne 'ARTIFEX_DEFERRED_UNINSTALL' -or
+    -not (Test-SamePath ([string]$request.install_root) $installRoot) -or
+    -not (Test-SamePath ([string]$request.helper_bundle_root) $helperRoot) -or
+    [string]$request.cleanup_operation_id -ne $operationId -or
+    -not (Test-SamePath ([string]$request.cleanup_claim) $claimPath) -or
+    [string]$request.cleanup_claim_sha256 -ne $claimSha256 -or
+    -not (Test-SamePath ([string]$request.cleanup_receipt) $receiptPath) -or
+    -not (Test-SamePath ([string]$request.cleanup_failure) $failurePath) -or
+    [string]$request.request_id -ne $operationId -or
+    $operationId -ne $helperLeaf.Substring($helperPrefix.Length)
+) {
+    throw 'Cleanup request binding is invalid.'
+}
+$expiresAt = [DateTimeOffset]::Parse(
+    [string]$request.expires_at,
+    [Globalization.CultureInfo]::InvariantCulture,
+    [Globalization.DateTimeStyles]::RoundtripKind
+)
+if ($expiresAt.ToUniversalTime() -le [DateTimeOffset]::UtcNow) {
+    throw 'Cleanup request expired.'
+}
+
+$pathComparer = [StringComparer]::OrdinalIgnoreCase
+$expectedFiles = [Collections.Generic.Dictionary[string,string]]::new($pathComparer)
+$expectedDirectories = [Collections.Generic.HashSet[string]]::new($pathComparer)
+$rootWithSeparator = (
+    $helperRoot.TrimEnd([IO.Path]::DirectorySeparatorChar) +
+    [IO.Path]::DirectorySeparatorChar
+)
+$entries = @($request.helper_files)
+if ($entries.Count -eq 0) {
+    throw 'Cleanup inventory is empty.'
+}
+foreach ($entry in $entries) {
+    $propertyNames = @($entry.PSObject.Properties.Name | Sort-Object)
+    if (
+        $propertyNames.Count -ne 3 -or
+        $propertyNames[0] -ne 'kind' -or
+        $propertyNames[1] -ne 'path' -or
+        $propertyNames[2] -ne 'sha256' -or
+        [string]$entry.kind -ne 'file'
+    ) {
+        throw 'Cleanup inventory entry is invalid.'
+    }
+    $relative = [string]$entry.path
+    $digest = [string]$entry.sha256
+    $parts = @($relative.Split('/'))
+    if (
+        [String]::IsNullOrWhiteSpace($relative) -or
+        [IO.Path]::IsPathRooted($relative) -or
+        $relative.Contains('\') -or
+        $relative.Contains(':') -or
+        $parts.Count -eq 0 -or
+        @($parts | Where-Object { $_ -eq '' -or $_ -eq '.' -or $_ -eq '..' }).Count -ne 0 -or
+        $digest -notmatch '^[0-9a-f]{64}$'
+    ) {
+        throw 'Cleanup inventory path or digest is invalid.'
+    }
+    $nativeRelative = $relative.Replace('/', [IO.Path]::DirectorySeparatorChar)
+    $target = [IO.Path]::GetFullPath([IO.Path]::Combine($helperRoot, $nativeRelative))
+    if (
+        -not $target.StartsWith($rootWithSeparator, [StringComparison]::OrdinalIgnoreCase) -or
+        -not [String]::Equals(
+            $target.Substring($rootWithSeparator.Length).Replace('\', '/'),
+            $relative,
+            [StringComparison]::Ordinal
+        ) -or
+        $expectedFiles.ContainsKey($target)
+    ) {
+        throw 'Cleanup inventory path escapes or is duplicated.'
+    }
+    $expectedFiles.Add($target, $digest)
+    $cursor = [IO.Directory]::GetParent($target)
+    while ($null -ne $cursor -and -not (Test-SamePath $cursor.FullName $helperRoot)) {
+        if (-not $cursor.FullName.StartsWith(
+            $rootWithSeparator,
+            [StringComparison]::OrdinalIgnoreCase
+        )) {
+            throw 'Cleanup inventory directory escapes the helper.'
+        }
+        [void]$expectedDirectories.Add($cursor.FullName)
+        $cursor = $cursor.Parent
+    }
+    if ($null -eq $cursor) {
+        throw 'Cleanup inventory directory is not rooted in the helper.'
+    }
+}
+
+function Assert-ExactInventory {
+    if (-not [IO.Directory]::Exists($helperRoot) -or (Test-ReparsePoint $helperRoot)) {
+        throw 'Cleanup helper root is unavailable or unsafe.'
+    }
+    $observedFiles = [Collections.Generic.HashSet[string]]::new($pathComparer)
+    $observedDirectories = [Collections.Generic.HashSet[string]]::new($pathComparer)
+    $pending = [Collections.Generic.Stack[string]]::new()
+    $pending.Push($helperRoot)
+    while ($pending.Count -gt 0) {
+        $directory = $pending.Pop()
+        foreach ($child in [IO.Directory]::EnumerateFileSystemEntries($directory)) {
+            $full = [IO.Path]::GetFullPath($child)
+            if (-not $full.StartsWith($rootWithSeparator, [StringComparison]::OrdinalIgnoreCase)) {
+                throw 'Observed cleanup path escapes the helper.'
+            }
+            $attributes = [IO.File]::GetAttributes($full)
+            if (($attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+                throw 'Observed cleanup path is a reparse point.'
+            }
+            if (($attributes -band [IO.FileAttributes]::Directory) -ne 0) {
+                if (-not $expectedDirectories.Contains($full)) {
+                    throw 'Helper contains an unowned directory.'
+                }
+                [void]$observedDirectories.Add($full)
+                $pending.Push($full)
+            }
+            else {
+                if (-not $expectedFiles.ContainsKey($full)) {
+                    throw 'Helper contains an unowned file.'
+                }
+                [void]$observedFiles.Add($full)
+            }
+        }
+    }
+    if (
+        $observedFiles.Count -ne $expectedFiles.Count -or
+        $observedDirectories.Count -ne $expectedDirectories.Count
+    ) {
+        throw 'Helper inventory is incomplete.'
+    }
+    foreach ($item in $expectedFiles.GetEnumerator()) {
+        if (
+            -not [IO.File]::Exists($item.Key) -or
+            (Test-ReparsePoint $item.Key) -or
+            -not [String]::Equals((Get-Sha256 $item.Key), $item.Value, [StringComparison]::Ordinal)
+        ) {
+            throw 'Helper file digest changed.'
+        }
+    }
+}
+
+Assert-ExactInventory
+try {
+    $parent = [Diagnostics.Process]::GetProcessById($parentPid)
+}
+catch [ArgumentException] {
+    $parent = $null
+}
+if ($null -ne $parent) {
+    try {
+        if (-not (Test-SamePath $parent.MainModule.FileName ([string]$request.helper_executable))) {
+            throw 'Lifecycle helper process identity does not match its signed executable.'
+        }
+    }
+    catch [InvalidOperationException] {
+        $parent = $null
+    }
+}
+if ($null -ne $parent) {
+    if (-not $parent.WaitForExit(120000)) {
+        throw 'Lifecycle helper did not exit before cleanup timeout.'
+    }
+    $parent.Dispose()
+}
+Assert-ExactInventory
+if (
+    (Test-ReparsePoint $requestPath) -or
+    -not [String]::Equals((Get-Sha256 $requestPath), $requestSha256, [StringComparison]::Ordinal)
+) {
+    throw 'Cleanup request changed while awaiting helper exit.'
+}
+if (
+    (Test-ReparsePoint $claimPath) -or
+    -not [String]::Equals(
+        [IO.File]::ReadAllText($claimPath, [Text.Encoding]::ASCII),
+        $operationId,
+        [StringComparison]::Ordinal
+    ) -or
+    -not [String]::Equals((Get-Sha256 $claimPath), $claimSha256, [StringComparison]::Ordinal)
+) {
+    throw 'Cleanup operation claim changed while awaiting helper exit.'
+}
+if ($expiresAt.ToUniversalTime() -le [DateTimeOffset]::UtcNow) {
+    throw 'Cleanup request expired while awaiting helper exit.'
+}
+foreach ($item in $expectedFiles.GetEnumerator()) {
+    if (
+        -not [IO.File]::Exists($item.Key) -or
+        (Test-ReparsePoint $item.Key) -or
+        -not [String]::Equals((Get-Sha256 $item.Key), $item.Value, [StringComparison]::Ordinal)
+    ) {
+        throw 'Helper file changed immediately before deletion.'
+    }
+    [IO.File]::Delete($item.Key)
+}
+foreach ($directory in @($expectedDirectories | Sort-Object { $_.Length } -Descending)) {
+    if ((Test-ReparsePoint $directory)) {
+        throw 'Helper directory changed immediately before deletion.'
+    }
+    [IO.Directory]::Delete($directory, $false)
+}
+if ((Test-ReparsePoint $helperRoot)) {
+    throw 'Helper root changed immediately before deletion.'
+}
+[IO.Directory]::Delete($helperRoot, $false)
+if (
+    (Test-ReparsePoint $requestPath) -or
+    -not [String]::Equals((Get-Sha256 $requestPath), $requestSha256, [StringComparison]::Ordinal)
+) {
+    throw 'Cleanup request changed immediately before deletion.'
+}
+[IO.File]::Delete($requestPath)
+if (
+    (Test-ReparsePoint $claimPath) -or
+    -not [String]::Equals(
+        [IO.File]::ReadAllText($claimPath, [Text.Encoding]::ASCII),
+        $operationId,
+        [StringComparison]::Ordinal
+    ) -or
+    -not [String]::Equals((Get-Sha256 $claimPath), $claimSha256, [StringComparison]::Ordinal)
+) {
+    throw 'Cleanup operation claim changed immediately before completion.'
+}
+$receiptTemporary = $receiptPath + '.tmp-' + [Guid]::NewGuid().ToString('N')
+$receiptContent = @{
+    schema_version = 'artifex.uninstall-cleanup/v1'
+    status = 'COMPLETE'
+    cleanup_operation_id = $operationId
+    request_id = [string]$request.request_id
+    request_sha256 = $requestSha256
+} | ConvertTo-Json -Compress
+try {
+    [IO.File]::WriteAllText($receiptTemporary, $receiptContent, [Text.Encoding]::UTF8)
+    if (
+        (Test-ReparsePoint $cleanupScriptPath) -or
+        -not [String]::Equals(
+            (Get-Sha256 $cleanupScriptPath),
+            $cleanupScriptSha256,
+            [StringComparison]::Ordinal
+        )
+    ) {
+        throw 'Cleanup script changed immediately before deletion.'
+    }
+    [IO.File]::Delete($cleanupScriptPath)
+    [IO.File]::Move($receiptTemporary, $receiptPath)
+}
+finally {
+    if ([IO.File]::Exists($receiptTemporary)) {
+        [IO.File]::Delete($receiptTemporary)
+    }
+}
+""".strip().replace("__PAYLOAD__", payload)
+    script_bytes = script.encode("utf-8")
+    cleanup_script = resolved_root.parent / f"{resolved_root.name}.cleanup.ps1"
+    if _path_lexists(cleanup_script):
+        raise FileExistsError("deferred lifecycle cleanup script already exists")
+    _write_bytes_atomic(cleanup_script, script_bytes)
+    cleanup_script_digest = hashlib.sha256(script_bytes).hexdigest()
+    if (
+        _path_is_link_or_reparse_point(cleanup_script)
+        or not hmac.compare_digest(_sha256(cleanup_script), cleanup_script_digest)
+    ):
+        raise ValueError("deferred lifecycle cleanup script changed before launch")
+
+    bootstrap_payload = base64.b64encode(
+        json.dumps(
+            {
+                "cleanup_script": str(cleanup_script),
+                "cleanup_script_sha256": cleanup_script_digest,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).decode("ascii")
+    bootstrap = r"""
+$ErrorActionPreference = 'Stop'
+$payloadBytes = [Convert]::FromBase64String('__BOOTSTRAP_PAYLOAD__')
+$payload = ConvertFrom-Json ([Text.Encoding]::UTF8.GetString($payloadBytes))
+$scriptPath = [IO.Path]::GetFullPath([string]$payload.cleanup_script)
+$expectedDigest = [string]$payload.cleanup_script_sha256
+$attributes = [IO.File]::GetAttributes($scriptPath)
+if (($attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+    throw 'Cleanup script is a reparse point.'
+}
+$scriptBytes = [IO.File]::ReadAllBytes($scriptPath)
+$hasher = [Security.Cryptography.SHA256]::Create()
+try {
+    $observedDigest = [BitConverter]::ToString(
+        $hasher.ComputeHash($scriptBytes)
+    ).Replace('-', '').ToLowerInvariant()
+}
+finally {
+    $hasher.Dispose()
+}
+if (-not [String]::Equals($observedDigest, $expectedDigest, [StringComparison]::Ordinal)) {
+    throw 'Cleanup script digest changed.'
+}
+$scriptText = [Text.Encoding]::UTF8.GetString($scriptBytes)
+$scriptBlock = [ScriptBlock]::Create($scriptText)
+[void]$scriptBlock.Invoke($scriptPath, $expectedDigest)
+""".strip().replace("__BOOTSTRAP_PAYLOAD__", bootstrap_payload)
+    encoded = base64.b64encode(bootstrap.encode("utf-16-le")).decode("ascii")
+    powershell = powershell_path or _trusted_windows_powershell()
+    creationflags = (
+        getattr(subprocess, "DETACHED_PROCESS", 0x00000008)
+        | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0x00000200)
+        | getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000)
+    )
+    arguments = [
+            str(powershell),
+            "-NoLogo",
+            "-NoProfile",
+            "-NonInteractive",
+            "-EncodedCommand",
+            encoded,
+        ]
+    if len(subprocess.list2cmdline(arguments)) >= 32_767:
+        raise OSError("Windows lifecycle cleanup command exceeds CreateProcess limit")
+    spawn = launcher or subprocess.Popen
+    try:
+        spawn(
+            arguments,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            close_fds=True,
+            creationflags=creationflags,
+        )
+    except Exception:
+        if (
+            cleanup_script.is_file()
+            and not _path_is_link_or_reparse_point(cleanup_script)
+            and hmac.compare_digest(_sha256(cleanup_script), cleanup_script_digest)
+        ):
+            cleanup_script.unlink()
+        raise
+
+
+def _trusted_windows_powershell(
+    *,
+    system_directory_getter: Callable[[Any, int], int] | None = None,
+) -> Path:
+    """Resolve Windows PowerShell from the kernel-reported system directory."""
+
+    if os.name != "nt" and system_directory_getter is None:
+        raise OSError("trusted Windows system directory is unavailable")
+    import ctypes
+
+    getter = system_directory_getter
+    if getter is None:
+        windows_dlls = getattr(ctypes, "windll", None)
+        if windows_dlls is None:
+            raise OSError("trusted Windows system directory API is unavailable")
+        getter = windows_dlls.kernel32.GetSystemDirectoryW
+    buffer = ctypes.create_unicode_buffer(32_768)
+    try:
+        length = int(getter(buffer, len(buffer)))
+    except (AttributeError, OSError, TypeError, ValueError) as exc:
+        raise OSError("trusted Windows system directory lookup failed") from exc
+    if length <= 0 or length >= len(buffer) or not buffer.value:
+        raise OSError("trusted Windows system directory lookup failed")
+    system_directory = Path(buffer.value).absolute()
+    powershell_directory = system_directory / "WindowsPowerShell" / "v1.0"
+    powershell = powershell_directory / "powershell.exe"
+    for candidate in (system_directory, powershell_directory, powershell):
+        if _path_is_link_or_reparse_point(candidate):
+            raise OSError("trusted Windows PowerShell path contains a reparse point")
+    if not powershell.is_file():
+        raise OSError("trusted Windows PowerShell executable is unavailable")
+    return powershell
 
 
 def _schedule_path_cleanup_on_reboot(

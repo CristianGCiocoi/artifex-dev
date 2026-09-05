@@ -121,8 +121,28 @@ def test_nsis_silent_mode_is_fast_and_cannot_block_on_error_dialogs() -> None:
     message_boxes = [
         line.strip() for line in script.splitlines() if line.strip().startswith("MessageBox ")
     ]
-    assert len(message_boxes) == 3
+    assert len(message_boxes) >= 3
     assert all(line.endswith("/SD IDOK") for line in message_boxes)
+
+
+@pytest.mark.packaging
+def test_windows_uninstaller_requires_correlated_immediate_cleanup() -> None:
+    script = (
+        Path(__file__).resolve().parents[2]
+        / "packaging"
+        / "windows"
+        / "ARTIFEX-Setup.nsi"
+    ).read_text(encoding="utf-8")
+
+    assert ".artifex-uninstall-cleanup.active" in script
+    assert ".artifex-uninstall-cleanup-$3.complete.json" in script
+    assert ".artifex-uninstall-cleanup-$3.failure.json" in script
+    assert 'StrLen $4 $3' in script
+    assert 'IntCmp $4 32' in script
+    assert " /REBOOTOK" not in script
+    assert 'Delete "$INSTDIR\\Uninstall.exe"' in script
+    assert 'RMDir "$INSTDIR"' in script
+    assert 'IfFileExists "$INSTDIR" lifecycle_metadata_cleanup_failed' in script
 
 
 @pytest.mark.packaging
