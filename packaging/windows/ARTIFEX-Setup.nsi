@@ -20,6 +20,8 @@ CRCCheck force
 !endif
 
 !define ARTIFEX_START_MENU "$SMPROGRAMS\ARTIFEX"
+!define MUI_ICON "${ARTIFEX_ICON}"
+!define MUI_UNICON "${ARTIFEX_ICON}"
 
 Name "ARTIFEX"
 Caption "ARTIFEX Setup"
@@ -29,8 +31,6 @@ InstallDirRegKey HKLM "Software\ARTIFEX" "InstallDir"
 BrandingText "ARTIFEX"
 ShowInstDetails show
 ShowUninstDetails show
-Icon "${ARTIFEX_ICON}"
-UninstallIcon "${ARTIFEX_ICON}"
 
 VIProductVersion "${ARTIFEX_VERSION}.0"
 VIAddVersionKey /LANG=1033 "ProductName" "ARTIFEX"

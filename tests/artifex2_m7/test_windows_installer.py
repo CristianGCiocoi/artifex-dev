@@ -131,10 +131,14 @@ def test_windows_shell_is_quiet_without_sacrificing_terminal_cli_output() -> Non
         encoding="utf-8"
     )
 
-    assert 'WINDOWS_CONSOLE_MODE = "attach"' in builder
+    assert 'WINDOWS_CONSOLE_MODE = "hide"' in builder
     assert 'f"--windows-console-mode={WINDOWS_CONSOLE_MODE}"' in builder
     assert "--windows-console-mode=disable" not in builder
+    assert "--windows-console-mode=attach" not in builder
     assert '"--windows-icon-from-ico=" + str(icon)' in builder
+    assert '"/PPO"' in builder
+    assert "_windows_icon_group_count(executable)" in builder
+    assert "_windows_icon_group_count(installer)" in builder
 
 
 @pytest.mark.packaging
@@ -156,8 +160,13 @@ def test_artifex_icon_is_multiresolution_and_wired_through_nsis() -> None:
     assert (reserved, kind) == (0, 1)
     assert image_count >= 8
     assert {(16, 16), (32, 32), (48, 48), (256, 256)} <= dimensions
-    assert 'Icon "${ARTIFEX_ICON}"' in script
-    assert 'UninstallIcon "${ARTIFEX_ICON}"' in script
+    icon_define = script.index('!define MUI_ICON "${ARTIFEX_ICON}"')
+    unicon_define = script.index('!define MUI_UNICON "${ARTIFEX_ICON}"')
+    first_page_macro = script.index("!insertmacro MUI_PAGE_WELCOME")
+    assert icon_define < first_page_macro
+    assert unicon_define < first_page_macro
+    assert '\nIcon "${ARTIFEX_ICON}"' not in script
+    assert '\nUninstallIcon "${ARTIFEX_ICON}"' not in script
     assert '"DisplayIcon"' in script
     assert '"$INSTDIR\\artifex.exe",0' in script
 

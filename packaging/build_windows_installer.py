@@ -24,7 +24,7 @@ NSIS_URL = (
     f"{NSIS_VERSION}/nsis-{NSIS_VERSION}.zip"
 )
 NSIS_SHA256 = "56581f90db321581c5381193d796fffcf2d24b2f8fed2160a6c6a3baa67f2c4f"
-WINDOWS_CONSOLE_MODE = "attach"
+WINDOWS_CONSOLE_MODE = "hide"
 WINDOWS_ICON_PATH = Path("packaging/windows/assets/artifex.ico")
 
 
@@ -41,6 +41,49 @@ def _commit(root: Path) -> str:
         encoding="utf-8",
     )
     return result.stdout.strip()
+
+
+def _windows_icon_group_count(path: Path) -> int:
+    """Return the number of icon groups embedded in a Windows executable."""
+
+    if sys.platform != "win32":
+        raise RuntimeError("Windows icon resources can only be inspected on Windows")
+    import ctypes
+
+    shell32 = ctypes.WinDLL("shell32", use_last_error=True)
+    extract_icon = shell32.ExtractIconExW
+    extract_icon.argtypes = (
+        ctypes.c_wchar_p,
+        ctypes.c_int,
+        ctypes.c_void_p,
+        ctypes.c_void_p,
+        ctypes.c_uint,
+    )
+    extract_icon.restype = ctypes.c_uint
+    return int(extract_icon(str(path), -1, None, None, 0))
+
+
+def _verify_nsis_icon_preprocessing(
+    nsis: Path,
+    script: Path,
+    defines: tuple[str, ...],
+    icon: Path,
+) -> None:
+    """Require Modern UI to expand both installer icon directives exactly once."""
+
+    result = subprocess.run(
+        (str(nsis), "/PPO", "/V2", *defines, str(script)),
+        cwd=script.parents[2],
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+    lines = tuple(line.strip() for line in result.stdout.splitlines())
+    expected = (f'Icon "{icon}"', f'UninstallIcon "{icon}"')
+    if any(lines.count(directive) != 1 for directive in expected):
+        raise RuntimeError("NSIS Modern UI did not preserve the ARTIFEX installer icons")
 
 
 def _validated_targets(root: Path) -> tuple[Path, Path]:
@@ -136,8 +179,9 @@ def main() -> int:
         "--output-dir=" + str(work),
         "--output-filename=artifex.exe",
         "--report=" + str(report),
-        # Keep terminal output for CLI/MCP callers, but do not create a console
-        # when Explorer or the per-user managed-service task launches ARTIFEX.
+        # Reuse an existing terminal for CLI/MCP callers. Explorer and the
+        # per-user managed-service task receive a hidden console instead of a
+        # persistent foreground window.
         f"--windows-console-mode={WINDOWS_CONSOLE_MODE}",
         "--windows-icon-from-ico=" + str(icon),
         # Migration backups call sqlite3.iterdump(), which imports sqlite3.dump
@@ -174,6 +218,9 @@ def main() -> int:
     executable = bundle / "artifex.exe"
     if not executable.is_file():
         raise FileNotFoundError("Nuitka standalone executable was not produced")
+    executable_icon_groups = _windows_icon_group_count(executable)
+    if executable_icon_groups < 1:
+        raise RuntimeError("Nuitka executable does not contain an icon resource")
     source_commit = _commit(root)
     manifest = create_artifact_manifest(
         executable,
@@ -205,19 +252,26 @@ def main() -> int:
     nsis = _nsis(root)
     installer = output / "ARTIFEX-Setup.exe"
     script = root / "packaging" / "windows" / "ARTIFEX-Setup.nsi"
+    nsis_defines = (
+        f"/DARTIFEX_BUNDLE={bundle}",
+        f"/DARTIFEX_OUTPUT={installer}",
+        f"/DARTIFEX_VERSION={__version__}",
+        f"/DARTIFEX_ICON={icon}",
+    )
+    _verify_nsis_icon_preprocessing(nsis, script, nsis_defines, icon)
     subprocess.run(
         (
             str(nsis),
             "/V2",
-            f"/DARTIFEX_BUNDLE={bundle}",
-            f"/DARTIFEX_OUTPUT={installer}",
-            f"/DARTIFEX_VERSION={__version__}",
-            f"/DARTIFEX_ICON={icon}",
+            *nsis_defines,
             str(script),
         ),
         cwd=root,
         check=True,
     )
+    installer_icon_groups = _windows_icon_group_count(installer)
+    if installer_icon_groups < 1:
+        raise RuntimeError("NSIS installer does not contain an icon resource")
     provenance = {
         "schema_version": "artifex.windows-installer-provenance/v1",
         "product": "ARTIFEX",
@@ -235,6 +289,8 @@ def main() -> int:
             "icon": {
                 "path": WINDOWS_ICON_PATH.as_posix(),
                 "sha256": _sha256(icon),
+                "native_executable_groups": executable_icon_groups,
+                "installer_groups": installer_icon_groups,
             },
         },
         "bundle_manifest": manifest,

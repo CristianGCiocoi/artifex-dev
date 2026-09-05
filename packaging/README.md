@@ -10,12 +10,14 @@ the provenance-bound bundle into `C:\Program Files\ARTIFEX`, initializes local
 state, and registers and starts the existing per-user managed-service contract.
 The user does not install Python, pip, a virtual environment, Nuitka, or NSIS.
 
-The Windows executable uses Nuitka console mode `attach`: direct CLI and MCP
-calls retain their standard streams when launched from an existing terminal,
-while Start Menu dashboard launches and Task Scheduler service activation do
-not create a separate console window. The ARTIFEX icon is embedded in the
-native executable and NSIS installer and is reused by installed shortcuts and
-Add/Remove Programs metadata.
+The Windows executable uses Nuitka console mode `hide`: direct CLI and MCP
+calls reuse an existing terminal with normal standard-stream synchronization,
+while a console created for a Start Menu dashboard launch or Task Scheduler
+service activation is hidden instead of remaining on screen. Windows may show
+a brief console flash while that newly created window is hidden; clean-machine
+qualification measures that bounded OS behavior. The ARTIFEX icon is embedded
+in the native executable and NSIS installer and is reused by installed
+shortcuts and Add/Remove Programs metadata.
 
 Build and smoke the native artifact on the target operating system:
 
