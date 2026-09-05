@@ -1009,6 +1009,35 @@ def test_uninstall_stopper_is_noop_off_windows(tmp_path: Path) -> None:
     ) == []
 
 
+@pytest.mark.unit
+def test_nuitka_runtime_executable_uses_invoked_shipping_launcher(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    launcher = tmp_path / "installed" / "artifex.exe"
+    launcher.parent.mkdir()
+    launcher.write_bytes(b"nuitka-launcher")
+    unrelated_interpreter = tmp_path / "python.exe"
+    unrelated_interpreter.write_bytes(b"python")
+    monkeypatch.setitem(lifecycle.__dict__, "__compiled__", object())
+    monkeypatch.setattr(lifecycle.sys, "argv", [str(launcher), "_installer-lifecycle"])
+    monkeypatch.setattr(lifecycle.sys, "executable", str(unrelated_interpreter))
+
+    assert lifecycle._runtime_executable() == launcher.resolve()
+
+
+@pytest.mark.unit
+def test_non_nuitka_runtime_executable_uses_python_executable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.delitem(lifecycle.__dict__, "__compiled__", raising=False)
+    interpreter = tmp_path / "python.exe"
+    interpreter.write_bytes(b"python")
+    monkeypatch.setattr(lifecycle.sys, "executable", str(interpreter))
+    monkeypatch.setattr(lifecycle.sys, "argv", [str(tmp_path / "wrong.exe")])
+
+    assert lifecycle._runtime_executable() == interpreter.resolve()
+
+
 @pytest.mark.integration
 def test_deferred_self_upgrade_completes_without_running_file_replacement(
     tmp_path: Path,

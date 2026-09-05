@@ -382,7 +382,11 @@ def upgrade(
         service_readiness_timeout_seconds=service_readiness_timeout_seconds,
     )
     require_approval(decision, confirmation_token, approval_store=approval_store)
-    current = Path(running_executable or sys.executable).resolve()
+    current = (
+        Path(running_executable).resolve()
+        if running_executable is not None
+        else _runtime_executable()
+    )
     self_managed = _same_file(current, destination)
     defer = (os.name == "nt" and self_managed) if force_deferred is None else force_deferred
     if defer:
@@ -726,7 +730,11 @@ def uninstall(
     targets = _manifest_files(root, manifest) + _manifest_files(
         root, manifest, field="backups", required=False
     )
-    current = Path(running_executable or sys.executable).resolve()
+    current = (
+        Path(running_executable).resolve()
+        if running_executable is not None
+        else _runtime_executable()
+    )
     self_managed = any(_same_file(current, target) for target in targets)
     defer = (os.name == "nt" and self_managed) if force_deferred is None else force_deferred
     registration: ServiceRegistrationManager | None = None
@@ -916,8 +924,8 @@ def complete_deferred_uninstall(
             "backup": str(backup),
         }
     request_path.unlink(missing_ok=True)
-    if getattr(sys, "frozen", False):
-        _schedule_helper_cleanup(Path(sys.executable).resolve())
+    if getattr(sys, "frozen", False) or "__compiled__" in globals():
+        _schedule_helper_cleanup(_runtime_executable())
     return result
 
 
@@ -1641,6 +1649,20 @@ def _same_file(left: Path, right: Path) -> bool:
         return left.samefile(right)
     except OSError:
         return os.path.normcase(str(left)) == os.path.normcase(str(right))
+
+
+def _runtime_executable() -> Path:
+    """Return the invoked shipping executable for the active runtime.
+
+    Nuitka standalone keeps the shipping launcher in ``sys.argv[0]`` while
+    ``sys.executable`` is not a reliable identity for self-update/uninstall
+    decisions.  PyInstaller and ordinary Python retain their documented
+    ``sys.executable`` identity.
+    """
+
+    if "__compiled__" in globals():
+        return Path(sys.argv[0]).absolute().resolve()
+    return Path(sys.executable).resolve()
 
 
 def _pid_exists(pid: int) -> bool:
