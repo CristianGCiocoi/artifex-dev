@@ -2308,7 +2308,8 @@ def _schedule_path_cleanup_on_reboot(
     except (AttributeError, OSError) as exc:
         raise OSError("Windows delayed-delete request failed") from exc
     if not scheduled:
-        error_code = ctypes.get_last_error()
+        get_last_error = getattr(ctypes, "get_last_error", None)
+        error_code = int(get_last_error()) if callable(get_last_error) else 0
         raise OSError(
             error_code,
             f"Windows refused delayed deletion for lifecycle path: {path}",
